@@ -1,0 +1,19 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Устройство уже настроено"
+        },
+        "error": {
+            "cannot_connect": "Ошибка подключения",
+            "unknown": "Неопознанная ошибка"
+        },
+        "step": {
+            "user": {
+                "data": {
+                    "host": "IP-адрес/домен",
+                    "port": "Порт"
+                }
+            }
+        }
+    }
+}
