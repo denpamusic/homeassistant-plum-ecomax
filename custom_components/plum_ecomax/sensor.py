@@ -25,7 +25,7 @@ async def async_setup_entry(
     """Set up the sensor platform."""
 
     sensors = [
-        EcomaxTemperatureSensor("co_temp", "CWU Temperature"),
+        EcomaxTemperatureSensor("co_temp", "CO Temperature"),
         EcomaxTemperatureSensor("cwu_temp", "CWU Temperature"),
         EcomaxTemperatureSensor("exhaust_temp", "Exhaust Temperature"),
         EcomaxTemperatureSensor("outside_temp", "Outside Temperature"),
