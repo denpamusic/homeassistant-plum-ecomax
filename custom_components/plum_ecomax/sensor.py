@@ -86,6 +86,11 @@ class EcomaxTemperatureSensor(EcomaxSensor):
     """Representation of temperature sensor."""
 
     @property
+    def state_class(self) -> str:
+        """Return state class."""
+        return "measurement"
+
+    @property
     def device_class(self) -> str:
         """Return device class."""
         return "temperature"
@@ -109,6 +114,11 @@ class EcomaxFuelFlowSensor(EcomaxSensor):
     """Representation of fuel flow sensor."""
 
     @property
+    def state_class(self) -> str:
+        """Return state class."""
+        return "measurement"
+
+    @property
     def unit_of_measurement(self) -> str:
         """Return the unit of measurement."""
         return FLOW_KGH
@@ -119,7 +129,13 @@ class EcomaxPowerSensor(EcomaxSensor):
 
     @property
     def icon(self) -> str:
+        """Return sensor icon."""
         return "mdi:radiator"
+
+    @property
+    def state_class(self) -> str:
+        """Return state class."""
+        return "measurement"
 
     @property
     def device_class(self) -> str:
