@@ -57,6 +57,10 @@ class EcomaxConnection:
         )
         self._hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self.close)
 
+    async def async_unload(self):
+        """Close connection on entry unload."""
+        await self._hass.async_add_executor_job(self.close)
+
     async def add_entities(self, sensors, add_entities_callback: AddEntitiesCallback):
         """Add sensor entities to the processing queue."""
         for sensor in sensors:
