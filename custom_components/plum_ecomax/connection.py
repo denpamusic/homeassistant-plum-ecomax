@@ -32,9 +32,9 @@ class EcomaxConnection:
         self.econet = econet_connection(host, port)
 
     async def _check_callback(self, ecomax: EcoMAX, econet: EcoNET):
-        """Called when connection check succedes."""
+        """Called when connection check succeeds."""
         if self._check_tries > CONNECTION_CHECK_TRIES:
-            _LOGGER.exception("Connection succeded, but device failed to respond")
+            _LOGGER.exception("Connection succeeded, but device failed to respond.")
             econet.close()
 
         if ecomax.uid is not None and ecomax.product is not None:
@@ -47,13 +47,13 @@ class EcomaxConnection:
 
     async def check(self):
         """Perform connection check."""
-        await self.econet.run(self._check_callback, 1)
+        await self.econet.task(self._check_callback, 1)
         return self._check_ok
 
     async def async_setup(self):
         """Setup connection and add hass stop handler."""
         self._task = self._hass.loop.create_task(
-            self.econet.run(self.update_sensors, UPDATE_INTERVAL)
+            self.econet.task(self.update_sensors, UPDATE_INTERVAL)
         )
         self._hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self.close)
 

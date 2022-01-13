@@ -53,9 +53,10 @@ class EcomaxSensor(SensorEntity):
 
     async def update_sensor(self, ecomax: EcoMAX):
         """Update sensor state. Called by connection instance."""
-        attr = getattr(ecomax, self._id)
+        attr = round(getattr(ecomax, self._id), 2)
+
         if attr != self._state:
-            self._state = round(attr, 2)
+            self._state = attr
             self.async_write_ha_state()
 
     def set_connection(self, connection: EcomaxConnection):
@@ -64,6 +65,7 @@ class EcomaxSensor(SensorEntity):
 
     @property
     def unique_id(self) -> str:
+        """Return unique id of sensor."""
         return f"{self._connection.name}{self._id}"
 
     @property
