@@ -1,13 +1,12 @@
 """Implement async Plum ecoMAX connection."""
 import logging
 
-from pyplumio import econet_connection
-from pyplumio.devices import EcoMAX
-from pyplumio.econet import EcoNET
-
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from pyplumio import econet_connection
+from pyplumio.devices import EcoMAX
+from pyplumio.econet import EcoNET
 
 from .const import CONNECTION_CHECK_TRIES, DEFAULT_PORT, UPDATE_INTERVAL
 
@@ -22,6 +21,7 @@ class EcomaxConnection:
     _check_tries = 0
     _product = None
     _uid = None
+    _task = None
 
     def __init__(self, hass: HomeAssistant, host: str, port: int = DEFAULT_PORT):
         """Construct new connection."""

@@ -3,15 +3,15 @@ from __future__ import annotations
 
 import logging
 
-from pyplumio.devices import EcoMAX
-
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
+from pyplumio.devices import EcoMAX
 
 from .connection import EcomaxConnection
 from .const import DOMAIN
+from .entity import EcomaxEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,30 +23,35 @@ async def async_setup_entry(
 ) -> None:
     """Set up the sensor platform."""
 
-    switches = [EcomaxSwitch("boiler_control", "Regulator State")]
+    switches = [
+        EcomaxSwitch("boiler_control", "Regulator State Switch"),
+        EcomaxSwitch("program_control_co", "Weather Control Switch"),
+        EcomaxSwitch("cwu_work_mode", "Water Heater Pump Switch", off=0, on=2),
+        EcomaxSwitch("cwu_disinfection", "Water Heater Disinfection Switch"),
+    ]
 
     connection = hass.data[DOMAIN][config_entry.entry_id]
     await connection.add_entities(switches, async_add_entities)
 
 
-class EcomaxSwitch(SwitchEntity):
-    def __init__(self, id: str, name: str):
-        self._id = id
-        self._name = name
-        self._state = False
+class EcomaxSwitch(EcomaxEntity, SwitchEntity):
+    def __init__(self, id_: str, name: str, off: int = 0, on: int = 1):
+        super().__init__(id_=id_, name=name)
         self._ecomax = None
+        self._on = on
+        self._off = off
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
         if self._ecomax is not None:
-            setattr(self._ecomax, self._id, 1)
+            self._ecomax.__setattr__(self._id, self._on)
             self._state = True
             self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
         if self._ecomax is not None:
-            setattr(self._ecomax, self._id, 0)
+            self._ecomax.__setattr__(self._id, self._off)
             self._state = False
             self.async_write_ha_state()
 
@@ -54,31 +59,13 @@ class EcomaxSwitch(SwitchEntity):
         """Set up ecoMAX device instance."""
         if self._ecomax is None:
             self._ecomax = ecomax
-            self.async_write_ha_state()
 
-    def set_connection(self, connection: EcomaxConnection):
-        """Set up ecoMAX connection instance."""
-        self._connection = connection
+        state = getattr(self._ecomax, self._id).value == self._on
+        if state != self._state:
+            self._state = state
+            self.async_write_ha_state()
 
     @property
     def is_on(self) -> bool:
         """Return switch state."""
-        if self._ecomax is not None:
-            return bool(int(getattr(self._ecomax, self._id)))
-
-        return False
-
-    @property
-    def unique_id(self) -> str:
-        """Return unique id of switch."""
-        return f"{self._connection.name}{self._id}"
-
-    @property
-    def name(self):
-        """Return the name of the sensor."""
-        return f"{self._connection.name} {self._name}"
-
-    @property
-    def should_poll(self):
-        """Sensor shouldn't use polling."""
-        return False
+        return self._state

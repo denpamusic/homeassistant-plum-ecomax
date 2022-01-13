@@ -3,16 +3,16 @@ from __future__ import annotations
 
 import logging
 
-from pyplumio.devices import EcoMAX
-
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import PERCENTAGE, POWER_KILO_WATT, TEMP_CELSIUS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
+from pyplumio.devices import EcoMAX
 
 from .connection import EcomaxConnection
 from .const import DOMAIN, FLOW_KGH
+from .entity import EcomaxEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -43,13 +43,8 @@ async def async_setup_entry(
     await connection.add_entities(sensors, async_add_entities)
 
 
-class EcomaxSensor(SensorEntity):
-    """Base ecoMAX sensor representation."""
-
-    def __init__(self, id: str, name: str):
-        self._state = None
-        self._id = id
-        self._name = name
+class EcomaxSensor(EcomaxEntity, SensorEntity):
+    """ecoMAX sensor entity representation."""
 
     async def update_sensor(self, ecomax: EcoMAX):
         """Update sensor state. Called by connection instance."""
@@ -58,25 +53,6 @@ class EcomaxSensor(SensorEntity):
         if attr != self._state:
             self._state = attr
             self.async_write_ha_state()
-
-    def set_connection(self, connection: EcomaxConnection):
-        """Set ecoMAX connection instance."""
-        self._connection = connection
-
-    @property
-    def unique_id(self) -> str:
-        """Return unique id of sensor."""
-        return f"{self._connection.name}{self._id}"
-
-    @property
-    def name(self):
-        """Return the name of the sensor."""
-        return f"{self._connection.name} {self._name}"
-
-    @property
-    def should_poll(self):
-        """Sensor shouldn't use polling."""
-        return False
 
     @property
     def state(self):
