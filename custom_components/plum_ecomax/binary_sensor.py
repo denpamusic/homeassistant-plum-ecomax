@@ -10,7 +10,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from pyplumio.devices import EcoMAX
 
-from .connection import EcomaxConnection
 from .const import DOMAIN
 from .entity import EcomaxEntity
 

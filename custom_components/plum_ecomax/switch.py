@@ -9,7 +9,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from pyplumio.devices import EcoMAX
 
-from .connection import EcomaxConnection
 from .const import DOMAIN
 from .entity import EcomaxEntity
 
@@ -26,7 +25,6 @@ async def async_setup_entry(
     switches = [
         EcomaxSwitch("boiler_control", "Regulator State Switch"),
         EcomaxSwitch("program_control_co", "Weather Control Switch"),
-        EcomaxSwitch("cwu_work_mode", "Water Heater Pump Switch", off=0, on=2),
         EcomaxSwitch("cwu_disinfection", "Water Heater Disinfection Switch"),
     ]
 
