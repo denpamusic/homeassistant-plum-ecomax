@@ -37,9 +37,9 @@ class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
 
     async def update_sensor(self, ecomax: EcoMAX):
         """Update sensor state. Called by connection instance."""
-        attr = getattr(ecomax, self._id)
-        if attr != self._state:
-            self._state = STATE_ON if attr else STATE_OFF
+        state = getattr(ecomax, self._id)
+        if state != self._state:
+            self._state = STATE_ON if state else STATE_OFF
             self.async_write_ha_state()
 
     @property

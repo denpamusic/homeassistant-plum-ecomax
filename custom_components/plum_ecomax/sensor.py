@@ -33,7 +33,7 @@ async def async_setup_entry(
         EcomaxTemperatureSensor("feeder_temp", "Feeder Temperature"),
         EcomaxPercentSensor("fan_power", "Fan Power"),
         EcomaxPercentSensor("fuel_level", "Fuel Level"),
-        EcomaxFuelFlowSensor("fuel_flow", "Fuel Flow"),
+        EcomaxFuelFlowSensor("fuel_consumption", "Fuel Consumption"),
         EcomaxTextSensor("mode", "Mode"),
         EcomaxPowerSensor("power", "Power"),
     ]
@@ -47,11 +47,13 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
 
     async def update_sensor(self, ecomax: EcoMAX):
         """Update sensor state. Called by connection instance."""
-        attr = round(getattr(ecomax, self._id), 2)
+        state = getattr(ecomax, self._id)
 
-        if attr != self._state:
-            self._state = attr
-            self.async_write_ha_state()
+        if state is not None:
+            state = round(state, 2)
+            if state != self._state:
+                self._state = state
+                self.async_write_ha_state()
 
     @property
     def state(self):
