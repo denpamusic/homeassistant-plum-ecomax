@@ -8,7 +8,7 @@ from homeassistant.core import HomeAssistant
 from .connection import EcomaxConnection
 from .const import DOMAIN
 
-PLATFORMS: list[str] = ["sensor", "binary_sensor", "switch", "water_heater"]
+PLATFORMS: list[str] = ["sensor", "binary_sensor", "switch", "number", "water_heater"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

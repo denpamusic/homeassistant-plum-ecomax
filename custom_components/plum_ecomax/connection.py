@@ -53,7 +53,7 @@ class EcomaxConnection:
     async def async_setup(self):
         """Setup connection and add hass stop handler."""
         self._task = self._hass.loop.create_task(
-            self.econet.task(self.update_sensors, UPDATE_INTERVAL)
+            self.econet.task(self.update_entities, UPDATE_INTERVAL)
         )
         self._hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self.close)
 
@@ -69,13 +69,13 @@ class EcomaxConnection:
 
         add_entities_callback(sensors, True)
 
-    async def update_sensors(self, ecomax: EcoMAX, econet: EcoNET):
+    async def update_entities(self, ecomax: EcoMAX, econet: EcoNET):
         """Call update method for sensor instance."""
         self._product = ecomax.product
         self._uid = ecomax.uid
         if ecomax.has_data():
             for sensor in self._sensors:
-                await sensor.update_sensor(ecomax)
+                await sensor.update_entity(ecomax)
 
     @property
     def product(self):

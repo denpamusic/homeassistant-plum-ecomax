@@ -23,9 +23,12 @@ async def async_setup_entry(
     """Set up the sensor platform."""
 
     switches = [
-        EcomaxSwitch("boiler_control", "Regulator State Switch"),
+        EcomaxSwitch("boiler_control", "Regulator Switch"),
         EcomaxSwitch("program_control_co", "Weather Control Switch"),
         EcomaxSwitch("cwu_disinfection", "Water Heater Disinfection Switch"),
+        EcomaxSwitch("cwu_work_mode", "Water Heater Pump Switch", off=0, on=2),
+        EcomaxSwitch("auto_summer", "Summer Mode Switch"),
+        EcomaxSwitch("control_mode", "Fuzzy Logic Switch"),
     ]
 
     connection = hass.data[DOMAIN][config_entry.entry_id]
@@ -35,35 +38,34 @@ async def async_setup_entry(
 class EcomaxSwitch(EcomaxEntity, SwitchEntity):
     def __init__(self, id_: str, name: str, off: int = 0, on: int = 1):
         super().__init__(id_=id_, name=name)
-        self._ecomax = None
         self._on = on
         self._off = off
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
-        if self._ecomax is not None:
-            self._ecomax.__setattr__(self._id, self._on)
-            self._state = True
-            self.async_write_ha_state()
+        self.set_attribute(self._id, self._on)
+        self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-        if self._ecomax is not None:
-            self._ecomax.__setattr__(self._id, self._off)
-            self._state = False
-            self.async_write_ha_state()
+        self.set_attribute(self._id, self._off)
+        self.async_write_ha_state()
 
-    async def update_sensor(self, ecomax: EcoMAX):
+    async def update_entity(self, ecomax: EcoMAX):
         """Set up ecoMAX device instance."""
-        if self._ecomax is None:
-            self._ecomax = ecomax
-
-        state = getattr(self._ecomax, self._id).value == self._on
-        if state != self._state:
-            self._state = state
-            self.async_write_ha_state()
+        await super().update_entity(ecomax)
+        attr = self.get_attribute(self._id)
+        if attr is not None:
+            state = attr.value == self._on
+            if state != self._state:
+                self._state = state
+                self.async_write_ha_state()
 
     @property
     def is_on(self) -> bool:
         """Return switch state."""
-        return self._state
+        attr = self.get_attribute(self._id)
+        if attr is not None:
+            return attr.value == self._on
+
+        return False

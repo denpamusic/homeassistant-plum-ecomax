@@ -35,12 +35,15 @@ async def async_setup_entry(
 class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
     """Binary sensor representation."""
 
-    async def update_sensor(self, ecomax: EcoMAX):
+    async def update_entity(self, ecomax: EcoMAX):
         """Update sensor state. Called by connection instance."""
-        state = getattr(ecomax, self._id)
-        if state != self._state:
-            self._state = STATE_ON if state else STATE_OFF
-            self.async_write_ha_state()
+        await super().update_entity(ecomax)
+        state = self.get_attribute(self._id)
+        if state is not None:
+            state = STATE_ON if state else STATE_OFF
+            if self._state != state:
+                self._state = state
+                self.async_write_ha_state()
 
     @property
     def state(self):

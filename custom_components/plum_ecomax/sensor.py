@@ -31,6 +31,7 @@ async def async_setup_entry(
         EcomaxTemperatureSensor("co_target", "Target Temperature"),
         EcomaxTemperatureSensor("cwu_target", "CWU Target Temperature"),
         EcomaxTemperatureSensor("feeder_temp", "Feeder Temperature"),
+        EcomaxPercentSensor("load", "Load"),
         EcomaxPercentSensor("fan_power", "Fan Power"),
         EcomaxPercentSensor("fuel_level", "Fuel Level"),
         EcomaxFuelFlowSensor("fuel_consumption", "Fuel Consumption"),
@@ -45,13 +46,13 @@ async def async_setup_entry(
 class EcomaxSensor(EcomaxEntity, SensorEntity):
     """ecoMAX sensor entity representation."""
 
-    async def update_sensor(self, ecomax: EcoMAX):
+    async def update_entity(self, ecomax: EcoMAX):
         """Update sensor state. Called by connection instance."""
-        state = getattr(ecomax, self._id)
-
+        await super().update_entity(ecomax)
+        state = self.get_attribute(self._id)
         if state is not None:
             state = round(state, 2)
-            if state != self._state:
+            if self._state != state:
                 self._state = state
                 self.async_write_ha_state()
 
@@ -127,12 +128,20 @@ class EcomaxPowerSensor(EcomaxSensor):
         return POWER_KILO_WATT
 
 
-class EcomaxTextSensor(EcomaxSensor):
+class EcomaxTextSensor(EcomaxEntity, SensorEntity):
     """Representation of text sensor."""
 
-    async def update_sensor(self, ecomax):
+    async def update_entity(self, ecomax: EcoMAX):
         """Update sensor state. Called by connection instance."""
-        attr = getattr(ecomax, self._id)
-        if attr != self._state:
-            self._state = str(attr).lower().title()
-            self.async_write_ha_state()
+        await super().update_entity(ecomax)
+        state = self.get_attribute(self._id)
+        if state is not None:
+            state = str(state).lower().title()
+            if self._state != state:
+                self._state = state
+                self.async_write_ha_state()
+
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        return self._state

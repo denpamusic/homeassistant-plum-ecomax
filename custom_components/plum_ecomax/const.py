@@ -1,5 +1,8 @@
 """Constants for the Plum ecoMAX integration."""
 
+from homeassistant.components.water_heater import (STATE_ECO, STATE_OFF,
+                                                   STATE_PERFORMANCE)
+
 DOMAIN = "plum_ecomax"
 
 DEFAULT_PORT = 8899
@@ -8,6 +11,4 @@ CONNECTION_CHECK_TRIES = 5
 
 FLOW_KGH = "kg/h"
 
-ECOMAX_STATE_OFF = 0
-ECOMAX_STATE_PRIORITY = 1
-ECOMAX_STATE_NORMAL = 2
+WATER_HEATER_MODES = (STATE_OFF, STATE_PERFORMANCE, STATE_ECO)
