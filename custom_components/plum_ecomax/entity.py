@@ -32,7 +32,7 @@ class EcomaxEntity:
 
     def set_attribute(self, name: str, value):
         if self._ecomax is not None:
-            setattr(self._ecomax, self._id, value)
+            setattr(self._ecomax, name, value)
 
     @property
     def unique_id(self) -> str:
