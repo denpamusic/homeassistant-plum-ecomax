@@ -25,13 +25,13 @@ class EcomaxEntity:
             self._ecomax = ecomax
 
     def get_attribute(self, name: str):
-        if self._ecomax is not None:
+        if self.has_parameters:
             return getattr(self._ecomax, name)
 
         return None
 
     def set_attribute(self, name: str, value):
-        if self._ecomax is not None:
+        if self.has_parameters:
             setattr(self._ecomax, name, value)
 
     @property
