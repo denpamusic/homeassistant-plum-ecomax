@@ -5,7 +5,7 @@ from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio import econet_connection
-from pyplumio.devices import EcoMAX
+from pyplumio.devices import DeviceCollection
 from pyplumio.econet import EcoNET
 
 from .const import CONNECTION_CHECK_TRIES, DEFAULT_PORT, UPDATE_INTERVAL
@@ -16,30 +16,29 @@ _LOGGER = logging.getLogger(__name__)
 class EcomaxConnection:
     """Repsentation of ecoMAX connection."""
 
-    _sensors: list = []
-    _check_ok = False
-    _check_tries = 0
-    _product = None
-    _uid = None
-    _task = None
-
     def __init__(self, hass: HomeAssistant, host: str, port: int = DEFAULT_PORT):
         """Construct new connection."""
+        self.econet = econet_connection(host, port)
         self._host = host
         self._port = port
         self._name = host
         self._hass = hass
-        self.econet = econet_connection(host, port)
+        self._sensors = []
+        self._check_ok = False
+        self._check_tries = 0
+        self._check_product = None
+        self._uid = None
+        self._task = None
 
-    async def _check_callback(self, ecomax: EcoMAX, econet: EcoNET):
+    async def _check_callback(self, devices: DeviceCollection, econet: EcoNET):
         """Called when connection check succeeds."""
         if self._check_tries > CONNECTION_CHECK_TRIES:
             _LOGGER.exception("Connection succeeded, but device failed to respond.")
             econet.close()
 
-        if ecomax.uid is not None and ecomax.product is not None:
-            self._uid = ecomax.uid
-            self._product = ecomax.product
+        if devices.has("ecomax") and devices.ecomax.uid and devices.ecomax.product:
+            self._uid = devices.ecomax.uid
+            self._product = devices.ecomax.product
             self._check_ok = True
             econet.close()
 
@@ -69,13 +68,14 @@ class EcomaxConnection:
 
         add_entities_callback(sensors, True)
 
-    async def update_entities(self, ecomax: EcoMAX, econet: EcoNET):
+    async def update_entities(self, devices: DeviceCollection, econet: EcoNET):
         """Call update method for sensor instance."""
-        self._product = ecomax.product
-        self._uid = ecomax.uid
-        if ecomax.has_data():
-            for sensor in self._sensors:
-                await sensor.update_entity(ecomax)
+        if devices.has("ecomax"):
+            self._product = devices.ecomax.product
+            self._uid = devices.ecomax.uid
+            if devices.ecomax.has_data():
+                for sensor in self._sensors:
+                    await sensor.update_entity(devices.ecomax)
 
     @property
     def product(self):
@@ -102,7 +102,7 @@ class EcomaxConnection:
         """Return connection port."""
         return self._port
 
-    def close(self, event):
+    def close(self, event=None):
         """Close connection and cancel connection coroutine."""
         self.econet.close()
         if self._task:

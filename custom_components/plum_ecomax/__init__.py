@@ -14,7 +14,9 @@ PLATFORMS: list[str] = ["sensor", "binary_sensor", "switch", "number", "water_he
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Plum ecoMAX from a config entry."""
 
-    connection = EcomaxConnection(hass, entry.data["host"])
+    connection = EcomaxConnection(
+        hass, host=entry.data["host"], port=entry.data["port"]
+    )
     connection.econet.set_eth(ip=await async_get_source_ip(hass))
     await connection.async_setup()
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = connection

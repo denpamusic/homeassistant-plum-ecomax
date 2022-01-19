@@ -26,7 +26,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
 
-    connection = EcomaxConnection(hass, data["host"])
+    connection = EcomaxConnection(hass, host=data["host"], port=data["port"])
 
     try:
         await connection.check()
