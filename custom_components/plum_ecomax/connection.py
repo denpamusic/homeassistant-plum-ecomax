@@ -26,7 +26,6 @@ class EcomaxConnection:
         self._sensors = []
         self._check_ok = False
         self._check_tries = 0
-        self._check_product = None
         self._uid = None
         self._task = None
 
