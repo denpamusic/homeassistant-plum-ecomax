@@ -3,10 +3,12 @@ from __future__ import annotations
 
 import logging
 
-from homeassistant.components.water_heater import (STATE_OFF,
-                                                   SUPPORT_OPERATION_MODE,
-                                                   SUPPORT_TARGET_TEMPERATURE,
-                                                   WaterHeaterEntity)
+from homeassistant.components.water_heater import (
+    STATE_OFF,
+    SUPPORT_OPERATION_MODE,
+    SUPPORT_TARGET_TEMPERATURE,
+    WaterHeaterEntity,
+)
 from homeassistant.const import PRECISION_WHOLE, TEMP_CELSIUS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback

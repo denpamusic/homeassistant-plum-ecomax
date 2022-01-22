@@ -4,19 +4,26 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
+import voluptuous as vol
+from voluptuous import All, Range
 
 from .connection import EcomaxConnection
-from .const import DEFAULT_PORT, DOMAIN
+from .const import DEFAULT_INTERVAL, DEFAULT_PORT, DOMAIN, MAX_INTERVAL, MIN_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
-    {vol.Required("host"): str, vol.Optional("port", default=DEFAULT_PORT): int}
+    {
+        vol.Required("host"): str,
+        vol.Optional("port", default=DEFAULT_PORT): int,
+        vol.Optional("interval", default=DEFAULT_INTERVAL): All(
+            int, Range(min=MIN_INTERVAL, max=MAX_INTERVAL)
+        ),
+    }
 )
 
 

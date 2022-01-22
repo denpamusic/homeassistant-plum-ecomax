@@ -11,7 +11,8 @@
             "user": {
                 "data": {
                     "host": "Host",
-                    "port": "Port"
+                    "port": "Port",
+                    "interval": "Update interval"
                 }
             }
         }

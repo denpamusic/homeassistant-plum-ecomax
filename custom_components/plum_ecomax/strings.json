@@ -4,7 +4,8 @@
       "user": {
         "data": {
           "host": "[%key:common::config_flow::data::host%]",
-          "port": "[%key:common::config_flow::data::port%]"
+          "port": "[%key:common::config_flow::data::port%]",
+          "interval": "[%key:common::config_flow::data::interval%]",
         }
       }
     },

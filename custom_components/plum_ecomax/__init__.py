@@ -15,7 +15,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Plum ecoMAX from a config entry."""
 
     connection = EcomaxConnection(
-        hass, host=entry.data["host"], port=entry.data["port"]
+        hass,
+        host=entry.data["host"],
+        port=entry.data["port"],
+        interval=entry.data["interval"],
     )
     connection.econet.set_eth(ip=await async_get_source_ip(hass))
     await connection.async_setup()

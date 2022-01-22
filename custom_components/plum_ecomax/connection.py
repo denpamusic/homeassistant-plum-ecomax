@@ -8,7 +8,7 @@ from pyplumio import econet_tcp_connection
 from pyplumio.devices import DeviceCollection
 from pyplumio.econet import EcoNET
 
-from .const import CONNECTION_CHECK_TRIES, DEFAULT_PORT, UPDATE_INTERVAL
+from .const import CONNECTION_CHECK_TRIES, DEFAULT_INTERVAL, DEFAULT_PORT
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -16,7 +16,13 @@ _LOGGER = logging.getLogger(__name__)
 class EcomaxConnection:
     """Repsentation of ecoMAX connection."""
 
-    def __init__(self, hass: HomeAssistant, host: str, port: int = DEFAULT_PORT):
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        host: str,
+        port: int = DEFAULT_PORT,
+        interval: int = DEFAULT_INTERVAL,
+    ):
         """Construct new connection."""
         self.econet = econet_tcp_connection(host, port)
         self._host = host
@@ -28,6 +34,7 @@ class EcomaxConnection:
         self._check_tries = 0
         self._uid = None
         self._task = None
+        self._interval = interval
 
     async def _check_callback(self, devices: DeviceCollection, econet: EcoNET):
         """Called when connection check succeeds."""
@@ -51,7 +58,7 @@ class EcomaxConnection:
     async def async_setup(self):
         """Setup connection and add hass stop handler."""
         self._task = self._hass.loop.create_task(
-            self.econet.task(self.update_entities, UPDATE_INTERVAL)
+            self.econet.task(self.update_entities, self._interval)
         )
         self._hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self.close)
 
