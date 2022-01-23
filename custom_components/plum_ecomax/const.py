@@ -9,9 +9,9 @@ from homeassistant.components.water_heater import (
 DOMAIN = "plum_ecomax"
 
 DEFAULT_PORT = 8899
-DEFAULT_ITERVAL = 10
+DEFAULT_INTERVAL = 10
 MIN_INTERVAL = 10
-MAN_INTERVAL = 60
+MAX_INTERVAL = 60
 CONNECTION_CHECK_TRIES = 5
 
 FLOW_KGH = "kg/h"
