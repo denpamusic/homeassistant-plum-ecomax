@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 
 from homeassistant.components.number import NumberEntity
-from homeassistant.const import TEMP_CELSIUS
+from homeassistant.const import PERCENTAGE, TEMP_CELSIUS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
@@ -24,10 +24,10 @@ async def async_setup_entry(
     """Set up the number platform."""
 
     sensors = [
-        EcomaxNumber("co_temp_set", "Boiler Temperature"),
-        EcomaxNumber("co_temp_grate", "Grate Mode Temperature"),
-        EcomaxNumber("min_fl_power", "FuzzyLogic Minimum Power"),
-        EcomaxNumber("max_fl_power", "FuzzyLogic Maximum Power"),
+        EcomaxNumberTemperature("co_temp_set", "Boiler Temperature"),
+        EcomaxNumberTemperature("co_temp_grate", "Grate Mode Temperature"),
+        EcomaxNumberPercent("min_fl_power", "FuzzyLogic Minimum Power"),
+        EcomaxNumberPercent("max_fl_power", "FuzzyLogic Maximum Power"),
     ]
 
     connection = hass.data[DOMAIN][config_entry.entry_id]
@@ -71,6 +71,18 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
 
         return 0
 
+
+class EcomaxNumberTemperature(EcomaxNumber):
+    """Setup temperature number."""
+
     @property
     def unit_of_measurement(self):
         return TEMP_CELSIUS
+
+
+class EcomaxNumberPercent(EcomaxNumber):
+    """Setup percent number."""
+
+    @property
+    def unit_of_measurement(self):
+        return PERCENTAGE
