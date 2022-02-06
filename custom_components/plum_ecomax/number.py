@@ -24,7 +24,7 @@ async def async_setup_entry(
     """Set up the number platform."""
 
     sensors = [
-        EcomaxNumberTemperature("co_temp_set", "Boiler Temperature"),
+        EcomaxNumberTemperature("co_set_temp", "Boiler Temperature"),
         EcomaxNumberTemperature("co_temp_grate", "Grate Mode Temperature"),
         EcomaxNumberPercent("min_fl_power", "FuzzyLogic Minimum Power"),
         EcomaxNumberPercent("max_fl_power", "FuzzyLogic Maximum Power"),

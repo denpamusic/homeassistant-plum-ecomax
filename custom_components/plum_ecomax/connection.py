@@ -5,7 +5,7 @@ from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio import econet_tcp_connection
-from pyplumio.devices import DeviceCollection
+from pyplumio.devices import DevicesCollection
 from pyplumio.econet import EcoNET
 
 from .const import CONNECTION_CHECK_TRIES, DEFAULT_INTERVAL, DEFAULT_PORT
@@ -36,13 +36,13 @@ class EcomaxConnection:
         self._task = None
         self._interval = interval
 
-    async def _check_callback(self, devices: DeviceCollection, econet: EcoNET):
+    async def _check_callback(self, devices: DevicesCollection, econet: EcoNET):
         """Called when connection check succeeds."""
         if self._check_tries > CONNECTION_CHECK_TRIES:
             _LOGGER.exception("Connection succeeded, but device failed to respond.")
             econet.close()
 
-        if devices.has("ecomax") and devices.ecomax.uid and devices.ecomax.product:
+        if devices.ecomax and devices.ecomax.uid and devices.ecomax.product:
             self._uid = devices.ecomax.uid
             self._product = devices.ecomax.product
             self._check_ok = True
@@ -74,12 +74,12 @@ class EcomaxConnection:
 
         add_entities_callback(sensors, True)
 
-    async def update_entities(self, devices: DeviceCollection, econet: EcoNET):
+    async def update_entities(self, devices: DevicesCollection, econet: EcoNET):
         """Call update method for sensor instance."""
-        if devices.has("ecomax"):
+        if devices.ecomax:
             self._product = devices.ecomax.product
             self._uid = devices.ecomax.uid
-            if devices.ecomax.has_data():
+            if devices.ecomax.data is not None:
                 for sensor in self._sensors:
                     await sensor.update_entity(devices.ecomax)
 

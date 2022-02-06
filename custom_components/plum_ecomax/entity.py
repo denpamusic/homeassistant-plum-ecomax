@@ -51,14 +51,14 @@ class EcomaxEntity:
 
     @property
     def has_parameters(self):
-        if self._ecomax is not None and self._ecomax.has_parameters():
+        if self._ecomax is not None and self._ecomax.parameters is not None:
             return True
 
         return False
 
     @property
     def has_data(self):
-        if self._ecomax is not None and self._ecomax.has_data():
+        if self._ecomax is not None and self._ecomax.data is not None:
             return True
 
         return False
