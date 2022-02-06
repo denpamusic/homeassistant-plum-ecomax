@@ -24,10 +24,10 @@ async def async_setup_entry(
     """Set up the number platform."""
 
     sensors = [
-        EcomaxNumberTemperature("co_set_temp", "Boiler Temperature"),
-        EcomaxNumberTemperature("co_temp_grate", "Grate Mode Temperature"),
-        EcomaxNumberPercent("min_fl_power", "FuzzyLogic Minimum Power"),
-        EcomaxNumberPercent("max_fl_power", "FuzzyLogic Maximum Power"),
+        EcomaxNumberTemperature("heating_set_temp", "Boiler Temperature"),
+        EcomaxNumberTemperature("heating_temp_grate", "Grate Mode Temperature"),
+        EcomaxNumberPercent("min_fuzzylogic_power", "FuzzyLogic Minimum Power"),
+        EcomaxNumberPercent("max_fuzzylogic_power", "FuzzyLogic Maximum Power"),
     ]
 
     connection = hass.data[DOMAIN][config_entry.entry_id]

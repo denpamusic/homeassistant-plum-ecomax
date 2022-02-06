@@ -23,8 +23,8 @@ async def async_setup_entry(
 ) -> None:
     """Set up the sensor platform."""
     sensors = [
-        EcomaxBinarySensor("co_pump", "CO Pump State"),
-        EcomaxBinarySensor("cwu_pump", "CWU Pump State"),
+        EcomaxBinarySensor("heating_pump", "Heating Pump State"),
+        EcomaxBinarySensor("water_heater_pump", "Water Heater Pump State"),
         EcomaxBinarySensor("fan", "Fan State"),
         EcomaxBinarySensor("lighter", "Lighter State"),
     ]

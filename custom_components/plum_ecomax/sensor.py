@@ -24,12 +24,12 @@ async def async_setup_entry(
     """Set up the sensor platform."""
 
     sensors = [
-        EcomaxTemperatureSensor("co_temp", "CO Temperature"),
-        EcomaxTemperatureSensor("cwu_temp", "CWU Temperature"),
+        EcomaxTemperatureSensor("heating_temp", "Heating Temperature"),
+        EcomaxTemperatureSensor("water_heater_temp", "Water Heater Temperature"),
         EcomaxTemperatureSensor("exhaust_temp", "Exhaust Temperature"),
         EcomaxTemperatureSensor("outside_temp", "Outside Temperature"),
-        EcomaxTemperatureSensor("co_target", "Target Temperature"),
-        EcomaxTemperatureSensor("cwu_target", "CWU Target Temperature"),
+        EcomaxTemperatureSensor("heating_target", "Target Temperature"),
+        EcomaxTemperatureSensor("water_heater_target", "Water Heater Target Temperature"),
         EcomaxTemperatureSensor("feeder_temp", "Feeder Temperature"),
         EcomaxPercentSensor("load", "Load"),
         EcomaxPercentSensor("fan_power", "Fan Power"),

@@ -24,10 +24,10 @@ async def async_setup_entry(
 
     switches = [
         EcomaxSwitch("boiler_control", "Regulator Switch"),
-        EcomaxSwitch("program_control_co", "Weather Control Switch"),
-        EcomaxSwitch("cwu_disinfection", "Water Heater Disinfection Switch"),
-        EcomaxSwitch("cwu_work_mode", "Water Heater Pump Switch", off=0, on=2),
-        EcomaxSwitch("auto_summer", "Summer Mode Switch"),
+        EcomaxSwitch("heating_weather_control", "Weather Control Switch"),
+        EcomaxSwitch("water_heater_disinfection", "Water Heater Disinfection Switch"),
+        EcomaxSwitch("water_heater_work_mode", "Water Heater Pump Switch", off=0, on=2),
+        EcomaxSwitch("summer_mode", "Summer Mode Switch"),
         EcomaxSwitch("control_mode", "Fuzzy Logic Switch"),
     ]
 

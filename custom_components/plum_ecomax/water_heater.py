@@ -29,7 +29,7 @@ async def async_setup_entry(
     """Set up the sensor platform."""
 
     switches = [
-        EcomaxWaterHeater("cwu", "Water Heater"),
+        EcomaxWaterHeater("water_heater", "Water Heater"),
     ]
 
     connection = hass.data[DOMAIN][config_entry.entry_id]
