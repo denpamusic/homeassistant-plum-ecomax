@@ -28,7 +28,7 @@ async def async_setup_entry(
         EcomaxSwitch("water_heater_disinfection", "Water Heater Disinfection Switch"),
         EcomaxSwitch("water_heater_work_mode", "Water Heater Pump Switch", off=0, on=2),
         EcomaxSwitch("summer_mode", "Summer Mode Switch"),
-        EcomaxSwitch("control_mode", "Fuzzy Logic Switch"),
+        EcomaxSwitch("fuzzy_logic", "Fuzzy Logic Switch"),
     ]
 
     connection = hass.data[DOMAIN][config_entry.entry_id]
