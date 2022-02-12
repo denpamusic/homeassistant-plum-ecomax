@@ -29,7 +29,9 @@ async def async_setup_entry(
         EcomaxTemperatureSensor("exhaust_temp", "Exhaust Temperature"),
         EcomaxTemperatureSensor("outside_temp", "Outside Temperature"),
         EcomaxTemperatureSensor("heating_target", "Target Temperature"),
-        EcomaxTemperatureSensor("water_heater_target", "Water Heater Target Temperature"),
+        EcomaxTemperatureSensor(
+            "water_heater_target", "Water Heater Target Temperature"
+        ),
         EcomaxTemperatureSensor("feeder_temp", "Feeder Temperature"),
         EcomaxPercentSensor("load", "Load"),
         EcomaxPercentSensor("fan_power", "Fan Power"),

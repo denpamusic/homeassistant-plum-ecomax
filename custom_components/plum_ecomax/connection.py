@@ -4,7 +4,7 @@ import logging
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyplumio import econet_tcp_connection
+import pyplumio
 from pyplumio.devices import DevicesCollection
 from pyplumio.econet import EcoNET
 
@@ -24,7 +24,7 @@ class EcomaxConnection:
         interval: int = DEFAULT_INTERVAL,
     ):
         """Construct new connection."""
-        self.econet = econet_tcp_connection(host, port)
+        self.econet = pyplumio.TcpConnection(host, port)
         self._host = host
         self._port = port
         self._name = host
