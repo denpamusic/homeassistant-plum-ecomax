@@ -1,14 +1,11 @@
 """Platform for sensor integration."""
 from __future__ import annotations
 
-import logging
-
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import PERCENTAGE, POWER_KILO_WATT, TEMP_CELSIUS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
-from pyplumio.devices import EcoMAX
 
 from .const import DOMAIN, FLOW_KGH
 from .entity import EcomaxEntity

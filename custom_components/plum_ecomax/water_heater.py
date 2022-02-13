@@ -1,8 +1,7 @@
 """Platform for sensor integration."""
 from __future__ import annotations
 
-import logging
-from typing import Any, List, Tuple
+from typing import Any, Tuple
 
 from homeassistant.components.water_heater import (
     STATE_OFF,
@@ -14,7 +13,6 @@ from homeassistant.const import PRECISION_WHOLE, TEMP_CELSIUS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
-from pyplumio.devices import EcoMAX
 
 from .const import DOMAIN, WATER_HEATER_MODES
 from .entity import EcomaxEntity
@@ -47,7 +45,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     Attributes:
         _attr_min_temp -- The minimum temperature that can be set.
         _attr_max_temp -- The maximum temperature that can be set.
-        _attr_current_temp -- The current temperature.
+        _attr_current_temperature -- The current temperature.
         _attr_target_temperature -- The temperature we are trying to reach.
         _attr_target_temperature_low -- Lower bound of the temperature we are trying to reach.
         _attr_target_temperature_high -- Upper bound of the temperature we are trying to reach.
@@ -59,7 +57,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         super().__init__(*args, **kwargs)
         self._attr_min_temp = 0
         self._attr_max_temp = 0
-        self._attr_current_temp = 0
+        self._attr_current_temperature = 0
         self._attr_target_temperature = 0
         self._attr_target_temperature_low = 0
         self._attr_target_temperature_high = 0

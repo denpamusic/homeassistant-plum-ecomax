@@ -3,15 +3,18 @@
     "step": {
       "user": {
         "data": {
+          "connection_type": "[%key:common::config_flow::data::connection_type%]",
+          "device": "[%key:common::config_flow::data::device%]",
           "host": "[%key:common::config_flow::data::host%]",
           "port": "[%key:common::config_flow::data::port%]",
-          "interval": "[%key:common::config_flow::data::interval%]",
+          "update_interval": "[%key:common::config_flow::data::update_interval%]",
         }
       }
     },
     "error": {
       "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
       "unsupported_device": "[%key:common::config_flow::error::unsupported_device%]",
+      "unknown_connection_type": "[%key:common::config_flow::error::unknown_connection_type%]",
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "abort": {

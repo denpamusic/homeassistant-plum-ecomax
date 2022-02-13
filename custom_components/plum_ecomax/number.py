@@ -1,14 +1,11 @@
 """Platform for number integration."""
 from __future__ import annotations
 
-import logging
-
 from homeassistant.components.number import NumberEntity
 from homeassistant.const import PERCENTAGE, TEMP_CELSIUS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
-from pyplumio.devices import EcoMAX
 
 from .const import DOMAIN
 from .entity import EcomaxEntity

@@ -1,14 +1,11 @@
 """Platform for binary sensor integration."""
 from __future__ import annotations
 
-import logging
-
 from homeassistant.components.binary_sensor import BinarySensorEntity
 from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
-from pyplumio.devices import EcoMAX
 
 from .const import DOMAIN
 from .entity import EcomaxEntity

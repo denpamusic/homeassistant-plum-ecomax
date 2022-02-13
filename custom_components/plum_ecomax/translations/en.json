@@ -6,14 +6,17 @@
         "error": {
             "cannot_connect": "Failed to connect",
             "unsupported_device": "Unsupported device",
+            "unknown_connection_type": "Unknown connection type",
             "unknown": "Unexpected error"
         },
         "step": {
             "user": {
                 "data": {
+                    "connection_type": "Connection type",
+                    "device": "Device path",
                     "host": "Host",
                     "port": "Port",
-                    "interval": "Update interval"
+                    "update_interval": "Update interval (seconds)"
                 }
             }
         }

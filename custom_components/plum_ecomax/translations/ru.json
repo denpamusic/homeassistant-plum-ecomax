@@ -6,14 +6,17 @@
         "error": {
             "cannot_connect": "Ошибка подключения",
             "unsupported_device": "Неподдерживаемое устройство",
+            "unknown_connection_type": "Неизвестный тип подключения",
             "unknown": "Неопознанная ошибка"
         },
         "step": {
             "user": {
                 "data": {
+                    "connection_type": "Тип подключения",
+                    "device": "Путь к устройству",
                     "host": "IP-адрес/домен",
                     "port": "Порт",
-                    "interval": "Интервал обновления"
+                    "update_interval": "Интервал обновления (секунды)"
                 }
             }
         }

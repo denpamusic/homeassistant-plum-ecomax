@@ -1,6 +1,7 @@
 """Implement async Plum ecoMAX connection."""
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 import logging
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
@@ -12,7 +13,13 @@ import pyplumio
 from pyplumio.devices import DevicesCollection
 from pyplumio.econet import EcoNET
 
-from .const import CONNECTION_CHECK_TRIES, DEFAULT_INTERVAL, DEFAULT_PORT
+from .const import (
+    CONNECTION_CHECK_TRIES,
+    DEFAULT_DEVICE,
+    DEFAULT_HOST,
+    DEFAULT_PORT,
+    DEFAULT_UPDATE_INTERVAL,
+)
 
 if TYPE_CHECKING:
     from .entity import EcomaxEntity
@@ -20,29 +27,24 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
-class EcomaxConnection:
-    """Representation of ecoMAX connection.
+class EcomaxConnection(ABC):
+    """Represent base ecoMAX connection.
 
     Attributes:
         ecomax -- instance of ecoMAX device
-        _host -- serial server ip or hostname
-        _port -- serial server port
         _name -- connection name
         _hass -- instance of Home Assistant core
         _entities -- list of entities
         _check_tries -- how much connection check tries was performed
-        _uid -- device UID
         _task -- connection task
-        _interval -- data update interval in seconds
+        _update_interval -- data update interval in seconds
         _connection -- instance of current connection
     """
 
     def __init__(
         self,
         hass: HomeAssistant,
-        host: str,
-        port: int = DEFAULT_PORT,
-        interval: int = DEFAULT_INTERVAL,
+        update_interval: int = DEFAULT_UPDATE_INTERVAL,
     ):
         """Construct new connection.
 
@@ -50,19 +52,15 @@ class EcomaxConnection:
             hass -- instance of Home Assistant core
             host -- serial server ip or hostname
             port -- serial server port
-            interval -- data update interval in seconds
+            update_interval -- data update interval in seconds
         """
         self.ecomax = None
-        self._host = host
-        self._port = port
-        self._name = host
-        self._hass = hass
         self._entities: List[EcomaxEntity] = []
         self._check_tries = 0
-        self._uid = None
         self._task = None
-        self._interval = interval
-        self._connection = pyplumio.TcpConnection(host, port)
+        self._hass = hass
+        self._update_interval = update_interval
+        self._connection = self.get_connection()
 
     async def _check_callback(
         self, devices: DevicesCollection, connection: EcoNET
@@ -85,14 +83,14 @@ class EcomaxConnection:
 
     async def check(self) -> Tuple[Union[str, None], Union[str, None]]:
         """Perform connection check."""
-        await self._connection.task(self._check_callback, 1)
+        await self._connection.task(self._check_callback, interval=1, reconnect=False)
         return self.product, self.uid
 
     async def async_setup(self) -> None:
         """Setup connection and add hass stop handler."""
         self._connection.set_eth(ip=await async_get_source_ip(self._hass))
         self._task = self._hass.loop.create_task(
-            self._connection.task(self.update_entities, self._interval)
+            self._connection.task(self.update_entities, self._update_interval)
         )
         self._hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self.close)
 
@@ -145,10 +143,54 @@ class EcomaxConnection:
 
         return None
 
+    def close(self, event=None) -> None:
+        """Close connection and cancel connection coroutine."""
+        self._connection.close()
+        if self._task:
+            self._task.cancel()
+
+    @abstractmethod
+    def get_connection(self) -> EcoNET:
+        """Return connection instance."""
+
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        """Return connection name."""
+
+
+class EcomaxTcpConnection(EcomaxConnection):
+    """Represent ecoMAX TCP connection.
+
+    Attributes:
+        _host -- serial server ip or hostname
+        _port -- serial server port
+    """
+
+    def __init__(
+        self, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT, *args, **kwargs
+    ):
+        """Construct new connection.
+
+        Keyword arguments:
+            host -- serial server ip or hostname
+            port -- serial server port
+        """
+        super().__init__(*args, **kwargs)
+        self._host = host
+        self._port = port
+
+    def get_connection(self) -> EcoNET:
+        """Return connection instance."""
+        if isinstance(self._connection, EcoNET):
+            return self._connection
+
+        return pyplumio.TcpConnection(self._host, self._port)
+
     @property
     def name(self) -> str:
         """Return connection name."""
-        return self._name
+        return self._host
 
     @property
     def host(self) -> str:
@@ -160,8 +202,36 @@ class EcomaxConnection:
         """Return connection port."""
         return self._port
 
-    def close(self, event=None) -> None:
-        """Close connection and cancel connection coroutine."""
-        self._connection.close()
-        if self._task:
-            self._task.cancel()
+
+class EcomaxSerialConnection(EcomaxConnection):
+    """Represent ecoMAX serial connection.
+
+    Attributes:
+        _device -- serial device path, e. g. /dev/ttyUSB0
+    """
+
+    def __init__(self, device: str = DEFAULT_DEVICE, *args, **kwargs):
+        """Construct new connection.
+
+        Keyword arguments:
+            device -- serial device path, e. g. /dev/ttyUSB0
+        """
+        super().__init__(*args, **kwargs)
+        self._device = device
+
+    def get_connection(self) -> EcoNET:
+        """Return connection instance."""
+        if isinstance(self._connection, EcoNET):
+            return self._connection
+
+        return pyplumio.SerialConnection(self._device)
+
+    @property
+    def name(self) -> str:
+        """Return connection name."""
+        return self._device
+
+    @property
+    def device(self) -> str:
+        """Return connection device."""
+        return self._device

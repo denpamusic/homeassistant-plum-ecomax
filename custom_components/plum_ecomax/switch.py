@@ -1,13 +1,10 @@
 """Platform for sensor integration."""
 from __future__ import annotations
 
-import logging
-
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
-from pyplumio.devices import EcoMAX
 
 from .const import DOMAIN
 from .entity import EcomaxEntity
