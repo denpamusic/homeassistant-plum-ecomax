@@ -5,6 +5,7 @@
         },
         "error": {
             "cannot_connect": "Failed to connect",
+            "unsupported_device": "Unsupported device",
             "unknown": "Unexpected error"
         },
         "step": {

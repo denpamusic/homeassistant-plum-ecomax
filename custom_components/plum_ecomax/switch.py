@@ -12,15 +12,19 @@ from pyplumio.devices import EcoMAX
 from .const import DOMAIN
 from .entity import EcomaxEntity
 
-_LOGGER = logging.getLogger(__name__)
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigType,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the sensor platform."""
+    """Set up the sensor platform.
+
+    Keyword arguments:
+        hass -- instance of Home Assistant core
+        config_entry -- instance of config entry
+        async_add_entities -- callback to add entities to hass
+    """
 
     switches = [
         EcomaxSwitch("boiler_control", "Regulator Switch"),
@@ -36,8 +40,23 @@ async def async_setup_entry(
 
 
 class EcomaxSwitch(EcomaxEntity, SwitchEntity):
+    """ecoMAX switch entity representation.
+
+    Attributes:
+        _on -- value corresponding to enabled state
+        _off -- value corresponding to disabled state
+    """
+
     def __init__(self, id_: str, name: str, off: int = 0, on: int = 1):
-        super().__init__(id_=id_, name=name)
+        """Create ecoMAX switch instance.
+
+        Keyword arguments:
+            id_ -- entity id
+            name -- human-readable entity name
+            off -- value corresponding to disabled state
+            on -- value corresponding to enabled state
+        """
+        super().__init__(id_, name)
         self._on = on
         self._off = off
 
@@ -51,9 +70,8 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
         self.set_attribute(self._id, self._off)
         self.async_write_ha_state()
 
-    async def update_entity(self, ecomax: EcoMAX):
-        """Set up ecoMAX device instance."""
-        await super().update_entity(ecomax)
+    async def async_update_state(self) -> None:
+        """Set up device instance."""
         attr = self.get_attribute(self._id)
         if attr is not None:
             state = attr.value == self._on

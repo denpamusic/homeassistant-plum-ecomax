@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any, List, Tuple
 
 from homeassistant.components.water_heater import (
     STATE_OFF,
@@ -18,15 +19,19 @@ from pyplumio.devices import EcoMAX
 from .const import DOMAIN, WATER_HEATER_MODES
 from .entity import EcomaxEntity
 
-_LOGGER = logging.getLogger(__name__)
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigType,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the sensor platform."""
+    """Set up the sensor platform.
+
+    Keyword arguments:
+        hass -- instance of Home Assistant core
+        config_entry -- instance of config entry
+        async_add_entities -- callback to add entities to hass
+    """
 
     switches = [
         EcomaxWaterHeater("water_heater", "Water Heater"),
@@ -37,18 +42,31 @@ async def async_setup_entry(
 
 
 class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
+    """Representation of water heater entity.
 
-    _attr_min_temp: float = 0
-    _attr_max_temp: float = 0
-    _attr_current_temp: float = 0
-    _attr_target_temperature: float = 0
-    _attr_target_temperature_low: float = 0
-    _attr_target_temperature_high: float = 0
-    _attr_current_operation: str = STATE_OFF
+    Attributes:
+        _attr_min_temp -- The minimum temperature that can be set.
+        _attr_max_temp -- The maximum temperature that can be set.
+        _attr_current_temp -- The current temperature.
+        _attr_target_temperature -- The temperature we are trying to reach.
+        _attr_target_temperature_low -- Lower bound of the temperature we are trying to reach.
+        _attr_target_temperature_high -- Upper bound of the temperature we are trying to reach.
+        _attr_current_operation -- The current operation mode.
+    """
 
-    async def update_entity(self, ecomax: EcoMAX):
-        """Set up ecoMAX device instance."""
-        await super().update_entity(ecomax)
+    def __init__(self, *args, **kwargs):
+        """Create entity instance."""
+        super().__init__(*args, **kwargs)
+        self._attr_min_temp = 0
+        self._attr_max_temp = 0
+        self._attr_current_temp = 0
+        self._attr_target_temperature = 0
+        self._attr_target_temperature_low = 0
+        self._attr_target_temperature_high = 0
+        self._attr_current_operation = STATE_OFF
+
+    async def async_update_state(self) -> None:
+        """Set up device instance."""
         target_temp = self.get_attribute(f"{self._id}_set_temp")
         current_temp = self.get_attribute(f"{self._id}_temp")
         hysteresis = self.get_attribute(f"{self._id}_hysteresis")
@@ -102,7 +120,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         return SUPPORT_TARGET_TEMPERATURE + SUPPORT_OPERATION_MODE
 
     @property
-    def operation_list(self) -> list[str]:
+    def operation_list(self) -> Tuple[Any, ...]:
         """Return the list of available operation modes."""
         return WATER_HEATER_MODES
 

@@ -1,64 +1,105 @@
 """Base ecoMAX entity for all platforms."""
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Optional
 
 from pyplumio.devices import EcoMAX
 
-from .connection import EcomaxConnection
+if TYPE_CHECKING:
+    from .connection import EcomaxConnection
 
 
-class EcomaxEntity:
-    """Base ecoMAX entity representation."""
+class EcomaxEntity(ABC):
+    """Base ecoMAX entity representation.
 
-    _ecomax: EcoMAX = None
+    Attributes:
+        _state -- entity state
+        _id -- entity id
+        _name -- human-readable entity name
+        _connection -- current connection instance
+    """
 
     def __init__(self, id_: str, name: str):
+        """Create entity instance.
+
+        Keyword arguments:
+            id_ -- entity id
+            name_ -- human-readable entity name
+        """
         self._state = None
         self._id = id_
         self._name = name
-        self._connection = None
+        self._connection: Optional[EcomaxConnection] = None
 
-    def set_connection(self, connection: EcomaxConnection):
-        """Set ecoMAX connection instance."""
+    def set_connection(self, connection: EcomaxConnection) -> None:
+        """Set ecoMAX connection instance.
+
+        Keyword arguments:
+            connection -- current connection instance
+        """
         self._connection = connection
 
-    async def update_entity(self, ecomax: EcoMAX):
-        if self._ecomax is None:
-            self._ecomax = ecomax
-
     def get_attribute(self, name: str):
+        """Return device attribute.
+
+        Keyword arguments:
+            name -- attribute name
+        """
         if self.has_parameters:
-            return getattr(self._ecomax, name)
+            return getattr(self.ecomax, name)
 
         return None
 
-    def set_attribute(self, name: str, value):
+    def set_attribute(self, name: str, value) -> None:
+        """Set device attribute.
+
+        Keyword arguments:
+            name -- attribute name
+            value -- new attribute value
+        """
         if self.has_parameters:
-            setattr(self._ecomax, name, value)
+            setattr(self.ecomax, name, value)
+
+    @property
+    def ecomax(self) -> Optional[EcoMAX]:
+        """Return ecoMAX device instance."""
+        if self._connection is not None:
+            return self._connection.ecomax
+
+        return None
 
     @property
     def unique_id(self) -> str:
         """Return unique id of sensor."""
-        return f"{self._connection.name}{self._id}"
+        if self._connection is not None:
+            return f"{self._connection.name}{self._id}"
+
+        return ""
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Return the name of the sensor."""
-        return f"{self._connection.name} {self._name}"
+        if self._connection is not None:
+            return f"{self._connection.name} {self._name}"
+
+        return ""
 
     @property
-    def should_poll(self):
+    def should_poll(self) -> bool:
         """Sensor shouldn't use polling."""
         return False
 
     @property
-    def has_parameters(self):
-        if self._ecomax is not None and self._ecomax.parameters is not None:
-            return True
-
-        return False
+    def has_parameters(self) -> bool:
+        """If ecoMAX device has parameters."""
+        return self.ecomax is not None and self.ecomax.parameters is not None
 
     @property
-    def has_data(self):
-        if self._ecomax is not None and self._ecomax.data is not None:
-            return True
+    def has_data(self) -> bool:
+        """If ecoMAX device has data."""
+        return self.ecomax is not None and self.ecomax.data is not None
 
-        return False
+    @abstractmethod
+    async def async_update_state(self) -> None:
+        """Update entity state."""

@@ -13,16 +13,19 @@ from pyplumio.devices import EcoMAX
 from .const import DOMAIN
 from .entity import EcomaxEntity
 
-_LOGGER = logging.getLogger(__name__)
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigType,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the number platform."""
+    """Set up the number platform.
 
+    Keyword arguments:
+        hass -- instance of Home Assistant core
+        config_entry -- instance of config entry
+        async_add_entities -- callback to add entities to hass
+    """
     sensors = [
         EcomaxNumberTemperature("heating_set_temp", "Heating Temperature"),
         EcomaxNumberTemperature("heating_temp_grate", "Grate Mode Temperature"),
@@ -39,18 +42,21 @@ async def async_setup_entry(
 class EcomaxNumber(EcomaxEntity, NumberEntity):
     """ecoMAX number entity representation."""
 
-    async def update_entity(self, ecomax: EcoMAX):
-        """Update sensor state. Called by connection instance."""
-        await super().update_entity(ecomax)
+    async def async_update_state(self) -> None:
+        """Update entity state."""
         self.async_write_ha_state()
 
-    async def async_set_value(self, value: float):
-        """Update the current value."""
+    async def async_set_value(self, value: float) -> None:
+        """Update the current value.
+
+        Keyword arguments:
+            value -- new number value
+        """
         self.set_attribute(self._id, int(value))
         self.async_write_ha_state()
 
     @property
-    def value(self):
+    def value(self) -> float:
         attr = self.get_attribute(self._id)
         if attr is not None:
             return attr.value
@@ -58,7 +64,7 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
         return 0
 
     @property
-    def min_value(self):
+    def min_value(self) -> float:
         attr = self.get_attribute(self._id)
         if attr is not None:
             return attr.min_
@@ -66,7 +72,7 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
         return 0
 
     @property
-    def max_value(self):
+    def max_value(self) -> float:
         attr = self.get_attribute(self._id)
         if attr is not None:
             return attr.max_
@@ -78,7 +84,7 @@ class EcomaxNumberTemperature(EcomaxNumber):
     """Setup temperature number."""
 
     @property
-    def unit_of_measurement(self):
+    def unit_of_measurement(self) -> str:
         return TEMP_CELSIUS
 
 
@@ -86,5 +92,5 @@ class EcomaxNumberPercent(EcomaxNumber):
     """Setup percent number."""
 
     @property
-    def unit_of_measurement(self):
+    def unit_of_measurement(self) -> str:
         return PERCENTAGE

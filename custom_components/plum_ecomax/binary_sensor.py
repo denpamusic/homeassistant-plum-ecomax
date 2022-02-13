@@ -13,15 +13,19 @@ from pyplumio.devices import EcoMAX
 from .const import DOMAIN
 from .entity import EcomaxEntity
 
-_LOGGER = logging.getLogger(__name__)
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigType,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the sensor platform."""
+    """Set up the sensor platform.
+
+    Keyword arguments:
+        hass -- instance of Home Assistant core
+        config_entry -- instance of config entry
+        async_add_entities -- callback to add entities to hass
+    """
     sensors = [
         EcomaxBinarySensor("heating_pump", "Heating Pump State"),
         EcomaxBinarySensor("water_heater_pump", "Water Heater Pump State"),
@@ -35,9 +39,8 @@ async def async_setup_entry(
 class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
     """Binary sensor representation."""
 
-    async def update_entity(self, ecomax: EcoMAX):
-        """Update sensor state. Called by connection instance."""
-        await super().update_entity(ecomax)
+    async def async_update_state(self):
+        """Update entity state."""
         state = self.get_attribute(self._id)
         if state is not None:
             state = STATE_ON if state else STATE_OFF

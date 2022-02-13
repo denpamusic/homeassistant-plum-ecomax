@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, Dict
 
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
@@ -27,7 +27,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 )
 
 
-async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
+async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str, Any]:
     """Validate the user input allows us to connect.
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
@@ -36,14 +36,17 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     connection = EcomaxConnection(hass, host=data["host"], port=data["port"])
 
     try:
-        await connection.check()
+        product, uid = await connection.check()
     except ConnectionRefusedError:
         connection.close()
         raise CannotConnect
 
+    if product is None or uid is None:
+        raise UnsupportedDevice
+
     return {
-        "title": f"{connection.product}, uid: {connection.uid}",
-        "uid": connection.uid,
+        "title": f"{product}, uid: {uid}",
+        "uid": uid,
     }
 
 
@@ -53,7 +56,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
+        self, user_input: Dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle the initial step."""
         if user_input is None:
@@ -67,6 +70,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             info = await validate_input(self.hass, user_input)
         except CannotConnect:
             errors["base"] = "cannot_connect"
+        except UnsupportedDevice:
+            errors["base"] = "unsupported_device"
         except Exception:  # pylint: disable=broad-except
             _LOGGER.exception("Unexpected exception")
             errors["base"] = "unknown"
@@ -81,3 +86,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 class CannotConnect(HomeAssistantError):
     """Error to indicate we cannot connect."""
+
+
+class UnsupportedDevice(HomeAssistantError):
+    """Error to indicate that we estableshed connection but
+    failed to see expected response.
+    """

@@ -5,6 +5,7 @@
         },
         "error": {
             "cannot_connect": "Ошибка подключения",
+            "unsupported_device": "Неподдерживаемое устройство",
             "unknown": "Неопознанная ошибка"
         },
         "step": {
