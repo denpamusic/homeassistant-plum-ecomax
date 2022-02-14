@@ -178,13 +178,13 @@ class EcomaxTcpConnection(EcomaxConnection):
             host -- serial server ip or hostname
             port -- serial server port
         """
-        super().__init__(*args, **kwargs)
         self._host = host
         self._port = port
+        super().__init__(*args, **kwargs)
 
     def get_connection(self) -> Connection:
         """Return connection instance."""
-        if isinstance(self._connection, Connection):
+        if hasattr(self, "_connection") and isinstance(self._connection, Connection):
             return self._connection
 
         return pyplumio.TcpConnection(self._host, self._port)
@@ -218,12 +218,12 @@ class EcomaxSerialConnection(EcomaxConnection):
         Keyword arguments:
             device -- serial device path, e. g. /dev/ttyUSB0
         """
-        super().__init__(*args, **kwargs)
         self._device = device
+        super().__init__(*args, **kwargs)
 
     def get_connection(self) -> Connection:
         """Return connection instance."""
-        if isinstance(self._connection, Connection):
+        if hasattr(self, "_connection") and isinstance(self._connection, Connection):
             return self._connection
 
         return pyplumio.SerialConnection(self._device)
