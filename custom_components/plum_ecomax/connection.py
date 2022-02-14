@@ -83,7 +83,9 @@ class EcomaxConnection(ABC):
 
     async def check(self) -> Tuple[Union[str, None], Union[str, None]]:
         """Perform connection check."""
-        await self._connection.task(self._check_callback, interval=1, reconnect=False)
+        await self._connection.task(
+            self._check_callback, interval=1, reconnect_on_failure=False
+        )
         return self.product, self.uid
 
     async def async_setup(self) -> None:
