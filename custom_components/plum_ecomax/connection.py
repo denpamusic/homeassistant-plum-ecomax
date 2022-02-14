@@ -10,8 +10,8 @@ from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 import pyplumio
+from pyplumio.connection import Connection
 from pyplumio.devices import DevicesCollection
-from pyplumio.econet import EcoNET
 
 from .const import (
     CONNECTION_CHECK_TRIES,
@@ -63,7 +63,7 @@ class EcomaxConnection(ABC):
         self._connection = self.get_connection()
 
     async def _check_callback(
-        self, devices: DevicesCollection, connection: EcoNET
+        self, devices: DevicesCollection, connection: Connection
     ) -> None:
         """Called when connection check succeeds.
 
@@ -116,7 +116,7 @@ class EcomaxConnection(ABC):
         add_entities_callback(entities, True)
 
     async def update_entities(
-        self, devices: DevicesCollection, connection: EcoNET
+        self, devices: DevicesCollection, connection: Connection
     ) -> None:
         """Call update method for sensor instance.
 
@@ -152,7 +152,7 @@ class EcomaxConnection(ABC):
             self._task.cancel()
 
     @abstractmethod
-    def get_connection(self) -> EcoNET:
+    def get_connection(self) -> Connection:
         """Return connection instance."""
 
     @property
@@ -182,9 +182,9 @@ class EcomaxTcpConnection(EcomaxConnection):
         self._host = host
         self._port = port
 
-    def get_connection(self) -> EcoNET:
+    def get_connection(self) -> Connection:
         """Return connection instance."""
-        if isinstance(self._connection, EcoNET):
+        if isinstance(self._connection, Connection):
             return self._connection
 
         return pyplumio.TcpConnection(self._host, self._port)
@@ -221,9 +221,9 @@ class EcomaxSerialConnection(EcomaxConnection):
         super().__init__(*args, **kwargs)
         self._device = device
 
-    def get_connection(self) -> EcoNET:
+    def get_connection(self) -> Connection:
         """Return connection instance."""
-        if isinstance(self._connection, EcoNET):
+        if isinstance(self._connection, Connection):
             return self._connection
 
         return pyplumio.SerialConnection(self._device)
