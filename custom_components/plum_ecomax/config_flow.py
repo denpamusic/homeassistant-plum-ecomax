@@ -28,7 +28,6 @@ from .const import (
     CONNECTION_TYPES,
     DEFAULT_CONNECTION_TYPE,
     DEFAULT_DEVICE,
-    DEFAULT_HOST,
     DEFAULT_PORT,
     DEFAULT_UPDATE_INTERVAL,
     DOMAIN,
@@ -43,7 +42,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
             CONNECTION_TYPES
         ),
         vol.Optional(CONF_DEVICE, default=DEFAULT_DEVICE): cv.string,
-        vol.Optional(CONF_HOST, default=DEFAULT_HOST): cv.string,
+        vol.Optional(CONF_HOST): cv.string,
         vol.Optional(CONF_PORT, default=DEFAULT_PORT): cv.port,
         vol.Optional(CONF_UPDATE_INTERVAL, default=DEFAULT_UPDATE_INTERVAL): vol.All(
             vol.Coerce(int), vol.Range(min=MIN_UPDATE_INTERVAL)

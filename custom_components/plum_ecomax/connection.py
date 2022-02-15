@@ -20,7 +20,6 @@ from .const import (
     CONF_UID,
     CONNECTION_CHECK_TRIES,
     DEFAULT_DEVICE,
-    DEFAULT_HOST,
     DEFAULT_PORT,
     DEFAULT_UPDATE_INTERVAL,
 )
@@ -185,7 +184,7 @@ class EcomaxTcpConnection(EcomaxConnection):
     """
 
     def __init__(
-        self, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT, *args, **kwargs
+        self, host, port: int = DEFAULT_PORT, *args, **kwargs
     ):
         """Construct new connection.
 
