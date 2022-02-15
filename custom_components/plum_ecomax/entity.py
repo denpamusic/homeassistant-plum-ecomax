@@ -6,14 +6,14 @@ from typing import TYPE_CHECKING, Optional
 
 from pyplumio.devices import EcoMAX
 
-from .const import DOMAIN, MANUFACTURER
+from .const import DOMAIN
 
 if TYPE_CHECKING:
     from .connection import EcomaxConnection
 
 
 class EcomaxEntity(ABC):
-    """Base ecoMAX entity representation.
+    """Base ecomax entity representation.
 
     Attributes:
         _state -- entity state
@@ -22,36 +22,27 @@ class EcomaxEntity(ABC):
         _connection -- current connection instance
     """
 
-    def __init__(self, id_: str, name: str):
+    def __init__(self, connection: EcomaxConnection, id_: str, name: str):
         """Create entity instance.
 
         Keyword arguments:
+            connection -- the ecomax connection
             id_ -- entity id
-            name_ -- human-readable entity name
+            name -- human-readable entity name
         """
         self._state = None
         self._id = id_
         self._name = name
-        self._connection: Optional[EcomaxConnection] = None
-
-    def set_connection(self, connection: EcomaxConnection) -> None:
-        """Set ecoMAX connection instance.
-
-        Keyword arguments:
-            connection -- current connection instance
-        """
         self._connection = connection
 
-    def get_attribute(self, name: str):
+    def get_attribute(self, name: str, default=None):
         """Return device attribute.
 
         Keyword arguments:
             name -- attribute name
+            default -- default attribute value
         """
-        if hasattr(self.ecomax, name):
-            return getattr(self.ecomax, name)
-
-        return None
+        return getattr(self.ecomax, name, default)
 
     def set_attribute(self, name: str, value) -> None:
         """Set device attribute.
@@ -65,27 +56,18 @@ class EcomaxEntity(ABC):
 
     @property
     def ecomax(self) -> Optional[EcoMAX]:
-        """Return ecoMAX device instance."""
-        if self._connection is not None:
-            return self._connection.ecomax
-
-        return None
+        """Return the ecomax device instance."""
+        return self._connection.ecomax
 
     @property
-    def unique_id(self) -> str:
+    def unique_id(self) -> Optional[str]:
         """Return unique id of sensor."""
-        if self._connection is not None:
-            return f"{self._connection.uid}{self._id}"
-
-        return ""
+        return f"{self._connection.uid}{self._id}"
 
     @property
-    def name(self) -> str:
+    def name(self) -> Optional[str]:
         """Return the name of the sensor."""
-        if self._connection is not None:
-            return f"{self._connection.name} {self._name}"
-
-        return ""
+        return f"{self._connection.name} {self._name}"
 
     @property
     def should_poll(self) -> bool:
@@ -93,12 +75,12 @@ class EcomaxEntity(ABC):
         return False
 
     @property
-    def device_info(self) -> dict:
+    def device_info(self) -> Optional[dict]:
         """Return device info."""
         return {
             "name": self._connection.name,
             "identifiers": {(DOMAIN, self._connection.uid)},
-            "manufacturer": MANUFACTURER,
+            "manufacturer": "Plum",
             "model": f"{self._connection.model} (uid: {self._connection.uid})",
             "sw_version": self._connection.software,
         }

@@ -23,27 +23,27 @@ async def async_setup_entry(
         config_entry -- instance of config entry
         async_add_entities -- callback to add entities to hass
     """
-
-    sensors = [
-        EcomaxTemperatureSensor("heating_temp", "Heating Temperature"),
-        EcomaxTemperatureSensor("water_heater_temp", "Water Heater Temperature"),
-        EcomaxTemperatureSensor("exhaust_temp", "Exhaust Temperature"),
-        EcomaxTemperatureSensor("outside_temp", "Outside Temperature"),
-        EcomaxTemperatureSensor("heating_target", "Target Temperature"),
-        EcomaxTemperatureSensor(
-            "water_heater_target", "Water Heater Target Temperature"
-        ),
-        EcomaxTemperatureSensor("feeder_temp", "Feeder Temperature"),
-        EcomaxPercentSensor("load", "Load"),
-        EcomaxPercentSensor("fan_power", "Fan Power"),
-        EcomaxPercentSensor("fuel_level", "Fuel Level"),
-        EcomaxFuelFlowSensor("fuel_consumption", "Fuel Consumption"),
-        EcomaxTextSensor("mode", "Mode"),
-        EcomaxTextSensor("module_a", "Software Version"),
-        EcomaxPowerSensor("power", "Power"),
-    ]
-
     connection = hass.data[DOMAIN][config_entry.entry_id]
+    sensors = [
+        EcomaxTemperatureSensor(connection, "heating_temp", "Heating Temperature"),
+        EcomaxTemperatureSensor(
+            connection, "water_heater_temp", "Water Heater Temperature"
+        ),
+        EcomaxTemperatureSensor(connection, "exhaust_temp", "Exhaust Temperature"),
+        EcomaxTemperatureSensor(connection, "outside_temp", "Outside Temperature"),
+        EcomaxTemperatureSensor(connection, "heating_target", "Target Temperature"),
+        EcomaxTemperatureSensor(
+            connection, "water_heater_target", "Water Heater Target Temperature"
+        ),
+        EcomaxTemperatureSensor(connection, "feeder_temp", "Feeder Temperature"),
+        EcomaxPercentSensor(connection, "load", "Load"),
+        EcomaxPercentSensor(connection, "fan_power", "Fan Power"),
+        EcomaxPercentSensor(connection, "fuel_level", "Fuel Level"),
+        EcomaxFuelFlowSensor(connection, "fuel_consumption", "Fuel Consumption"),
+        EcomaxTextSensor(connection, "mode", "Mode"),
+        EcomaxTextSensor(connection, "module_a", "Software Version"),
+        EcomaxPowerSensor(connection, "power", "Power"),
+    ]
     await connection.add_entities(sensors, async_add_entities)
 
 
@@ -53,9 +53,8 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
     async def async_update_state(self) -> None:
         """Set up device instance."""
         attr = self.get_attribute(self._id)
-        if attr is not None:
-            self._state = round(attr, 2)
-            self.async_write_ha_state()
+        self._state = None if attr is None else round(attr, 2)
+        self.async_write_ha_state()
 
     @property
     def state(self):
@@ -134,7 +133,5 @@ class EcomaxTextSensor(EcomaxSensor):
 
     async def async_update_state(self) -> None:
         """Update sensor state. Called by connection instance."""
-        attr = self.get_attribute(self._id)
-        if attr is not None:
-            self._state = attr
-            self.async_write_ha_state()
+        self._state = self.get_attribute(self._id)
+        self.async_write_ha_state()

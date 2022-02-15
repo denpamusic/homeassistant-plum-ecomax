@@ -1,4 +1,4 @@
-"""Implement async Plum ecoMAX connection."""
+"""Contains the Plum ecoMAX connection."""
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -34,7 +34,7 @@ class EcomaxConnection(ABC):
     """Represent base ecoMAX connection.
 
     Attributes:
-        ecomax -- instance of ecoMAX device
+        ecomax -- instance of the ecomax device
         _name -- connection name
         _hass -- instance of Home Assistant core
         _entities -- list of entities
@@ -125,7 +125,6 @@ class EcomaxConnection(ABC):
             add_entities_callback -- callback to add entities to hass
         """
         for entity in entities:
-            entity.set_connection(self)
             self._entities.append(entity)
 
         add_entities_callback(entities, True)
@@ -179,7 +178,7 @@ class EcomaxConnection(ABC):
 
 
 class EcomaxTcpConnection(EcomaxConnection):
-    """Represent ecoMAX TCP connection.
+    """Represent ecomax TCP connection.
 
     Attributes:
         _host -- serial server ip or hostname
@@ -221,7 +220,7 @@ class EcomaxTcpConnection(EcomaxConnection):
 
 
 class EcomaxSerialConnection(EcomaxConnection):
-    """Represent ecoMAX serial connection.
+    """Represent ecomax serial connection.
 
     Attributes:
         _device -- serial device path, e. g. /dev/ttyUSB0

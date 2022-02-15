@@ -1,6 +1,8 @@
 """Platform for number integration."""
 from __future__ import annotations
 
+from typing import Optional
+
 from homeassistant.components.number import NumberEntity
 from homeassistant.const import PERCENTAGE, TEMP_CELSIUS
 from homeassistant.core import HomeAssistant
@@ -23,21 +25,30 @@ async def async_setup_entry(
         config_entry -- instance of config entry
         async_add_entities -- callback to add entities to hass
     """
-    sensors = [
-        EcomaxNumberTemperature("heating_set_temp", "Heating Temperature"),
-        EcomaxNumberTemperature("heating_temp_grate", "Grate Mode Temperature"),
-        EcomaxNumberTemperature("min_heating_set_temp", "Minimum Heating Temperature"),
-        EcomaxNumberTemperature("max_heating_set_temp", "Maximum Heating Temperature"),
-        EcomaxNumberPercent("min_fuzzy_logic_power", "Fuzzy Logic Minimum Power"),
-        EcomaxNumberPercent("max_fuzzy_logic_power", "Fuzzy Logic Maximum Power"),
-    ]
-
     connection = hass.data[DOMAIN][config_entry.entry_id]
-    await connection.add_entities(sensors, async_add_entities)
+    numbers = [
+        EcomaxNumberTemperature(connection, "heating_set_temp", "Heating Temperature"),
+        EcomaxNumberTemperature(
+            connection, "heating_temp_grate", "Grate Mode Temperature"
+        ),
+        EcomaxNumberTemperature(
+            connection, "min_heating_set_temp", "Minimum Heating Temperature"
+        ),
+        EcomaxNumberTemperature(
+            connection, "max_heating_set_temp", "Maximum Heating Temperature"
+        ),
+        EcomaxNumberPercent(
+            connection, "min_fuzzy_logic_power", "Fuzzy Logic Minimum Power"
+        ),
+        EcomaxNumberPercent(
+            connection, "max_fuzzy_logic_power", "Fuzzy Logic Maximum Power"
+        ),
+    ]
+    await connection.add_entities(numbers, async_add_entities)
 
 
 class EcomaxNumber(EcomaxEntity, NumberEntity):
-    """ecoMAX number entity representation."""
+    """Ecomax number entity representation."""
 
     async def async_update_state(self) -> None:
         """Update entity state."""
@@ -53,28 +64,19 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
         self.async_write_ha_state()
 
     @property
-    def value(self) -> float:
+    def value(self) -> Optional[float]:
         attr = self.get_attribute(self._id)
-        if attr is not None:
-            return attr.value
-
-        return 0
+        return None if attr is None else attr.value
 
     @property
     def min_value(self) -> float:
         attr = self.get_attribute(self._id)
-        if attr is not None:
-            return attr.min_
-
-        return 0
+        return 0 if attr is None else attr.min_
 
     @property
     def max_value(self) -> float:
         attr = self.get_attribute(self._id)
-        if attr is not None:
-            return attr.max_
-
-        return 0
+        return 0 if attr is None else attr.max_
 
 
 class EcomaxNumberTemperature(EcomaxNumber):

@@ -29,7 +29,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry -- instance of config entry
     """
     connection: Optional[EcomaxConnection] = None
-
     if entry.data[CONF_CONNECTION_TYPE] == CONNECTION_TYPE_TCP:
         connection = EcomaxTcpConnection(
             host=entry.data[CONF_HOST],
@@ -49,7 +48,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await connection.async_setup(entry)
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = connection
     hass.config_entries.async_setup_platforms(entry, PLATFORMS)
-
     return True
 
 

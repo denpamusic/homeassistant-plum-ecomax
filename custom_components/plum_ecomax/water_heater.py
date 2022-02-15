@@ -4,7 +4,6 @@ from __future__ import annotations
 from typing import Any, Tuple
 
 from homeassistant.components.water_heater import (
-    STATE_OFF,
     SUPPORT_OPERATION_MODE,
     SUPPORT_TARGET_TEMPERATURE,
     WaterHeaterEntity,
@@ -30,13 +29,11 @@ async def async_setup_entry(
         config_entry -- instance of config entry
         async_add_entities -- callback to add entities to hass
     """
-
-    switches = [
-        EcomaxWaterHeater("water_heater", "Water Heater"),
-    ]
-
     connection = hass.data[DOMAIN][config_entry.entry_id]
-    await connection.add_entities(switches, async_add_entities)
+    water_heaters = [
+        EcomaxWaterHeater(connection, "water_heater", "Water Heater"),
+    ]
+    await connection.add_entities(water_heaters, async_add_entities)
 
 
 class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
@@ -55,29 +52,34 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     def __init__(self, *args, **kwargs):
         """Create entity instance."""
         super().__init__(*args, **kwargs)
-        self._attr_min_temp = 0
-        self._attr_max_temp = 0
-        self._attr_current_temperature = 0
-        self._attr_target_temperature = 0
-        self._attr_target_temperature_low = 0
-        self._attr_target_temperature_high = 0
-        self._attr_current_operation = STATE_OFF
+        self._attr_min_temp = None
+        self._attr_max_temp = None
+        self._attr_current_temperature = None
+        self._attr_target_temperature = None
+        self._attr_target_temperature_low = None
+        self._attr_target_temperature_high = None
+        self._attr_current_operation = None
 
     async def async_update_state(self) -> None:
         """Set up device instance."""
         target_temp = self.get_attribute(f"{self._id}_set_temp")
-        current_temp = self.get_attribute(f"{self._id}_temp")
-        hysteresis = self.get_attribute(f"{self._id}_hysteresis")
-        for data in [target_temp, current_temp, hysteresis]:
-            if data is None:
-                return
+        if target_temp is None:
+            self._attr_min_temp = None
+            self._attr_max_temp = None
+            self._attr_target_temperature = None
+            self._attr_target_temperature_high = None
+        else:
+            self._attr_min_temp = target_temp.min_
+            self._attr_max_temp = target_temp.max_
+            self._attr_target_temperature = target_temp.value
+            self._attr_target_temperature_high = target_temp.value
+            hysteresis = self.get_attribute(f"{self._id}_hysteresis")
+            if hysteresis is None:
+                self._attr_target_temperature_low = target_temp.value
+            else:
+                self._attr_target_temperature_low = target_temp.value - hysteresis.value
 
-        self._attr_min_temp = target_temp.min_
-        self._attr_max_temp = target_temp.max_
-        self._attr_current_temperature = current_temp
-        self._attr_target_temperature = target_temp.value
-        self._attr_target_temperature_low = target_temp.value - hysteresis.value
-        self._attr_target_temperature_high = target_temp.value
+        self._attr_current_temperature = self.get_attribute(f"{self._id}_temp")
         self.async_write_ha_state()
 
     async def async_set_temperature(self, **kwargs):
@@ -87,7 +89,11 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         self.async_write_ha_state()
 
     async def async_set_operation_mode(self, operation_mode):
-        """Set new target operation mode."""
+        """Set new target operation mode.
+
+        Keyword arguments:
+            operation_mode -- contains new water heater operation mode
+        """
         self.set_attribute(
             f"{self._id}_work_mode", self._hass_to_ecomax_mode(operation_mode)
         )
@@ -106,11 +112,8 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     @property
     def current_operation(self) -> str:
         """Return current operation ie. eco, electric, performance, ..."""
-        operation_mode = self.get_attribute(f"{self._id}_work_mode")
-        if operation_mode is not None:
-            return self._ecomax_to_hass_mode(operation_mode.value)
-
-        return STATE_OFF
+        operation_mode = self.get_attribute(f"{self._id}_work_mode", default=0)
+        return self._ecomax_to_hass_mode(int(operation_mode))
 
     @property
     def supported_features(self) -> int:
@@ -122,10 +125,18 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         """Return the list of available operation modes."""
         return WATER_HEATER_MODES
 
-    def _ecomax_to_hass_mode(self, operation_mode) -> str:
-        """Convert ecomax operation mode to hass."""
+    def _ecomax_to_hass_mode(self, operation_mode: int) -> str:
+        """Convert ecomax operation mode to hass.
+
+        Keyword arguments:
+            operation_mode -- operation mode taken from ecoMAX
+        """
         return WATER_HEATER_MODES[operation_mode]
 
     def _hass_to_ecomax_mode(self, operation_mode) -> int:
-        """Convert hass operation mode to ecomax."""
+        """Convert hass operation mode to ecomax.
+
+        Keyword arguments:
+            operation_mode -- operation mode taken from hass
+        """
         return WATER_HEATER_MODES.index(operation_mode)
