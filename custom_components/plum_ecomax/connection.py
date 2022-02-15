@@ -3,9 +3,10 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 import logging
-from typing import TYPE_CHECKING, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional
 
 from homeassistant.components.network import async_get_source_ip
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -14,6 +15,9 @@ from pyplumio.connection import Connection
 from pyplumio.devices import DevicesCollection
 
 from .const import (
+    CONF_MODEL,
+    CONF_SW_VERSION,
+    CONF_UID,
     CONNECTION_CHECK_TRIES,
     DEFAULT_DEVICE,
     DEFAULT_HOST,
@@ -61,6 +65,9 @@ class EcomaxConnection(ABC):
         self._hass = hass
         self._update_interval = update_interval
         self._connection = self.get_connection()
+        self._uid = None
+        self._model = None
+        self._sw_version = None
 
     async def _check_callback(
         self, devices: DevicesCollection, connection: Connection
@@ -75,26 +82,35 @@ class EcomaxConnection(ABC):
             _LOGGER.exception("Connection succeeded, but device failed to respond.")
             connection.close()
 
-        if devices.ecomax and devices.ecomax.uid and devices.ecomax.product:
-            self.ecomax = devices.ecomax
+        if (
+            devices.ecomax
+            and devices.ecomax.uid
+            and devices.ecomax.product
+            and devices.ecomax.module_a
+        ):
+            self._uid = devices.ecomax.uid
+            self._model = devices.ecomax.product
+            self._sw_version = devices.ecomax.module_a
             connection.close()
 
         self._check_tries += 1
 
-    async def check(self) -> Tuple[Union[str, None], Union[str, None]]:
+    async def check(self) -> None:
         """Perform connection check."""
         await self._connection.task(
             self._check_callback, interval=1, reconnect_on_failure=False
         )
-        return self.product, self.uid
 
-    async def async_setup(self) -> None:
+    async def async_setup(self, entry: ConfigEntry) -> None:
         """Setup connection and add hass stop handler."""
         self._connection.set_eth(ip=await async_get_source_ip(self._hass))
         self._task = self._hass.loop.create_task(
             self._connection.task(self.update_entities, self._update_interval)
         )
         self._hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self.close)
+        self._model = entry.data[CONF_MODEL]
+        self._uid = entry.data[CONF_UID]
+        self._sw_version = entry.data[CONF_SW_VERSION]
 
     async def async_unload(self) -> None:
         """Close connection on entry unload."""
@@ -130,20 +146,19 @@ class EcomaxConnection(ABC):
                 await entity.async_update_state()
 
     @property
-    def product(self) -> Optional[str]:
-        """Return currently connected product type."""
-        if self.ecomax is not None and self.ecomax.product is not None:
-            return self.ecomax.product
-
-        return None
+    def model(self) -> Optional[str]:
+        """Return the product model."""
+        return self._model
 
     @property
     def uid(self) -> Optional[str]:
-        """Return currently connected product UID."""
-        if self.ecomax is not None and self.ecomax.uid is not None:
-            return self.ecomax.uid
+        """Return the product UID."""
+        return self._uid
 
-        return None
+    @property
+    def sw_version(self) -> Optional[str]:
+        """Return the product software version."""
+        return self._sw_version
 
     def close(self, event=None) -> None:
         """Close connection and cancel connection coroutine."""

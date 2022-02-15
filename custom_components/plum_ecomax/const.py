@@ -10,11 +10,15 @@ from homeassistant.components.water_heater import (
 
 DOMAIN = "plum_ecomax"
 
+MANUFACTURER: Final = "Plum"
 CONF_CONNECTION_TYPE: Final = "connection_type"
 CONF_DEVICE: Final = "device"
 CONF_HOST: Final = "host"
 CONF_PORT: Final = "port"
 CONF_UPDATE_INTERVAL: Final = "update_interval"
+CONF_UID: Final = "uid"
+CONF_MODEL: Final = "model"
+CONF_SW_VERSION: Final = "sw_version"
 CONNECTION_CHECK_TRIES: Final = 5
 CONNECTION_TYPE_TCP: Final = "TCP"
 CONNECTION_TYPE_SERIAL: Final = "Serial"

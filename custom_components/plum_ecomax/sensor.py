@@ -51,12 +51,10 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
 
     async def async_update_state(self) -> None:
         """Set up device instance."""
-        state = self.get_attribute(self._id)
-        if state is not None:
-            state = round(state, 2)
-            if self._state != state:
-                self._state = state
-                self.async_write_ha_state()
+        attr = self.get_attribute(self._id)
+        if attr is not None:
+            self._state = round(attr, 2)
+            self.async_write_ha_state()
 
     @property
     def state(self):
@@ -130,19 +128,12 @@ class EcomaxPowerSensor(EcomaxSensor):
         return POWER_KILO_WATT
 
 
-class EcomaxTextSensor(EcomaxEntity, SensorEntity):
+class EcomaxTextSensor(EcomaxSensor):
     """Representation of text sensor."""
 
     async def async_update_state(self) -> None:
         """Update sensor state. Called by connection instance."""
-        state = self.get_attribute(self._id)
-        if state is not None:
-            state = str(state).lower().title()
-            if self._state != state:
-                self._state = state
-                self.async_write_ha_state()
-
-    @property
-    def state(self):
-        """Return the state of the sensor."""
-        return self._state
+        attr = self.get_attribute(self._id)
+        if attr is not None:
+            self._state = str(attr).lower().title()
+            self.async_write_ha_state()

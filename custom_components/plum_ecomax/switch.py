@@ -71,10 +71,8 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
         """Set up device instance."""
         attr = self.get_attribute(self._id)
         if attr is not None:
-            state = attr.value == self._on
-            if state != self._state:
-                self._state = state
-                self.async_write_ha_state()
+            self._state = attr.value == self._on
+            self.async_write_ha_state()
 
     @property
     def is_on(self) -> bool:

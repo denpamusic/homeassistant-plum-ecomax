@@ -46,7 +46,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     else:
         return False
 
-    await connection.async_setup()
+    await connection.async_setup(entry)
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = connection
     hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 

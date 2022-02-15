@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Optional
 
 from pyplumio.devices import EcoMAX
 
+from .const import DOMAIN, MANUFACTURER
+
 if TYPE_CHECKING:
     from .connection import EcomaxConnection
 
@@ -46,7 +48,7 @@ class EcomaxEntity(ABC):
         Keyword arguments:
             name -- attribute name
         """
-        if self.has_parameters:
+        if hasattr(self.ecomax, name):
             return getattr(self.ecomax, name)
 
         return None
@@ -58,7 +60,7 @@ class EcomaxEntity(ABC):
             name -- attribute name
             value -- new attribute value
         """
-        if self.has_parameters:
+        if hasattr(self.ecomax, name):
             setattr(self.ecomax, name, value)
 
     @property
@@ -73,7 +75,7 @@ class EcomaxEntity(ABC):
     def unique_id(self) -> str:
         """Return unique id of sensor."""
         if self._connection is not None:
-            return f"{self._connection.name}{self._id}"
+            return f"{self._connection.uid}{self._id}"
 
         return ""
 
@@ -91,14 +93,15 @@ class EcomaxEntity(ABC):
         return False
 
     @property
-    def has_parameters(self) -> bool:
-        """If ecoMAX device has parameters."""
-        return self.ecomax is not None and self.ecomax.parameters is not None
-
-    @property
-    def has_data(self) -> bool:
-        """If ecoMAX device has data."""
-        return self.ecomax is not None and self.ecomax.data is not None
+    def device_info(self):
+        """Return device info."""
+        return {
+            "name": self._connection.name,
+            "identifiers": {(DOMAIN, self._connection.uid)},
+            "manufacturer": MANUFACTURER,
+            "model": self._connection.model,
+            "sw_version": self._connection.sw_version,
+        }
 
     @abstractmethod
     async def async_update_state(self) -> None:

@@ -9,7 +9,7 @@ from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers import config_validation as cv
+import homeassistant.helpers.config_validation as cv
 from serial import SerialException
 import voluptuous as vol
 
@@ -18,7 +18,10 @@ from .const import (
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
+    CONF_MODEL,
     CONF_PORT,
+    CONF_SW_VERSION,
+    CONF_UID,
     CONF_UPDATE_INTERVAL,
     CONNECTION_TYPE_SERIAL,
     CONNECTION_TYPE_TCP,
@@ -63,7 +66,7 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
         raise UnknownConnectionType
 
     try:
-        product, uid = await connection.check()
+        await connection.check()
     except (
         asyncio.TimeoutError,
         ConnectionRefusedError,
@@ -74,12 +77,18 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
         connection.close()
         raise CannotConnect from connection_failure
 
-    if product is None or uid is None:
+    if (
+        connection.model is None
+        or connection.uid is None
+        or connection.sw_version is None
+    ):
         raise UnsupportedDevice
 
     return {
-        "title": f"{product}, uid: {uid}",
-        "uid": uid,
+        "title": connection.name,
+        CONF_UID: connection.uid,
+        CONF_MODEL: connection.model,
+        CONF_SW_VERSION: connection.sw_version,
     }
 
 
@@ -111,7 +120,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.exception("Unexpected exception")
             errors["base"] = "unknown"
         else:
-            await self.async_set_unique_id(info["uid"])
+            for field in (CONF_UID, CONF_MODEL, CONF_SW_VERSION):
+                user_input[field] = info[field]
+
+            await self.async_set_unique_id(info[CONF_UID])
             return self.async_create_entry(title=info["title"], data=user_input)
 
         return self.async_show_form(
