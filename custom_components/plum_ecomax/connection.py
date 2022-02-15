@@ -148,7 +148,7 @@ class EcomaxConnection(ABC):
     @property
     def model(self) -> Optional[str]:
         """Return the product model."""
-        return self._model
+        return self._model.replace("EM", "ecoMAX")
 
     @property
     def uid(self) -> Optional[str]:
