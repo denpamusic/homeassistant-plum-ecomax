@@ -99,7 +99,7 @@ class EcomaxEntity(ABC):
             "name": self._connection.name,
             "identifiers": {(DOMAIN, self._connection.uid)},
             "manufacturer": MANUFACTURER,
-            "model": self._connection.model,
+            "model": f"{self._connection.model} (uid: {self._connection.uid})",
             "sw_version": self._connection.sw_version,
         }
 
