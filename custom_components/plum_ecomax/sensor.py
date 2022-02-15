@@ -39,6 +39,7 @@ async def async_setup_entry(
         EcomaxPercentSensor("fuel_level", "Fuel Level"),
         EcomaxFuelFlowSensor("fuel_consumption", "Fuel Consumption"),
         EcomaxTextSensor("mode", "Mode"),
+        EcomaxTextSensor("module_a", "Software Version"),
         EcomaxPowerSensor("power", "Power"),
     ]
 
@@ -135,5 +136,5 @@ class EcomaxTextSensor(EcomaxSensor):
         """Update sensor state. Called by connection instance."""
         attr = self.get_attribute(self._id)
         if attr is not None:
-            self._state = str(attr).lower().title()
+            self._state = attr
             self.async_write_ha_state()

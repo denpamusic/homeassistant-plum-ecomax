@@ -20,7 +20,7 @@ from .const import (
     CONF_HOST,
     CONF_MODEL,
     CONF_PORT,
-    CONF_SW_VERSION,
+    CONF_SOFTWARE,
     CONF_UID,
     CONF_UPDATE_INTERVAL,
     CONNECTION_TYPE_SERIAL,
@@ -79,7 +79,7 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
     if (
         connection.model is None
         or connection.uid is None
-        or connection.sw_version is None
+        or connection.software is None
     ):
         raise UnsupportedDevice
 
@@ -87,7 +87,7 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
         "title": connection.name,
         CONF_UID: connection.uid,
         CONF_MODEL: connection.model,
-        CONF_SW_VERSION: connection.sw_version,
+        CONF_SOFTWARE: connection.software,
     }
 
 
@@ -119,7 +119,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.exception("Unexpected exception")
             errors["base"] = "unknown"
         else:
-            for field in (CONF_UID, CONF_MODEL, CONF_SW_VERSION):
+            for field in (CONF_UID, CONF_MODEL, CONF_SOFTWARE):
                 user_input[field] = info[field]
 
             await self.async_set_unique_id(info[CONF_UID])

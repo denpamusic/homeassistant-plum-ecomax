@@ -16,7 +16,7 @@ from pyplumio.devices import DevicesCollection
 
 from .const import (
     CONF_MODEL,
-    CONF_SW_VERSION,
+    CONF_SOFTWARE,
     CONF_UID,
     CONNECTION_CHECK_TRIES,
     DEFAULT_DEVICE,
@@ -66,7 +66,7 @@ class EcomaxConnection(ABC):
         self._connection = self.get_connection()
         self._uid = None
         self._model = None
-        self._sw_version = None
+        self._software = None
 
     async def _check_callback(
         self, devices: DevicesCollection, connection: Connection
@@ -82,14 +82,14 @@ class EcomaxConnection(ABC):
             connection.close()
 
         if (
-            devices.ecomax
-            and devices.ecomax.uid
-            and devices.ecomax.product
-            and devices.ecomax.module_a
+            devices.has("ecomax")
+            and devices.ecomax.uid is not None
+            and devices.ecomax.product is not None
+            and devices.ecomax.software is not None
         ):
             self._uid = devices.ecomax.uid
             self._model = devices.ecomax.product
-            self._sw_version = devices.ecomax.module_a
+            self._software = devices.ecomax.software
             connection.close()
 
         self._check_tries += 1
@@ -109,7 +109,7 @@ class EcomaxConnection(ABC):
         self._hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self.close)
         self._model = entry.data[CONF_MODEL]
         self._uid = entry.data[CONF_UID]
-        self._sw_version = entry.data[CONF_SW_VERSION]
+        self._software = entry.data[CONF_SOFTWARE]
 
     async def async_unload(self) -> None:
         """Close connection on entry unload."""
@@ -139,7 +139,10 @@ class EcomaxConnection(ABC):
             devices -- collection of available devices
             connection -- instance of current connection
         """
-        if devices.ecomax and devices.ecomax.data is not None:
+        if devices.has("ecomax") and devices.ecomax.data:
+            if devices.ecomax.software is not None:
+                self._software = devices.ecomax.software
+
             self.ecomax = devices.ecomax
             for entity in self._entities:
                 await entity.async_update_state()
@@ -155,9 +158,9 @@ class EcomaxConnection(ABC):
         return self._uid
 
     @property
-    def sw_version(self) -> Optional[str]:
+    def software(self) -> Optional[str]:
         """Return the product software version."""
-        return self._sw_version
+        return self._software
 
     def close(self, event=None) -> None:
         """Close connection and cancel connection coroutine."""

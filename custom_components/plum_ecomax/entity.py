@@ -93,14 +93,14 @@ class EcomaxEntity(ABC):
         return False
 
     @property
-    def device_info(self):
+    def device_info(self) -> dict:
         """Return device info."""
         return {
             "name": self._connection.name,
             "identifiers": {(DOMAIN, self._connection.uid)},
             "manufacturer": MANUFACTURER,
             "model": f"{self._connection.model} (uid: {self._connection.uid})",
-            "sw_version": self._connection.sw_version,
+            "sw_version": self._connection.software,
         }
 
     @abstractmethod
