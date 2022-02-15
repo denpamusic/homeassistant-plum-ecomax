@@ -183,9 +183,7 @@ class EcomaxTcpConnection(EcomaxConnection):
         _port -- serial server port
     """
 
-    def __init__(
-        self, host, port: int = DEFAULT_PORT, *args, **kwargs
-    ):
+    def __init__(self, host, port: int = DEFAULT_PORT, *args, **kwargs):
         """Construct new connection.
 
         Keyword arguments:
