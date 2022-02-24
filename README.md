@@ -4,11 +4,11 @@
 ## Overview
 This Home Assistant integration provides support for ecoMAX automatic pellet boilers controllers manufactured by [Plum Sp. z o.o.](https://www.plum.pl/)
 
-It is based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and currently only supports connection to ecoMAX controller via serial network server, for example [Elfin EW11](https://aliexpress.ru/item/4001104348624.html).
+It is based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and supports connection to ecoMAX controller via serial network server, for example [Elfin EW11](https://aliexpress.ru/item/4001104348624.html).
 
-Support for USB to RS485 converters is also planned and will be implemented in future.
+Support for USB to RS485 converters is currently in early stages of development and largely untested.
 
-This project is currently in __Pre-Alpha__ stage, so use it with caution.
+This project is currently considered __Pre-Alpha__, please refrain from using it in production.
 
 ## Entities
 This integration provides following entities.
@@ -62,12 +62,13 @@ git clone https://github.com/denpamusic/hassio-plum-ecomax
 cp -r ./hassio-plum-ecomax/custom_components ~/.homeassistant
 ```
 
-3. Restart Home Assistant
-4. Click `Add Integration` button and search for `Plum ecoMAX` in integration menu.
-5. Enter your connection details and click `Submit`.  
-![Configuration dialog](https://raw.githubusercontent.com/denpamusic/hassio-plum-ecomax/dce2aa3de3dc4fd85f5a5464aa7ae9ced143094f/images/config.png)
+3. Add empty `plum_ecomax:` section to your `configuration.yaml` file.
+4. Restart Home Assistant.
+5. Click `Add Integration` button and search for `Plum ecoMAX` in integration menu.
+6. Enter your connection details and click `Submit`.  
+![Configuration dialog](https://raw.githubusercontent.com/denpamusic/hassio-plum-ecomax/main/images/config.png)
 
-6. Your device should now be available in your Home Assistant installation.
+7. Your device should now be available in your Home Assistant installation.  
 ![Success](https://raw.githubusercontent.com/denpamusic/hassio-plum-ecomax/main/images/success.png)
 
 ## License
