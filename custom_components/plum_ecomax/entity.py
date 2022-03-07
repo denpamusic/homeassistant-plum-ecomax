@@ -62,7 +62,7 @@ class EcomaxEntity(ABC):
     @property
     def unique_id(self) -> Optional[str]:
         """Return unique id of sensor."""
-        return f"{self._connection.uid}{self._id}"
+        return f"{self._connection.uid}-{self._id}"
 
     @property
     def name(self) -> Optional[str]:
