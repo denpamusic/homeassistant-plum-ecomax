@@ -2,7 +2,12 @@
 from __future__ import annotations
 
 from homeassistant.components.sensor import SensorEntity
-from homeassistant.const import PERCENTAGE, POWER_KILO_WATT, TEMP_CELSIUS
+from homeassistant.const import (
+    MASS_KILOGRAMS,
+    PERCENTAGE,
+    POWER_KILO_WATT,
+    TEMP_CELSIUS,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
@@ -39,7 +44,8 @@ async def async_setup_entry(
         EcomaxPercentSensor(connection, "load", "Load"),
         EcomaxPercentSensor(connection, "fan_power", "Fan Power"),
         EcomaxPercentSensor(connection, "fuel_level", "Fuel Level"),
-        EcomaxFuelFlowSensor(connection, "fuel_consumption", "Fuel Consumption"),
+        EcomaxFuelConsumptionSensor(connection, "fuel_consumption", "Fuel Consumption"),
+        EcomaxFuelBurnedSensor(connection, "fuel_burned", "Fuel Burned"),
         EcomaxTextSensor(connection, "mode", "Mode"),
         EcomaxTextSensor(connection, "module_a", "Software Version"),
         EcomaxPowerSensor(connection, "power", "Power"),
@@ -90,8 +96,8 @@ class EcomaxPercentSensor(EcomaxSensor):
         return PERCENTAGE
 
 
-class EcomaxFuelFlowSensor(EcomaxSensor):
-    """Representation of fuel flow sensor."""
+class EcomaxFuelConsumptionSensor(EcomaxSensor):
+    """Representation of fuel consumption sensor."""
 
     @property
     def state_class(self) -> str:
@@ -104,8 +110,31 @@ class EcomaxFuelFlowSensor(EcomaxSensor):
         return FLOW_KGH
 
 
+class EcomaxFuelBurnedSensor(EcomaxFuelConsumptionSensor):
+    """Representation of fuel burned since last update."""
+
+    async def async_update_state(self) -> None:
+        """Set up device instance."""
+        attr = self.get_attribute("fuel_consumption")
+        self._state = (
+            None if attr is None else ((attr / 3600) * self.connection.update_interval)
+        )
+        self.async_write_ha_state()
+
+    @property
+    def unit_of_measurement(self) -> str:
+        """Return the unit of measurement."""
+        return MASS_KILOGRAMS
+
+
 class EcomaxPowerSensor(EcomaxSensor):
     """Representation of heat power sensor."""
+
+    async def async_update_state(self) -> None:
+        """Set up device instance."""
+        attr = self.get_attribute(self._id)
+        self._state = None if attr is None else round((attr * 1000), 2)
+        self.async_write_ha_state()
 
     @property
     def icon(self) -> str:

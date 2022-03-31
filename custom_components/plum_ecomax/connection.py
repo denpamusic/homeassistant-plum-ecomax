@@ -161,6 +161,11 @@ class EcomaxConnection(ABC):
         """Return the product software version."""
         return self._software
 
+    @property
+    def update_interval(self) -> Optional[int]:
+        """Return update interval in seconds."""
+        return self._update_interval
+
     def close(self, event=None) -> None:
         """Close connection and cancel connection coroutine."""
         self._connection.close()
