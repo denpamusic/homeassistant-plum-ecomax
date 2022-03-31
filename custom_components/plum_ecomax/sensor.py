@@ -110,7 +110,7 @@ class EcomaxFuelConsumptionSensor(EcomaxSensor):
         return FLOW_KGH
 
 
-class EcomaxFuelBurnedSensor(EcomaxFuelConsumptionSensor):
+class EcomaxFuelBurnedSensor(EcomaxSensor):
     """Representation of fuel burned since last update."""
 
     async def async_update_state(self) -> None:
@@ -129,12 +129,6 @@ class EcomaxFuelBurnedSensor(EcomaxFuelConsumptionSensor):
 
 class EcomaxPowerSensor(EcomaxSensor):
     """Representation of heat power sensor."""
-
-    async def async_update_state(self) -> None:
-        """Set up device instance."""
-        attr = self.get_attribute(self._id)
-        self._state = None if attr is None else round((attr * 1000), 2)
-        self.async_write_ha_state()
 
     @property
     def icon(self) -> str:

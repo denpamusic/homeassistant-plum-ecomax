@@ -55,6 +55,11 @@ class EcomaxEntity(ABC):
             setattr(self.ecomax, name, value)
 
     @property
+    def connection(self) -> Optional[EcomaxConnection]:
+        """Return the connection instance."""
+        return self._connection
+
+    @property
     def ecomax(self) -> Optional[EcoMAX]:
         """Return the ecomax device instance."""
         return self._connection.ecomax
