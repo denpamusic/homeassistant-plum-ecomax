@@ -113,14 +113,6 @@ class EcomaxFuelConsumptionSensor(EcomaxSensor):
 class EcomaxFuelBurnedSensor(EcomaxSensor):
     """Representation of fuel burned since last update."""
 
-    async def async_update_state(self) -> None:
-        """Set up device instance."""
-        attr = self.get_attribute("fuel_consumption")
-        self._state = (
-            None if attr is None else ((attr / 3600) * self.connection.update_interval)
-        )
-        self.async_write_ha_state()
-
     @property
     def unit_of_measurement(self) -> str:
         """Return the unit of measurement."""
