@@ -6,6 +6,7 @@ import logging
 from typing import TYPE_CHECKING, List, Optional
 
 from homeassistant.components.network import async_get_source_ip
+from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
@@ -102,7 +103,9 @@ class EcomaxConnection(ABC):
 
     async def async_setup(self, entry: ConfigEntry) -> None:
         """Setup connection and add hass stop handler."""
-        self._connection.set_eth(ip=await async_get_source_ip(self._hass))
+        self._connection.set_eth(
+            ip=await async_get_source_ip(self._hass, target_ip=IPV4_BROADCAST_ADDR)
+        )
         self._task = self._hass.loop.create_task(
             self._connection.task(self.update_entities, self._update_interval)
         )
