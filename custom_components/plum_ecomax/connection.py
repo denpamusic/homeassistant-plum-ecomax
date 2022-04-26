@@ -106,6 +106,7 @@ class EcomaxConnection(ABC):
         self._connection.set_eth(
             ip=await async_get_source_ip(self._hass, target_ip=IPV4_BROADCAST_ADDR)
         )
+        self._connection.on_closed(self.connection_closed)
         self._task = self._hass.loop.create_task(
             self._connection.task(self.update_entities, self._update_interval)
         )
@@ -149,6 +150,16 @@ class EcomaxConnection(ABC):
             for entity in self._entities:
                 await entity.async_update_state()
 
+    async def connection_closed(self, connection: Connection) -> None:
+        """If connection is closed, set entities state to unknown.
+
+        Keyword arguments:
+            connection -- instance of current connection
+        """
+        self.ecomax = None
+        for entity in self._entities:
+            await entity.async_update_state()
+
     @property
     def model(self) -> Optional[str]:
         """Return the product model."""
@@ -171,6 +182,7 @@ class EcomaxConnection(ABC):
 
     def close(self, event=None) -> None:
         """Close connection and cancel connection coroutine."""
+        self._connection.on_closed(callback=None)
         self._connection.close()
         if self._task:
             self._task.cancel()
