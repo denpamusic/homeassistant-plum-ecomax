@@ -10,6 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 import homeassistant.helpers.config_validation as cv
+from pyplumio.exceptions import ConnectionFailedError
 from serial import SerialException
 import voluptuous as vol
 
@@ -66,13 +67,7 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
 
     try:
         await connection.check()
-    except (
-        asyncio.TimeoutError,
-        ConnectionRefusedError,
-        ConnectionResetError,
-        OSError,
-        SerialException,
-    ) as connection_failure:
+    except ConnectionFailedError as connection_failure:
         connection.close()
         raise CannotConnect from connection_failure
 
