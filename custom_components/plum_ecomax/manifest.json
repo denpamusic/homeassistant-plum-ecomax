@@ -4,7 +4,7 @@
   "config_flow": true,
   "documentation": "https://github.com/denpamusic/hassio-plum-ecomax",
   "issue_tracker": "https://github.com/denpamusic/hassio-plum-ecomax/issues",
-  "requirements": ["pyplumio==0.1.10"],
+  "requirements": ["pyplumio==0.1.11"],
   "ssdp": [],
   "zeroconf": [],
   "homekit": {},
