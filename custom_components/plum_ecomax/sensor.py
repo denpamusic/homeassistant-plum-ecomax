@@ -59,7 +59,7 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
     async def async_update_state(self) -> None:
         """Set up device instance."""
         attr = self.get_attribute(self._id)
-        self._state = None if attr is None else round(attr, 2)
+        self._state = None if attr is None else round(attr, 1)
         self.async_write_ha_state()
 
     @property
