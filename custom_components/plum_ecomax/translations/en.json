@@ -20,5 +20,14 @@
                 }
             }
         }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "data": {
+                    "update_interval": "Update interval (seconds)"
+                }
+            }
+        }
     }
 }
