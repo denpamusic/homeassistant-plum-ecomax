@@ -26,6 +26,7 @@ This integration provides following entities.
 - Fuel Consumption
 - Boiler Mode
 - Boiler Power
+- Flame Intensity (if supported by the controller)
 
 ### 💡 Binary Sensors
 - CO Pump State
