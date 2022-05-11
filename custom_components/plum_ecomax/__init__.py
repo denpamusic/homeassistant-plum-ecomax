@@ -8,6 +8,7 @@ from homeassistant.core import HomeAssistant
 
 from .connection import EcomaxConnection, EcomaxSerialConnection, EcomaxTcpConnection
 from .const import (
+    CONF_CAPABILITIES,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,

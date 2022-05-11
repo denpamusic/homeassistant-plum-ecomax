@@ -90,6 +90,13 @@ class EcomaxEntity(ABC):
             "sw_version": self._connection.software,
         }
 
+    @property
+    def entity_registry_enabled_default(self) -> bool:
+        """Indicate if the entity should be enabled or disabled when
+        first added to the entity registry.
+        """
+        return bool(self._id in self._connection.capabilities)
+
     @abstractmethod
     async def async_update_state(self) -> None:
         """Update entity state."""

@@ -16,6 +16,7 @@ from pyplumio.connection import Connection
 from pyplumio.devices import DevicesCollection
 
 from .const import (
+    CONF_CAPABILITIES,
     CONF_MODEL,
     CONF_SOFTWARE,
     CONF_UID,
@@ -43,6 +44,10 @@ class EcomaxConnection(ABC):
         _task -- connection task
         _update_interval -- data update interval in seconds
         _connection -- instance of current connection
+        _uid - the product uid
+        _model - the product model
+        _software - the product software
+        _capabilities -- the product capabilities
     """
 
     def __init__(
@@ -68,6 +73,7 @@ class EcomaxConnection(ABC):
         self._uid = None
         self._model = None
         self._software = None
+        self._capabilities: List[str] = []
 
     async def _check_callback(
         self, devices: DevicesCollection, connection: Connection
@@ -84,13 +90,24 @@ class EcomaxConnection(ABC):
 
         if (
             devices.has("ecomax")
-            and devices.ecomax.uid is not None
-            and devices.ecomax.product is not None
-            and devices.ecomax.software is not None
+            and None
+            not in [
+                devices.ecomax.uid,
+                devices.ecomax.product,
+                devices.ecomax.software,
+            ]
+            and len(devices.ecomax.data) > 1
+            and len(devices.ecomax.parameters) > 1
         ):
             self._uid = devices.ecomax.uid
             self._model = devices.ecomax.product
             self._software = devices.ecomax.software
+            self._capabilities = ["fuel_burned"]
+            self._capabilities += list(devices.ecomax.data.keys())
+            self._capabilities += list(devices.ecomax.parameters.keys())
+            if "water_heater_temp" in self._capabilities:
+                self._capabilities.append("water_heater")
+
             connection.close()
 
         self._check_tries += 1
@@ -114,6 +131,8 @@ class EcomaxConnection(ABC):
         self._model = entry.data[CONF_MODEL]
         self._uid = entry.data[CONF_UID]
         self._software = entry.data[CONF_SOFTWARE]
+        if CONF_CAPABILITIES in entry.data:
+            self._capabilities = entry.data[CONF_CAPABILITIES]
 
     async def async_unload(self) -> None:
         """Close connection on entry unload."""
@@ -148,7 +167,8 @@ class EcomaxConnection(ABC):
 
             self.ecomax = devices.ecomax
             for entity in self._entities:
-                await entity.async_update_state()
+                if entity.enabled:
+                    await entity.async_update_state()
 
     async def connection_closed(self, connection: Connection) -> None:
         """If connection is closed, set entities state to unknown.
@@ -174,6 +194,11 @@ class EcomaxConnection(ABC):
     def software(self) -> Optional[str]:
         """Return the product software version."""
         return self._software
+
+    @property
+    def capabilities(self) -> List:
+        """Return the product capabilities."""
+        return self._capabilities
 
     @property
     def update_interval(self) -> Optional[int]:

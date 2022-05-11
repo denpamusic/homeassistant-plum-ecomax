@@ -18,6 +18,7 @@ CONF_UPDATE_INTERVAL: Final = "update_interval"
 CONF_UID: Final = "uid"
 CONF_MODEL: Final = "model"
 CONF_SOFTWARE: Final = "software"
+CONF_CAPABILITIES: Final = "capabilities"
 
 CONNECTION_CHECK_TRIES: Final = 5
 CONNECTION_TYPE_TCP: Final = "TCP"

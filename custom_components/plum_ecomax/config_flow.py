@@ -16,6 +16,7 @@ import voluptuous as vol
 
 from .connection import EcomaxConnection, EcomaxSerialConnection, EcomaxTcpConnection
 from .const import (
+    CONF_CAPABILITIES,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
@@ -83,6 +84,7 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
         CONF_UID: connection.uid,
         CONF_MODEL: connection.model,
         CONF_SOFTWARE: connection.software,
+        CONF_CAPABILITIES: connection.capabilities,
     }
 
 
@@ -122,7 +124,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.exception("Unexpected exception")
             errors["base"] = "unknown"
         else:
-            for field in (CONF_UID, CONF_MODEL, CONF_SOFTWARE):
+            for field in (CONF_UID, CONF_MODEL, CONF_SOFTWARE, CONF_CAPABILITIES):
                 user_input[field] = info[field]
 
             await self.async_set_unique_id(info[CONF_UID])
@@ -153,7 +155,9 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 {
                     vol.Optional(
                         CONF_UPDATE_INTERVAL,
-                        default=self.config_entry.options.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL),
+                        default=self.config_entry.options.get(
+                            CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL
+                        ),
                     ): vol.All(vol.Coerce(int), vol.Range(min=MIN_UPDATE_INTERVAL)),
                 }
             ),
