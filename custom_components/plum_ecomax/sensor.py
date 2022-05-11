@@ -44,6 +44,7 @@ async def async_setup_entry(
         EcomaxPercentSensor(connection, "load", "Load"),
         EcomaxPercentSensor(connection, "fan_power", "Fan Power"),
         EcomaxPercentSensor(connection, "fuel_level", "Fuel Level"),
+        EcomaxPercentSensor(connection, "optical_temp", "Flame Intensity"),
         EcomaxFuelConsumptionSensor(connection, "fuel_consumption", "Fuel Consumption"),
         EcomaxFuelBurnedSensor(connection, "fuel_burned", "Fuel Burned"),
         EcomaxTextSensor(connection, "mode", "Mode"),
