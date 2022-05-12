@@ -36,9 +36,6 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     def __init__(self, connection, description: WaterHeaterEntityEntityDescription):
         self._connection = connection
         self.entity_description = description
-        self._attr_name = f"{connection.name} {description.name}"
-        self._attr_unique_id = f"{connection.uid}-{description.key}"
-        self._attr_should_poll = False
         self._attr_temperature_unit = TEMP_CELSIUS
         self._attr_precision = PRECISION_WHOLE
         self._attr_supported_features = (

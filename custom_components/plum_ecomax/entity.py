@@ -34,6 +34,21 @@ class EcomaxEntity(ABC):
         """Indicate if the entity should be enabled when first added."""
         return self.entity_description.key in self._connection.capabilities
 
+    @property
+    def unique_id(self) -> str:
+        """A unique identifier for this entity."""
+        return f"{self._connection.uid}-{self.entity_description.key}"
+
+    @property
+    def name(self) -> str:
+        """Name of the entity."""
+        return f"{self._connection.name} {self.entity_description.name}"
+
+    @property
+    def should_poll(self) -> bool:
+        """Should hass check with the entity for an updated state."""
+        return False
+
     @abstractmethod
     async def async_update() -> None:
         """Retrieve latest state."""

@@ -64,9 +64,6 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
     def __init__(self, connection, description: EcomaxNumberEntityDescription):
         self._connection = connection
         self.entity_description = description
-        self._attr_name = f"{connection.name} {description.name}"
-        self._attr_unique_id = f"{connection.uid}-{description.key}"
-        self._attr_should_poll = False
         self._attr_value = None
         self._attr_min_value = None
         self._attr_max_value = None

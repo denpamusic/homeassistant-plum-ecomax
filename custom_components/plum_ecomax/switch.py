@@ -55,9 +55,6 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
     def __init__(self, connection, description: EcomaxSwitchEntityDescription):
         self._connection = connection
         self.entity_description = description
-        self._attr_name = f"{connection.name} {description.name}"
-        self._attr_unique_id = f"{connection.uid}-{description.key}"
-        self._attr_should_poll = False
         self._attr_is_on = None
 
     async def async_turn_on(self, **kwargs):
