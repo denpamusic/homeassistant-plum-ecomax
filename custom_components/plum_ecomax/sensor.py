@@ -76,6 +76,15 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         value_fn=lambda x: round(x, 1),
     ),
     EcomaxSensorEntityDescription(
+        key="heating_target",
+        name="Heating Target Temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        value_fn=lambda x: round(x, 1),
+    ),
+    EcomaxSensorEntityDescription(
         key="water_heater_target",
         name="Water Heater Target Temperature",
         icon="mdi:thermometer",
