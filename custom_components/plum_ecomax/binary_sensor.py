@@ -1,14 +1,95 @@
 """Platform for binary sensor integration."""
 from __future__ import annotations
 
-from homeassistant.components.binary_sensor import BinarySensorEntity
-from homeassistant.const import STATE_OFF, STATE_ON
+from dataclasses import dataclass
+from typing import Any, Callable, Optional
+
+from homeassistant.components.binary_sensor import (
+    BinarySensorDeviceClass,
+    BinarySensorEntity,
+    BinarySensorEntityDescription,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN
-from .entity import EcomaxEntity
+
+
+@dataclass
+class EcomaxBinarySensorEntityAdditionalKeys:
+    """Additional keys for ecoMAX binary sensor entity description."""
+
+    value_fn: Callable[[Any], Optional[bool]]
+
+
+@dataclass
+class EcomaxBinarySensorEntityDescription(
+    BinarySensorEntityDescription, EcomaxBinarySensorEntityAdditionalKeys
+):
+    """Describes ecoMAX binary sensor entity."""
+
+
+BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
+    EcomaxBinarySensorEntityDescription(
+        key="heating_pump",
+        name="Heating Pump",
+        icon="mdi:pump",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=lambda x: x,
+    ),
+    EcomaxBinarySensorEntityDescription(
+        key="water_heater_pump",
+        name="Water Heater Pump",
+        icon="mdi:pump",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=lambda x: x,
+    ),
+    EcomaxBinarySensorEntityDescription(
+        key="fan",
+        name="Fan",
+        icon="mdi:fan",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=lambda x: x,
+    ),
+    EcomaxBinarySensorEntityDescription(
+        key="lighter",
+        name="Lighter",
+        icon="mdi:fire",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=lambda x: x,
+    ),
+)
+
+
+class EcomaxBinarySensor(BinarySensorEntity):
+    """Representation of ecoMAX binary sensor."""
+
+    def __init__(self, connection, description: EcomaxBinarySensorEntityDescription):
+        self._connection = connection
+        self.entity_description = description
+        self._attr_name = f"{connection.name} {description.name}"
+        self._attr_unique_id = f"{connection.uid}-{description.key}"
+        self._attr_should_poll = False
+        self._attr_is_on = None
+
+    async def async_update(self) -> None:
+        """Retrieve latest state."""
+        value = getattr(self._connection.ecomax, self.entity_description.key, None)
+        self._attr_is_on = (
+            self.entity_description.value_fn(value) if value is not None else value
+        )
+        self.async_write_ha_state()
+
+    @property
+    def device_info(self) -> Optional[dict]:
+        """Return device info."""
+        return self._connection.device_info
+
+    @property
+    def entity_registry_enabled_default(self) -> bool:
+        """Indicate if the entity should be enabled when first added."""
+        return self.entity_description.key in self._connection.capabilities
 
 
 async def async_setup_entry(
@@ -24,24 +105,10 @@ async def async_setup_entry(
         async_add_entities -- callback to add entities to hass
     """
     connection = hass.data[DOMAIN][config_entry.entry_id]
-    sensors = [
-        EcomaxBinarySensor(connection, "heating_pump", "Heating Pump State"),
-        EcomaxBinarySensor(connection, "water_heater_pump", "Water Heater Pump State"),
-        EcomaxBinarySensor(connection, "fan", "Fan State"),
-        EcomaxBinarySensor(connection, "lighter", "Lighter State"),
-    ]
-    await connection.add_entities(sensors, async_add_entities)
-
-
-class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
-    """Binary sensor representation."""
-
-    async def async_update_state(self):
-        """Update entity state."""
-        self._state = self.get_attribute(self._id)
-        self.async_write_ha_state()
-
-    @property
-    def state(self):
-        """Return the state of the sensor."""
-        return STATE_ON if self._state else STATE_OFF
+    connection.add_entities(
+        [
+            EcomaxBinarySensor(connection, description)
+            for description in BINARY_SENSOR_TYPES
+        ],
+        async_add_entities,
+    )

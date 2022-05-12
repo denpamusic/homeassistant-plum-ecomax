@@ -1,7 +1,6 @@
 """Config flow for Plum ecoMAX integration."""
 from __future__ import annotations
 
-import asyncio
 import logging
 from typing import Any, Dict, Optional
 
@@ -11,7 +10,6 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 import homeassistant.helpers.config_validation as cv
 from pyplumio.exceptions import ConnectionFailedError
-from serial import SerialException
 import voluptuous as vol
 
 from .connection import EcomaxConnection, EcomaxSerialConnection, EcomaxTcpConnection

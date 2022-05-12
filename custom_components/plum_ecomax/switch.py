@@ -1,13 +1,105 @@
-"""Platform for sensor integration."""
+"""Platform for switch integration."""
 from __future__ import annotations
 
-from homeassistant.components.switch import SwitchEntity
+from dataclasses import dataclass
+from typing import Optional
+
+from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN
-from .entity import EcomaxEntity
+
+
+@dataclass
+class EcomaxSwitchEntityDescription(SwitchEntityDescription):
+    """Describes ecoMAX switch entity."""
+
+    state_off: int = 0
+    state_on: int = 1
+
+
+SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
+    EcomaxSwitchEntityDescription(
+        key="boiler_control",
+        name="Regulator Switch",
+    ),
+    EcomaxSwitchEntityDescription(
+        key="heating_weather_control",
+        name="Weather Control Switch",
+    ),
+    EcomaxSwitchEntityDescription(
+        key="water_heater_disinfection",
+        name="Water Heater Disinfection Switch",
+    ),
+    EcomaxSwitchEntityDescription(
+        key="water_heater_work_mode",
+        name="Water Heater Pump Switch",
+        state_on=2,
+    ),
+    EcomaxSwitchEntityDescription(
+        key="summer_mode",
+        name="Summer Mode Switch",
+    ),
+    EcomaxSwitchEntityDescription(
+        key="fuzzy_logic",
+        name="Fuzzy Logic Switch",
+    ),
+)
+
+
+class EcomaxSwitch(SwitchEntity):
+    """Representation of ecoMAX switch."""
+
+    def __init__(self, connection, description: EcomaxSwitchEntityDescription):
+        self._connection = connection
+        self.entity_description = description
+        self._attr_name = f"{connection.name} {description.name}"
+        self._attr_unique_id = f"{connection.uid}-{description.key}"
+        self._attr_should_poll = False
+        self._attr_is_on = None
+
+    async def async_turn_on(self, **kwargs):
+        """Turn the entity on."""
+        setattr(
+            self._connection.ecomax,
+            self.entity_description.key,
+            self.entity_description.state_on,
+        )
+        self.async_write_ha_state()
+
+    async def async_turn_off(self, **kwargs):
+        """Turn the entity off."""
+        setattr(
+            self._connection.ecomax,
+            self.entity_description.key,
+            self.entity_description.state_off,
+        )
+        self.async_write_ha_state()
+
+    async def async_update(self) -> None:
+        """Retrieve latest state."""
+        states = {
+            self.entity_description.state_on: True,
+            self.entity_description.state_off: False,
+        }
+
+        state = getattr(self._connection.ecomax, self.entity_description.key, None)
+        self._attr_is_on = (
+            states[state.value] if state is not None and state.value in states else None
+        )
+        self.async_write_ha_state()
+
+    @property
+    def device_info(self) -> Optional[dict]:
+        """Return device info."""
+        return self._connection.device_info
+
+    @property
+    def entity_registry_enabled_default(self) -> bool:
+        """Indicate if the entity should be enabled when first added."""
+        return self.entity_description.key in self._connection.capabilities
 
 
 async def async_setup_entry(
@@ -23,62 +115,7 @@ async def async_setup_entry(
         async_add_entities -- callback to add entities to hass
     """
     connection = hass.data[DOMAIN][config_entry.entry_id]
-    switches = [
-        EcomaxSwitch(connection, "boiler_control", "Regulator Switch"),
-        EcomaxSwitch(connection, "heating_weather_control", "Weather Control Switch"),
-        EcomaxSwitch(
-            connection, "water_heater_disinfection", "Water Heater Disinfection Switch"
-        ),
-        EcomaxSwitch(
-            connection,
-            "water_heater_work_mode",
-            "Water Heater Pump Switch",
-            on=2,
-            off=0,
-        ),
-        EcomaxSwitch(connection, "summer_mode", "Summer Mode Switch"),
-        EcomaxSwitch(connection, "fuzzy_logic", "Fuzzy Logic Switch"),
-    ]
-    await connection.add_entities(switches, async_add_entities)
-
-
-class EcomaxSwitch(EcomaxEntity, SwitchEntity):
-    """ecoMAX switch entity representation.
-
-    Attributes:
-        _on -- value corresponding to enabled state
-        _off -- value corresponding to disabled state
-    """
-
-    def __init__(self, *args, on: int = 1, off: int = 0):
-        """Create ecoMAX switch instance.
-
-        Keyword arguments:
-            on -- value corresponding to enabled state
-            off -- value corresponding to disabled state
-        """
-        super().__init__(*args)
-        self._on = on
-        self._off = off
-
-    async def async_turn_on(self, **kwargs):
-        """Turn the entity on."""
-        self.set_attribute(self._id, self._on)
-        self.async_write_ha_state()
-
-    async def async_turn_off(self, **kwargs):
-        """Turn the entity off."""
-        self.set_attribute(self._id, self._off)
-        self.async_write_ha_state()
-
-    async def async_update_state(self) -> None:
-        """Set up device instance."""
-        attr = self.get_attribute(self._id)
-        self._state = None if attr is None else (attr.value == self._on)
-        self.async_write_ha_state()
-
-    @property
-    def is_on(self) -> bool:
-        """Return switch state."""
-        attr = self.get_attribute(self._id)
-        return False if attr is None else (attr.value == self._on)
+    connection.add_entities(
+        [EcomaxSwitch(connection, description) for description in SWITCH_TYPES],
+        async_add_entities,
+    )

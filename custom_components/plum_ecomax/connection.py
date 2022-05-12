@@ -3,13 +3,14 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 import logging
-from typing import TYPE_CHECKING, List, Optional
+from typing import Optional
 
 from homeassistant.components.network import async_get_source_ip
 from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import DeviceInfo, Entity
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 import pyplumio
 from pyplumio.connection import Connection
@@ -24,10 +25,8 @@ from .const import (
     DEFAULT_DEVICE,
     DEFAULT_PORT,
     DEFAULT_UPDATE_INTERVAL,
+    DOMAIN,
 )
-
-if TYPE_CHECKING:
-    from .entity import EcomaxEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -64,7 +63,7 @@ class EcomaxConnection(ABC):
             update_interval -- data update interval in seconds
         """
         self.ecomax = None
-        self._entities: List[EcomaxEntity] = []
+        self.entities: list[Entity] = []
         self._check_tries = 0
         self._task = None
         self._hass = hass
@@ -73,7 +72,7 @@ class EcomaxConnection(ABC):
         self._uid = None
         self._model = None
         self._software = None
-        self._capabilities: List[str] = []
+        self._capabilities: list[str] = []
 
     async def _check_callback(
         self, devices: DevicesCollection, connection: Connection
@@ -138,37 +137,32 @@ class EcomaxConnection(ABC):
         """Close connection on entry unload."""
         await self._hass.async_add_executor_job(self.close)
 
-    async def add_entities(
-        self, entities: List, add_entities_callback: AddEntitiesCallback
-    ) -> None:
-        """Add sensor entities to the processing queue.
-
-        Keyword arguments:
-            entities -- list of entities
-            add_entities_callback -- callback to add entities to hass
-        """
-        for entity in entities:
-            self._entities.append(entity)
-
-        add_entities_callback(entities, True)
-
     async def update_entities(
         self, devices: DevicesCollection, connection: Connection
     ) -> None:
-        """Call update method for sensor instance.
+        """Update device instance.
 
         Keyword arguments:
             devices -- collection of available devices
             connection -- instance of current connection
         """
         if devices.has("ecomax") and devices.ecomax.data:
-            if devices.ecomax.software is not None:
-                self._software = devices.ecomax.software
-
             self.ecomax = devices.ecomax
-            for entity in self._entities:
+            for entity in self.entities:
                 if entity.enabled:
-                    await entity.async_update_state()
+                    await entity.async_update()
+
+    def add_entities(
+        self, entities: list[Entity], add_entities_callback: AddEntitiesCallback
+    ) -> None:
+        """Add entities to the processing queue.
+
+        Keyword arguments:
+            entities -- list of entities
+            add_entities_callback -- callback to add entities to hass
+        """
+        self.entities.extend(entities)
+        add_entities_callback(entities, False)
 
     async def connection_closed(self, connection: Connection) -> None:
         """If connection is closed, set entities state to unknown.
@@ -177,12 +171,15 @@ class EcomaxConnection(ABC):
             connection -- instance of current connection
         """
         self.ecomax = None
-        for entity in self._entities:
-            await entity.async_update_state()
+        for entity in self.entities:
+            await entity.async_update()
 
     @property
     def model(self) -> Optional[str]:
         """Return the product model."""
+        if self._model is None:
+            return None
+
         return self._model.replace("EM", "ecoMAX ")
 
     @property
@@ -196,7 +193,7 @@ class EcomaxConnection(ABC):
         return self._software
 
     @property
-    def capabilities(self) -> List:
+    def capabilities(self) -> list[str]:
         """Return the product capabilities."""
         return self._capabilities
 
@@ -220,6 +217,17 @@ class EcomaxConnection(ABC):
     @abstractmethod
     def name(self) -> str:
         """Return connection name."""
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device info."""
+        return DeviceInfo(
+            name=self.name,
+            identifiers={(DOMAIN, self.uid)},
+            manufacturer="Plum Sp. z o.o.",
+            model=f"{self.model} (uid: {self.uid})",
+            sw_version=self.software,
+        )
 
 
 class EcomaxTcpConnection(EcomaxConnection):
