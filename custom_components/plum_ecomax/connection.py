@@ -38,7 +38,7 @@ class EcomaxConnection(ABC):
         ecomax -- instance of the ecomax device
         _name -- connection name
         _hass -- instance of Home Assistant core
-        _entities -- list of entities
+        _callbacks -- callbacks to update entities
         _check_tries -- how much connection check tries was performed
         _task -- connection task
         _update_interval -- data update interval in seconds
