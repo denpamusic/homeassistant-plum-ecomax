@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 from homeassistant.components.water_heater import (
     WaterHeaterEntity,
@@ -15,6 +14,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN, WATER_HEATER_MODES
+from .entity import EcomaxEntity
 
 
 @dataclass
@@ -30,7 +30,7 @@ WATER_HEATER_TYPES: tuple[EcomaxWaterHeaterEntityDescription, ...] = (
 )
 
 
-class EcomaxWaterHeater(WaterHeaterEntity):
+class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     """Representation of ecoMAX water heater."""
 
     def __init__(self, connection, description: WaterHeaterEntityEntityDescription):
@@ -52,6 +52,31 @@ class EcomaxWaterHeater(WaterHeaterEntity):
         self._attr_target_temperature_high = None
         self._attr_target_temperature_low = None
         self._attr_current_temperature = None
+
+    async def async_set_temperature(self, **kwargs):
+        """Set new target temperature."""
+        temperature = int(kwargs["temperature"])
+        setattr(
+            self._connection.ecomax,
+            f"{self.entity_description.key}_set_temp",
+            temperature,
+        )
+        self._attr_target_temperature = temperature
+        self.async_write_ha_state()
+
+    async def async_set_operation_mode(self, operation_mode):
+        """Set new target operation mode.
+
+        Keyword arguments:
+            operation_mode -- contains new water heater operation mode
+        """
+        setattr(
+            self._connection.ecomax,
+            f"{self.entity_description.key}_work_mode",
+            self._hass_to_ecomax_mode(operation_mode),
+        )
+        self._attr_current_operation = operation_mode
+        self.async_write_ha_state()
 
     async def async_update(self) -> None:
         """Update entity state."""
@@ -80,28 +105,6 @@ class EcomaxWaterHeater(WaterHeaterEntity):
 
         self._attr_current_temperature = getattr(
             self._connection.ecomax, f"{self.entity_description.key}_temp", None
-        )
-        self.async_write_ha_state()
-
-    async def async_set_temperature(self, **kwargs):
-        """Set new target temperature."""
-        setattr(
-            self._connection.ecomax,
-            f"{self.entity_description.key}_set_temp",
-            int(kwargs["temperature"]),
-        )
-        self.async_write_ha_state()
-
-    async def async_set_operation_mode(self, operation_mode):
-        """Set new target operation mode.
-
-        Keyword arguments:
-            operation_mode -- contains new water heater operation mode
-        """
-        setattr(
-            self._connection.ecomax,
-            f"{self.entity_description.key}_work_mode",
-            self._hass_to_ecomax_mode(operation_mode),
         )
         self.async_write_ha_state()
 
@@ -134,16 +137,6 @@ class EcomaxWaterHeater(WaterHeaterEntity):
             )
         )
 
-    @property
-    def device_info(self) -> Optional[dict]:
-        """Return device info."""
-        return self._connection.device_info
-
-    @property
-    def entity_registry_enabled_default(self) -> bool:
-        """Indicate if the entity should be enabled when first added."""
-        return self.entity_description.key in self._connection.capabilities
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -158,10 +151,10 @@ async def async_setup_entry(
         async_add_entities -- callback to add entities to hass
     """
     connection = hass.data[DOMAIN][config_entry.entry_id]
-    connection.add_entities(
+    async_add_entities(
         [
             EcomaxWaterHeater(connection, description)
             for description in WATER_HEATER_TYPES
         ],
-        async_add_entities,
+        False,
     )

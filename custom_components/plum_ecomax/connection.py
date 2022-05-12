@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 import logging
-from typing import Optional
+from typing import Awaitable, Callable, Optional
 
 from homeassistant.components.network import async_get_source_ip
 from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
@@ -63,7 +63,7 @@ class EcomaxConnection(ABC):
             update_interval -- data update interval in seconds
         """
         self.ecomax = None
-        self.entities: list[Entity] = []
+        self._callbacks = set()
         self._check_tries = 0
         self._task = None
         self._hass = hass
@@ -148,21 +148,8 @@ class EcomaxConnection(ABC):
         """
         if devices.has("ecomax") and devices.ecomax.data:
             self.ecomax = devices.ecomax
-            for entity in self.entities:
-                if entity.enabled:
-                    await entity.async_update()
-
-    def add_entities(
-        self, entities: list[Entity], add_entities_callback: AddEntitiesCallback
-    ) -> None:
-        """Add entities to the processing queue.
-
-        Keyword arguments:
-            entities -- list of entities
-            add_entities_callback -- callback to add entities to hass
-        """
-        self.entities.extend(entities)
-        add_entities_callback(entities, False)
+            for callback in self._callbacks:
+                await callback()
 
     async def connection_closed(self, connection: Connection) -> None:
         """If connection is closed, set entities state to unknown.
@@ -171,9 +158,31 @@ class EcomaxConnection(ABC):
             connection -- instance of current connection
         """
         self.ecomax = None
-        for entity in self.entities:
-            if entity.enabled:
-                await entity.async_update()
+        for callback in self._callbacks:
+            await callback()
+
+    def register_callback(self, callback: Callable[[], Awaitable[None]]) -> None:
+        """Register callback that are called on state change.
+
+        Keyword arguments:
+            callback -- callback for registration
+        """
+        self._callbacks.add(callback)
+
+    def remove_callback(self, callback: Callable[[], Awaitable[None]]) -> None:
+        """Remove previously registered callback.
+
+        Keyword arguments:
+            callback -- callback for removal
+        """
+        self._callbacks.discard(callback)
+
+    def close(self, event=None) -> None:
+        """Close connection and cancel connection coroutine."""
+        self._connection.on_closed(callback=None)
+        self._connection.close()
+        if self._task:
+            self._task.cancel()
 
     @property
     def model(self) -> Optional[str]:
@@ -202,13 +211,6 @@ class EcomaxConnection(ABC):
     def update_interval(self) -> Optional[int]:
         """Return update interval in seconds."""
         return self._update_interval
-
-    def close(self, event=None) -> None:
-        """Close connection and cancel connection coroutine."""
-        self._connection.on_closed(callback=None)
-        self._connection.close()
-        if self._task:
-            self._task.cancel()
 
     @abstractmethod
     def get_connection(self) -> Connection:

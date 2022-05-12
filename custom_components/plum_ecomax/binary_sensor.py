@@ -14,6 +14,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN
+from .entity import EcomaxEntity
 
 
 @dataclass
@@ -62,7 +63,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
 )
 
 
-class EcomaxBinarySensor(BinarySensorEntity):
+class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
     """Representation of ecoMAX binary sensor."""
 
     def __init__(self, connection, description: EcomaxBinarySensorEntityDescription):
@@ -81,16 +82,6 @@ class EcomaxBinarySensor(BinarySensorEntity):
         )
         self.async_write_ha_state()
 
-    @property
-    def device_info(self) -> Optional[dict]:
-        """Return device info."""
-        return self._connection.device_info
-
-    @property
-    def entity_registry_enabled_default(self) -> bool:
-        """Indicate if the entity should be enabled when first added."""
-        return self.entity_description.key in self._connection.capabilities
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -105,10 +96,10 @@ async def async_setup_entry(
         async_add_entities -- callback to add entities to hass
     """
     connection = hass.data[DOMAIN][config_entry.entry_id]
-    connection.add_entities(
+    async_add_entities(
         [
             EcomaxBinarySensor(connection, description)
             for description in BINARY_SENSOR_TYPES
         ],
-        async_add_entities,
+        False,
     )

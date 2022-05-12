@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.core import HomeAssistant
@@ -10,6 +9,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN
+from .entity import EcomaxEntity
 
 
 @dataclass
@@ -49,7 +49,7 @@ SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
 )
 
 
-class EcomaxSwitch(SwitchEntity):
+class EcomaxSwitch(EcomaxEntity, SwitchEntity):
     """Representation of ecoMAX switch."""
 
     def __init__(self, connection, description: EcomaxSwitchEntityDescription):
@@ -67,6 +67,7 @@ class EcomaxSwitch(SwitchEntity):
             self.entity_description.key,
             self.entity_description.state_on,
         )
+        self._attr_is_on = True
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs):
@@ -76,6 +77,7 @@ class EcomaxSwitch(SwitchEntity):
             self.entity_description.key,
             self.entity_description.state_off,
         )
+        self._attr_is_on = False
         self.async_write_ha_state()
 
     async def async_update(self) -> None:
@@ -91,16 +93,6 @@ class EcomaxSwitch(SwitchEntity):
         )
         self.async_write_ha_state()
 
-    @property
-    def device_info(self) -> Optional[dict]:
-        """Return device info."""
-        return self._connection.device_info
-
-    @property
-    def entity_registry_enabled_default(self) -> bool:
-        """Indicate if the entity should be enabled when first added."""
-        return self.entity_description.key in self._connection.capabilities
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -115,7 +107,6 @@ async def async_setup_entry(
         async_add_entities -- callback to add entities to hass
     """
     connection = hass.data[DOMAIN][config_entry.entry_id]
-    connection.add_entities(
-        [EcomaxSwitch(connection, description) for description in SWITCH_TYPES],
-        async_add_entities,
+    async_add_entities(
+        [EcomaxSwitch(connection, description) for description in SWITCH_TYPES], False
     )

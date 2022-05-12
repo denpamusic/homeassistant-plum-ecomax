@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 from homeassistant.components.number import NumberEntity, NumberEntityDescription
 from homeassistant.const import PERCENTAGE, TEMP_CELSIUS
@@ -11,6 +10,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN
+from .entity import EcomaxEntity
 
 
 @dataclass
@@ -58,7 +58,7 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
 )
 
 
-class EcomaxNumber(NumberEntity):
+class EcomaxNumber(EcomaxEntity, NumberEntity):
     """Representation of ecoMAX number."""
 
     def __init__(self, connection, description: EcomaxNumberEntityDescription):
@@ -70,6 +70,16 @@ class EcomaxNumber(NumberEntity):
         self._attr_value = None
         self._attr_min_value = None
         self._attr_max_value = None
+
+    async def async_set_value(self, value: float) -> None:
+        """Update the current value.
+
+        Keyword arguments:
+            value -- new number value
+        """
+        setattr(self._connection.ecomax, self.entity_description.key, int(value))
+        self._attr_value = int(value)
+        self.async_write_ha_state()
 
     async def async_update(self) -> None:
         """Update entity state."""
@@ -86,25 +96,6 @@ class EcomaxNumber(NumberEntity):
 
         self.async_write_ha_state()
 
-    async def async_set_value(self, value: float) -> None:
-        """Update the current value.
-
-        Keyword arguments:
-            value -- new number value
-        """
-        setattr(self._connection.ecomax, self.entity_description.key, int(value))
-        self.async_write_ha_state()
-
-    @property
-    def device_info(self) -> Optional[dict]:
-        """Return device info."""
-        return self._connection.device_info
-
-    @property
-    def entity_registry_enabled_default(self) -> bool:
-        """Indicate if the entity should be enabled when first added."""
-        return self.entity_description.key in self._connection.capabilities
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -119,7 +110,6 @@ async def async_setup_entry(
         async_add_entities -- callback to add entities to hass
     """
     connection = hass.data[DOMAIN][config_entry.entry_id]
-    connection.add_entities(
-        [EcomaxNumber(connection, description) for description in NUMBER_TYPES],
-        async_add_entities,
+    async_add_entities(
+        [EcomaxNumber(connection, description) for description in NUMBER_TYPES], False
     )

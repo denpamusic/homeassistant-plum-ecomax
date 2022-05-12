@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -22,6 +22,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN, FLOW_KGH
+from .entity import EcomaxEntity
 
 
 @dataclass
@@ -174,7 +175,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
 )
 
 
-class EcomaxSensor(SensorEntity):
+class EcomaxSensor(EcomaxEntity, SensorEntity):
     """Representation of ecoMAX sensor."""
 
     def __init__(self, connection, description: EcomaxSensorEntityDescription):
@@ -193,16 +194,6 @@ class EcomaxSensor(SensorEntity):
         )
         self.async_write_ha_state()
 
-    @property
-    def device_info(self) -> Optional[dict]:
-        """Return device info."""
-        return self._connection.device_info
-
-    @property
-    def entity_registry_enabled_default(self) -> bool:
-        """Indicate if the entity should be enabled when first added."""
-        return self.entity_description.key in self._connection.capabilities
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -217,7 +208,6 @@ async def async_setup_entry(
         async_add_entities -- callback to add entities to hass
     """
     connection = hass.data[DOMAIN][config_entry.entry_id]
-    connection.add_entities(
-        [EcomaxSensor(connection, description) for description in SENSOR_TYPES],
-        async_add_entities,
+    async_add_entities(
+        [EcomaxSensor(connection, description) for description in SENSOR_TYPES], False
     )
