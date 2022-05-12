@@ -145,8 +145,8 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
     EcomaxSensorEntityDescription(
         key="fuel_burned",
-        name="Fuel Burned",
-        icon="mdi:weight-kilogram",
+        name="Fuel Burned Since Last Update",
+        icon="mdi:fire",
         native_unit_of_measurement=MASS_KILOGRAMS,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda x: x,
