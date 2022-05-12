@@ -172,7 +172,8 @@ class EcomaxConnection(ABC):
         """
         self.ecomax = None
         for entity in self.entities:
-            await entity.async_update()
+            if entity.enabled:
+                await entity.async_update()
 
     @property
     def model(self) -> Optional[str]:
