@@ -1,5 +1,4 @@
-# hassio-plum-ecomax - ecoMAX pellet boiler regulator integration for Home Assistant.
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+# Plum ecoMAX pellet boiler regulator integration for Home Assistant.
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 
 ## Overview
@@ -9,11 +8,22 @@ It is based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and su
 
 Support for USB to RS485 converters is currently in early stages of development and largely untested.
 
-This project is currently considered __Pre-Alpha__, please refrain from using it in production.
+This project is currently in __Alpha__ state.
+
+## Usage
+1. Click `Add Integration` button and search for `Plum ecoMAX`.
+2. Enter your connection details and click `Submit`.  
+If you select Serial connection type, you need to fill in correct Device path, Host and Port will be ignored.  
+Otherwise, if you select TCP connection type, you'll only need to fill Host and Port. Device path can be left as is.   
+![Configuration dialog](https://raw.githubusercontent.com/denpamusic/hassio-plum-ecomax/main/images/config.png)
+
+3. Your device should now be available in your Home Assistant installation.  
+![Success](https://raw.githubusercontent.com/denpamusic/hassio-plum-ecomax/main/images/success.png)
 
 ## Entities
 This integration provides following entities.
-### 🌡 Sensors
+
+### Sensors
 - CO Temperature
 - CWU Temperature
 - Exhaust Temperature
@@ -21,21 +31,22 @@ This integration provides following entities.
 - CO Target Temperature
 - CWU Target Temperature
 - Feeder Temperature
-- Boiler Load
+- Heating Load
 - Fan Power
 - Fuel Level
 - Fuel Consumption
-- Boiler Mode
-- Boiler Power
+- Fuel Burned Since Last Update
+- Heating Mode
+- Heating Power
 - Flame Intensity (if supported by the controller)
 
-### 💡 Binary Sensors
+### Binary Sensors
 - CO Pump State
 - CWU Pump State
 - Fan State
 - Lighter State
 
-### 🔲 Switches
+### Switches
 - Regulator Master Switch
 - Weather Control Switch
 - Water Heater Disinfection Switch
@@ -43,9 +54,17 @@ This integration provides following entities.
 - Summer Mode Switch
 - Fuzzy Logic Switch
 
-### 🎚 Numbers (Changeable sliders)
-- Boiler Temperature
+### Numbers (Changeable sliders)
+- Heating Temperature
 - Grate Mode Temperature
+- Minimum Heating Power
+- Maximum Heating Power
+- Minimum Heating Temperature
+- Maximum Heating Temperature
 
-### 🚿 Water Heater
-Integration provides full control for connected passive water heater. This includes ability to set target temperature, switch into priority, non-priority mode or turn off.
+### Water Heater
+Integration provides full control for connected indirect water heater.  
+This includes ability to set target temperature, switch into priority, non-priority mode or turn off.
+
+## License
+This product is distributed under MIT license.
