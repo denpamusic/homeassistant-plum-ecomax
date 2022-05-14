@@ -11,14 +11,6 @@ Support for USB to RS485 converters is currently in early stages of development 
 
 This project is currently considered __Pre-Alpha__, please refrain from using it in production.
 
-## Table of contents
-- [Entities](#entities)
-- [Installation](#installation)
-  - [HACS](#hacs)
-  - [Manual](#manual)
-- [Usage](#usage)
-- [License](#license)
-
 ## Entities
 This integration provides following entities.
 ### 🌡 Sensors
@@ -57,41 +49,3 @@ This integration provides following entities.
 
 ### 🚿 Water Heater
 Integration provides full control for connected passive water heater. This includes ability to set target temperature, switch into priority, non-priority mode or turn off.
-
-## Installation
-### HACS
-Follow [this guide](https://hacs.xyz/docs/faq/custom_repositories) to add hassio-plum-ecomax as custom repository to the HACS.  
-URL of the repository is:
-```
-https://github.com/denpamusic/hassio-plum-ecomax
-```
-
-### Manual
-
-1. Clone this repository with:
-```sh
-git clone https://github.com/denpamusic/hassio-plum-ecomax
-```
-
-2. Move `custom_components` directory from `hassio-plum-ecomax` to your Home Assistant configuration directory. ([next to configuration.yaml](https://www.home-assistant.io/docs/configuration/))
-
-```sh
-cp -r ./hassio-plum-ecomax/custom_components ~/.homeassistant
-```
-
-3. Add empty `plum_ecomax:` section to your `configuration.yaml` file.
-4. Restart Home Assistant.
-
-
-## Usage
-1. Click `Add Integration` button and search for `Plum ecoMAX`.
-2. Enter your connection details and click `Submit`.  
-If you select Serial connection type, you need to fill in correct Device path, Host and Port will be ignored.  
-Otherwise, if you select TCP connection type, you'll only need to fill Host and Port. Device path can be left as is.   
-![Configuration dialog](https://raw.githubusercontent.com/denpamusic/hassio-plum-ecomax/main/images/config.png)
-
-3. Your device should now be available in your Home Assistant installation.  
-![Success](https://raw.githubusercontent.com/denpamusic/hassio-plum-ecomax/main/images/success.png)
-
-## License
-This product is distributed under MIT license.
