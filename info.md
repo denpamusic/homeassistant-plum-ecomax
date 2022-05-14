@@ -24,12 +24,12 @@ Otherwise, if you select TCP connection type, you'll only need to fill Host and 
 This integration provides following entities.
 
 ### Sensors
-- CO Temperature
-- CWU Temperature
+- Heating Temperature
+- Water Heater Temperature
 - Exhaust Temperature
 - Outside Temperature
-- CO Target Temperature
-- CWU Target Temperature
+- Heating Target Temperature
+- Water Heater Target Temperature
 - Feeder Temperature
 - Heating Load
 - Fan Power
@@ -41,8 +41,8 @@ This integration provides following entities.
 - Flame Intensity (if supported by the controller)
 
 ### Binary Sensors
-- CO Pump State
-- CWU Pump State
+- Heating Pump State
+- Water Heater Pump State
 - Fan State
 - Lighter State
 
