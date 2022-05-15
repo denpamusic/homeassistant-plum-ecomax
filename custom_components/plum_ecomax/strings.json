@@ -7,7 +7,7 @@
           "device": "[%key:common::config_flow::data::device%]",
           "host": "[%key:common::config_flow::data::host%]",
           "port": "[%key:common::config_flow::data::port%]",
-          "update_interval": "[%key:common::config_flow::data::update_interval%]",
+          "update_interval": "[%key:common::config_flow::data::update_interval%]"
         }
       }
     },
