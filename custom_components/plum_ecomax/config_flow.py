@@ -114,8 +114,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors["base"] = "cannot_connect"
         except UnsupportedDevice:
             errors["base"] = "unsupported_device"
-        except UnknownConnectionType:
-            errors["base"] = "unknown_connection_type"
         except Exception:  # pylint: disable=broad-except
             _LOGGER.exception("Unexpected exception")
             errors["base"] = "unknown"

@@ -14,7 +14,6 @@
     "error": {
       "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
       "unsupported_device": "[%key:common::config_flow::error::unsupported_device%]",
-      "unknown_connection_type": "[%key:common::config_flow::error::unknown_connection_type%]",
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "abort": {
