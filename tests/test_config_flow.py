@@ -4,30 +4,21 @@ from unittest.mock import patch
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import RESULT_TYPE_CREATE_ENTRY, RESULT_TYPE_FORM
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.plum_ecomax.config_flow import CannotConnect, UnsupportedDevice
+from custom_components.plum_ecomax.config_flow import CannotConnect
 from custom_components.plum_ecomax.const import (
     CONF_CAPABILITIES,
-    CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
     CONF_MODEL,
-    CONF_PORT,
     CONF_SOFTWARE,
     CONF_UID,
     CONF_UPDATE_INTERVAL,
-    CONNECTION_TYPE_SERIAL,
-    CONNECTION_TYPE_TCP,
     DOMAIN,
 )
 
-TEST_MODEL = "ecoMAX 350P2"
-TEST_UID = "D251PAKR3GCPZ1K8G05G0"
-TEST_SOFTWARE = "1.13.5.Z1"
-TEST_CAPABILITIES = ["fuel_burned", "heating_temp"]
-TEST_HOST = "example.com"
-TEST_PORT = 8899
-TEST_DEVICE = "/dev/ttyUSB0"
+from .const import MOCK_CONFIG_DATA, MOCK_CONFIG_DATA_SERIAL, MOCK_DEVICE_DATA
 
 
 async def test_form_tcp(hass: HomeAssistant) -> None:
@@ -43,44 +34,29 @@ async def test_form_tcp(hass: HomeAssistant) -> None:
         return_value=True,
     ), patch(
         "custom_components.plum_ecomax.config_flow.EcomaxTcpConnection.model",
-        TEST_MODEL,
+        MOCK_DEVICE_DATA[CONF_MODEL],
     ), patch(
         "custom_components.plum_ecomax.config_flow.EcomaxTcpConnection.uid",
-        TEST_UID,
+        MOCK_DEVICE_DATA[CONF_UID],
     ), patch(
         "custom_components.plum_ecomax.config_flow.EcomaxTcpConnection.software",
-        TEST_SOFTWARE,
+        MOCK_DEVICE_DATA[CONF_SOFTWARE],
     ), patch(
         "custom_components.plum_ecomax.config_flow.EcomaxTcpConnection.capabilities",
-        TEST_CAPABILITIES,
+        MOCK_DEVICE_DATA[CONF_CAPABILITIES],
     ), patch(
         "custom_components.plum_ecomax.async_setup_entry",
         return_value=True,
     ) as mock_setup_entry:
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
-            {
-                CONF_CONNECTION_TYPE: CONNECTION_TYPE_TCP,
-                CONF_HOST: TEST_HOST,
-                CONF_PORT: TEST_PORT,
-                CONF_UPDATE_INTERVAL: 10,
-            },
+            MOCK_CONFIG_DATA,
         )
         await hass.async_block_till_done()
 
     assert result2["type"] == RESULT_TYPE_CREATE_ENTRY
-    assert result2["title"] == TEST_HOST
-    assert result2["data"] == {
-        CONF_CONNECTION_TYPE: CONNECTION_TYPE_TCP,
-        CONF_DEVICE: TEST_DEVICE,
-        CONF_HOST: TEST_HOST,
-        CONF_PORT: TEST_PORT,
-        CONF_UPDATE_INTERVAL: 10,
-        CONF_UID: TEST_UID,
-        CONF_MODEL: TEST_MODEL,
-        CONF_SOFTWARE: TEST_SOFTWARE,
-        CONF_CAPABILITIES: TEST_CAPABILITIES,
-    }
+    assert result2["title"] == MOCK_CONFIG_DATA[CONF_HOST]
+    assert result2["data"] == dict(MOCK_CONFIG_DATA, **MOCK_DEVICE_DATA)
     assert len(mock_setup_entry.mock_calls) == 1
 
 
@@ -97,42 +73,29 @@ async def test_form_serial(hass: HomeAssistant) -> None:
         return_value=True,
     ), patch(
         "custom_components.plum_ecomax.config_flow.EcomaxSerialConnection.model",
-        TEST_MODEL,
+        MOCK_DEVICE_DATA[CONF_MODEL],
     ), patch(
         "custom_components.plum_ecomax.config_flow.EcomaxSerialConnection.uid",
-        TEST_UID,
+        MOCK_DEVICE_DATA[CONF_UID],
     ), patch(
         "custom_components.plum_ecomax.config_flow.EcomaxSerialConnection.software",
-        TEST_SOFTWARE,
+        MOCK_DEVICE_DATA[CONF_SOFTWARE],
     ), patch(
         "custom_components.plum_ecomax.config_flow.EcomaxSerialConnection.capabilities",
-        TEST_CAPABILITIES,
+        MOCK_DEVICE_DATA[CONF_CAPABILITIES],
     ), patch(
         "custom_components.plum_ecomax.async_setup_entry",
         return_value=True,
     ) as mock_setup_entry:
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
-            {
-                CONF_CONNECTION_TYPE: CONNECTION_TYPE_SERIAL,
-                CONF_DEVICE: TEST_DEVICE,
-                CONF_UPDATE_INTERVAL: 10,
-            },
+            MOCK_CONFIG_DATA_SERIAL,
         )
         await hass.async_block_till_done()
 
     assert result2["type"] == RESULT_TYPE_CREATE_ENTRY
-    assert result2["title"] == TEST_DEVICE
-    assert result2["data"] == {
-        CONF_CONNECTION_TYPE: CONNECTION_TYPE_SERIAL,
-        CONF_DEVICE: TEST_DEVICE,
-        CONF_PORT: TEST_PORT,
-        CONF_UPDATE_INTERVAL: 10,
-        CONF_UID: TEST_UID,
-        CONF_MODEL: TEST_MODEL,
-        CONF_SOFTWARE: TEST_SOFTWARE,
-        CONF_CAPABILITIES: TEST_CAPABILITIES,
-    }
+    assert result2["title"] == MOCK_CONFIG_DATA_SERIAL[CONF_DEVICE]
+    assert result2["data"] == dict(MOCK_CONFIG_DATA_SERIAL, **MOCK_DEVICE_DATA)
     assert len(mock_setup_entry.mock_calls) == 1
 
 
@@ -148,12 +111,7 @@ async def test_form_cannot_connect(hass: HomeAssistant) -> None:
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
-            {
-                CONF_CONNECTION_TYPE: CONNECTION_TYPE_TCP,
-                CONF_HOST: TEST_HOST,
-                CONF_PORT: TEST_PORT,
-                CONF_UPDATE_INTERVAL: 10,
-            },
+            MOCK_CONFIG_DATA,
         )
 
     assert result2["type"] == RESULT_TYPE_FORM
@@ -175,13 +133,32 @@ async def test_form_unsupported_device(hass: HomeAssistant) -> None:
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
-            {
-                CONF_CONNECTION_TYPE: CONNECTION_TYPE_TCP,
-                CONF_HOST: TEST_HOST,
-                CONF_PORT: TEST_PORT,
-                CONF_UPDATE_INTERVAL: 10,
-            },
+            MOCK_CONFIG_DATA,
         )
 
     assert result2["type"] == RESULT_TYPE_FORM
     assert result2["errors"] == {"base": "unsupported_device"}
+
+
+async def test_options_flow(hass: HomeAssistant) -> None:
+    """Test an options flow."""
+    config_entry = MockConfigEntry(
+        domain=DOMAIN,
+        data=dict(MOCK_CONFIG_DATA, **MOCK_DEVICE_DATA),
+        entry_id="test",
+    )
+    config_entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(config_entry.entry_id)
+    assert result["type"] == RESULT_TYPE_FORM
+    assert result["step_id"] == "init"
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        user_input={CONF_UPDATE_INTERVAL: 20},
+    )
+
+    assert result["type"] == RESULT_TYPE_CREATE_ENTRY
+    assert result["title"] == config_entry.title
+
+    assert config_entry.options == {CONF_UPDATE_INTERVAL: 20}
