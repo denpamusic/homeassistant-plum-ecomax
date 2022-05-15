@@ -20,10 +20,10 @@ This project is currently in __Alpha__ state.
 
 ## Installation
 ### HACS
-1. Follow [this guide](https://hacs.xyz/docs/faq/custom_repositories) to add hassio-plum-ecomax as custom repository to the HACS.  
+1. Follow [this guide](https://hacs.xyz/docs/faq/custom_repositories) to add homeassistant-plum-ecomax as custom repository to the HACS.  
 URL of the repository is:
 ```
-https://github.com/denpamusic/hassio-plum-ecomax
+https://github.com/denpamusic/homeassistant-plum-ecomax
 ```
 2. Search for `ecomax` in HACS search window and install `Plum ecoMAX pellet boiler regulator integration`.
 3. Restart Home Assistant.
@@ -32,13 +32,13 @@ https://github.com/denpamusic/hassio-plum-ecomax
 
 1. Clone this repository with:
 ```sh
-git clone https://github.com/denpamusic/hassio-plum-ecomax
+git clone https://github.com/denpamusic/homeassistant-plum-ecomax
 ```
 
-2. Move `custom_components` directory from `hassio-plum-ecomax` to your Home Assistant configuration directory. ([next to configuration.yaml](https://www.home-assistant.io/docs/configuration/))
+2. Move `custom_components` directory from `homeassistant-plum-ecomax` to your Home Assistant configuration directory. ([next to configuration.yaml](https://www.home-assistant.io/docs/configuration/))
 
 ```sh
-cp -r ./hassio-plum-ecomax/custom_components ~/.homeassistant
+cp -r ./homeassistant-plum-ecomax/custom_components ~/.homeassistant
 ```
 
 3. Add empty `plum_ecomax:` section to your `configuration.yaml` file.
@@ -50,10 +50,10 @@ cp -r ./hassio-plum-ecomax/custom_components ~/.homeassistant
 2. Enter your connection details and click `Submit`.  
 If you select Serial connection type, you need to fill in correct Device path, Host and Port will be ignored.  
 Otherwise, if you select TCP connection type, you'll only need to fill Host and Port. Device path can be left as is.   
-![Configuration dialog](https://raw.githubusercontent.com/denpamusic/hassio-plum-ecomax/main/images/config.png)
+![Configuration dialog](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/config.png)
 
 3. Your device should now be available in your Home Assistant installation.  
-![Success](https://raw.githubusercontent.com/denpamusic/hassio-plum-ecomax/main/images/success.png)
+![Success](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/success.png)
 
 ## Tracking spent fuel
 You can track total burned fuel by utilising built-in [Utility Meter integration](https://www.home-assistant.io/integrations/utility_meter/).

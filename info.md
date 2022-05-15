@@ -13,10 +13,10 @@ This project is currently in __Alpha__ state.
 2. Enter your connection details and click `Submit`.  
 If you select Serial connection type, you need to fill in correct Device path, Host and Port will be ignored.  
 Otherwise, if you select TCP connection type, you'll only need to fill Host and Port. Device path can be left as is.   
-![Configuration dialog](https://raw.githubusercontent.com/denpamusic/hassio-plum-ecomax/main/images/config.png)
+![Configuration dialog](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/config.png)
 
 3. Your device should now be available in your Home Assistant installation.  
-![Success](https://raw.githubusercontent.com/denpamusic/hassio-plum-ecomax/main/images/success.png)
+![Success](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/success.png)
 
 ## Entities
 This integration provides following entities.
