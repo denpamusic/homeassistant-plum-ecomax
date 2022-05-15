@@ -6,8 +6,6 @@ This Home Assistant integration provides support for ecoMAX automatic pellet boi
 
 It is based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and supports connection to ecoMAX controller via serial network server, for example [Elfin EW11](https://aliexpress.ru/item/4001104348624.html).
 
-Support for USB to RS485 converters is currently in early stages of development and largely untested.
-
 This project is currently in __Alpha__ state.
 
 ## Usage
