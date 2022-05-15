@@ -17,7 +17,11 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install coverage pyplumio pytest-homeassistant-custom-component aiohttp_cors
+        python -m pip install coverage pyplumio pytest-homeassistant-custom-component aiohttp_cors mypy
+
+    - name: Type checking
+      run: |
+        mypy custom_components/plum_ecomax
 
     - name: Run tests
       run: |
