@@ -1,0 +1,1 @@
+"""Plum ecoMAX integration module."""
