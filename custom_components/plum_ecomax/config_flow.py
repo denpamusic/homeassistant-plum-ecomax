@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant, callback
@@ -51,18 +51,16 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 )
 
 
-async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str, Any]:
+async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
     """Validate the user input allows us to connect.
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
-    connection: Optional[EcomaxConnection] = None
-    if data[CONF_CONNECTION_TYPE] == CONNECTION_TYPE_TCP:
-        connection = EcomaxTcpConnection(data[CONF_HOST], data[CONF_PORT], hass=hass)
-    elif data[CONF_CONNECTION_TYPE] == CONNECTION_TYPE_SERIAL:
-        connection = EcomaxSerialConnection(data[CONF_DEVICE], hass=hass)
-    else:
-        raise UnknownConnectionType
+    connection: EcomaxConnection = (
+        EcomaxTcpConnection(data[CONF_HOST], data[CONF_PORT], hass=hass)
+        if data[CONF_CONNECTION_TYPE] == CONNECTION_TYPE_TCP
+        else EcomaxSerialConnection(data[CONF_DEVICE], hass=hass)
+    )
 
     try:
         await connection.check()
@@ -100,7 +98,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return OptionsFlowHandler(config_entry)
 
     async def async_step_user(
-        self, user_input: Dict[str, Any] | None = None
+        self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle the initial step."""
         if user_input is None:
@@ -170,7 +168,3 @@ class UnsupportedDevice(HomeAssistantError):
     """Error to indicate that we estableshed connection but
     failed to see expected response.
     """
-
-
-class UnknownConnectionType(HomeAssistantError):
-    """Error to indicate unknown connection type."""
