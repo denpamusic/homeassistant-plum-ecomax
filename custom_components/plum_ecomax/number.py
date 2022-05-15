@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Optional
 
 from homeassistant.components.number import NumberEntity, NumberEntityDescription
 from homeassistant.const import PERCENTAGE, TEMP_CELSIUS
@@ -64,7 +65,7 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
     def __init__(self, connection, description: EcomaxNumberEntityDescription):
         self._connection = connection
         self.entity_description = description
-        self._attr_value = None
+        self._attr_value: Optional[float] = None
         self._attr_min_value = None
         self._attr_max_value = None
 

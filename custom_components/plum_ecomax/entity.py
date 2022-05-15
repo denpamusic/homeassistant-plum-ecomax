@@ -22,6 +22,7 @@ class EcomaxEntity(ABC):
 
     @property
     def available(self) -> bool:
+        """Indicates whether the entity is available."""
         return self._connection.ecomax is not None
 
     @property
@@ -50,5 +51,5 @@ class EcomaxEntity(ABC):
         return False
 
     @abstractmethod
-    async def async_update() -> None:
+    async def async_update(self) -> None:
         """Retrieve latest state."""

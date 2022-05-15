@@ -10,8 +10,7 @@ from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import DeviceInfo, Entity
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity import DeviceInfo
 import pyplumio
 from pyplumio.connection import Connection
 from pyplumio.devices import DevicesCollection
@@ -63,7 +62,7 @@ class EcomaxConnection(ABC):
             update_interval -- data update interval in seconds
         """
         self.ecomax = None
-        self._callbacks = set()
+        self._callbacks: set[Callable[[], Awaitable[None]]] = set()
         self._check_tries = 0
         self._task = None
         self._hass = hass

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Optional
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.core import HomeAssistant
@@ -55,7 +56,7 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
     def __init__(self, connection, description: EcomaxSwitchEntityDescription):
         self._connection = connection
         self.entity_description = description
-        self._attr_is_on = None
+        self._attr_is_on: Optional[bool] = None
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
