@@ -69,9 +69,8 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
         raise CannotConnect from connection_failure
 
     if (
-        connection.model is None
-        or connection.uid is None
-        or connection.software is None
+        None in (connection.model, connection.uid, connection.software)
+        or len(connection.capabilities) < 2
     ):
         raise UnsupportedDevice
 
