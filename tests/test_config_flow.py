@@ -4,6 +4,7 @@ from unittest.mock import patch
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import RESULT_TYPE_CREATE_ENTRY, RESULT_TYPE_FORM
+from pyplumio.exceptions import ConnectionFailedError
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.config_flow import CannotConnect
@@ -107,8 +108,11 @@ async def test_form_cannot_connect(hass: HomeAssistant) -> None:
 
     with patch(
         "custom_components.plum_ecomax.config_flow.EcomaxTcpConnection.check",
-        side_effect=CannotConnect,
-    ):
+        side_effect=ConnectionFailedError,
+    ), patch(
+        "custom_components.plum_ecomax.config_flow.EcomaxTcpConnection.close",
+        return_value=True,
+    ) as mock_connection_close:
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             MOCK_CONFIG_DATA,
@@ -116,6 +120,26 @@ async def test_form_cannot_connect(hass: HomeAssistant) -> None:
 
     assert result2["type"] == RESULT_TYPE_FORM
     assert result2["errors"] == {"base": "cannot_connect"}
+    mock_connection_close.assert_called_once()
+
+
+async def test_form_unknown_error(hass: HomeAssistant) -> None:
+    """Test we handle unknown error error."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+
+    with patch(
+        "custom_components.plum_ecomax.config_flow.EcomaxTcpConnection.check",
+        side_effect=Exception,
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            MOCK_CONFIG_DATA,
+        )
+
+    assert result2["type"] == RESULT_TYPE_FORM
+    assert result2["errors"] == {"base": "unknown"}
 
 
 async def test_form_unsupported_device(hass: HomeAssistant) -> None:
