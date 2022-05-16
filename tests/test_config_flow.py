@@ -7,7 +7,6 @@ from homeassistant.data_entry_flow import RESULT_TYPE_CREATE_ENTRY, RESULT_TYPE_
 from pyplumio.exceptions import ConnectionFailedError
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.plum_ecomax.config_flow import CannotConnect
 from custom_components.plum_ecomax.const import (
     CONF_CAPABILITIES,
     CONF_DEVICE,
@@ -30,6 +29,7 @@ async def test_form_tcp(hass: HomeAssistant) -> None:
     assert result["type"] == RESULT_TYPE_FORM
     assert result["errors"] is None
 
+    # Set up attribute values for EcomaxTcpConnection.
     with patch(
         "custom_components.plum_ecomax.config_flow.EcomaxTcpConnection.check",
         return_value=True,
@@ -49,12 +49,15 @@ async def test_form_tcp(hass: HomeAssistant) -> None:
         "custom_components.plum_ecomax.async_setup_entry",
         return_value=True,
     ) as mock_setup_entry:
+        # Run configure.
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             MOCK_CONFIG_DATA,
         )
         await hass.async_block_till_done()
 
+    # Check if entry with provided data was created and that
+    # setup_entry method was called only once.
     assert result2["type"] == RESULT_TYPE_CREATE_ENTRY
     assert result2["title"] == MOCK_CONFIG_DATA[CONF_HOST]
     assert result2["data"] == dict(MOCK_CONFIG_DATA, **MOCK_DEVICE_DATA)
@@ -62,7 +65,7 @@ async def test_form_tcp(hass: HomeAssistant) -> None:
 
 
 async def test_form_serial(hass: HomeAssistant) -> None:
-    """Test we get the form."""
+    """Test we get the form for serial connection type."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
@@ -173,15 +176,18 @@ async def test_options_flow(hass: HomeAssistant) -> None:
     )
     config_entry.add_to_hass(hass)
 
+    # Check that we've got options form.
     result = await hass.config_entries.options.async_init(config_entry.entry_id)
     assert result["type"] == RESULT_TYPE_FORM
     assert result["step_id"] == "init"
 
+    # Send test data via form.
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={CONF_UPDATE_INTERVAL: 20},
     )
 
+    # Check that entry with new options was created.
     assert result["type"] == RESULT_TYPE_CREATE_ENTRY
     assert result["title"] == config_entry.title
 
