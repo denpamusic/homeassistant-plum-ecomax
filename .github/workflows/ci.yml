@@ -21,7 +21,7 @@ jobs:
 
     - name: Type checking
       run: |
-        mypy custom_components/plum_ecomax
+        mypy .
 
     - name: Run tests
       run: |

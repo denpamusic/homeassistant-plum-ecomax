@@ -8,6 +8,12 @@ combine_as_imports = true
 
 [tool.mypy]
 ignore_missing_imports = true
+exclude = [
+    '^.github/',
+    '^.git/',
+    '^images/',
+    '^tests/',
+]
 
 # Avoid unexpected keyword argument error in config_flow.py
 disable_error_code = "call-arg"
