@@ -38,3 +38,6 @@ MOCK_DEVICE_DATA = {
     CONF_SOFTWARE: "1.13.5.Z1",
     CONF_CAPABILITIES: ["fuel_burned", "heating_temp"],
 }
+
+# Mock config entry data.
+MOCK_CONFIG = dict(MOCK_CONFIG_DATA, **MOCK_DEVICE_DATA)

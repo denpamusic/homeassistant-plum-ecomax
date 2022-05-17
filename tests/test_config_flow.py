@@ -31,19 +31,19 @@ async def test_form_tcp(hass: HomeAssistant) -> None:
 
     # Set up attribute values for EcomaxTcpConnection.
     with patch(
-        "custom_components.plum_ecomax.config_flow.EcomaxTcpConnection.check",
+        "custom_components.plum_ecomax.EcomaxTcpConnection.check",
         return_value=True,
     ), patch(
-        "custom_components.plum_ecomax.config_flow.EcomaxTcpConnection.model",
+        "custom_components.plum_ecomax.EcomaxTcpConnection.model",
         MOCK_DEVICE_DATA[CONF_MODEL],
     ), patch(
-        "custom_components.plum_ecomax.config_flow.EcomaxTcpConnection.uid",
+        "custom_components.plum_ecomax.EcomaxTcpConnection.uid",
         MOCK_DEVICE_DATA[CONF_UID],
     ), patch(
-        "custom_components.plum_ecomax.config_flow.EcomaxTcpConnection.software",
+        "custom_components.plum_ecomax.EcomaxTcpConnection.software",
         MOCK_DEVICE_DATA[CONF_SOFTWARE],
     ), patch(
-        "custom_components.plum_ecomax.config_flow.EcomaxTcpConnection.capabilities",
+        "custom_components.plum_ecomax.EcomaxTcpConnection.capabilities",
         MOCK_DEVICE_DATA[CONF_CAPABILITIES],
     ), patch(
         "custom_components.plum_ecomax.async_setup_entry",
@@ -73,19 +73,19 @@ async def test_form_serial(hass: HomeAssistant) -> None:
     assert result["errors"] is None
 
     with patch(
-        "custom_components.plum_ecomax.config_flow.EcomaxSerialConnection.check",
+        "custom_components.plum_ecomax.EcomaxSerialConnection.check",
         return_value=True,
     ), patch(
-        "custom_components.plum_ecomax.config_flow.EcomaxSerialConnection.model",
+        "custom_components.plum_ecomax.EcomaxSerialConnection.model",
         MOCK_DEVICE_DATA[CONF_MODEL],
     ), patch(
-        "custom_components.plum_ecomax.config_flow.EcomaxSerialConnection.uid",
+        "custom_components.plum_ecomax.EcomaxSerialConnection.uid",
         MOCK_DEVICE_DATA[CONF_UID],
     ), patch(
-        "custom_components.plum_ecomax.config_flow.EcomaxSerialConnection.software",
+        "custom_components.plum_ecomax.EcomaxSerialConnection.software",
         MOCK_DEVICE_DATA[CONF_SOFTWARE],
     ), patch(
-        "custom_components.plum_ecomax.config_flow.EcomaxSerialConnection.capabilities",
+        "custom_components.plum_ecomax.EcomaxSerialConnection.capabilities",
         MOCK_DEVICE_DATA[CONF_CAPABILITIES],
     ), patch(
         "custom_components.plum_ecomax.async_setup_entry",
