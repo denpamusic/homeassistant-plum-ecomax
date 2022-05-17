@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Optional
 
 from homeassistant.components.water_heater import (
     WaterHeaterEntity,
@@ -49,7 +50,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         self._attr_target_temperature_high = None
         self._attr_target_temperature_low = None
         self._attr_current_temperature = None
-        self._attr_current_operation = None
+        self._attr_current_operation: Optional[str] = None
 
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
