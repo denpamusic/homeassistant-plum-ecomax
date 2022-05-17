@@ -45,7 +45,7 @@ async def test_async_setup(
     assert connection.port == MOCK_CONFIG[CONF_PORT]
 
     # Finally check that set_eth was called and connection
-    # closed callback was succesfully added.
+    # closed callback was successfully added.
     mock_set_eth.assert_called_once_with(ip="2.2.2.2")
     mock_on_closed.assert_called_once_with(connection.connection_closed)
 
