@@ -57,31 +57,8 @@ async def test_async_set_value(
     assert number.value == 70
     assert connection.ecomax.heating_set_temp == 70
 
-
-async def test_update_with_missing_value(
-    hass: HomeAssistant,
-    add_entities_callback: AddEntitiesCallback,
-    config_entry: MockConfigEntry,
-    bypass_hass_write_ha_state,
-) -> None:
-    """Test update number with missing parameters."""
-    # Setup number and check that entities were added.
-    await async_setup_entry(hass, config_entry, add_entities_callback)
-    add_entities_callback.assert_called_once()
-    numbers = add_entities_callback.call_args[0][0]
-    number = [
-        number
-        for number in numbers
-        if number.entity_description.key == "heating_temp_grate"
-    ][0]
-
-    # Check that number value is unknown.
-    assert isinstance(number, EcomaxNumber)
-    assert number.value is None
-    assert number.min_value is None
-    assert number.max_value is None
-
-    # Update number and check that attributes are still unknown.
+    # Unset number parameter and check that attributes is unknown.
+    connection.ecomax.heating_set_temp = None
     await number.async_update()
     assert number.value is None
     assert number.min_value is None
