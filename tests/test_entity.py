@@ -12,17 +12,6 @@ from custom_components.plum_ecomax.connection import (
 from custom_components.plum_ecomax.entity import EcomaxEntity
 
 
-class TestEntity(EcomaxEntity):
-    """Representation of test base sensor."""
-
-    def __init__(self, connection: EcomaxConnection, entity_description: Any) -> None:
-        self._connection = connection
-        self.entity_description = entity_description
-
-    async def async_update(self):
-        """Retrieve latest state."""
-
-
 @pytest.fixture(name="entity_description")
 def fixture_entity_description():
     """Mock entity description."""
@@ -33,11 +22,15 @@ def fixture_entity_description():
 
 
 @pytest.fixture(name="test_entity")
+@patch.multiple(EcomaxEntity, __abstractmethods__=set())
 def fixture_test_entity(
-    tcp_connection_with_data: EcomaxTcpConnection, entity_description
+    mock_connection: EcomaxTcpConnection, entity_description
 ) -> EcomaxEntity:
     """Create test entity instance."""
-    yield TestEntity(tcp_connection_with_data, entity_description)
+    test_entity = EcomaxEntity()
+    test_entity._connection = mock_connection
+    test_entity.entity_description = entity_description
+    return test_entity
 
 
 async def test_enabled_by_default(test_entity: EcomaxEntity) -> None:
@@ -51,29 +44,29 @@ async def test_enabled_by_default(test_entity: EcomaxEntity) -> None:
 
 
 async def test_available(
-    test_entity: EcomaxEntity, tcp_connection_with_data: EcomaxTcpConnection
+    test_entity: EcomaxEntity, mock_connection: EcomaxTcpConnection
 ) -> None:
     """Test entity available property."""
     # Test is entity is available.
     assert test_entity.available
 
     # Unset ecomax device from connection data and re-test the property.
-    tcp_connection_with_data.ecomax = None
+    mock_connection.ecomax = None
     assert not test_entity.available
 
 
 async def test_device_info(
-    test_entity: EcomaxEntity, tcp_connection_with_data: EcomaxTcpConnection
+    test_entity: EcomaxEntity, mock_connection: EcomaxTcpConnection
 ) -> None:
     """Test entity device info."""
-    assert test_entity.device_info == tcp_connection_with_data.device_info
+    assert test_entity.device_info == mock_connection.device_info
 
 
 async def test_unique_id_and_name(
-    test_entity: EcomaxEntity, tcp_connection_with_data: EcomaxTcpConnection
+    test_entity: EcomaxEntity, mock_connection: EcomaxTcpConnection
 ) -> None:
     """Test entity unique id and name properties."""
-    connection = tcp_connection_with_data
+    connection = mock_connection
     assert (
         test_entity.unique_id
         == f"{connection.uid}-{test_entity.entity_description.key}"
@@ -88,12 +81,15 @@ async def test_should_poll(test_entity: EcomaxEntity) -> None:
     assert not test_entity.should_poll
 
 
+@patch.multiple(EcomaxEntity, __abstractmethods__=set())
 async def test_added_removed_callback(
     connection: EcomaxTcpConnection, entity_description
 ) -> None:
     """Test entity added and removed from hass callbacks."""
     # Crete test entity instance.
-    test_entity = TestEntity(connection, entity_description)
+    test_entity = EcomaxEntity()
+    test_entity._connection = connection
+    test_entity.entity_description = entity_description
 
     # Create mocks to pass to the update_entities method.
     mock_devices = Mock()
@@ -101,7 +97,9 @@ async def test_added_removed_callback(
     mock_devices.ecomax.data = {"test": 1}
     mock_connection = Mock()
 
-    with patch(__name__ + ".TestEntity.async_update") as mock_async_update:
+    with patch(
+        "custom_components.plum_ecomax.entity.EcomaxEntity.async_update"
+    ) as mock_async_update:
         # Call added to hass callback and check that entity was updated.
         await test_entity.async_added_to_hass()
         await connection.update_entities(mock_devices, mock_connection)

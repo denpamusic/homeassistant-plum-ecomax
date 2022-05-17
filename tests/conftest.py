@@ -57,8 +57,8 @@ def fixture_bypass_hass_write_ha_state():
         yield
 
 
-@pytest.fixture(name="tcp_connection_with_data")
-def fixture_tcp_connection_with_data(device_info: DeviceInfo) -> EcomaxTcpConnection:
+@pytest.fixture(name="mock_connection")
+def fixture_mock_connection(device_info: DeviceInfo) -> EcomaxTcpConnection:
     """Simulate ecoMAX response object."""
     mock_connection = Mock()
     mock_connection.name = MOCK_CONFIG[CONF_HOST]
@@ -111,10 +111,10 @@ def fixture_connection(hass: HomeAssistant) -> EcomaxTcpConnection:
 
 @pytest.fixture(name="config_entry")
 def fixture_config_entry(
-    hass: HomeAssistant, tcp_connection_with_data: EcomaxTcpConnection
+    hass: HomeAssistant, mock_connection: EcomaxTcpConnection
 ) -> MockConfigEntry:
     """Create mock config entry and add it to hass."""
     config_entry = MockConfigEntry(domain=DOMAIN, data=MOCK_CONFIG, entry_id="test")
     config_entry.add_to_hass(hass)
-    hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = tcp_connection_with_data
+    hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = mock_connection
     yield config_entry
