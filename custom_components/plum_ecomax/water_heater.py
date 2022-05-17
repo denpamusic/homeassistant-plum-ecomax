@@ -49,6 +49,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         self._attr_target_temperature_high = None
         self._attr_target_temperature_low = None
         self._attr_current_temperature = None
+        self._attr_current_operation = None
 
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
@@ -85,11 +86,22 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
             self._attr_max_temp = None
             self._attr_target_temperature = None
             self._attr_target_temperature_high = None
+            self._attr_target_temperature_low = None
+            self._attr_current_operation = None
         else:
             self._attr_min_temp = target_temp.min_
             self._attr_max_temp = target_temp.max_
             self._attr_target_temperature = target_temp.value
             self._attr_target_temperature_high = target_temp.value
+            self._attr_current_operation = self._ecomax_to_hass_mode(
+                int(
+                    getattr(
+                        self._connection.ecomax,
+                        f"{self.entity_description.key}_work_mode",
+                        0,
+                    )
+                )
+            )
             hysteresis = getattr(
                 self._connection.ecomax,
                 f"{self.entity_description.key}_hysteresis",
@@ -120,19 +132,6 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
             operation_mode -- operation mode taken from hass
         """
         return WATER_HEATER_MODES.index(operation_mode)
-
-    @property
-    def current_operation(self) -> str:
-        """Return current operation ie. eco, electric, performance, ..."""
-        return self._ecomax_to_hass_mode(
-            int(
-                getattr(
-                    self._connection.ecomax,
-                    f"{self.entity_description.key}_work_mode",
-                    0,
-                )
-            )
-        )
 
 
 async def async_setup_entry(
