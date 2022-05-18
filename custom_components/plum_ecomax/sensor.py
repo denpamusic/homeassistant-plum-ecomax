@@ -158,6 +158,14 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
+        key="power",
+        name="Power",
+        native_unit_of_measurement=POWER_KILO_WATT,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.POWER,
+        value_fn=lambda x: x,
+    ),
+    EcomaxSensorEntityDescription(
         key="module_a",
         name="Software Version",
         icon="mdi:package-down",
@@ -165,12 +173,11 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     EcomaxSensorEntityDescription(
-        key="power",
-        name="Power",
-        native_unit_of_measurement=POWER_KILO_WATT,
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.POWER,
+        key="password",
+        name="Service Password",
+        icon="mdi:form-textbox-password",
         value_fn=lambda x: x,
+        entity_category=EntityCategory.DIAGNOSTIC,
     ),
 )
 
