@@ -2,12 +2,6 @@
 
 from typing import Final
 
-from homeassistant.components.water_heater import (
-    STATE_ECO,
-    STATE_OFF,
-    STATE_PERFORMANCE,
-)
-
 DOMAIN = "plum_ecomax"
 
 CONF_CONNECTION_TYPE: Final = "connection_type"
@@ -33,5 +27,3 @@ DEFAULT_DEVICE: Final = "/dev/ttyUSB0"
 MIN_UPDATE_INTERVAL: Final = 5
 
 FLOW_KGH: Final = "kg/h"
-
-WATER_HEATER_MODES: Final = (STATE_OFF, STATE_PERFORMANCE, STATE_ECO)

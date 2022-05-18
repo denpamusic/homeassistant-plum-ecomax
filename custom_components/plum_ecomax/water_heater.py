@@ -2,9 +2,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Final, Optional
 
 from homeassistant.components.water_heater import (
+    STATE_ECO,
+    STATE_OFF,
+    STATE_PERFORMANCE,
     WaterHeaterEntity,
     WaterHeaterEntityEntityDescription,
     WaterHeaterEntityFeature,
@@ -14,8 +17,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 
-from .const import DOMAIN, WATER_HEATER_MODES
+from .const import DOMAIN
 from .entity import EcomaxEntity
+
+WATER_HEATER_MODES: Final = (STATE_OFF, STATE_PERFORMANCE, STATE_ECO)
 
 
 @dataclass

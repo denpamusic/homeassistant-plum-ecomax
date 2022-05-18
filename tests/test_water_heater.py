@@ -13,8 +13,8 @@ import pytest_asyncio
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxTcpConnection
-from custom_components.plum_ecomax.const import WATER_HEATER_MODES
 from custom_components.plum_ecomax.water_heater import (
+    WATER_HEATER_MODES,
     EcomaxWaterHeater,
     async_setup_entry,
 )

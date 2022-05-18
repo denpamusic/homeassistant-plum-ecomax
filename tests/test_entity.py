@@ -1,14 +1,10 @@
 """Test Plum ecoMAX base sensor."""
 
-from typing import Any
 from unittest.mock import Mock, patch
 
 import pytest
 
-from custom_components.plum_ecomax.connection import (
-    EcomaxConnection,
-    EcomaxTcpConnection,
-)
+from custom_components.plum_ecomax.connection import EcomaxTcpConnection
 from custom_components.plum_ecomax.entity import EcomaxEntity
 
 
