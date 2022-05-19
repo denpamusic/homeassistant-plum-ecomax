@@ -1,12 +1,13 @@
 # Plum ecoMAX pellet boiler regulator integration for Home Assistant.
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![stability-beta](https://img.shields.io/badge/stability-beta-33bbff.svg)](https://github.com/mkenney/software-guides/blob/master/STABILITY-BADGES.md#beta)
 
 ## Overview
 This Home Assistant integration provides support for ecoMAX automatic pellet boilers controllers manufactured by [Plum Sp. z o.o.](https://www.plum.pl/)
 
-It is based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and supports connection to ecoMAX controller via RS485 network server (e. g. [Elfin EW11](https://aliexpress.ru/item/4001104348624.html)) or via RS485 -> USB adapter.
+It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and supports connection to ecoMAX controller via RS485 network server (e. g. [Elfin EW11](https://aliexpress.ru/item/4001104348624.html)) or via RS485 to USB adapter.
 
-This project is currently in __Beta__ state.
+![ecoMAX controllers](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/ecomax.png)
 
 ## Usage
 1. Click `Add Integration` button and search for `Plum ecoMAX`.

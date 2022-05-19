@@ -3,13 +3,13 @@
 [![Test Coverage](https://api.codeclimate.com/v1/badges/bfa869d3c97a62eeb71c/test_coverage)](https://codeclimate.com/github/denpamusic/homeassistant-plum-ecomax/test_coverage)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![stability-beta](https://img.shields.io/badge/stability-beta-33bbff.svg)](https://github.com/mkenney/software-guides/blob/master/STABILITY-BADGES.md#beta)
 
 ## Overview
 This Home Assistant integration provides support for ecoMAX automatic pellet boilers controllers manufactured by [Plum Sp. z o.o.](https://www.plum.pl/)
 
-It is based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and supports connection to ecoMAX controller via RS485 network server (e. g. [Elfin EW11](https://aliexpress.ru/item/4001104348624.html)) or via RS485 -> USB adapter.
-
-This project is currently in __Beta__ state.
+It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and supports connection to ecoMAX controller via RS485 network server (e. g. [Elfin EW11](https://aliexpress.ru/item/4001104348624.html)) or via RS485 to USB adapter.
+![ecoMAX controllers](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/ecomax.png)
 
 ## Table of contents
 - [Installation](#installation)
@@ -58,7 +58,7 @@ Otherwise, if you select TCP connection type, you'll only need to fill Host and 
 ![Success](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/success.png)
 
 ## Tracking spent fuel
-You can track total burned fuel by utilising built-in [Utility Meter integration](https://www.home-assistant.io/integrations/utility_meter/).
+You can track total burned fuel by utilizing built-in [Utility Meter integration](https://www.home-assistant.io/integrations/utility_meter/).
 
 Create new utility meter and specify `Fuel Burned Since Last Update` as it's input sensor.  
 Make sure, that `Delta values` setting is enabled.
