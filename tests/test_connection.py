@@ -86,3 +86,14 @@ async def test_update_entities_callbacks(connection: EcomaxTcpConnection):
 
     # Make sure that callback was not called this time around.
     mock_callback.assert_not_called()
+
+
+async def test_connection_closed_callback(connection: EcomaxTcpConnection):
+    """Test callback fired on connection close."""
+    mock_callback = AsyncMock()
+    mock_connection = Mock()
+    connection.register_callback(mock_callback)
+    connection.ecomax = True
+    await connection.connection_closed(mock_connection)
+    mock_callback.assert_called_once()
+    assert connection.ecomax is None
