@@ -240,7 +240,7 @@ class EcomaxTcpConnection(EcomaxConnection):
         _port -- serial server port
     """
 
-    def __init__(self, host, port: int = DEFAULT_PORT, *args, **kwargs):
+    def __init__(self, host, port: int = DEFAULT_PORT, **kwargs):
         """Construct new connection.
 
         Keyword arguments:
@@ -249,7 +249,7 @@ class EcomaxTcpConnection(EcomaxConnection):
         """
         self._host = host
         self._port = port
-        super().__init__(*args, **kwargs)
+        super().__init__(**kwargs)
 
     def get_connection(self) -> Connection:
         """Return connection instance."""
@@ -281,14 +281,14 @@ class EcomaxSerialConnection(EcomaxConnection):
         _device -- serial device path, e. g. /dev/ttyUSB0
     """
 
-    def __init__(self, device: str = DEFAULT_DEVICE, *args, **kwargs):
+    def __init__(self, device: str = DEFAULT_DEVICE, **kwargs):
         """Construct new connection.
 
         Keyword arguments:
             device -- serial device path, e. g. /dev/ttyUSB0
         """
         self._device = device
-        super().__init__(*args, **kwargs)
+        super().__init__(**kwargs)
 
     def get_connection(self) -> Connection:
         """Return connection instance."""
