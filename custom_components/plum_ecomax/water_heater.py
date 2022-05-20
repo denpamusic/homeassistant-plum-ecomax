@@ -77,7 +77,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         setattr(
             self._connection.ecomax,
             f"{self.entity_description.key}_work_mode",
-            self._hass_to_ecomax_mode(operation_mode),
+            hass_to_ecomax_mode(operation_mode),
         )
         self._attr_current_operation = operation_mode
         self.async_write_ha_state()
@@ -99,7 +99,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
             self._attr_max_temp = target_temp.max_
             self._attr_target_temperature = target_temp.value
             self._attr_target_temperature_high = target_temp.value
-            self._attr_current_operation = self._ecomax_to_hass_mode(
+            self._attr_current_operation = ecomax_to_hass_mode(
                 int(
                     getattr(
                         self._connection.ecomax,
@@ -123,21 +123,23 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         )
         self.async_write_ha_state()
 
-    def _ecomax_to_hass_mode(self, operation_mode: int) -> str:
-        """Convert ecomax operation mode to hass.
 
-        Keyword arguments:
-            operation_mode -- operation mode taken from ecoMAX
-        """
-        return WATER_HEATER_MODES[operation_mode]
+def ecomax_to_hass_mode(operation_mode: int) -> str:
+    """Convert ecomax operation mode to hass.
 
-    def _hass_to_ecomax_mode(self, operation_mode) -> int:
-        """Convert hass operation mode to ecomax.
+    Keyword arguments:
+        operation_mode -- operation mode taken from ecoMAX
+    """
+    return WATER_HEATER_MODES[operation_mode]
 
-        Keyword arguments:
-            operation_mode -- operation mode taken from hass
-        """
-        return WATER_HEATER_MODES.index(operation_mode)
+
+def hass_to_ecomax_mode(operation_mode) -> int:
+    """Convert hass operation mode to ecomax.
+
+    Keyword arguments:
+        operation_mode -- operation mode taken from hass
+    """
+    return WATER_HEATER_MODES.index(operation_mode)
 
 
 async def async_setup_entry(
