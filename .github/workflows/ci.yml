@@ -17,11 +17,16 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install pytest_asyncio coverage pyplumio pytest-homeassistant-custom-component aiohttp_cors mypy
+        python -m pip install pytest_asyncio coverage pyplumio pytest-homeassistant-custom-component aiohttp_cors mypy pylint flake8
 
-    - name: Type checking
+    - name: Check typing
       run: |
         mypy .
+
+    - name: Lint
+      run: |
+        pylint custom_components/plum_ecomax
+        flake8 .
 
     - name: Run tests
       run: |
