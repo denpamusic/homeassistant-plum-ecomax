@@ -119,7 +119,8 @@ async def test_get_connection(hass: HomeAssistant):
 async def test_connection_check(hass: HomeAssistant, caplog):
     """Test connection check with supported and unsupported device."""
     # Crete PyPlumIO connection mock and inject it.
-    mock_pyplumio_connection = AsyncMock()
+    mock_pyplumio_connection = Mock()
+    mock_pyplumio_connection.task = AsyncMock()
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxTcpConnection.get_connection",
         return_value=mock_pyplumio_connection,
