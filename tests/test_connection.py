@@ -1,17 +1,25 @@
 """Test the Plum ecoMAX connection."""
+import logging
 from unittest.mock import AsyncMock, Mock, patch
 
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
+import pyplumio
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.plum_ecomax.connection import EcomaxTcpConnection
+from custom_components.plum_ecomax.connection import (
+    EcomaxSerialConnection,
+    EcomaxTcpConnection,
+)
 from custom_components.plum_ecomax.const import (
     CONF_CAPABILITIES,
     CONF_HOST,
+    CONF_MODEL,
     CONF_PORT,
     CONF_SOFTWARE,
     CONF_UID,
     CONF_UPDATE_INTERVAL,
+    CONNECTION_CHECK_TRIES,
 )
 
 from .const import MOCK_CONFIG
@@ -97,3 +105,79 @@ async def test_connection_closed_callback(connection: EcomaxTcpConnection):
     await connection.connection_closed(mock_connection)
     mock_callback.assert_called_once()
     assert connection.ecomax is None
+
+
+async def test_get_connection(hass: HomeAssistant):
+    """Test getter for PyPlumIO connection instance."""
+    connection = EcomaxTcpConnection(hass=hass, host="1.1.1.1")
+    assert isinstance(connection.get_connection(), pyplumio.TcpConnection)
+    connection = EcomaxSerialConnection(hass=hass)
+    assert isinstance(connection.get_connection(), pyplumio.SerialConnection)
+    assert connection.device == "/dev/ttyUSB0"
+
+
+async def test_connection_check(hass: HomeAssistant, caplog):
+    """Test connection check with supported and unsupported device."""
+    # Crete PyPlumIO connection mock and inject it.
+    mock_pyplumio_connection = AsyncMock()
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxTcpConnection.get_connection",
+        return_value=mock_pyplumio_connection,
+    ):
+        connection = EcomaxTcpConnection(hass=hass, host="1.1.1.1")
+
+    # Call connection check and get underlying callback.
+    await connection.check()
+    mock_pyplumio_connection.task.assert_called_once()
+    args, kwargs = mock_pyplumio_connection.task.call_args
+    assert kwargs == {"interval": 1, "reconnect_on_failure": False}
+
+    # Get check callback and create mock device.
+    callback = args[0]
+    devices = Mock()
+    devices.ecomax = Mock()
+    devices.ecomax.data = {}
+    devices.ecomax.parameters = {}
+    devices.ecomax.uid = MOCK_CONFIG[CONF_UID]
+    devices.ecomax.software = MOCK_CONFIG[CONF_SOFTWARE]
+    devices.ecomax.product = MOCK_CONFIG[CONF_MODEL]
+    devices.ecomax.data = {"test1": 1, "water_heater_temp": 50}
+    devices.ecomax.parameters = {"test2": 2, "test3": 4}
+
+    # Call callback and ensure, that all properties is set
+    # and connection is closed.
+    await callback(devices, mock_pyplumio_connection)
+    assert connection.uid == MOCK_CONFIG[CONF_UID]
+    assert connection.software == MOCK_CONFIG[CONF_SOFTWARE]
+    assert connection.model == "ecoMAX 350P2"
+    assert connection.capabilities == [
+        "fuel_burned",
+        "test1",
+        "water_heater_temp",
+        "test2",
+        "test3",
+        "water_heater",
+    ]
+    mock_pyplumio_connection.close.assert_called_once()
+    mock_pyplumio_connection.close.reset_mock()
+
+    # Test when callback is called with unsupported device.
+    devices.ecomax = Mock()
+    devices.ecomax.data = devices.ecomax.parameters = {}
+
+    # Try until last retry.
+    for _ in range(CONNECTION_CHECK_TRIES):
+        await callback(devices, mock_pyplumio_connection)
+
+    # Check that connection is not closed until last retry.
+    caplog.clear()
+    mock_pyplumio_connection.close.assert_not_called()
+    await callback(devices, mock_pyplumio_connection)
+    assert caplog.record_tuples == [
+        (
+            "custom_components.plum_ecomax.connection",
+            logging.ERROR,
+            "Connection succeeded, but device failed to respond.",
+        )
+    ]
+    mock_pyplumio_connection.close.assert_called_once()
