@@ -82,9 +82,9 @@ class EcomaxConnection(ABC):
             devices -- collection of available devices
             connection -- instance of current connection
         """
-        if self._check_tries > CONNECTION_CHECK_TRIES:
+        if self._check_tries >= CONNECTION_CHECK_TRIES:
             _LOGGER.exception("Connection succeeded, but device failed to respond.")
-            connection.close()
+            return connection.close()
 
         if (
             devices.has("ecomax")
@@ -106,7 +106,7 @@ class EcomaxConnection(ABC):
             if "water_heater_temp" in self._capabilities:
                 self._capabilities.append("water_heater")
 
-            connection.close()
+            return connection.close()
 
         self._check_tries += 1
 
