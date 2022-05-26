@@ -1,6 +1,4 @@
 {
   "name": "Plum ecoMAX pellet boiler regulator integration",
-  "domains": "plum_ecomax",
-  "iot_class": "local push",
   "homeassistant": "2021.12.0"
 }
