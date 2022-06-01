@@ -104,7 +104,8 @@ async def test_connection_closed_callback(connection: EcomaxTcpConnection):
     connection.ecomax = True
     await connection.connection_closed(mock_connection)
     mock_callback.assert_called_once()
-    assert connection.ecomax is None
+    assert not connection.ecomax.data
+    assert not connection.ecomax.parameters
 
 
 async def test_get_connection(hass: HomeAssistant):

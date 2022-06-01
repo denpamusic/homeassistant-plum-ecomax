@@ -13,7 +13,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 import pyplumio
 from pyplumio.connection import Connection
-from pyplumio.devices import DevicesCollection
+from pyplumio.devices import DevicesCollection, EcoMAX
 
 from .const import (
     CONF_CAPABILITIES,
@@ -61,7 +61,7 @@ class EcomaxConnection(ABC):
             port -- serial server port
             update_interval -- data update interval in seconds
         """
-        self.ecomax = None
+        self.ecomax = EcoMAX()
         self._callbacks: set[Callable[[], Awaitable[None]]] = set()
         self._check_tries = 0
         self._task = None
@@ -156,7 +156,7 @@ class EcomaxConnection(ABC):
         Keyword arguments:
             connection -- instance of current connection
         """
-        self.ecomax = None
+        self.ecomax = EcoMAX()
         for callback in self._callbacks:
             await callback()
 
