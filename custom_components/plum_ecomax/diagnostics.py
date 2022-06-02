@@ -5,6 +5,7 @@ from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from pyplumio import __version__ as pyplumio_version
 from pyplumio.devices import EcoMAX
 
 from .const import DOMAIN
@@ -19,6 +20,9 @@ async def async_get_config_entry_diagnostics(
         "entry": {
             "title": entry.title,
             "data": dict(entry.data),
+        },
+        "pyplumio": {
+            "version": pyplumio_version,
         },
         "data": {
             "sensors": ecomax.data,
