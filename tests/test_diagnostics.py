@@ -16,4 +16,4 @@ async def test_diagnostics(hass: HomeAssistant, config_entry: MockConfigEntry) -
     assert diagnostics["data"]["sensors"] == "test_data"
     assert diagnostics["data"]["parameters"] == "test_parameters"
     assert diagnostics["data"]["schema"] == "test_schema"
-    assert diagnostics["data"]["mixerfs"] == "test_mixers"
+    assert diagnostics["data"]["mixers"] == "test_mixers"
