@@ -166,13 +166,6 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
-        key="module_a",
-        name="Software Version",
-        icon="mdi:package-down",
-        value_fn=lambda x: x,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    EcomaxSensorEntityDescription(
         key="password",
         name="Service Password",
         icon="mdi:form-textbox-password",
