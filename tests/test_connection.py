@@ -141,7 +141,7 @@ async def test_connection_check(hass: HomeAssistant, caplog):
     devices.ecomax.data = {}
     devices.ecomax.parameters = {}
     devices.ecomax.product.uid = MOCK_CONFIG[CONF_UID]
-    devices.ecomax.software = MOCK_CONFIG[CONF_SOFTWARE]
+    devices.ecomax.modules.module_a = MOCK_CONFIG[CONF_SOFTWARE]
     devices.ecomax.product.model = MOCK_CONFIG[CONF_MODEL]
     devices.ecomax.data = {"test1": 1, "water_heater_temp": 50}
     devices.ecomax.parameters = {"test2": 2, "test3": 4}

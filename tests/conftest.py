@@ -80,26 +80,26 @@ def fixture_mock_connection(device_info: DeviceInfo) -> EcomaxTcpConnection:
     mock_connection.ecomax.heating_set_temp = Parameter(
         name="heating_set_temp",
         value=65,
-        min_=40,
-        max_=80,
+        min_value=40,
+        max_value=80,
     )
     mock_connection.ecomax.boiler_control = Parameter(
         name="boiler_control",
         value=1,
-        min_=0,
-        max_=1,
+        min_value=0,
+        max_value=1,
     )
     mock_connection.ecomax.water_heater_set_temp = Parameter(
         name="water_heater_set_temp",
         value=50,
-        min_=40,
-        max_=60,
+        min_value=40,
+        max_value=60,
     )
     mock_connection.ecomax.water_heater_hysteresis = Parameter(
         name="water_heater_hysteresis",
         value=5,
-        min_=1,
-        max_=10,
+        min_value=1,
+        max_value=10,
     )
     mock_connection.ecomax.water_heater_temp = 50
     mock_connection.ecomax.water_heater_work_mode = 1
