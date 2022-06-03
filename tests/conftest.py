@@ -69,6 +69,8 @@ def fixture_mock_connection(device_info: DeviceInfo) -> EcomaxTcpConnection:
     mock_connection.capabilities = MOCK_CONFIG[CONF_CAPABILITIES]
     mock_connection.check.return_value = True
     mock_connection.ecomax = Mock()
+    mock_connection.ecomax.product = "test_product"
+    mock_connection.ecomax.modules = "test_modules"
     mock_connection.ecomax.data = "test_data"
     mock_connection.ecomax.parameters = "test_parameters"
     mock_connection.ecomax.schema = "test_schema"

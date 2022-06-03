@@ -25,6 +25,8 @@ async def async_get_config_entry_diagnostics(
             "version": pyplumio_version,
         },
         "data": {
+            "product": ecomax.product,
+            "modules": ecomax.modules,
             "sensors": ecomax.data,
             "parameters": ecomax.parameters,
             "schema": ecomax.schema,
