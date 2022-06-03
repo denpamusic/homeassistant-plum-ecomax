@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Awaitable, Callable
 import logging
-from typing import Awaitable, Callable, Optional
+from typing import Optional
 
 from homeassistant.components.network import async_get_source_ip
 from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
