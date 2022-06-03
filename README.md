@@ -8,7 +8,7 @@
 ## Overview
 This Home Assistant integration provides support for ecoMAX automatic pellet boilers controllers manufactured by [Plum Sp. z o.o.](https://www.plum.pl/)
 
-It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and supports connection to ecoMAX controller via RS485 network server (e. g. [Elfin EW11](https://aliexpress.ru/item/4001104348624.html)) or via RS485 to USB adapter.
+It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and supports connection to ecoMAX controller via RS-485 to Ethernet/Wifi converters or via RS-485 to USB adapter.
 ![ecoMAX controllers](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/ecomax.png)
 
 ## Table of contents
@@ -23,7 +23,7 @@ It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and sup
 ## Installation
 ### HACS
 1. Follow [this guide](https://hacs.xyz/docs/faq/custom_repositories) to add homeassistant-plum-ecomax as custom repository to the HACS.  
-URL of the repository is:
+URL of the repository:
 ```
 https://github.com/denpamusic/homeassistant-plum-ecomax
 ```
@@ -50,21 +50,21 @@ cp -r ./homeassistant-plum-ecomax/custom_components ~/.homeassistant
 ## Usage
 1. Click `Add Integration` button and search for `Plum ecoMAX`.
 2. Enter your connection details and click `Submit`.  
-If you select Serial connection type, you need to fill in correct Device path, Host and Port will be ignored.  
-Otherwise, if you select TCP connection type, you'll only need to fill Host and Port. Device path can be left as is.   
+__Serial connection__: you will need to fill Device path. Host and Port will be ignored.  
+__TCP connection__: you will need to fill Host and Port. Device path will be ignored.  
 ![Configuration dialog](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/config.png)
 
 3. Your device should now be available in your Home Assistant installation.  
 ![Success](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/success.png)
 
 ## Tracking spent fuel
-You can track total burned fuel by utilizing built-in [Utility Meter integration](https://www.home-assistant.io/integrations/utility_meter/).
+You can track total burned fuel by utilizing HomeAssistant's built-in [Utility Meter integration](https://www.home-assistant.io/integrations/utility_meter/).
 
-Create new utility meter and specify `Fuel Burned Since Last Update` as it's input sensor.  
+Create new utility meter with `Fuel Burned Since Last Update` as it's input sensor.  
 Make sure, that `Delta values` setting is enabled.
 
 ## Entities
-This integration provides following entities.
+This integration provides following entities:
 
 ### Sensors
 - Heating Temperature
@@ -97,13 +97,16 @@ This integration provides following entities.
 - Summer Mode Switch
 - Fuzzy Logic Switch
 
-### Numbers (Changeable sliders)
+### Changeable Numbers
 - Heating Temperature
 - Grate Mode Temperature
 - Minimum Heating Power
 - Maximum Heating Power
 - Minimum Heating Temperature
 - Maximum Heating Temperature
+
+### Diagnostics
+- Service Password
 
 ### Water Heater
 Integration provides full control for connected indirect water heater.  
