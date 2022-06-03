@@ -89,8 +89,8 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
             self._attr_max_value = None
         else:
             self._attr_value = parameter.value
-            self._attr_min_value = parameter.min_
-            self._attr_max_value = parameter.max_
+            self._attr_min_value = parameter.min_value
+            self._attr_max_value = parameter.max_value
 
         self.async_write_ha_state()
 

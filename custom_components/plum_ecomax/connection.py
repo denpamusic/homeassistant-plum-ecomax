@@ -90,16 +90,16 @@ class EcomaxConnection(ABC):
             devices.has("ecomax")
             and None
             not in [
-                devices.ecomax.uid,
-                devices.ecomax.product,
-                devices.ecomax.software,
+                devices.ecomax.product.uid,
+                devices.ecomax.product.model,
+                devices.ecomax.modules.module_a,
             ]
             and len(devices.ecomax.data) > 1
             and len(devices.ecomax.parameters) > 1
         ):
-            self._uid = devices.ecomax.uid
-            self._model = devices.ecomax.product
-            self._software = devices.ecomax.software
+            self._uid = devices.ecomax.product.uid
+            self._model = devices.ecomax.product.model
+            self._software = devices.ecomax.modules.module_a
             self._capabilities = ["fuel_burned"]
             self._capabilities += list(devices.ecomax.data.keys())
             self._capabilities += list(devices.ecomax.parameters.keys())

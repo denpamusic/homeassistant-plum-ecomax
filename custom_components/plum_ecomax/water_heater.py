@@ -95,8 +95,8 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
             self._attr_target_temperature_low = None
             self._attr_current_operation = None
         else:
-            self._attr_min_temp = target_temp.min_
-            self._attr_max_temp = target_temp.max_
+            self._attr_min_temp = target_temp.min_value
+            self._attr_max_temp = target_temp.max_value
             self._attr_target_temperature = target_temp.value
             self._attr_target_temperature_high = target_temp.value
             self._attr_current_operation = ecomax_to_hass_mode(
