@@ -14,7 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 import pyplumio
 from pyplumio.connection import Connection
-from pyplumio.devices import DevicesCollection, EcoMAX
+from pyplumio.devices import DeviceCollection, EcoMAX
 
 from .const import (
     CONF_CAPABILITIES,
@@ -75,7 +75,7 @@ class EcomaxConnection(ABC):
         self._capabilities: list[str] = []
 
     async def _check_callback(
-        self, devices: DevicesCollection, connection: Connection
+        self, devices: DeviceCollection, connection: Connection
     ) -> None:
         """Called when connection check succeeds.
 
@@ -138,7 +138,7 @@ class EcomaxConnection(ABC):
         await self._hass.async_add_executor_job(self.close)
 
     async def update_entities(
-        self, devices: DevicesCollection, connection: Connection
+        self, devices: DeviceCollection, connection: Connection
     ) -> None:
         """Update device instance.
 
