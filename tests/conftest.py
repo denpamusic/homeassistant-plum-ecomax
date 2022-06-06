@@ -77,8 +77,8 @@ def fixture_mock_connection(device_info: DeviceInfo) -> EcomaxTcpConnection:
     mock_connection.ecomax.mixers = "test_mixers"
     mock_connection.ecomax.heating_temp = 65
     mock_connection.ecomax.heating_pump = True
-    mock_connection.ecomax.heating_set_temp = Parameter(
-        name="heating_set_temp",
+    mock_connection.ecomax.heating_target_temp = Parameter(
+        name="heating_target_temp",
         value=65,
         min_value=40,
         max_value=80,
@@ -89,8 +89,8 @@ def fixture_mock_connection(device_info: DeviceInfo) -> EcomaxTcpConnection:
         min_value=0,
         max_value=1,
     )
-    mock_connection.ecomax.water_heater_set_temp = Parameter(
-        name="water_heater_set_temp",
+    mock_connection.ecomax.water_heater_target_temp = Parameter(
+        name="water_heater_target_temp",
         value=50,
         min_value=40,
         max_value=60,

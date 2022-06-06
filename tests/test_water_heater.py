@@ -71,7 +71,7 @@ async def test_async_setup_and_update_entry(
     assert test_water_heater.current_operation == STATE_PERFORMANCE
 
     # Unset target temperature and check that attributes is unknown.
-    mock_connection.ecomax.water_heater_set_temp = None
+    mock_connection.ecomax.water_heater_target_temp = None
     await test_water_heater.async_update()
     assert test_water_heater.min_temp is None
     assert test_water_heater.max_temp is None
@@ -98,7 +98,7 @@ async def test_async_set_temperature(
     """Test set water heater target temperature."""
     await test_water_heater.async_set_temperature(temperature=60)
     assert test_water_heater.target_temperature == 60
-    assert mock_connection.ecomax.water_heater_set_temp == 60
+    assert mock_connection.ecomax.water_heater_target_temp == 60
 
 
 @pytest.mark.asyncio

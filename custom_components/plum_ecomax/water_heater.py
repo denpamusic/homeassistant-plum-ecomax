@@ -62,7 +62,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         temperature = int(kwargs["temperature"])
         setattr(
             self._connection.ecomax,
-            f"{self.entity_description.key}_set_temp",
+            f"{self.entity_description.key}_target_temp",
             temperature,
         )
         self._attr_target_temperature = temperature
@@ -85,7 +85,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     async def async_update(self) -> None:
         """Update entity state."""
         target_temp = getattr(
-            self._connection.ecomax, f"{self.entity_description.key}_set_temp", None
+            self._connection.ecomax, f"{self.entity_description.key}_target_temp", None
         )
         if target_temp is None:
             self._attr_min_temp = None

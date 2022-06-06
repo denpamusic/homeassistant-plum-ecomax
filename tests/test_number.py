@@ -21,7 +21,7 @@ async def fixture_test_number(
     await async_setup_entry(hass, config_entry, add_entities_callback)
     add_entities_callback.assert_called_once()
     numbers = add_entities_callback.call_args[0][0]
-    number = [x for x in numbers if x.entity_description.key == "heating_set_temp"]
+    number = [x for x in numbers if x.entity_description.key == "heating_target_temp"]
     yield number[0]
 
 
@@ -43,7 +43,7 @@ async def test_async_setup_and_update_value(
     assert test_number.max_value == 80
 
     # Unset number parameter and check that attributes is unknown.
-    mock_connection.ecomax.heating_set_temp = None
+    mock_connection.ecomax.heating_target_temp = None
     await test_number.async_update()
     assert test_number.value is None
     assert test_number.min_value is None
@@ -59,4 +59,4 @@ async def test_async_set_value(
     assert test_number.value == 65
     await test_number.async_set_value(70)
     assert test_number.value == 70
-    assert mock_connection.ecomax.heating_set_temp == 70
+    assert mock_connection.ecomax.heating_target_temp == 70

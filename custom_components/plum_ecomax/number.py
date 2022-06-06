@@ -21,7 +21,7 @@ class EcomaxNumberEntityDescription(NumberEntityDescription):
 
 NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
-        key="heating_set_temp",
+        key="heating_target_temp",
         name="Heating Temperature",
         unit_of_measurement=TEMP_CELSIUS,
         step=1,
@@ -33,13 +33,13 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         step=1,
     ),
     EcomaxNumberEntityDescription(
-        key="min_heating_set_temp",
+        key="min_heating_target_temp",
         name="Minimum Heating Temperature",
         unit_of_measurement=TEMP_CELSIUS,
         step=1,
     ),
     EcomaxNumberEntityDescription(
-        key="max_heating_set_temp",
+        key="max_heating_target_temp",
         name="Maximum Heating Temperature",
         unit_of_measurement=TEMP_CELSIUS,
         step=1,
