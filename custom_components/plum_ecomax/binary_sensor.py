@@ -19,16 +19,7 @@ from .entity import EcomaxEntity
 
 
 @dataclass
-class EcomaxBinarySensorEntityAdditionalKeys:
-    """Additional keys for ecoMAX binary sensor entity description."""
-
-    value_fn: Callable[[Any], Optional[bool]]
-
-
-@dataclass
-class EcomaxBinarySensorEntityDescription(
-    BinarySensorEntityDescription, EcomaxBinarySensorEntityAdditionalKeys
-):
+class EcomaxBinarySensorEntityDescription(BinarySensorEntityDescription):
     """Describes ecoMAX binary sensor entity."""
 
 
@@ -38,28 +29,24 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         name="Heating Pump",
         icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
-        value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="water_heater_pump",
         name="Water Heater Pump",
         icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
-        value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="fan",
         name="Fan",
         icon="mdi:fan",
         device_class=BinarySensorDeviceClass.RUNNING,
-        value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="lighter",
         name="Lighter",
         icon="mdi:fire",
         device_class=BinarySensorDeviceClass.RUNNING,
-        value_fn=lambda x: x,
     ),
 )
 
@@ -74,10 +61,7 @@ class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
 
     async def async_update(self) -> None:
         """Retrieve latest state."""
-        value = getattr(self._connection.ecomax, self.entity_description.key, None)
-        self._attr_is_on = (
-            self.entity_description.value_fn(value) if value is not None else value
-        )
+        self._attr_is_on = getattr(self._connection.ecomax, self.entity_description.key, None)
         self.async_write_ha_state()
 
 
