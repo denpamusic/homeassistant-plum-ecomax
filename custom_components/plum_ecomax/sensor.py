@@ -187,9 +187,10 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
     async def async_update(self) -> None:
         """Retrieve latest state."""
         value = getattr(self._connection.ecomax, self.entity_description.key, None)
-        self._attr_native_value = (
-            self.entity_description.value_fn(value) if value is not None else value
-        )
+        if value is not None:
+            value = self.entity_description.value_fn(value)
+
+        self._attr_native_value = value
         self.async_write_ha_state()
 
 
