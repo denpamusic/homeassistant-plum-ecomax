@@ -16,7 +16,6 @@ async def test_diagnostics(hass: HomeAssistant, config_entry: MockConfigEntry) -
     assert diagnostics["pyplumio"]["version"] == pyplumio_version
     assert diagnostics["data"]["product"] == "test_product"
     assert diagnostics["data"]["modules"] == "test_modules"
-    assert diagnostics["data"]["sensors"] == "test_data"
+    assert diagnostics["data"]["data"] == "test_data"
     assert diagnostics["data"]["parameters"] == "test_parameters"
-    assert diagnostics["data"]["schema"] == "test_schema"
     assert diagnostics["data"]["mixers"] == "test_mixers"

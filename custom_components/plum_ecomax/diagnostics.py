@@ -27,9 +27,8 @@ async def async_get_config_entry_diagnostics(
         "data": {
             "product": ecomax.product,
             "modules": ecomax.modules,
-            "sensors": ecomax.data,
+            "data": ecomax.data,
             "parameters": ecomax.parameters,
-            "schema": ecomax.schema,
             "mixers": ecomax.mixers,
         },
     }
