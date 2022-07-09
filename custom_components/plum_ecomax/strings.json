@@ -1,19 +1,29 @@
 {
+  "state": {
+    "_": {
+      "off": "[%key:common::state::off%]",
+      "fanning": "Fanning",
+      "kindling": "Kindling",
+      "heating": "Heating",
+      "pause": "[%key:common::state::pause%]",
+      "idle": "[%key:common::state::idle%]",
+      "standby": "[%key:common::state::standby%]"
+    }
+  },
   "config": {
     "step": {
       "user": {
         "data": {
-          "connection_type": "[%key:common::config_flow::data::connection_type%]",
-          "device": "[%key:common::config_flow::data::device%]",
+          "connection_type": "Connection type",
+          "device": "Device",
           "host": "[%key:common::config_flow::data::host%]",
-          "port": "[%key:common::config_flow::data::port%]",
-          "update_interval": "[%key:common::config_flow::data::update_interval%]"
+          "port": "[%key:common::config_flow::data::port%]"
         }
       }
     },
     "error": {
       "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
-      "unsupported_device": "[%key:common::config_flow::error::unsupported_device%]",
+      "timeout_connect": "[%key:common::config_flow::error::timeout_connect%]",
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },
     "abort": {

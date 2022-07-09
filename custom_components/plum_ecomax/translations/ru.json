@@ -1,11 +1,23 @@
 {
+    "state": {
+        "_": {
+            "off": "Выключено",
+            "fanning": "Раздув",
+            "kindling": "Розжиг",
+            "heating": "Нагрев",
+            "pause": "Поддержание",
+            "idle": "Простой",
+            "standby": "Ожидание",
+            "unknown": "Неизвестно"
+        }
+    },
     "config": {
         "abort": {
             "already_configured": "Устройство уже настроено"
         },
         "error": {
             "cannot_connect": "Ошибка подключения",
-            "unsupported_device": "Неподдерживаемое устройство",
+            "timeout_connect": "Время ожидания подключения истекло",
             "unknown": "Неопознанная ошибка"
         },
         "step": {

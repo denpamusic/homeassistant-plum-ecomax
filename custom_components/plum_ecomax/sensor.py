@@ -4,7 +4,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date, datetime
-from typing import Any
+from typing import Any, Final
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -16,6 +16,10 @@ from homeassistant.const import (
     MASS_KILOGRAMS,
     PERCENTAGE,
     POWER_KILO_WATT,
+    STATE_IDLE,
+    STATE_OFF,
+    STATE_PAUSED,
+    STATE_STANDBY,
     TEMP_CELSIUS,
 )
 from homeassistant.core import HomeAssistant
@@ -28,14 +32,19 @@ from .connection import EcomaxConnection
 from .const import DOMAIN, FLOW_KGH
 from .entity import EcomaxEntity
 
-MODES: list[str] = [
-    "Off",
-    "Fanning",
-    "Kindling",
-    "Heating",
-    "Sustain",
-    "Idle",
-    "Standby",
+STATE_FANNING: Final = "fanning"
+STATE_KINDLING: Final = "kindling"
+STATE_HEATING: Final = "heating"
+STATE_UNKNOWN: Final = "unknown"
+
+STATES: list[str] = [
+    STATE_OFF,
+    STATE_FANNING,
+    STATE_KINDLING,
+    STATE_HEATING,
+    STATE_PAUSED,
+    STATE_IDLE,
+    STATE_STANDBY,
 ]
 
 
@@ -166,10 +175,10 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
-        key="mode",
-        name="Mode",
+        key="state",
+        name="State",
         icon="mdi:eye",
-        value_fn=lambda x: MODES[x] if x < len(MODES) else f"Unknown [{x}]",
+        value_fn=lambda x: STATES[x] if x < len(STATES) else STATE_UNKNOWN,
     ),
     EcomaxSensorEntityDescription(
         key="power",
@@ -212,7 +221,7 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
     async def async_added_to_hass(self):
         """Called when an entity has their entity_id assigned."""
         self.device.register_callback(
-            [self.entity_description.key], debounce(self.async_update, min_calls=5)
+            [self.entity_description.key], debounce(self.async_update, min_calls=3)
         )
 
 

@@ -1,11 +1,23 @@
 {
+    "state": {
+        "_": {
+            "off": "Off",
+            "fanning": "Fanning",
+            "kindling": "Kindling",
+            "heating": "Heating",
+            "pause": "Pause",
+            "idle": "Idle",
+            "standby": "Standby",
+            "unknown": "Unknown"
+        }
+    },
     "config": {
         "abort": {
             "already_configured": "Device is already configured"
         },
         "error": {
             "cannot_connect": "Failed to connect",
-            "unsupported_device": "Unsupported device",
+            "timeout_connect": "Timeout establishing connection",
             "unknown": "Unexpected error"
         },
         "step": {

@@ -60,7 +60,7 @@ async def validate_input(
     except ConnectionFailedError as connection_failure:
         raise CannotConnect from connection_failure
     except asyncio.TimeoutError as device_timeout:
-        raise UnsupportedDevice from device_timeout
+        raise TimeoutConnect from device_timeout
 
     return {
         CONF_TITLE: title,
@@ -91,8 +91,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             info = await validate_input(self.hass, user_input)
         except CannotConnect:
             errors["base"] = "cannot_connect"
-        except UnsupportedDevice:
-            errors["base"] = "unsupported_device"
+        except TimeoutConnect:
+            errors["base"] = "timeout_connect"
         except Exception:  # pylint: disable=broad-except
             _LOGGER.exception("Unexpected exception")
             errors["base"] = "unknown"
@@ -112,7 +112,7 @@ class CannotConnect(HomeAssistantError):
     """Error to indicate we cannot connect."""
 
 
-class UnsupportedDevice(HomeAssistantError):
+class TimeoutConnect(HomeAssistantError):
     """Error to indicate that we estableshed connection but
-    failed to see expected response.
+    failed to see expected response in time.
     """
