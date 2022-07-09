@@ -51,12 +51,12 @@ async def test_async_setup_and_update_value(
 
 
 @pytest.mark.asyncio
-async def test_async_set_value(
+async def test_async_set_native_value(
     test_number: EcomaxNumber, mock_connection: EcomaxTcpConnection
 ) -> None:
     """Test set number value."""
     await test_number.async_update()
-    assert test_number.value == 65
-    await test_number.async_set_value(70)
-    assert test_number.value == 70
+    assert test_number.native_value == 65
+    await test_number.async_set_native_value(70)
+    assert test_number.native_value == 70
     assert mock_connection.ecomax.heating_target_temp == 70

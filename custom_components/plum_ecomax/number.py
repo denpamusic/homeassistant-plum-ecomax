@@ -69,7 +69,7 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
 
     _connection: EcomaxConnection
     entity_description: EntityDescription
-    _attr_value: float | None
+    _attr_native_value: float | None
     _attr_min_value: float | None
     _attr_max_value: float | None
 
@@ -78,14 +78,14 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
     ):
         self._connection = connection
         self.entity_description = description
-        self._attr_value = None
+        self._attr_native_value = None
         self._attr_min_value = None
         self._attr_max_value = None
 
-    async def async_set_value(self, value: float) -> None:
-        """Update current entity value."""
+    async def async_set_native_value(self, value: float) -> None:
+        """Update current value."""
         await self.device.set_value(self.entity_description.key, value)
-        self._attr_value = int(value)
+        self._attr_native_value = int(value)
         self.async_write_ha_state()
 
     async def async_update(self, value: Parameter) -> None:
