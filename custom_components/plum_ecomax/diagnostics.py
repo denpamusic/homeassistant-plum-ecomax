@@ -15,7 +15,7 @@ async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: ConfigEntry
 ) -> dict[str, Any]:
     """Return diagnostics for a config entry."""
-    ecomax: EcoMAX = hass.data[DOMAIN][entry.entry_id].ecomax
+    ecomax: EcoMAX = hass.data[DOMAIN][entry.entry_id].device
     return {
         "entry": {
             "title": entry.title,
