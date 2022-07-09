@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import date, datetime
 from typing import Any
 
 from homeassistant.components.sensor import (
@@ -18,12 +19,24 @@ from homeassistant.const import (
     TEMP_CELSIUS,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.entity import EntityCategory, EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType
+from homeassistant.helpers.typing import ConfigType, StateType
+from pyplumio.helpers.filters import debounce
 
+from .connection import EcomaxConnection
 from .const import DOMAIN, FLOW_KGH
 from .entity import EcomaxEntity
+
+MODES: list[str] = [
+    "Off",
+    "Fanning",
+    "Kindling",
+    "Heating",
+    "Sustain",
+    "Idle",
+    "Standby",
+]
 
 
 @dataclass
@@ -156,7 +169,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         key="mode",
         name="Mode",
         icon="mdi:eye",
-        value_fn=lambda x: x,
+        value_fn=lambda x: MODES[x] if x < len(MODES) else f"Unknown [{x}]",
     ),
     EcomaxSensorEntityDescription(
         key="power",
@@ -177,21 +190,30 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
 
 
 class EcomaxSensor(EcomaxEntity, SensorEntity):
-    """Representation of ecoMAX sensor."""
+    """Represents ecoMAX sensor platform."""
 
-    def __init__(self, connection, description: EcomaxSensorEntityDescription):
+    _connection: EcomaxConnection
+    entity_description: EntityDescription
+    _attr_native_value: StateType | date | datetime
+
+    def __init__(
+        self, connection: EcomaxConnection, description: EcomaxSensorEntityDescription
+    ):
+        """Initialize ecoMAX sensor object."""
         self._connection = connection
         self.entity_description = description
         self._attr_native_value = None
 
-    async def async_update(self) -> None:
-        """Retrieve latest state."""
-        value = getattr(self._connection.ecomax, self.entity_description.key, None)
-        if value is not None:
-            value = self.entity_description.value_fn(value)
-
-        self._attr_native_value = value
+    async def async_update(self, value) -> None:
+        """Update entity state."""
+        self._attr_native_value = self.entity_description.value_fn(value)
         self.async_write_ha_state()
+
+    async def async_added_to_hass(self):
+        """Called when an entity has their entity_id assigned."""
+        self.device.register_callback(
+            [self.entity_description.key], debounce(self.async_update, min_calls=5)
+        )
 
 
 async def async_setup_entry(
@@ -199,13 +221,7 @@ async def async_setup_entry(
     config_entry: ConfigType,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the sensor platform.
-
-    Keyword arguments:
-        hass -- instance of Home Assistant core
-        config_entry -- instance of config entry
-        async_add_entities -- callback to add entities to hass
-    """
+    """Set up the sensor platform."""
     connection = hass.data[DOMAIN][config_entry.entry_id]
     async_add_entities(
         [EcomaxSensor(connection, description) for description in SENSOR_TYPES], False

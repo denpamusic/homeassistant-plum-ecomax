@@ -4,10 +4,18 @@
   "config_flow": true,
   "documentation": "https://github.com/denpamusic/homeassistant-plum-ecomax",
   "issue_tracker": "https://github.com/denpamusic/homeassistant-plum-ecomax/issues",
-  "requirements": ["pyplumio==0.1.17"],
-  "dependencies": ["network"],
-  "codeowners": ["@denpamusic"],
+  "requirements": [
+    "pyplumio==0.2.2"
+  ],
+  "dependencies": [
+    "network"
+  ],
+  "codeowners": [
+    "@denpamusic"
+  ],
   "iot_class": "local_push",
-  "version": "0.1.5",
-  "loggers": ["pyplumio"]
+  "version": "0.2.0",
+  "loggers": [
+    "pyplumio"
+  ]
 }

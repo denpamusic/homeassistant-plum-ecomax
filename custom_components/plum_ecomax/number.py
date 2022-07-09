@@ -2,14 +2,19 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
-from homeassistant.components.number import NumberEntity, NumberEntityDescription
+from homeassistant.components.number import (
+    EntityDescription,
+    NumberEntity,
+    NumberEntityDescription,
+)
 from homeassistant.const import PERCENTAGE, TEMP_CELSIUS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
+from pyplumio.helpers.parameter import Parameter
 
+from .connection import EcomaxConnection
 from .const import DOMAIN
 from .entity import EcomaxEntity
 
@@ -60,38 +65,34 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
 
 
 class EcomaxNumber(EcomaxEntity, NumberEntity):
-    """Representation of ecoMAX number."""
+    """Represents ecoMAX number platform."""
 
-    def __init__(self, connection, description: EcomaxNumberEntityDescription):
+    _connection: EcomaxConnection
+    entity_description: EntityDescription
+    _attr_value: float | None
+    _attr_min_value: float | None
+    _attr_max_value: float | None
+
+    def __init__(
+        self, connection: EcomaxConnection, description: EcomaxNumberEntityDescription
+    ):
         self._connection = connection
         self.entity_description = description
-        self._attr_value: Optional[float] = None
+        self._attr_value = None
         self._attr_min_value = None
         self._attr_max_value = None
 
     async def async_set_value(self, value: float) -> None:
-        """Update the current value.
-
-        Keyword arguments:
-            value -- new number value
-        """
-        setattr(self._connection.ecomax, self.entity_description.key, int(value))
+        """Update current entity value."""
+        await self.device.set_value(self.entity_description.key, value)
         self._attr_value = int(value)
         self.async_write_ha_state()
 
-    async def async_update(self) -> None:
+    async def async_update(self, value: Parameter) -> None:
         """Update entity state."""
-        parameter = getattr(self._connection.ecomax, self.entity_description.key, None)
-
-        if parameter is None:
-            self._attr_value = None
-            self._attr_min_value = None
-            self._attr_max_value = None
-        else:
-            self._attr_value = parameter.value
-            self._attr_min_value = parameter.min_value
-            self._attr_max_value = parameter.max_value
-
+        self._attr_value = value.value
+        self._attr_min_value = value.min_value
+        self._attr_max_value = value.max_value
         self.async_write_ha_state()
 
 
@@ -100,13 +101,7 @@ async def async_setup_entry(
     config_entry: ConfigType,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the number platform.
-
-    Keyword arguments:
-        hass -- instance of Home Assistant core
-        config_entry -- instance of config entry
-        async_add_entities -- callback to add entities to hass
-    """
+    """Set up the number platform."""
     connection = hass.data[DOMAIN][config_entry.entry_id]
     async_add_entities(
         [EcomaxNumber(connection, description) for description in NUMBER_TYPES], False

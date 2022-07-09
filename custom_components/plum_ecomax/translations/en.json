@@ -14,17 +14,7 @@
                     "connection_type": "Connection type",
                     "device": "Device path",
                     "host": "Host",
-                    "port": "Port",
-                    "update_interval": "Update interval (seconds)"
-                }
-            }
-        }
-    },
-    "options": {
-        "step": {
-            "init": {
-                "data": {
-                    "update_interval": "Update interval (seconds)"
+                    "port": "Port"
                 }
             }
         }
