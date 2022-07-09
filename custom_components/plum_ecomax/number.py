@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 from homeassistant.components.number import NumberEntity, NumberEntityDescription
 from homeassistant.const import PERCENTAGE, TEMP_CELSIUS
@@ -65,18 +64,18 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
     def __init__(self, connection, description: EcomaxNumberEntityDescription):
         self._connection = connection
         self.entity_description = description
-        self._attr_value: Optional[float] = None
+        self._attr_native_value: float | None = None
         self._attr_min_value = None
         self._attr_max_value = None
 
-    async def async_set_value(self, value: float) -> None:
+    async def async_set_native_value(self, value: float) -> None:
         """Update the current value.
 
         Keyword arguments:
             value -- new number value
         """
         setattr(self._connection.ecomax, self.entity_description.key, int(value))
-        self._attr_value = int(value)
+        self._attr_native_value = int(value)
         self.async_write_ha_state()
 
     async def async_update(self) -> None:
@@ -84,11 +83,11 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
         parameter = getattr(self._connection.ecomax, self.entity_description.key, None)
 
         if parameter is None:
-            self._attr_value = None
+            self._attr_native_value = None
             self._attr_min_value = None
             self._attr_max_value = None
         else:
-            self._attr_value = parameter.value
+            self._attr_native_value = parameter.value
             self._attr_min_value = parameter.min_value
             self._attr_max_value = parameter.max_value
 
