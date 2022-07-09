@@ -62,7 +62,7 @@ class EcomaxEntity(ABC):
 
     @property
     def callbacks(self) -> dict[str, ValueCallback]:
-        """Return callback functions mapped with value names."""
+        """Callback functions mapped with value names."""
         return {self.entity_description.key: on_change(self.async_update)}
 
     @abstractmethod

@@ -90,7 +90,7 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
 
     async def async_update(self, value: Parameter) -> None:
         """Update entity state."""
-        self._attr_value = value.value
+        self._attr_native_value = value.value
         self._attr_min_value = value.min_value
         self._attr_max_value = value.max_value
         self.async_write_ha_state()
@@ -100,9 +100,9 @@ async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigType,
     async_add_entities: AddEntitiesCallback,
-) -> None:
+) -> bool:
     """Set up the number platform."""
     connection = hass.data[DOMAIN][config_entry.entry_id]
-    async_add_entities(
+    return async_add_entities(
         [EcomaxNumber(connection, description) for description in NUMBER_TYPES], False
     )

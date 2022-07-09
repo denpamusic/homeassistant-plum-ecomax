@@ -67,7 +67,7 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
         self.entity_description = description
         self._attr_is_on = None
 
-    async def async_turn_on(self, **kwargs):
+    async def async_turn_on(self, **kwargs) -> None:
         """Turn the entity on."""
         await self.device.set_value(
             self.entity_description.key, self.entity_description.state_on
@@ -75,7 +75,7 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
         self._attr_is_on = True
         self.async_write_ha_state()
 
-    async def async_turn_off(self, **kwargs):
+    async def async_turn_off(self, **kwargs) -> None:
         """Turn the entity off."""
         await self.device.set_value(
             self.entity_description.key, self.entity_description.state_off
@@ -97,9 +97,9 @@ async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigType,
     async_add_entities: AddEntitiesCallback,
-) -> None:
+) -> bool:
     """Set up the sensor platform."""
     connection = hass.data[DOMAIN][config_entry.entry_id]
-    async_add_entities(
+    return async_add_entities(
         [EcomaxSwitch(connection, description) for description in SWITCH_TYPES], False
     )

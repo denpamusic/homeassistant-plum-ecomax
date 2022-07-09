@@ -72,10 +72,10 @@ async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigType,
     async_add_entities: AddEntitiesCallback,
-) -> None:
+) -> bool:
     """Set up the sensor platform."""
     connection = hass.data[DOMAIN][config_entry.entry_id]
-    async_add_entities(
+    return async_add_entities(
         [
             EcomaxBinarySensor(connection, description)
             for description in BINARY_SENSOR_TYPES
