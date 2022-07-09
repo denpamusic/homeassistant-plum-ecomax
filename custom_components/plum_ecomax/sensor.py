@@ -27,6 +27,7 @@ from homeassistant.helpers.entity import EntityCategory, EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, StateType
 from pyplumio.helpers.filters import debounce
+from pyplumio.helpers.typing import ValueCallback
 
 from .connection import EcomaxConnection
 from .const import DOMAIN, FLOW_KGH
@@ -218,11 +219,10 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
         self._attr_native_value = self.entity_description.value_fn(value)
         self.async_write_ha_state()
 
-    async def async_added_to_hass(self):
-        """Called when an entity has their entity_id assigned."""
-        self.device.register_callback(
-            [self.entity_description.key], debounce(self.async_update, min_calls=3)
-        )
+    @property
+    def callbacks(self) -> dict[str, ValueCallback]:
+        """Return callback functions mapped with value names."""
+        return {self.entity_description.key: debounce(self.async_update, min_calls=3)}
 
 
 async def async_setup_entry(

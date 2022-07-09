@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 from pyplumio.helpers.filters import on_change
+from pyplumio.helpers.typing import ValueCallback
 
 from .connection import EcomaxConnection
 
@@ -16,13 +17,13 @@ class EcomaxEntity(ABC):
 
     async def async_added_to_hass(self):
         """Called when an entity has their entity_id assigned."""
-        self.device.register_callback(
-            [self.entity_description.key], on_change(self.async_update)
-        )
+        for name, callback in self.callbacks.items():
+            self.device.register_callback(name, callback)
 
     async def async_removed_from_hass(self):
         """Called when an entity is about to be removed."""
-        self.device.remove_callback([self.entity_description.key], self.async_update)
+        for name, callback in self.callbacks.items():
+            self.device.remove_callback(name, callback)
 
     @property
     def device(self):
@@ -58,6 +59,11 @@ class EcomaxEntity(ABC):
     def should_poll(self) -> bool:
         """Should hass check with the entity for an updated state."""
         return False
+
+    @property
+    def callbacks(self) -> dict[str, ValueCallback]:
+        """Return callback functions mapped with value names."""
+        return {self.entity_description.key: on_change(self.async_update)}
 
     @abstractmethod
     async def async_update(self, value) -> None:
