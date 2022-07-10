@@ -1,16 +1,4 @@
 {
-    "state": {
-        "_": {
-            "off": "Выключено",
-            "fanning": "Раздув",
-            "kindling": "Розжиг",
-            "heating": "Нагрев",
-            "pause": "Поддержание",
-            "idle": "Простой",
-            "standby": "Ожидание",
-            "unknown": "Неизвестно"
-        }
-    },
     "config": {
         "abort": {
             "already_configured": "Устройство уже настроено"

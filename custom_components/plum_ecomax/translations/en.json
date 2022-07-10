@@ -1,16 +1,4 @@
 {
-    "state": {
-        "_": {
-            "off": "Off",
-            "fanning": "Fanning",
-            "kindling": "Kindling",
-            "heating": "Heating",
-            "pause": "Pause",
-            "idle": "Idle",
-            "standby": "Standby",
-            "unknown": "Unknown"
-        }
-    },
     "config": {
         "abort": {
             "already_configured": "Device is already configured"

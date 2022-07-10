@@ -33,6 +33,7 @@ from .connection import EcomaxConnection
 from .const import DOMAIN, FLOW_KGH
 from .entity import EcomaxEntity
 
+STATE_DEVICE_CLASS: Final = "plum_ecomax__mode"
 STATE_FANNING: Final = "fanning"
 STATE_KINDLING: Final = "kindling"
 STATE_HEATING: Final = "heating"
@@ -177,9 +178,10 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
     EcomaxSensorEntityDescription(
         key="mode",
-        name="State",
+        name="Mode",
         icon="mdi:eye",
         value_fn=lambda x: STATES[x] if x < len(STATES) else STATE_UNKNOWN,
+        device_class=STATE_DEVICE_CLASS,
     ),
     EcomaxSensorEntityDescription(
         key="power",

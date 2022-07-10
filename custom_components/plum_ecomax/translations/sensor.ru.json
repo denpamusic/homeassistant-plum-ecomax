@@ -1,0 +1,14 @@
+{
+    "state": {
+        "plum_ecomax__mode": {
+            "off": "Выключено",
+            "fanning": "Раздув",
+            "kindling": "Розжиг",
+            "heating": "Нагрев",
+            "paused": "Поддержание",
+            "idle": "Простой",
+            "standby": "Ожидание",
+            "unknown": "Неизвестно"
+        }
+    }
+}

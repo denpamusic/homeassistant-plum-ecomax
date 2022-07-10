@@ -1,0 +1,14 @@
+{
+    "state": {
+        "plum_ecomax__mode": {
+            "off": "[%key:common::state::off%]",
+            "fanning": "Fanning",
+            "kindling": "Kindling",
+            "heating": "Heating",
+            "paused": "[%key:common::state::paused%]",
+            "idle": "[%key:common::state::idle%]",
+            "standby": "[%key:common::state::standby%]",
+            "unknown": "Unknown"
+        }
+    }
+}
