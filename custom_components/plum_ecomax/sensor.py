@@ -176,7 +176,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
-        key="state",
+        key="mode",
         name="State",
         icon="mdi:eye",
         value_fn=lambda x: STATES[x] if x < len(STATES) else STATE_UNKNOWN,
