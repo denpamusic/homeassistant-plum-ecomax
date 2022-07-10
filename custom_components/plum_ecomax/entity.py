@@ -15,10 +15,14 @@ class EcomaxEntity(ABC):
 
     async def async_added_to_hass(self):
         """Called when an entity has their entity_id assigned."""
-        self.device.register_callback(
-            self.entity_description.key,
-            self.entity_description.filter_fn(self.async_update),
-        )
+        func = self.entity_description.filter_fn(self.async_update)
+
+        # Feed initial value to the callback function.
+        value = getattr(self.device, self.entity_description.key, None)
+        if value is not None:
+            await func(value)
+
+        self.device.register_callback(self.entity_description.key, func)
 
     async def async_removed_from_hass(self):
         """Called when an entity is about to be removed."""

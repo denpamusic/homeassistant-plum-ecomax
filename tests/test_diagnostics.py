@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from pyplumio.devices import EcoMAX
+from pyplumio.devices import Device
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import DOMAIN
@@ -14,7 +14,7 @@ from custom_components.plum_ecomax.diagnostics import async_get_config_entry_dia
 async def test_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry):
     """Test config entry diagnostics."""
     mock_connection = AsyncMock(spec=EcomaxConnection)
-    mock_connection.device = AsyncMock(spec=EcoMAX)
+    mock_connection.device = AsyncMock(spec=Device)
     for attr in ("product", "modules", "sensors", "regdata", "parameters", "mixers"):
         setattr(mock_connection.device, attr, attr)
 

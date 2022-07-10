@@ -3,6 +3,8 @@
 from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.helpers.entity import EntityDescription
+from pyplumio.devices import Device
+from pyplumio.helpers.filters import Filter
 
 from custom_components.plum_ecomax.entity import EcomaxEntity
 
@@ -23,8 +25,9 @@ async def test_base_entity(mock_connection, mock_async_update) -> None:
     """Test base entity."""
     entity = TestEntity()
     entity.entity_description = EntityDescription("test_entity", name="Test Entity")
-    entity.entity_description.filter_fn = Mock()
-    mock_connection.device = Mock()
+    mock_filter = AsyncMock(spec=Filter)
+    entity.entity_description.filter_fn = Mock(return_value=mock_filter)
+    mock_connection.device = Mock(spec=Device)
 
     # Test added/removed to/from hass.
     await entity.async_added_to_hass()
@@ -32,6 +35,7 @@ async def test_base_entity(mock_connection, mock_async_update) -> None:
     entity.device.register_callback.assert_called_once_with(
         "test_entity", entity.entity_description.filter_fn.return_value
     )
+    mock_filter.assert_awaited_once()
     await entity.async_removed_from_hass()
     entity.device.remove_callback.assert_called_once_with(
         "test_entity", mock_async_update

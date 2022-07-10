@@ -23,7 +23,8 @@ async def test_async_setup_and_update_entry(
     assert await async_setup_entry(hass, config_entry, async_add_entities)
     await hass.async_block_till_done()
     async_add_entities.assert_called_once()
-    sensors = async_add_entities.call_args[0][0]
+    args, _ = async_add_entities.call_args
+    sensors = args[0]
     sensor = sensors.pop(0)
 
     # Check that sensor state is unknown and update it.

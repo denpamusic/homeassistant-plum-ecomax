@@ -9,7 +9,7 @@ from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from pyplumio import SerialConnection, TcpConnection
-from pyplumio.devices import EcoMAX
+from pyplumio.devices import Device
 from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
 
 from custom_components.plum_ecomax.connection import (
@@ -45,7 +45,7 @@ async def test_check_connection() -> None:
     """Test helper function to check the connection."""
     mock_connection = AsyncMock(spec=TcpConnection)
     mock_connection.host = "localhost"
-    mock_device = AsyncMock(spec=EcoMAX)
+    mock_device = AsyncMock(spec=Device)
     mock_connection.get_device = AsyncMock()
     mock_connection.get_device.return_value = mock_device
     mock_product = Mock(spec=ProductInfo)
@@ -96,7 +96,7 @@ async def test_async_setup(
     """Test connection setup."""
     mock_connection_handler = AsyncMock(spec=TcpConnection)
     mock_connection_handler.host = "localhost"
-    mock_device = AsyncMock(spec=EcoMAX)
+    mock_device = AsyncMock(spec=Device)
     mock_connection_handler.get_device = AsyncMock(
         side_effect=(mock_device, asyncio.TimeoutError)
     )

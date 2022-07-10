@@ -10,6 +10,7 @@ from homeassistant.components.water_heater import (
 from homeassistant.const import PRECISION_WHOLE, TEMP_CELSIUS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from pyplumio.helpers.filters import Filter
 from pyplumio.helpers.parameter import Parameter
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -20,16 +21,12 @@ from custom_components.plum_ecomax.water_heater import (
 )
 
 
-@patch("custom_components.plum_ecomax.water_heater.throttle")
-@patch("custom_components.plum_ecomax.water_heater.on_change")
 @patch(
     "custom_components.plum_ecomax.connection.EcomaxConnection.device",
     new_callable=AsyncMock,
 )
 async def test_async_setup_and_update_entry(
     mock_device,
-    mock_on_change,
-    mock_throttle,
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
@@ -40,7 +37,8 @@ async def test_async_setup_and_update_entry(
     assert await async_setup_entry(hass, config_entry, async_add_entities)
     await hass.async_block_till_done()
     async_add_entities.assert_called_once()
-    water_heaters = async_add_entities.call_args[0][0]
+    args, _ = async_add_entities.call_args
+    water_heaters = args[0]
     water_heater = water_heaters.pop(0)
 
     # Check that switch state is unknown and update it.
@@ -98,16 +96,28 @@ async def test_async_setup_and_update_entry(
     assert water_heater.current_operation == STATE_OFF
 
     # Check added/removed to/from hass callbacks.
+    mock_throttle_filter = AsyncMock(spec=Filter)
+    mock_on_change_filter = AsyncMock(spec=Filter)
     mock_device.register_callback = Mock()
-    await water_heater.async_added_to_hass()
+    with patch(
+        "custom_components.plum_ecomax.water_heater.throttle",
+        return_value=mock_throttle_filter,
+    ), patch(
+        "custom_components.plum_ecomax.water_heater.on_change",
+        return_value=mock_on_change_filter,
+    ):
+        await water_heater.async_added_to_hass()
+
     key = water_heater.entity_description.key
     register_calls = (
-        call(f"{key}_temp", mock_throttle.return_value),
-        call(f"{key}_target_temp", mock_on_change.return_value),
-        call(f"{key}_work_mode", mock_on_change.return_value),
-        call(f"{key}_hysteresis", mock_on_change.return_value),
+        call(f"{key}_temp", mock_throttle_filter),
+        call(f"{key}_target_temp", mock_on_change_filter),
+        call(f"{key}_work_mode", mock_on_change_filter),
+        call(f"{key}_hysteresis", mock_on_change_filter),
     )
-    mock_device.register_callback.assert_has_calls(register_calls)
+    mock_device.register_callback.assert_has_calls(register_calls, any_order=True)
+    assert mock_throttle_filter.await_count == 1
+    assert mock_on_change_filter.await_count == 3
     mock_device.remove_callback = Mock()
     await water_heater.async_removed_from_hass()
     remove_calls = (

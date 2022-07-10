@@ -14,7 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 import pyplumio
 from pyplumio.connection import Connection
-from pyplumio.devices import EcoMAX
+from pyplumio.devices import Device
 from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
 from pyplumio.helpers.timeout import timeout
 
@@ -87,7 +87,7 @@ class EcomaxConnection:
     entry: ConfigEntry
     _hass: HomeAssistant
     _connection: Connection
-    _device: EcoMAX | None
+    _device: Device | None
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, connection: Connection):
         """Initialize new ecoMAX connection object."""

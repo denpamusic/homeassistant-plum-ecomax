@@ -126,18 +126,23 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     async def async_added_to_hass(self):
         """Called when an entity has their entity_id assigned."""
         key = self.entity_description.key
-        self.device.register_callback(
-            f"{key}_temp", throttle(self.async_update, timeout=10)
+        callbacks = set(
+            [
+                (f"{key}_temp", throttle(self.async_update, timeout=10)),
+                (f"{key}_target_temp", on_change(self.async_update_target_temp)),
+                (f"{key}_work_mode", on_change(self.async_update_work_mode)),
+                (f"{key}_hysteresis", on_change(self.async_update_hysteresis)),
+            ]
         )
-        self.device.register_callback(
-            f"{key}_target_temp", on_change(self.async_update_target_temp)
-        )
-        self.device.register_callback(
-            f"{key}_work_mode", on_change(self.async_update_work_mode)
-        )
-        self.device.register_callback(
-            f"{key}_hysteresis", on_change(self.async_update_hysteresis)
-        )
+
+        for callback in callbacks:
+            # Feed initial value to the callback function.
+            name, func = callback
+            value = getattr(self.device, name, None)
+            if value is not None:
+                await func(value)
+
+            self.device.register_callback(name, func)
 
     async def async_removed_from_hass(self):
         """Called when an entity is about to be removed."""
