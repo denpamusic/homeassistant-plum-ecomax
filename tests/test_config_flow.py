@@ -1,11 +1,11 @@
 """Test the Plum ecoMAX config flow."""
-from unittest.mock import patch
+import asyncio
+from unittest.mock import Mock, patch
 
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import RESULT_TYPE_CREATE_ENTRY, RESULT_TYPE_FORM
 from pyplumio.exceptions import ConnectionFailedError
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.const import (
     CONF_CAPABILITIES,
@@ -14,7 +14,6 @@ from custom_components.plum_ecomax.const import (
     CONF_MODEL,
     CONF_SOFTWARE,
     CONF_UID,
-    CONF_UPDATE_INTERVAL,
     DOMAIN,
 )
 
@@ -29,22 +28,18 @@ async def test_form_tcp(hass: HomeAssistant) -> None:
     assert result["type"] == RESULT_TYPE_FORM
     assert result["errors"] is None
 
+    title = MOCK_CONFIG_DATA[CONF_HOST]
+    product = Mock()
+    product.uid = MOCK_DEVICE_DATA[CONF_UID]
+    product.model = MOCK_DEVICE_DATA[CONF_MODEL]
+    modules = Mock()
+    modules.module_a = MOCK_DEVICE_DATA[CONF_SOFTWARE]
+    capabilities = MOCK_DEVICE_DATA[CONF_CAPABILITIES]
+
     # Set up attribute values for EcomaxTcpConnection.
     with patch(
-        "custom_components.plum_ecomax.EcomaxTcpConnection.check",
-        return_value=True,
-    ), patch(
-        "custom_components.plum_ecomax.EcomaxTcpConnection.model",
-        MOCK_DEVICE_DATA[CONF_MODEL],
-    ), patch(
-        "custom_components.plum_ecomax.EcomaxTcpConnection.uid",
-        MOCK_DEVICE_DATA[CONF_UID],
-    ), patch(
-        "custom_components.plum_ecomax.EcomaxTcpConnection.software",
-        MOCK_DEVICE_DATA[CONF_SOFTWARE],
-    ), patch(
-        "custom_components.plum_ecomax.EcomaxTcpConnection.capabilities",
-        MOCK_DEVICE_DATA[CONF_CAPABILITIES],
+        "custom_components.plum_ecomax.config_flow.check_connection",
+        return_value=(title, product, modules, capabilities),
     ), patch(
         "custom_components.plum_ecomax.async_setup_entry",
         return_value=True,
@@ -72,21 +67,17 @@ async def test_form_serial(hass: HomeAssistant) -> None:
     assert result["type"] == RESULT_TYPE_FORM
     assert result["errors"] is None
 
+    title = MOCK_CONFIG_DATA_SERIAL[CONF_DEVICE]
+    product = Mock()
+    product.uid = MOCK_DEVICE_DATA[CONF_UID]
+    product.model = MOCK_DEVICE_DATA[CONF_MODEL]
+    modules = Mock()
+    modules.module_a = MOCK_DEVICE_DATA[CONF_SOFTWARE]
+    capabilities = MOCK_DEVICE_DATA[CONF_CAPABILITIES]
+
     with patch(
-        "custom_components.plum_ecomax.EcomaxSerialConnection.check",
-        return_value=True,
-    ), patch(
-        "custom_components.plum_ecomax.EcomaxSerialConnection.model",
-        MOCK_DEVICE_DATA[CONF_MODEL],
-    ), patch(
-        "custom_components.plum_ecomax.EcomaxSerialConnection.uid",
-        MOCK_DEVICE_DATA[CONF_UID],
-    ), patch(
-        "custom_components.plum_ecomax.EcomaxSerialConnection.software",
-        MOCK_DEVICE_DATA[CONF_SOFTWARE],
-    ), patch(
-        "custom_components.plum_ecomax.EcomaxSerialConnection.capabilities",
-        MOCK_DEVICE_DATA[CONF_CAPABILITIES],
+        "custom_components.plum_ecomax.config_flow.check_connection",
+        return_value=(title, product, modules, capabilities),
     ), patch(
         "custom_components.plum_ecomax.async_setup_entry",
         return_value=True,
@@ -110,12 +101,9 @@ async def test_form_cannot_connect(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.plum_ecomax.config_flow.EcomaxTcpConnection.check",
+        "custom_components.plum_ecomax.config_flow.check_connection",
         side_effect=ConnectionFailedError,
-    ), patch(
-        "custom_components.plum_ecomax.config_flow.EcomaxTcpConnection.close",
-        return_value=True,
-    ) as mock_connection_close:
+    ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             MOCK_CONFIG_DATA,
@@ -123,7 +111,25 @@ async def test_form_cannot_connect(hass: HomeAssistant) -> None:
 
     assert result2["type"] == RESULT_TYPE_FORM
     assert result2["errors"] == {"base": "cannot_connect"}
-    mock_connection_close.assert_called_once()
+
+
+async def test_form_timeout_connect(hass: HomeAssistant) -> None:
+    """Test we handle unsupported device error."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+
+    with patch(
+        "custom_components.plum_ecomax.config_flow.check_connection",
+        side_effect=asyncio.TimeoutError,
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            MOCK_CONFIG_DATA,
+        )
+
+    assert result2["type"] == RESULT_TYPE_FORM
+    assert result2["errors"] == {"base": "timeout_connect"}
 
 
 async def test_form_unknown_error(hass: HomeAssistant) -> None:
@@ -133,7 +139,7 @@ async def test_form_unknown_error(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.plum_ecomax.config_flow.EcomaxTcpConnection.check",
+        "custom_components.plum_ecomax.config_flow.check_connection",
         side_effect=Exception,
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -143,52 +149,3 @@ async def test_form_unknown_error(hass: HomeAssistant) -> None:
 
     assert result2["type"] == RESULT_TYPE_FORM
     assert result2["errors"] == {"base": "unknown"}
-
-
-async def test_form_unsupported_device(hass: HomeAssistant) -> None:
-    """Test we handle unsupported device error."""
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": config_entries.SOURCE_USER}
-    )
-
-    with patch(
-        "custom_components.plum_ecomax.config_flow.EcomaxTcpConnection.check",
-        return_value=True,
-    ), patch(
-        "custom_components.plum_ecomax.async_setup_entry",
-        return_value=True,
-    ):
-        result2 = await hass.config_entries.flow.async_configure(
-            result["flow_id"],
-            MOCK_CONFIG_DATA,
-        )
-
-    assert result2["type"] == RESULT_TYPE_FORM
-    assert result2["errors"] == {"base": "unsupported_device"}
-
-
-async def test_options_flow(hass: HomeAssistant) -> None:
-    """Test an options flow."""
-    config_entry = MockConfigEntry(
-        domain=DOMAIN,
-        data=dict(MOCK_CONFIG_DATA, **MOCK_DEVICE_DATA),
-        entry_id="test",
-    )
-    config_entry.add_to_hass(hass)
-
-    # Check that we've got options form.
-    result = await hass.config_entries.options.async_init(config_entry.entry_id)
-    assert result["type"] == RESULT_TYPE_FORM
-    assert result["step_id"] == "init"
-
-    # Send test data via form.
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={CONF_UPDATE_INTERVAL: 20},
-    )
-
-    # Check that entry with new options was created.
-    assert result["type"] == RESULT_TYPE_CREATE_ENTRY
-    assert result["title"] == config_entry.title
-
-    assert config_entry.options == {CONF_UPDATE_INTERVAL: 20}

@@ -1,20 +1,19 @@
 """Fixtures for Plum ecoMAX test suite."""
 
-from unittest.mock import Mock, patch
+from typing import Generator
+from unittest.mock import AsyncMock, patch
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from pyplumio import Connection
 from pyplumio.helpers.parameter import Parameter
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.plum_ecomax.connection import EcomaxTcpConnection
+from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
-    CONF_CAPABILITIES,
     CONF_HOST,
-    CONF_MODEL,
-    CONF_PORT,
     CONF_SOFTWARE,
     CONF_UID,
     DOMAIN,
@@ -41,86 +40,46 @@ def fixture_device_info() -> DeviceInfo:
     )
 
 
-@pytest.fixture(name="add_entities_callback")
-def fixture_add_entities_callback() -> AddEntitiesCallback:
+@pytest.fixture(name="async_add_entities")
+def fixture_async_add_entities() -> Generator[AddEntitiesCallback, None, None]:
     """Simulate add entities callback."""
     with patch(
         "homeassistant.helpers.entity_platform.AddEntitiesCallback"
-    ) as mock_add_entities_callback:
-        yield mock_add_entities_callback
+    ) as mock_async_add_entities:
+        yield mock_async_add_entities
 
 
 @pytest.fixture(name="bypass_hass_write_ha_state")
-def fixture_bypass_hass_write_ha_state():
+def fixture_bypass_hass_write_ha_state() -> Generator[None, None, None]:
     """Bypass writing state to hass."""
     with patch("homeassistant.helpers.entity.Entity.async_write_ha_state"):
         yield
 
 
-@pytest.fixture(name="mock_connection")
-def fixture_mock_connection(device_info: DeviceInfo) -> EcomaxTcpConnection:
-    """Simulate ecoMAX response object."""
-    mock_connection = Mock()
-    mock_connection.name = MOCK_CONFIG[CONF_HOST]
-    mock_connection.device_info = device_info
-    mock_connection.uid = MOCK_CONFIG[CONF_UID]
-    mock_connection.model = MOCK_CONFIG[CONF_MODEL]
-    mock_connection.software = MOCK_CONFIG[CONF_SOFTWARE]
-    mock_connection.capabilities = MOCK_CONFIG[CONF_CAPABILITIES]
-    mock_connection.check.return_value = True
-    mock_connection.ecomax = Mock()
-    mock_connection.ecomax.product = "test_product"
-    mock_connection.ecomax.modules = "test_modules"
-    mock_connection.ecomax.data = "test_data"
-    mock_connection.ecomax.parameters = "test_parameters"
-    mock_connection.ecomax.schema = "test_schema"
-    mock_connection.ecomax.mixers = "test_mixers"
-    mock_connection.ecomax.heating_temp = 65
-    mock_connection.ecomax.heating_pump = True
-    mock_connection.ecomax.heating_target_temp = Parameter(
-        name="heating_target_temp",
-        value=65,
-        min_value=40,
-        max_value=80,
-    )
-    mock_connection.ecomax.boiler_control = Parameter(
-        name="boiler_control",
-        value=1,
-        min_value=0,
-        max_value=1,
-    )
-    mock_connection.ecomax.water_heater_target_temp = Parameter(
-        name="water_heater_target_temp",
-        value=50,
-        min_value=40,
-        max_value=60,
-    )
-    mock_connection.ecomax.water_heater_hysteresis = Parameter(
-        name="water_heater_hysteresis",
-        value=5,
-        min_value=1,
-        max_value=10,
-    )
-    mock_connection.ecomax.water_heater_temp = 50
-    mock_connection.ecomax.water_heater_work_mode = 1
-    mock_connection.ecomax.heating_temp_grate = None
-    yield mock_connection
-
-
 @pytest.fixture(name="connection")
-def fixture_connection(hass: HomeAssistant) -> EcomaxTcpConnection:
-    """Create instance of ecoMAX tcp connection."""
-    return EcomaxTcpConnection(
-        host=MOCK_CONFIG[CONF_HOST], port=MOCK_CONFIG[CONF_PORT], hass=hass
-    )
+def fixture_connection() -> Connection:
+    """Create mock pyplumio connection."""
+    return AsyncMock(spec=Connection)
 
 
 @pytest.fixture(name="config_entry")
 def fixture_config_entry(
-    hass: HomeAssistant, mock_connection: EcomaxTcpConnection
+    hass: HomeAssistant, connection: Connection
 ) -> MockConfigEntry:
     """Create mock config entry and add it to hass."""
     config_entry = MockConfigEntry(domain=DOMAIN, data=MOCK_CONFIG, entry_id="test")
+    hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = EcomaxConnection(
+        hass, config_entry, connection
+    )
     config_entry.add_to_hass(hass)
-    hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = mock_connection
-    yield config_entry
+    return config_entry
+
+
+@pytest.fixture(name="boiler_parameter")
+def fixture_boiler_parameter() -> Parameter:
+    """Create mock boiler parameter."""
+    parameter = AsyncMock(spec=Parameter)
+    parameter.value = 1
+    parameter.min_value = 0
+    parameter.max_value = 1
+    return parameter

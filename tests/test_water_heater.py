@@ -1,4 +1,6 @@
-"""Test Plum ecoMAX water heater."""
+"""Test Plum ecoMAX water heater platform."""
+
+from unittest.mock import AsyncMock, call, patch
 
 from homeassistant.components.water_heater import (
     STATE_OFF,
@@ -8,11 +10,9 @@ from homeassistant.components.water_heater import (
 from homeassistant.const import PRECISION_WHOLE, TEMP_CELSIUS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-import pytest
-import pytest_asyncio
+from pyplumio.helpers.parameter import Parameter
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.plum_ecomax.connection import EcomaxTcpConnection
 from custom_components.plum_ecomax.water_heater import (
     WATER_HEATER_MODES,
     EcomaxWaterHeater,
@@ -20,94 +20,95 @@ from custom_components.plum_ecomax.water_heater import (
 )
 
 
-@pytest_asyncio.fixture(name="test_water_heater")
-async def fixture_test_water_heater(
-    hass: HomeAssistant,
-    add_entities_callback: AddEntitiesCallback,
-    config_entry: MockConfigEntry,
-    bypass_hass_write_ha_state,
-) -> EcomaxWaterHeater:
-    """Setup water heater entities and get a single water heater."""
-    await async_setup_entry(hass, config_entry, add_entities_callback)
-    add_entities_callback.assert_called_once()
-    water_heaters = add_entities_callback.call_args[0][0]
-    water_heater = [
-        x for x in water_heaters if x.entity_description.key == "water_heater"
-    ]
-    yield water_heater[0]
-
-
-@pytest.mark.asyncio
+@patch("custom_components.plum_ecomax.water_heater.debounce")
+@patch("custom_components.plum_ecomax.water_heater.on_change")
+@patch(
+    "custom_components.plum_ecomax.connection.EcomaxConnection.device",
+    new_callable=AsyncMock,
+)
 async def test_async_setup_and_update_entry(
-    test_water_heater: EcomaxWaterHeater, mock_connection: EcomaxTcpConnection
+    mock_device,
+    mock_on_change,
+    mock_debounce,
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
+    boiler_parameter: Parameter,
+    bypass_hass_write_ha_state,
 ) -> None:
-    """Test setup and update of water heater entity."""
-    # Check that sensor state is unknown and update it.
-    assert isinstance(test_water_heater, EcomaxWaterHeater)
-    assert test_water_heater.temperature_unit == TEMP_CELSIUS
-    assert test_water_heater.precision == PRECISION_WHOLE
-    assert (
-        test_water_heater.supported_features
-        == WaterHeaterEntityFeature.TARGET_TEMPERATURE
+    """Test setup and update water_heater entry."""
+    assert await async_setup_entry(hass, config_entry, async_add_entities)
+    await hass.async_block_till_done()
+    async_add_entities.assert_called_once()
+    water_heaters = async_add_entities.call_args[0][0]
+    water_heater = water_heaters.pop(0)
+
+    # Check that switch state is unknown and update it.
+    assert isinstance(water_heater, EcomaxWaterHeater)
+    assert water_heater.temperature_unit == TEMP_CELSIUS
+    assert water_heater.precision == PRECISION_WHOLE
+    assert water_heater.supported_features == (
+        WaterHeaterEntityFeature.TARGET_TEMPERATURE
         + WaterHeaterEntityFeature.OPERATION_MODE
     )
-    assert test_water_heater.operation_list == WATER_HEATER_MODES
-    assert test_water_heater.min_temp is None
-    assert test_water_heater.max_temp is None
-    assert test_water_heater.current_temperature is None
-    assert test_water_heater.target_temperature is None
-    assert test_water_heater.target_temperature_high is None
-    assert test_water_heater.target_temperature_low is None
-    assert test_water_heater.current_operation is None
+    assert water_heater.operation_list == WATER_HEATER_MODES
+    assert water_heater.min_temp is None
+    assert water_heater.max_temp is None
+    assert water_heater.target_temperature is None
+    assert water_heater.target_temperature_high is None
+    assert water_heater.target_temperature_low is None
+    assert water_heater.current_temperature is None
+    assert water_heater.current_operation is None
+    assert water_heater.hysteresis == 0
 
-    # Update entity and check that attributes was correctly set.
-    await test_water_heater.async_update()
-    assert test_water_heater.min_temp == 40
-    assert test_water_heater.max_temp == 60
-    assert test_water_heater.current_temperature == 50
-    assert test_water_heater.target_temperature == 50
-    assert test_water_heater.target_temperature_high == 50
-    assert test_water_heater.target_temperature_low == 45
-    assert test_water_heater.current_operation == STATE_PERFORMANCE
+    # Update current operation.
+    await water_heater.async_update_work_mode(boiler_parameter)
+    assert water_heater.current_operation == STATE_PERFORMANCE
 
-    # Unset target temperature and check that attributes is unknown.
-    mock_connection.ecomax.water_heater_target_temp = None
-    await test_water_heater.async_update()
-    assert test_water_heater.min_temp is None
-    assert test_water_heater.max_temp is None
-    assert test_water_heater.target_temperature is None
-    assert test_water_heater.target_temperature_high is None
-    assert test_water_heater.target_temperature_low is None
-    assert test_water_heater.current_operation is None
+    # Update target temperature.
+    await water_heater.async_update_target_temp(boiler_parameter)
+    assert water_heater.min_temp == 0
+    assert water_heater.max_temp == 1
+    assert water_heater.target_temperature == 1
+    assert water_heater.target_temperature_high == 1
+    assert water_heater.target_temperature_low == 1
 
+    # Update hysteresis.
+    await water_heater.async_update_hysteresis(boiler_parameter)
+    assert water_heater.hysteresis == 1
+    assert water_heater.target_temperature_low == 0
 
-@pytest.mark.asyncio
-async def test_target_lower_without_hysteresis(
-    test_water_heater: EcomaxWaterHeater, mock_connection: EcomaxTcpConnection
-) -> None:
-    """Test lower bound without hysteresis value."""
-    mock_connection.ecomax.water_heater_hysteresis = None
-    await test_water_heater.async_update()
-    assert test_water_heater.target_temperature_low == 50
+    # Update current temperature.
+    await water_heater.async_update(50)
+    assert water_heater.current_temperature == 50
 
-
-@pytest.mark.asyncio
-async def test_async_set_temperature(
-    test_water_heater: EcomaxWaterHeater, mock_connection: EcomaxTcpConnection
-) -> None:
-    """Test set water heater target temperature."""
-    await test_water_heater.async_set_temperature(temperature=60)
-    assert test_water_heater.target_temperature == 60
-    assert mock_connection.ecomax.water_heater_target_temp == 60
-
-
-@pytest.mark.asyncio
-async def test_async_set_operation_mode(
-    test_water_heater: EcomaxWaterHeater, mock_connection: EcomaxTcpConnection
-) -> None:
-    """Test set water heater operation mode."""
-    await test_water_heater.async_set_operation_mode(STATE_OFF)
-    assert test_water_heater.current_operation == STATE_OFF
-    assert mock_connection.ecomax.water_heater_work_mode == WATER_HEATER_MODES.index(
-        STATE_OFF
+    # Set target temperature.
+    await water_heater.async_set_temperature(temperature=0)
+    mock_device.set_value.assert_called_once_with(
+        f"{water_heater.entity_description.key}_target_temp", 0
     )
+    assert water_heater.target_temperature == 0
+    mock_device.reset_mock()
+
+    # Set current operation.
+    await water_heater.async_set_operation_mode(STATE_OFF)
+    mock_device.set_value.assert_called_once_with(
+        f"{water_heater.entity_description.key}_work_mode", 0
+    )
+    assert water_heater.current_operation == STATE_OFF
+
+    # Check water_heater callbacks.
+    key = water_heater.entity_description.key
+    assert water_heater.callbacks == {
+        f"{key}_temp": mock_debounce.return_value,
+        f"{key}_target_temp": mock_on_change.return_value,
+        f"{key}_work_mode": mock_on_change.return_value,
+        f"{key}_hysteresis": mock_on_change.return_value,
+    }
+    calls = [
+        call(water_heater.async_update_target_temp),
+        call(water_heater.async_update_work_mode),
+        call(water_heater.async_update_hysteresis),
+    ]
+    mock_debounce.assert_called_once_with(water_heater.async_update, min_calls=3)
+    mock_on_change.assert_has_calls(calls)

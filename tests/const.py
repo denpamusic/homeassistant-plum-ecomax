@@ -9,7 +9,6 @@ from custom_components.plum_ecomax.const import (
     CONF_PORT,
     CONF_SOFTWARE,
     CONF_UID,
-    CONF_UPDATE_INTERVAL,
     CONNECTION_TYPE_SERIAL,
     CONNECTION_TYPE_TCP,
 )
@@ -20,7 +19,6 @@ MOCK_CONFIG_DATA = {
     CONF_DEVICE: "/dev/ttyUSB0",
     CONF_HOST: "example.com",
     CONF_PORT: 8899,
-    CONF_UPDATE_INTERVAL: 10,
 }
 
 # Config entry data for serial connection.
@@ -28,7 +26,6 @@ MOCK_CONFIG_DATA_SERIAL = {
     CONF_CONNECTION_TYPE: CONNECTION_TYPE_SERIAL,
     CONF_DEVICE: "/dev/ttyUSB0",
     CONF_PORT: 8899,
-    CONF_UPDATE_INTERVAL: 10,
 }
 
 # Device data that added on entry create.
