@@ -15,6 +15,7 @@ from homeassistant.helpers.entity import DeviceInfo
 import pyplumio
 from pyplumio.connection import Connection
 from pyplumio.devices import EcoMAX
+from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
 from pyplumio.helpers.timeout import timeout
 
 from .const import (
@@ -49,7 +50,9 @@ async def get_connection_handler(
 
 
 @timeout(seconds=15)
-async def check_connection(connection: Connection):
+async def check_connection(
+    connection: Connection,
+) -> tuple[str, ProductInfo, ConnectedModules, list[str]]:
     """Perform connection check."""
     title = (
         connection.host
@@ -93,13 +96,21 @@ class EcomaxConnection:
         self._connection = connection
         self.entry = entry
 
+    def __getattr__(self, name: str):
+        """Proxy calls to the underlying connection handler class."""
+        if hasattr(self._connection, name):
+            return getattr(self._connection, name)
+
+        return None
+
+    async def _close(self, event=None) -> None:
+        """Close connection on hass stop."""
+        await self.connection.close()
+
     async def async_setup(self) -> bool:
         """Setup connection and add hass stop handler."""
 
-        async def _close(event=None) -> None:
-            await self.connection.close()
-
-        self._hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, _close)
+        self._hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self._close)
         await self.connection.connect()
 
         try:
@@ -109,13 +120,6 @@ class EcomaxConnection:
             return False
 
         return True
-
-    def __getattr__(self, name: str):
-        """Proxy calls to the underlying connection handler class."""
-        if hasattr(self._connection, name):
-            return getattr(self._connection, name)
-
-        return None
 
     @property
     def device(self):
