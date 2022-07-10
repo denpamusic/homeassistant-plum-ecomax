@@ -26,8 +26,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory, EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, StateType
-from pyplumio.helpers.filters import debounce
-from pyplumio.helpers.typing import ValueCallback
+from pyplumio.helpers.filters import on_change, throttle
 
 from .connection import EcomaxConnection
 from .const import DOMAIN, FLOW_KGH
@@ -63,6 +62,8 @@ class EcomaxSensorEntityDescription(
 ):
     """Describes ecoMAX sensor entity."""
 
+    filter_fn: Callable[[Any], Any] = on_change
+
 
 SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
@@ -73,6 +74,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda x: round(x, 1),
+        filter_fn=lambda x: throttle(on_change(x), timeout=10),
     ),
     EcomaxSensorEntityDescription(
         key="water_heater_temp",
@@ -82,6 +84,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda x: round(x, 1),
+        filter_fn=lambda x: throttle(on_change(x), timeout=10),
     ),
     EcomaxSensorEntityDescription(
         key="exhaust_temp",
@@ -91,6 +94,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda x: round(x, 1),
+        filter_fn=lambda x: throttle(on_change(x), timeout=10),
     ),
     EcomaxSensorEntityDescription(
         key="outside_temp",
@@ -100,6 +104,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda x: round(x, 1),
+        filter_fn=lambda x: throttle(on_change(x), timeout=10),
     ),
     EcomaxSensorEntityDescription(
         key="heating_target",
@@ -127,6 +132,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda x: round(x, 1),
+        filter_fn=lambda x: throttle(on_change(x), timeout=10),
     ),
     EcomaxSensorEntityDescription(
         key="load",
@@ -159,6 +165,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda x: x,
+        filter_fn=lambda x: throttle(on_change(x), timeout=10),
     ),
     EcomaxSensorEntityDescription(
         key="fuel_consumption",
@@ -167,6 +174,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=FLOW_KGH,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda x: x,
+        filter_fn=lambda x: throttle(on_change(x), timeout=10),
     ),
     EcomaxSensorEntityDescription(
         key="fuel_burned",
@@ -220,11 +228,6 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
         """Update entity state."""
         self._attr_native_value = self.entity_description.value_fn(value)
         self.async_write_ha_state()
-
-    @property
-    def callbacks(self) -> dict[str, ValueCallback]:
-        """Return callback functions mapped with value names."""
-        return {self.entity_description.key: debounce(self.async_update, min_calls=3)}
 
 
 async def async_setup_entry(

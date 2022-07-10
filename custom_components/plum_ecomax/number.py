@@ -1,7 +1,9 @@
 """Platform for number integration."""
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Any
 
 from homeassistant.components.number import (
     EntityDescription,
@@ -12,6 +14,7 @@ from homeassistant.const import PERCENTAGE, TEMP_CELSIUS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
+from pyplumio.helpers.filters import on_change
 from pyplumio.helpers.parameter import Parameter
 
 from .connection import EcomaxConnection
@@ -23,11 +26,13 @@ from .entity import EcomaxEntity
 class EcomaxNumberEntityDescription(NumberEntityDescription):
     """Describes ecoMAX number entity."""
 
+    filter_fn: Callable[[Any], Any] = on_change
+
 
 NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="heating_target_temp",
-        name="Heating Temperature",
+        name="Heating Target Temperature",
         native_unit_of_measurement=TEMP_CELSIUS,
         native_step=1,
     ),

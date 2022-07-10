@@ -1,13 +1,16 @@
 """Platform for switch integration."""
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Any
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
+from pyplumio.helpers.filters import on_change
 from pyplumio.helpers.parameter import Parameter
 
 from .connection import EcomaxConnection
@@ -21,6 +24,7 @@ class EcomaxSwitchEntityDescription(SwitchEntityDescription):
 
     state_off: int = 0
     state_on: int = 1
+    filter_fn: Callable[[Any], Any] = on_change
 
 
 SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (

@@ -14,25 +14,27 @@ class TestEntity(EcomaxEntity):
         """Retrieve latest state."""
 
 
-@patch("custom_components.plum_ecomax.entity.on_change")
+@patch.object(TestEntity, "async_update")
 @patch(
     "custom_components.plum_ecomax.entity.EcomaxEntity.connection",
     new_callable=AsyncMock,
 )
-async def test_base_entity(mock_connection, mock_on_change) -> None:
+async def test_base_entity(mock_connection, mock_async_update) -> None:
     """Test base entity."""
     entity = TestEntity()
     entity.entity_description = EntityDescription("test_entity", name="Test Entity")
+    entity.entity_description.filter_fn = Mock()
     mock_connection.device = Mock()
 
     # Test added/removed to/from hass.
     await entity.async_added_to_hass()
+    entity.entity_description.filter_fn.assert_called_once()
     entity.device.register_callback.assert_called_once_with(
-        "test_entity", mock_on_change.return_value
+        "test_entity", entity.entity_description.filter_fn.return_value
     )
     await entity.async_removed_from_hass()
     entity.device.remove_callback.assert_called_once_with(
-        "test_entity", mock_on_change.return_value
+        "test_entity", mock_async_update
     )
 
     # Test device property.

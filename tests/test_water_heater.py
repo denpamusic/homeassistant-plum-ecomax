@@ -1,6 +1,6 @@
 """Test Plum ecoMAX water heater platform."""
 
-from unittest.mock import AsyncMock, call, patch
+from unittest.mock import AsyncMock, Mock, call, patch
 
 from homeassistant.components.water_heater import (
     STATE_OFF,
@@ -20,7 +20,7 @@ from custom_components.plum_ecomax.water_heater import (
 )
 
 
-@patch("custom_components.plum_ecomax.water_heater.debounce")
+@patch("custom_components.plum_ecomax.water_heater.throttle")
 @patch("custom_components.plum_ecomax.water_heater.on_change")
 @patch(
     "custom_components.plum_ecomax.connection.EcomaxConnection.device",
@@ -29,7 +29,7 @@ from custom_components.plum_ecomax.water_heater import (
 async def test_async_setup_and_update_entry(
     mock_device,
     mock_on_change,
-    mock_debounce,
+    mock_throttle,
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
@@ -97,18 +97,23 @@ async def test_async_setup_and_update_entry(
     )
     assert water_heater.current_operation == STATE_OFF
 
-    # Check water_heater callbacks.
+    # Check added/removed to/from hass callbacks.
+    mock_device.register_callback = Mock()
+    await water_heater.async_added_to_hass()
     key = water_heater.entity_description.key
-    assert water_heater.callbacks == {
-        f"{key}_temp": mock_debounce.return_value,
-        f"{key}_target_temp": mock_on_change.return_value,
-        f"{key}_work_mode": mock_on_change.return_value,
-        f"{key}_hysteresis": mock_on_change.return_value,
-    }
-    calls = [
-        call(water_heater.async_update_target_temp),
-        call(water_heater.async_update_work_mode),
-        call(water_heater.async_update_hysteresis),
-    ]
-    mock_debounce.assert_called_once_with(water_heater.async_update, min_calls=3)
-    mock_on_change.assert_has_calls(calls)
+    register_calls = (
+        call(f"{key}_temp", mock_throttle.return_value),
+        call(f"{key}_target_temp", mock_on_change.return_value),
+        call(f"{key}_work_mode", mock_on_change.return_value),
+        call(f"{key}_hysteresis", mock_on_change.return_value),
+    )
+    mock_device.register_callback.assert_has_calls(register_calls)
+    mock_device.remove_callback = Mock()
+    await water_heater.async_removed_from_hass()
+    remove_calls = (
+        call(f"{key}_temp", water_heater.async_update),
+        call(f"{key}_target_temp", water_heater.async_update_target_temp),
+        call(f"{key}_work_mode", water_heater.async_update_work_mode),
+        call(f"{key}_hysteresis", water_heater.async_update_hysteresis),
+    )
+    mock_device.remove_callback.assert_has_calls(remove_calls)

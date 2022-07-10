@@ -1,6 +1,6 @@
 """Test Plum ecoMAX sensor."""
 
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -9,9 +9,11 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.plum_ecomax.sensor import EcomaxSensor, async_setup_entry
 
 
-@patch("custom_components.plum_ecomax.sensor.debounce")
+@patch("custom_components.plum_ecomax.sensor.on_change")
+@patch("custom_components.plum_ecomax.sensor.throttle")
 async def test_async_setup_and_update_entry(
-    mock_debounce,
+    mock_throttle,
+    mock_on_change,
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
@@ -31,7 +33,7 @@ async def test_async_setup_and_update_entry(
     assert sensor.native_value == 65
 
     # Check sensor callbacks.
-    assert sensor.callbacks == {
-        sensor.entity_description.key: mock_debounce.return_value
-    }
-    mock_debounce.assert_called_once_with(sensor.async_update, min_calls=3)
+    callback = AsyncMock()
+    assert sensor.entity_description.filter_fn(callback) == mock_throttle.return_value
+    mock_throttle.assert_called_once_with(mock_on_change.return_value, timeout=10)
+    mock_on_change.assert_called_once_with(callback)

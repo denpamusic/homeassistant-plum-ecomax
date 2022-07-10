@@ -17,9 +17,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
-from pyplumio.helpers.filters import debounce, on_change
+from pyplumio.helpers.filters import on_change, throttle
 from pyplumio.helpers.parameter import Parameter
-from pyplumio.helpers.typing import ValueCallback
 
 from .connection import EcomaxConnection
 from .const import DOMAIN
@@ -124,16 +123,29 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         self._attr_current_temperature = value
         self.async_write_ha_state()
 
-    @property
-    def callbacks(self) -> dict[str, ValueCallback]:
-        """Return callback functions mapped with value names."""
+    async def async_added_to_hass(self):
+        """Called when an entity has their entity_id assigned."""
         key = self.entity_description.key
-        return {
-            f"{key}_temp": debounce(self.async_update, min_calls=3),
-            f"{key}_target_temp": on_change(self.async_update_target_temp),
-            f"{key}_work_mode": on_change(self.async_update_work_mode),
-            f"{key}_hysteresis": on_change(self.async_update_hysteresis),
-        }
+        self.device.register_callback(
+            f"{key}_temp", throttle(self.async_update, timeout=10)
+        )
+        self.device.register_callback(
+            f"{key}_target_temp", on_change(self.async_update_target_temp)
+        )
+        self.device.register_callback(
+            f"{key}_work_mode", on_change(self.async_update_work_mode)
+        )
+        self.device.register_callback(
+            f"{key}_hysteresis", on_change(self.async_update_hysteresis)
+        )
+
+    async def async_removed_from_hass(self):
+        """Called when an entity is about to be removed."""
+        key = self.entity_description.key
+        self.device.remove_callback(f"{key}_temp", self.async_update)
+        self.device.remove_callback(f"{key}_target_temp", self.async_update_target_temp)
+        self.device.remove_callback(f"{key}_work_mode", self.async_update_work_mode)
+        self.device.remove_callback(f"{key}_hysteresis", self.async_update_hysteresis)
 
     @property
     def hysteresis(self) -> int:

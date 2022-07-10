@@ -1,7 +1,9 @@
 """Platform for binary sensor integration."""
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Any
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -11,6 +13,7 @@ from homeassistant.components.binary_sensor import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
+from pyplumio.helpers.filters import on_change
 
 from .connection import EcomaxConnection
 from .const import DOMAIN
@@ -20,6 +23,8 @@ from .entity import EcomaxEntity
 @dataclass
 class EcomaxBinarySensorEntityDescription(BinarySensorEntityDescription):
     """Describes ecoMAX binary sensor entity."""
+
+    filter_fn: Callable[[Any], Any] = on_change
 
 
 BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
