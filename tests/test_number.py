@@ -32,12 +32,12 @@ async def test_async_setup_and_update_entry(
     # Check that number values is unknown and update them.
     assert isinstance(number, EcomaxNumber)
     assert number.native_value is None
-    assert number.min_value is None
-    assert number.max_value is None
+    assert number.native_min_value is None
+    assert number.native_max_value is None
     await number.async_update(boiler_parameter)
     assert number.native_value == 1
-    assert number.min_value == 0
-    assert number.max_value == 1
+    assert number.native_min_value == 0
+    assert number.native_max_value == 1
 
     # Change number value.
     await number.async_set_native_value(2.2)

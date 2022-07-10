@@ -29,37 +29,37 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         key="heating_target_temp",
         name="Heating Temperature",
         native_unit_of_measurement=TEMP_CELSIUS,
-        step=1,
+        native_step=1,
     ),
     EcomaxNumberEntityDescription(
         key="heating_temp_grate",
         name="Grate Mode Temperature",
         native_unit_of_measurement=TEMP_CELSIUS,
-        step=1,
+        native_step=1,
     ),
     EcomaxNumberEntityDescription(
         key="min_heating_target_temp",
         name="Minimum Heating Temperature",
         native_unit_of_measurement=TEMP_CELSIUS,
-        step=1,
+        native_step=1,
     ),
     EcomaxNumberEntityDescription(
         key="max_heating_target_temp",
         name="Maximum Heating Temperature",
         native_unit_of_measurement=TEMP_CELSIUS,
-        step=1,
+        native_step=1,
     ),
     EcomaxNumberEntityDescription(
         key="min_fuzzy_logic_power",
         name="Fuzzy Logic Minimum Power",
         native_unit_of_measurement=PERCENTAGE,
-        step=1,
+        native_step=1,
     ),
     EcomaxNumberEntityDescription(
         key="max_fuzzy_logic_power",
         name="Fuzzy Logic Maximum Power",
         native_unit_of_measurement=PERCENTAGE,
-        step=1,
+        native_step=1,
     ),
 )
 
@@ -70,8 +70,8 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
     _connection: EcomaxConnection
     entity_description: EntityDescription
     _attr_native_value: float | None
-    _attr_min_value: float | None
-    _attr_max_value: float | None
+    _attr_native_min_value: float | None
+    _attr_native_max_value: float | None
 
     def __init__(
         self, connection: EcomaxConnection, description: EcomaxNumberEntityDescription
@@ -79,8 +79,8 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
         self._connection = connection
         self.entity_description = description
         self._attr_native_value = None
-        self._attr_min_value = None
-        self._attr_max_value = None
+        self._attr_native_min_value = None
+        self._attr_native_max_value = None
 
     async def async_set_native_value(self, value: float) -> None:
         """Update current value."""
@@ -91,8 +91,8 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
     async def async_update(self, value: Parameter) -> None:
         """Update entity state."""
         self._attr_native_value = value.value
-        self._attr_min_value = value.min_value
-        self._attr_max_value = value.max_value
+        self._attr_native_min_value = value.min_value
+        self._attr_native_max_value = value.max_value
         self.async_write_ha_state()
 
 
