@@ -62,7 +62,7 @@ async def check_connection(connection: Connection):
     modules = await device.get_value("modules")
     sensors = await device.get_value("sensors")
     parameters = await device.get_value("parameters")
-    capabilities = set(sensors.keys() + parameters.keys())
+    capabilities = set(list(sensors.keys()) + list(parameters.keys()))
     for capability in ("fuel_burned", "boiler_control", "password"):
         try:
             await device.get_value(capability)
