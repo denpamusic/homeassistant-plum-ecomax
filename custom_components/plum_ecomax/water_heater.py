@@ -100,14 +100,14 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         """Update target temperature."""
         self._attr_min_temp = value.min_value
         self._attr_max_temp = value.max_value
-        self._attr_target_temperature = int(value)
-        self._attr_target_temperature_high = int(value)
-        self._attr_target_temperature_low = int(value) - self.hysteresis
+        self._attr_target_temperature = value.value
+        self._attr_target_temperature_high = value.value
+        self._attr_target_temperature_low = value.value - self.hysteresis
         self.async_write_ha_state()
 
     async def async_update_hysteresis(self, value: Parameter) -> None:
         """Update lower target temperature bound."""
-        self._attr_hysteresis = int(value)
+        self._attr_hysteresis = value.value
         if self.target_temperature is not None:
             self._attr_target_temperature_low = (
                 int(self.target_temperature) - self.hysteresis
@@ -116,7 +116,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
 
     async def async_update_work_mode(self, value: Parameter) -> None:
         """Update current operation."""
-        self._attr_current_operation = ecomax_to_hass_mode(int(value))
+        self._attr_current_operation = ecomax_to_hass_mode(value.value)
         self.async_write_ha_state()
 
     async def async_update(self, value) -> None:
