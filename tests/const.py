@@ -31,8 +31,8 @@ MOCK_CONFIG_DATA_SERIAL = {
 # Device data that added on entry create.
 MOCK_DEVICE_DATA = {
     CONF_UID: "D251PAKR3GCPZ1K8G05G0",
-    CONF_MODEL: "EM350P2",
-    CONF_SOFTWARE: "1.13.5.Z1",
+    CONF_MODEL: "EMTEST",
+    CONF_SOFTWARE: "1.13.5.A1",
     CONF_CAPABILITIES: ["fuel_burned", "heating_temp"],
 }
 

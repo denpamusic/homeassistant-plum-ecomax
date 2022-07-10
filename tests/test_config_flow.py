@@ -1,4 +1,4 @@
-"""Test the Plum ecoMAX config flow."""
+"""Test Plum ecoMAX config flow."""
 import asyncio
 from unittest.mock import Mock, patch
 
