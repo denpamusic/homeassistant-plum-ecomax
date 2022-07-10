@@ -28,37 +28,37 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="heating_target_temp",
         name="Heating Temperature",
-        unit_of_measurement=TEMP_CELSIUS,
+        native_unit_of_measurement=TEMP_CELSIUS,
         step=1,
     ),
     EcomaxNumberEntityDescription(
         key="heating_temp_grate",
         name="Grate Mode Temperature",
-        unit_of_measurement=TEMP_CELSIUS,
+        native_unit_of_measurement=TEMP_CELSIUS,
         step=1,
     ),
     EcomaxNumberEntityDescription(
         key="min_heating_target_temp",
         name="Minimum Heating Temperature",
-        unit_of_measurement=TEMP_CELSIUS,
+        native_unit_of_measurement=TEMP_CELSIUS,
         step=1,
     ),
     EcomaxNumberEntityDescription(
         key="max_heating_target_temp",
         name="Maximum Heating Temperature",
-        unit_of_measurement=TEMP_CELSIUS,
+        native_unit_of_measurement=TEMP_CELSIUS,
         step=1,
     ),
     EcomaxNumberEntityDescription(
         key="min_fuzzy_logic_power",
         name="Fuzzy Logic Minimum Power",
-        unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=PERCENTAGE,
         step=1,
     ),
     EcomaxNumberEntityDescription(
         key="max_fuzzy_logic_power",
         name="Fuzzy Logic Maximum Power",
-        unit_of_measurement=PERCENTAGE,
+        native_unit_of_measurement=PERCENTAGE,
         step=1,
     ),
 )
