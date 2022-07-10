@@ -59,8 +59,8 @@ async def validate_input(
         )
     except ConnectionFailedError as connection_failure:
         raise CannotConnect from connection_failure
-    except asyncio.TimeoutError as device_timeout:
-        raise TimeoutConnect from device_timeout
+    except asyncio.TimeoutError as connection_timeout:
+        raise TimeoutConnect from connection_timeout
 
     return {
         CONF_TITLE: title,

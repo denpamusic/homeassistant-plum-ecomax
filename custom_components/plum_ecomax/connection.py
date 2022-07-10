@@ -62,16 +62,16 @@ async def check_connection(connection: Connection):
     modules = await device.get_value("modules")
     sensors = await device.get_value("sensors")
     parameters = await device.get_value("parameters")
-    capabilities = sensors.keys() + parameters.keys()
+    capabilities = set(sensors.keys() + parameters.keys())
     for capability in ("fuel_burned", "boiler_control", "password"):
         try:
             await device.get_value(capability)
-            capabilities.append(capability)
+            capabilities.add(capability)
         except asyncio.TimeoutError:
             continue
 
     if "water_heater_temp" in capabilities:
-        capabilities.append("water_heater")
+        capabilities.add("water_heater")
 
     await connection.close()
 
@@ -138,7 +138,7 @@ class EcomaxConnection:
         return self.entry.data[CONF_SOFTWARE]
 
     @property
-    def capabilities(self) -> list[str]:
+    def capabilities(self) -> set[str]:
         """Return the product capabilities."""
         return self.entry.data[CONF_CAPABILITIES]
 
