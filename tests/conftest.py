@@ -4,7 +4,6 @@ from typing import Generator
 from unittest.mock import AsyncMock, patch
 
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio import Connection
 from pyplumio.helpers.parameter import Parameter
@@ -12,12 +11,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import (
-    CONF_HOST,
-    CONF_SOFTWARE,
-    CONF_UID,
-    DOMAIN,
-)
+from custom_components.plum_ecomax.const import DOMAIN
 
 from .const import MOCK_CONFIG
 
@@ -26,18 +20,6 @@ from .const import MOCK_CONFIG
 def auto_enable_custom_integrations(enable_custom_integrations):
     """Enable custom integrations for hass."""
     yield
-
-
-@pytest.fixture(name="device_info")
-def fixture_device_info() -> DeviceInfo:
-    """Create instance of device info."""
-    return DeviceInfo(
-        name=MOCK_CONFIG[CONF_HOST],
-        identifiers={(DOMAIN, MOCK_CONFIG[CONF_UID])},
-        manufacturer="Plum Sp. z o.o.",
-        model=f"ecoMAX 350P2 (uid: {MOCK_CONFIG[CONF_UID]})",
-        sw_version=MOCK_CONFIG[CONF_SOFTWARE],
-    )
 
 
 @pytest.fixture(name="async_add_entities")
