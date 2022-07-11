@@ -9,6 +9,7 @@ from homeassistant.components.number import (
     EntityDescription,
     NumberEntity,
     NumberEntityDescription,
+    NumberMode,
 )
 from homeassistant.const import PERCENTAGE, TEMP_CELSIUS
 from homeassistant.core import HomeAssistant
@@ -37,6 +38,7 @@ class EcomaxNumberEntityDescription(
     """Describes ecoMAX number entity."""
 
     filter_fn: Callable[[Any], Any] = on_change
+    mode: str = NumberMode.AUTO
 
 
 NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
@@ -95,6 +97,7 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         native_step=0.1,
         value_get_fn=lambda x: x / 10,
         value_set_fn=lambda x: x * 10,
+        mode=NumberMode.BOX,
     ),
 )
 
@@ -107,6 +110,7 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
     _attr_native_value: float | None
     _attr_native_min_value: float | None
     _attr_native_max_value: float | None
+    _attr_mode: NumberMode = NumberMode.AUTO
 
     def __init__(
         self, connection: EcomaxConnection, description: EcomaxNumberEntityDescription
@@ -116,6 +120,7 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
         self._attr_native_value = None
         self._attr_native_min_value = None
         self._attr_native_max_value = None
+        self._attr_mode = description.mode
 
     async def async_set_native_value(self, value: float) -> None:
         """Update current value."""
