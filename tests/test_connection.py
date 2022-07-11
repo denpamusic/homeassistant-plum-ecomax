@@ -128,7 +128,7 @@ async def test_async_setup(
         name=connection.name,
         identifiers={(DOMAIN, connection.uid)},
         manufacturer="Plum Sp. z o.o.",
-        model=f"{connection.model} (uid: {connection.uid})",
+        model=f"{connection.model}",
         sw_version=connection.software,
     )
 

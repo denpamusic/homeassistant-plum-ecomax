@@ -207,6 +207,18 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         value_fn=lambda x: x,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
+    EcomaxSensorEntityDescription(
+        key="modules",
+        name="Software Version",
+        value_fn=lambda x: x.module_a,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+    EcomaxSensorEntityDescription(
+        key="product",
+        name="UID",
+        value_fn=lambda x: x.uid,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
 )
 
 

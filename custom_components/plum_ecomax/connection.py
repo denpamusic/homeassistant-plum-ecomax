@@ -166,6 +166,6 @@ class EcomaxConnection:
             name=self.name,
             identifiers={(DOMAIN, self.uid)},
             manufacturer="Plum Sp. z o.o.",
-            model=f"{self.model} (uid: {self.uid})",
+            model=f"{self.model}",
             sw_version=self.software,
         )
