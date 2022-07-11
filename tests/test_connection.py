@@ -76,6 +76,8 @@ async def test_check_connection() -> None:
         mock_product,
         mock_modules,
         [
+            "product",
+            "modules",
             "test_sensor",
             "water_heater_temp",
             "test_parameter",
