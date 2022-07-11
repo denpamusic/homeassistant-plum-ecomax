@@ -50,7 +50,6 @@ cp -r ./homeassistant-plum-ecomax/custom_components ~/.homeassistant
 ## Usage
 1. Click `Add Integration` button and search for `Plum ecoMAX`.
 
-
 ![Search dialog](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/search.png)
 
 2. Enter your connection details and click `Submit`.  
