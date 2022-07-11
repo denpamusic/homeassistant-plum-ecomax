@@ -23,7 +23,17 @@ from .entity import EcomaxEntity
 
 
 @dataclass
-class EcomaxNumberEntityDescription(NumberEntityDescription):
+class EcomaxNumberEntityAdditionalKeys:
+    """Additional keys for ecoMAX number entity description."""
+
+    value_get_fn: Callable[[Any], Any]
+    value_set_fn: Callable[[Any], Any]
+
+
+@dataclass
+class EcomaxNumberEntityDescription(
+    NumberEntityDescription, EcomaxNumberEntityAdditionalKeys
+):
     """Describes ecoMAX number entity."""
 
     filter_fn: Callable[[Any], Any] = on_change
@@ -35,42 +45,56 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         name="Heating Target Temperature",
         native_unit_of_measurement=TEMP_CELSIUS,
         native_step=1,
+        value_get_fn=lambda x: x,
+        value_set_fn=lambda x: x,
     ),
     EcomaxNumberEntityDescription(
         key="heating_temp_grate",
         name="Grate Mode Temperature",
         native_unit_of_measurement=TEMP_CELSIUS,
         native_step=1,
+        value_get_fn=lambda x: x,
+        value_set_fn=lambda x: x,
     ),
     EcomaxNumberEntityDescription(
         key="min_heating_target_temp",
         name="Minimum Heating Temperature",
         native_unit_of_measurement=TEMP_CELSIUS,
         native_step=1,
+        value_get_fn=lambda x: x,
+        value_set_fn=lambda x: x,
     ),
     EcomaxNumberEntityDescription(
         key="max_heating_target_temp",
         name="Maximum Heating Temperature",
         native_unit_of_measurement=TEMP_CELSIUS,
         native_step=1,
+        value_get_fn=lambda x: x,
+        value_set_fn=lambda x: x,
     ),
     EcomaxNumberEntityDescription(
         key="min_fuzzy_logic_power",
         name="Fuzzy Logic Minimum Power",
         native_unit_of_measurement=PERCENTAGE,
         native_step=1,
+        value_get_fn=lambda x: x,
+        value_set_fn=lambda x: x,
     ),
     EcomaxNumberEntityDescription(
         key="max_fuzzy_logic_power",
         name="Fuzzy Logic Maximum Power",
         native_unit_of_measurement=PERCENTAGE,
         native_step=1,
+        value_get_fn=lambda x: x,
+        value_set_fn=lambda x: x,
     ),
     EcomaxNumberEntityDescription(
         key="fuel_energy_kwh_kg",
         name="Fuel Calorific Value",
         native_unit_of_measurement=CALORIFIC_KWH_KG,
-        native_step=1,
+        native_step=0.1,
+        value_get_fn=lambda x: x / 10,
+        value_set_fn=lambda x: x * 10,
     ),
 )
 
@@ -95,15 +119,21 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Update current value."""
-        await self.device.set_value(self.entity_description.key, value)
-        self._attr_native_value = int(value)
+        await self.device.set_value(
+            self.entity_description.key, self.entity_description.value_set_fn(value)
+        )
+        self._attr_native_value = value
         self.async_write_ha_state()
 
     async def async_update(self, value: Parameter) -> None:
         """Update entity state."""
-        self._attr_native_value = value.value
-        self._attr_native_min_value = value.min_value
-        self._attr_native_max_value = value.max_value
+        self._attr_native_value = self.entity_description.value_get_fn(value.value)
+        self._attr_native_min_value = self.entity_description.value_get_fn(
+            value.min_value
+        )
+        self._attr_native_max_value = self.entity_description.value_get_fn(
+            value.max_value
+        )
         self.async_write_ha_state()
 
 

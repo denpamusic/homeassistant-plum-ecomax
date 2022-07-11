@@ -43,4 +43,4 @@ async def test_async_setup_and_update_entry(
     # Change number value.
     await number.async_set_native_value(2.2)
     mock_device.set_value.assert_called_once_with(number.entity_description.key, 2.2)
-    assert number.native_value == 2
+    assert number.native_value == 2.2
