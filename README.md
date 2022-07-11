@@ -49,12 +49,18 @@ cp -r ./homeassistant-plum-ecomax/custom_components ~/.homeassistant
 
 ## Usage
 1. Click `Add Integration` button and search for `Plum ecoMAX`.
+
+
+![Search dialog](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/search.png)
+
 2. Enter your connection details and click `Submit`.  
 __Serial connection__: you will need to fill Device path. Host and Port will be ignored.  
-__TCP connection__: you will need to fill Host and Port. Device path will be ignored.  
+__TCP connection__: you will need to fill Host and Port. Device path will be ignored.
+
 ![Configuration dialog](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/config.png)
 
-3. Your device should now be available in your Home Assistant installation.  
+3. Your device should now be available in your Home Assistant installation.
+
 ![Success](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/success.png)
 
 ## Tracking spent fuel
