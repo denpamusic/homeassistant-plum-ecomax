@@ -23,3 +23,4 @@ DEFAULT_PORT: Final = 8899
 DEFAULT_DEVICE: Final = "/dev/ttyUSB0"
 
 FLOW_KGH: Final = "kg/h"
+CALORIFIC_KWH_KG: Final = "kWh/kg"

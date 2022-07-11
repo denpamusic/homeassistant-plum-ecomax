@@ -18,7 +18,7 @@ from pyplumio.helpers.filters import on_change
 from pyplumio.helpers.parameter import Parameter
 
 from .connection import EcomaxConnection
-from .const import DOMAIN
+from .const import CALORIFIC_KWH_KG, DOMAIN
 from .entity import EcomaxEntity
 
 
@@ -64,6 +64,12 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         key="max_fuzzy_logic_power",
         name="Fuzzy Logic Maximum Power",
         native_unit_of_measurement=PERCENTAGE,
+        native_step=1,
+    ),
+    EcomaxNumberEntityDescription(
+        key="fuel_energy_kwh_kg",
+        name="Fuel Calorific Value",
+        native_unit_of_measurement=CALORIFIC_KWH_KG,
         native_step=1,
     ),
 )
