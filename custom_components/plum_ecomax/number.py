@@ -38,7 +38,7 @@ class EcomaxNumberEntityDescription(
     """Describes ecoMAX number entity."""
 
     filter_fn: Callable[[Any], Any] = on_change
-    mode: str = NumberMode.AUTO
+    mode: NumberMode = NumberMode.AUTO
 
 
 NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
