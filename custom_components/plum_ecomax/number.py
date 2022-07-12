@@ -91,7 +91,7 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         value_set_fn=lambda x: x,
     ),
     EcomaxNumberEntityDescription(
-        key="fuel_energy_kwh_kg",
+        key="fuel_calorific_value_kwh_kg",
         name="Fuel Calorific Value",
         native_unit_of_measurement=CALORIFIC_KWH_KG,
         native_step=0.1,
