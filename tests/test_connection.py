@@ -5,7 +5,6 @@ from unittest.mock import AsyncMock, Mock, call, patch
 
 from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from pyplumio import SerialConnection, TcpConnection
