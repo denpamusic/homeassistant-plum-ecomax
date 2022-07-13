@@ -9,7 +9,6 @@ from typing import Any
 from homeassistant.components.network import async_get_source_ip
 from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 import pyplumio
@@ -49,7 +48,7 @@ async def get_connection_handler(
     return pyplumio.SerialConnection(data[CONF_DEVICE], ethernet_parameters=ethernet)
 
 
-@timeout(seconds=15)
+@timeout(seconds=10)
 async def check_connection(
     connection: Connection,
 ) -> tuple[str, ProductInfo, ConnectedModules, list[str]]:
@@ -63,6 +62,15 @@ async def check_connection(
     device = await connection.get_device("ecomax")
     product = await device.get_value("product")
     modules = await device.get_value("modules")
+
+    await connection.close()
+
+    return (title, product, modules, await get_device_capabilities(device))
+
+
+@timeout(seconds=10)
+async def get_device_capabilities(device: Device) -> list[str]:
+    """Return device capabilities, presented as list of allowed keys."""
     sensors = await device.get_value("sensors")
     parameters = await device.get_value("parameters")
     capabilities = ["product", "modules"]
@@ -78,9 +86,7 @@ async def check_connection(
     if "water_heater_temp" in capabilities:
         capabilities.append("water_heater")
 
-    await connection.close()
-
-    return (title, product, modules, capabilities)
+    return capabilities
 
 
 class EcomaxConnection:
@@ -105,20 +111,14 @@ class EcomaxConnection:
 
         return None
 
-    async def _close(self, event=None) -> None:
-        """Close connection on hass stop."""
-        await self.connection.close()
-
     async def async_setup(self) -> bool:
         """Setup connection and add hass stop handler."""
 
-        self._hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self._close)
         await self.connection.connect()
-
         try:
             self._device = await self.connection.get_device("ecomax")
         except asyncio.TimeoutError:
-            _LOGGER.error("DeviceNotFound: ecomax device not found")
+            _LOGGER.error("Device has failed to respond in time")
             return False
 
         return True

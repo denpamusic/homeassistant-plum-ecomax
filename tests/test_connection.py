@@ -88,9 +88,7 @@ async def test_check_connection() -> None:
     )
 
 
-@patch("homeassistant.core.EventBus.async_listen_once")
 async def test_async_setup(
-    mock_async_listen_once,
     hass: HomeAssistant,
     config_entry: ConfigEntry,
     caplog,
@@ -104,14 +102,6 @@ async def test_async_setup(
     )
     connection = EcomaxConnection(hass, config_entry, mock_connection_handler)
     assert await connection.async_setup()
-    mock_async_listen_once.assert_called_once()
-
-    # Test hass stop callback.
-    args, _ = mock_async_listen_once.call_args
-    event, callback = args
-    assert event == EVENT_HOMEASSISTANT_STOP
-    await callback()
-    mock_connection_handler.close.assert_awaited_once()
 
     mock_connection_handler.connect.assert_awaited_once()
     mock_connection_handler.get_device.assert_awaited_once_with("ecomax")
@@ -136,7 +126,7 @@ async def test_async_setup(
 
     # Check with device timeout.
     assert not await connection.async_setup()
-    assert "ecomax device not found" in caplog.text
+    assert "Device has failed to respond in time" in caplog.text
 
     # Check name with serial connection.
     mock_connection_handler = AsyncMock(spec=SerialConnection)
