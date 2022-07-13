@@ -36,5 +36,5 @@ async def test_async_setup_and_update_entry(
     # Check sensor callbacks.
     callback = AsyncMock()
     assert sensor.entity_description.filter_fn(callback) == mock_throttle.return_value
-    mock_throttle.assert_called_once_with(mock_on_change.return_value, timeout=10)
+    mock_throttle.assert_called_once_with(mock_on_change.return_value, seconds=10)
     mock_on_change.assert_called_once_with(callback)

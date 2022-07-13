@@ -127,7 +127,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         """Called when an entity has their entity_id assigned."""
         key = self.entity_description.key
         callbacks = {
-            f"{key}_temp": throttle(self.async_update, timeout=10),
+            f"{key}_temp": throttle(self.async_update, seconds=10),
             f"{key}_target_temp": on_change(self.async_update_target_temp),
             f"{key}_work_mode": on_change(self.async_update_work_mode),
             f"{key}_hysteresis": on_change(self.async_update_hysteresis),

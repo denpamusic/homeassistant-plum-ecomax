@@ -74,7 +74,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda x: round(x, 1),
-        filter_fn=lambda x: throttle(on_change(x), timeout=10),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
         key="water_heater_temp",
@@ -84,7 +84,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda x: round(x, 1),
-        filter_fn=lambda x: throttle(on_change(x), timeout=10),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
         key="exhaust_temp",
@@ -94,7 +94,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda x: round(x, 1),
-        filter_fn=lambda x: throttle(on_change(x), timeout=10),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
         key="outside_temp",
@@ -104,7 +104,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda x: round(x, 1),
-        filter_fn=lambda x: throttle(on_change(x), timeout=10),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
         key="heating_target",
@@ -132,7 +132,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
         value_fn=lambda x: round(x, 1),
-        filter_fn=lambda x: throttle(on_change(x), timeout=10),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
         key="load",
@@ -165,7 +165,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda x: x,
-        filter_fn=lambda x: throttle(on_change(x), timeout=10),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
         key="fuel_consumption",
@@ -174,7 +174,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=FLOW_KGH,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda x: x,
-        filter_fn=lambda x: throttle(on_change(x), timeout=10),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
         key="fuel_burned",
