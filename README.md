@@ -16,7 +16,6 @@ It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and sup
   - [HACS](#hacs)
   - [Manual](#manual)
 - [Usage](#usage)
-- [Tracking spent fuel](#tracking-spent-fuel)
 - [Entities](#entities)
 - [License](#license)
 
@@ -62,12 +61,6 @@ __TCP connection__: you will need to fill Host and Port. Device path will be ign
 
 ![Success](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/success.png)
 
-## Tracking spent fuel
-You can track total burned fuel by utilizing HomeAssistant's built-in [Utility Meter integration](https://www.home-assistant.io/integrations/utility_meter/).
-
-Create new utility meter with `Fuel Burned Since Last Update` as it's input sensor.  
-Make sure, that `Delta values` setting is enabled.
-
 ## Entities
 This integration provides following entities:
 
@@ -83,7 +76,7 @@ This integration provides following entities:
 - Fan Power
 - Fuel Level
 - Fuel Consumption
-- Fuel Burned Since Last Update
+- Total Fuel Burned
 - Heating Mode
 - Heating Power
 - Flame Intensity (if supported by the controller)

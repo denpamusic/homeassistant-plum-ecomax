@@ -24,3 +24,11 @@ DEFAULT_DEVICE: Final = "/dev/ttyUSB0"
 
 FLOW_KGH: Final = "kg/h"
 CALORIFIC_KWH_KG: Final = "kWh/kg"
+
+DEVICE_CLASS_METER: Final = "plum_ecomax__meter"
+DEVICE_CLASS_STATE: Final = "plum_ecomax__mode"
+
+SERVICE_RESET_METER: Final = "reset_meter"
+SERVICE_CALIBRATE_METER: Final = "calibrate_meter"
+
+ATTR_VALUE: Final = "value"

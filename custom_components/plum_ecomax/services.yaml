@@ -1,0 +1,21 @@
+reset_meter:
+  name: Reset Meter
+  description: Reset meter value.
+  target:
+    entity:
+      device_class: "plum_ecomax__meter"
+
+calibrate_meter:
+  name: Calibrate Meter
+  description: Calibrate meter value.
+  target:
+    entity:
+      device_class: "plum_ecomax__meter"
+  fields:
+    value:
+      name: Value
+      description: Meter will be set to this value.
+      example: "100"
+      required: true
+      selector:
+        text:

@@ -7,6 +7,7 @@ from datetime import date, datetime
 from typing import Any, Final
 
 from homeassistant.components.sensor import (
+    RestoreSensor,
     SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
@@ -23,16 +24,29 @@ from homeassistant.const import (
     TEMP_CELSIUS,
 )
 from homeassistant.core import HomeAssistant
+import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import EntityCategory, EntityDescription
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import (
+    AddEntitiesCallback,
+    async_get_current_platform,
+)
 from homeassistant.helpers.typing import ConfigType, StateType
+import homeassistant.util.dt as dt_util
 from pyplumio.helpers.filters import aggregate, on_change, throttle
+import voluptuous as vol
 
 from .connection import EcomaxConnection
-from .const import DOMAIN, FLOW_KGH
+from .const import (
+    ATTR_VALUE,
+    DEVICE_CLASS_METER,
+    DEVICE_CLASS_STATE,
+    DOMAIN,
+    FLOW_KGH,
+    SERVICE_CALIBRATE_METER,
+    SERVICE_RESET_METER,
+)
 from .entity import EcomaxEntity
 
-STATE_DEVICE_CLASS: Final = "plum_ecomax__mode"
 STATE_FANNING: Final = "fanning"
 STATE_KINDLING: Final = "kindling"
 STATE_HEATING: Final = "heating"
@@ -177,20 +191,11 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
-        key="fuel_burned",
-        name="Fuel Burned Since Last Update",
-        icon="mdi:counter",
-        native_unit_of_measurement=MASS_KILOGRAMS,
-        state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda x: x,
-        filter_fn=lambda x: aggregate(x, seconds=30),
-    ),
-    EcomaxSensorEntityDescription(
         key="mode",
         name="Mode",
         icon="mdi:eye",
         value_fn=lambda x: STATES[x] if x < len(STATES) else STATE_UNKNOWN,
-        device_class=STATE_DEVICE_CLASS,
+        device_class=DEVICE_CLASS_STATE,
     ),
     EcomaxSensorEntityDescription(
         key="power",
@@ -244,6 +249,61 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
         self.async_write_ha_state()
 
 
+@dataclass
+class EcomaxMeterEntityDescription(EcomaxSensorEntityDescription):
+    """Describes ecoMAX meter entity."""
+
+    device_class: str = DEVICE_CLASS_METER
+
+
+METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
+    EcomaxMeterEntityDescription(
+        key="fuel_burned",
+        name="Total Fuel Burned",
+        icon="mdi:counter",
+        native_unit_of_measurement=MASS_KILOGRAMS,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        value_fn=lambda x: round(x, 1),
+        filter_fn=lambda x: aggregate(x, seconds=30),
+    ),
+)
+
+
+class EcomaxMeter(RestoreSensor, EcomaxSensor):
+    """Represents ecoMAX sensor that restores previous value."""
+
+    async def async_added_to_hass(self):
+        """Called when an entity has their entity_id assigned."""
+        await super().async_added_to_hass()
+        if (last_sensor_data := await self.async_get_last_sensor_data()) is not None:
+            self._attr_native_value = last_sensor_data.native_value
+            self._attr_native_unit_of_measurement = (
+                last_sensor_data.native_unit_of_measurement
+            )
+        else:
+            self._attr_native_value = 0.0
+
+    async def async_calibrate_meter(self, value) -> None:
+        """Calibrate meter state."""
+        self._attr_native_value = value
+        self.async_write_ha_state()
+
+    async def async_reset_meter(self):
+        """Reset stored value."""
+        if self.state_class == SensorStateClass.TOTAL:
+            self._attr_last_reset = dt_util.utcnow()
+
+        self._attr_native_value = 0.0
+        self.async_write_ha_state()
+
+    async def async_update(self, value) -> None:
+        """Update meter state."""
+        self._attr_native_value = self.entity_description.value_fn(
+            self._attr_native_value + value
+        )
+        self.async_write_ha_state()
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigType,
@@ -251,6 +311,23 @@ async def async_setup_entry(
 ) -> bool:
     """Set up the sensor platform."""
     connection = hass.data[DOMAIN][config_entry.entry_id]
+
+    platform = async_get_current_platform()
+    platform.async_register_entity_service(
+        SERVICE_RESET_METER,
+        {},
+        "async_reset_meter",
+    )
+    platform.async_register_entity_service(
+        SERVICE_CALIBRATE_METER,
+        {vol.Required(ATTR_VALUE): cv.positive_float},
+        "async_calibrate_meter",
+    )
+
     return async_add_entities(
-        [EcomaxSensor(connection, description) for description in SENSOR_TYPES], False
+        [
+            *[EcomaxSensor(connection, description) for description in SENSOR_TYPES],
+            *[EcomaxMeter(connection, description) for description in METER_TYPES],
+        ],
+        False,
     )

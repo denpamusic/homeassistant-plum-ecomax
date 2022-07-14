@@ -38,7 +38,7 @@ This integration provides following entities:
 - Fan Power
 - Fuel Level
 - Fuel Consumption
-- Fuel Burned Since Last Update
+- Total Fuel Burned
 - Heating Mode
 - Heating Power
 - Flame Intensity (if supported by the controller)
