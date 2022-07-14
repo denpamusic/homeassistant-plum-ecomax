@@ -26,7 +26,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory, EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, StateType
-from pyplumio.helpers.filters import on_change, throttle
+from pyplumio.helpers.filters import aggregate, on_change, throttle
 
 from .connection import EcomaxConnection
 from .const import DOMAIN, FLOW_KGH
@@ -183,6 +183,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=MASS_KILOGRAMS,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda x: x,
+        filter_fn=lambda x: aggregate(x, seconds=30),
     ),
     EcomaxSensorEntityDescription(
         key="mode",
