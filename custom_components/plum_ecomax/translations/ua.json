@@ -1,22 +1,22 @@
 {
-    "config": {
-        "abort": {
-            "already_configured": "Пристрій уже налаштовано"
-        },
-        "error": {
-            "cannot_connect": "Не вдалося підключитися",
-            "timeout_connect": "Час очікування встановлення з’єднання",
-            "unknown": "Неочікувана помилка"
-        },
-        "step": {
-            "user": {
-                "data": {
-                    "connection_type": "Тип підключення",
-                    "device": "Шлях пристрою",
-                    "host": "Хост",
-                    "port": "Порт"
-                }
-            }
+  "config": {
+    "abort": {
+      "already_configured": "Пристрій уже налаштовано"
+    },
+    "error": {
+      "cannot_connect": "Не вдалося підключитися",
+      "timeout_connect": "Час очікування встановлення з’єднання",
+      "unknown": "Неочікувана помилка"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "connection_type": "Тип підключення",
+          "device": "Шлях пристрою",
+          "host": "Хост",
+          "port": "Порт"
         }
+      }
     }
+  }
 }

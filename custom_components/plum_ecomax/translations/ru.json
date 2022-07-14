@@ -1,22 +1,22 @@
 {
-    "config": {
-        "abort": {
-            "already_configured": "Устройство уже настроено"
-        },
-        "error": {
-            "cannot_connect": "Ошибка подключения",
-            "timeout_connect": "Время ожидания подключения истекло",
-            "unknown": "Неопознанная ошибка"
-        },
-        "step": {
-            "user": {
-                "data": {
-                    "connection_type": "Тип подключения",
-                    "device": "Путь к устройству",
-                    "host": "IP-адрес/домен",
-                    "port": "Порт"
-                }
-            }
+  "config": {
+    "abort": {
+      "already_configured": "Устройство уже настроено"
+    },
+    "error": {
+      "cannot_connect": "Ошибка подключения",
+      "timeout_connect": "Время ожидания подключения истекло",
+      "unknown": "Неопознанная ошибка"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "connection_type": "Тип подключения",
+          "device": "Путь к устройству",
+          "host": "IP-адрес/домен",
+          "port": "Порт"
         }
+      }
     }
+  }
 }

@@ -1,22 +1,22 @@
 {
-    "config": {
-        "abort": {
-            "already_configured": "Urządzenie jest już skonfigurowane"
-        },
-        "error": {
-            "cannot_connect": "Nie udało się połączyć",
-            "timeout_connect": "Limit czasu nawiązania połączenia",
-            "unknown": "Niespodziewany błąd"
-        },
-        "step": {
-            "user": {
-                "data": {
-                    "connection_type": "Rodzaj połączenia",
-                    "device": "Ścieżka urządzenia",
-                    "host": "Host",
-                    "port": "Port"
-                }
-            }
+  "config": {
+    "abort": {
+      "already_configured": "Urządzenie jest już skonfigurowane"
+    },
+    "error": {
+      "cannot_connect": "Nie udało się połączyć",
+      "timeout_connect": "Limit czasu nawiązania połączenia",
+      "unknown": "Niespodziewany błąd"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "connection_type": "Rodzaj połączenia",
+          "device": "Ścieżka urządzenia",
+          "host": "Host",
+          "port": "Port"
         }
+      }
     }
+  }
 }

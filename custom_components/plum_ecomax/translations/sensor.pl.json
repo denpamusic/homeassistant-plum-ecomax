@@ -1,14 +1,14 @@
 {
-    "state": {
-        "plum_ecomax__mode": {
-            "off": "Wyłączony",
-            "fanning": "Stabilizacja",
-            "kindling": "Rozpalanie",
-            "heating": "Praca",
-            "paused": "Nadzór",
-            "idle": "Wygaszanie",
-            "standby": "Wygaszanie na żądanie",
-            "unknown": "Nieznany"
-        }
+  "state": {
+    "plum_ecomax__mode": {
+      "off": "Wyłączony",
+      "fanning": "Stabilizacja",
+      "kindling": "Rozpalanie",
+      "heating": "Praca",
+      "paused": "Nadzór",
+      "idle": "Wygaszanie",
+      "standby": "Wygaszanie na żądanie",
+      "unknown": "Nieznany"
     }
+  }
 }
