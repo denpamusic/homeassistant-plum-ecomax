@@ -14,7 +14,7 @@ calibrate_meter:
   fields:
     value:
       name: Value
-      description: Meter will be set to this value.
+      description: Meter will be set to this value
       example: "100"
       required: true
       selector:
