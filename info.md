@@ -67,10 +67,42 @@ This integration provides following entities:
 
 ### Diagnostics
 - Service Password
+- UID
+- Software Version
+- Update Capabilities (button)
 
 ### Water Heater
 Integration provides full control for connected indirect water heater.  
 This includes ability to set target temperature, switch into priority, non-priority mode or turn off.
+
+
+## Services
+This integration provides following services:
+
+### Set Parameter
+Provides ability to set device parameter by name. Any parameter that is supported by the device can be set here. To get parameter names, please download and open diagnostics data and look for a parameters key.
+
+Fields:
+- __name__ - parameter name
+- __value__ - parameter value (allowed values: positive integer, "on", "off")
+
+### Update Capabilities
+Updates list of sensors and parameters supported by device. Can be useful if new features has been introduced by the firmware update.
+
+### Calibrate Meter
+Allows to set meter to specific value. Can be used to set value for total fuel burned sensor.
+
+Targets:
+ - __fuel_burned__ - counts total burned fuel in kilograms
+
+Fields:
+ - __value__ - target sensor will be set to this value
+
+### Reset Meter
+Allows to reset meter value. Can be used to reset value for total fuel burned sensor.
+
+Targets:
+ - __fuel_burned__ - counts total burned fuel in kilograms
 
 ## License
 This product is distributed under MIT license.
