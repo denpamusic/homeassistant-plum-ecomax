@@ -5,6 +5,7 @@ import asyncio
 import logging
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 
 from custom_components.plum_ecomax.services import async_setup_services
@@ -33,6 +34,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     connection = EcomaxConnection(
         hass, entry, await async_get_connection_handler(hass, entry.data)
     )
+
+    async def async_close_connection(event=None):
+        """Close ecoMAX connection on HA Stop."""
+        await connection.close()
+
+    entry.async_on_unload(
+        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, async_close_connection)
+    )
+
     load_ok = await connection.async_setup()
     await async_setup_services(hass, connection)
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = connection
