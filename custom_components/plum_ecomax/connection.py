@@ -125,14 +125,14 @@ class EcomaxConnection:
 
     async def async_update_device_capabilities(self) -> None:
         """Update device capabilities."""
-        if self._device is not None:
+        if self.device is not None:
             data = {**self.entry.data}
-            data[CONF_CAPABILITIES] = await async_get_device_capabilities(self._device)
+            data[CONF_CAPABILITIES] = await async_get_device_capabilities(self.device)
             self._hass.config_entries.async_update_entry(self.entry, data=data)
             _LOGGER.info("Updated device capabilities list")
 
     @property
-    def device(self):
+    def device(self) -> Device | None:
         """Return connection state."""
         return self._device
 
