@@ -41,7 +41,7 @@ async def _setup_set_parameter_service(
         name = service_call.data["name"]
         value = service_call.data["value"]
 
-        if name in connection.capabilities:
+        if connection.device is not None and name in connection.capabilities:
             try:
                 return await asyncio.wait_for(
                     connection.device.set_value(name, value), timeout=5
