@@ -36,13 +36,11 @@ from pyplumio.helpers.filters import aggregate, on_change, throttle
 import voluptuous as vol
 
 from .connection import EcomaxConnection
-from .const import DOMAIN, FLOW_KGH
+from .const import ATTR_VALUE, DOMAIN, FLOW_KGH
 from .entity import EcomaxEntity
 
 SERVICE_RESET_METER: Final = "reset_meter"
 SERVICE_CALIBRATE_METER: Final = "calibrate_meter"
-
-ATTR_VALUE: Final = "value"
 
 DEVICE_CLASS_METER: Final = "plum_ecomax__meter"
 DEVICE_CLASS_STATE: Final = "plum_ecomax__mode"

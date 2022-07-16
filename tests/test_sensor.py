@@ -28,8 +28,8 @@ async def test_async_setup_and_update_entry(
 
     with patch("custom_components.plum_ecomax.sensor.async_get_current_platform"):
         assert await async_setup_entry(hass, config_entry, async_add_entities)
+        await hass.async_block_till_done()
 
-    await hass.async_block_till_done()
     async_add_entities.assert_called_once()
     args, _ = async_add_entities.call_args
     sensors = args[0]

@@ -14,7 +14,7 @@ import homeassistant.helpers.config_validation as cv
 from pyplumio.exceptions import ConnectionFailedError
 import voluptuous as vol
 
-from .connection import check_connection, get_connection_handler
+from .connection import async_check_connection, async_get_connection_handler
 from .const import (
     CONF_CAPABILITIES,
     CONF_CONNECTION_TYPE,
@@ -54,8 +54,8 @@ async def validate_input(
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
     try:
-        title, product, modules, capabilities = await check_connection(
-            await get_connection_handler(hass, data)
+        title, product, modules, capabilities = await async_check_connection(
+            await async_get_connection_handler(hass, data)
         )
     except ConnectionFailedError as connection_failure:
         raise CannotConnect from connection_failure

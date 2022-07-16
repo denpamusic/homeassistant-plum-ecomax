@@ -38,7 +38,7 @@ async def test_form_tcp(hass: HomeAssistant) -> None:
 
     # Set up attribute values for EcomaxTcpConnection.
     with patch(
-        "custom_components.plum_ecomax.config_flow.check_connection",
+        "custom_components.plum_ecomax.config_flow.async_check_connection",
         return_value=(title, product, modules, capabilities),
     ), patch(
         "custom_components.plum_ecomax.async_setup_entry",
@@ -76,7 +76,7 @@ async def test_form_serial(hass: HomeAssistant) -> None:
     capabilities = MOCK_DEVICE_DATA[CONF_CAPABILITIES]
 
     with patch(
-        "custom_components.plum_ecomax.config_flow.check_connection",
+        "custom_components.plum_ecomax.config_flow.async_check_connection",
         return_value=(title, product, modules, capabilities),
     ), patch(
         "custom_components.plum_ecomax.async_setup_entry",
@@ -101,7 +101,7 @@ async def test_form_cannot_connect(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.plum_ecomax.config_flow.check_connection",
+        "custom_components.plum_ecomax.config_flow.async_check_connection",
         side_effect=ConnectionFailedError,
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -120,7 +120,7 @@ async def test_form_timeout_connect(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.plum_ecomax.config_flow.check_connection",
+        "custom_components.plum_ecomax.config_flow.async_check_connection",
         side_effect=asyncio.TimeoutError,
     ):
         result2 = await hass.config_entries.flow.async_configure(
@@ -139,7 +139,7 @@ async def test_form_unknown_error(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.plum_ecomax.config_flow.check_connection",
+        "custom_components.plum_ecomax.config_flow.async_check_connection",
         side_effect=Exception,
     ):
         result2 = await hass.config_entries.flow.async_configure(

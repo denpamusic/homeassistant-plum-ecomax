@@ -14,6 +14,9 @@ CONF_MODEL: Final = "model"
 CONF_SOFTWARE: Final = "software"
 CONF_CAPABILITIES: Final = "capabilities"
 
+
+ATTR_VALUE: Final = "value"
+
 CONNECTION_TYPE_TCP: Final = "TCP"
 CONNECTION_TYPE_SERIAL: Final = "Serial"
 CONNECTION_TYPES: Final = (CONNECTION_TYPE_TCP, CONNECTION_TYPE_SERIAL)

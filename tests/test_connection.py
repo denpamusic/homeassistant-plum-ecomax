@@ -13,8 +13,8 @@ from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
 
 from custom_components.plum_ecomax.connection import (
     EcomaxConnection,
-    check_connection,
-    get_connection_handler,
+    async_check_connection,
+    async_get_connection_handler,
 )
 from custom_components.plum_ecomax.const import DOMAIN
 from tests.const import MOCK_CONFIG_DATA, MOCK_CONFIG_DATA_SERIAL
@@ -26,21 +26,23 @@ from tests.const import MOCK_CONFIG_DATA, MOCK_CONFIG_DATA_SERIAL
     new_callable=AsyncMock,
     return_value="1.1.1.1",
 )
-async def test_get_connection_handler(
+async def test_async_get_connection_handler(
     mock_async_get_source_ip, mock_ethernet_parameters, hass: HomeAssistant
 ) -> None:
     """Test helper function to get connection handler."""
-    connection = await get_connection_handler(hass, MOCK_CONFIG_DATA)
+    connection = await async_get_connection_handler(hass, MOCK_CONFIG_DATA)
     assert isinstance(connection, TcpConnection)
     mock_async_get_source_ip.assert_awaited_once_with(
         hass, target_ip=IPV4_BROADCAST_ADDR
     )
     mock_ethernet_parameters.assert_called_once_with(ip="1.1.1.1")
-    connection_serial = await get_connection_handler(hass, MOCK_CONFIG_DATA_SERIAL)
+    connection_serial = await async_get_connection_handler(
+        hass, MOCK_CONFIG_DATA_SERIAL
+    )
     assert isinstance(connection_serial, SerialConnection)
 
 
-async def test_check_connection() -> None:
+async def test_async_check_connection() -> None:
     """Test helper function to check the connection."""
     mock_connection = AsyncMock(spec=TcpConnection)
     mock_connection.host = "localhost"
@@ -58,7 +60,7 @@ async def test_check_connection() -> None:
         "boiler_control",
         asyncio.TimeoutError,
     )
-    result = await check_connection(mock_connection)
+    result = await async_check_connection(mock_connection)
     calls = (
         call("product"),
         call("modules"),
@@ -107,7 +109,7 @@ async def test_async_setup(
 
     # Check connection class properties.
     assert connection.host == "localhost"
-    assert connection.nonexistent is None
+    assert not hasattr(connection, "nonexistent")
     assert connection.device == mock_device
     assert connection.model == "ecoMAX TEST"
     assert connection.uid == "D251PAKR3GCPZ1K8G05G0"
@@ -132,3 +134,30 @@ async def test_async_setup(
     connection = EcomaxConnection(hass, config_entry, mock_connection_handler)
     mock_connection_handler.device = "/dev/ttyUSB0"
     assert connection.name == "/dev/ttyUSB0"
+
+
+@patch(
+    "custom_components.plum_ecomax.connection.async_get_device_capabilities",
+    new_callable=AsyncMock,
+)
+async def test_async_update_capabilities(
+    mock_async_get_device_capabilities,
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    caplog,
+):
+    """Test update capabilities."""
+    mock_device = AsyncMock(spec=Device)
+    mock_connection_handler = AsyncMock(spec=TcpConnection)
+    mock_connection_handler.get_device = AsyncMock(side_effect=mock_device)
+    connection = EcomaxConnection(hass, config_entry, mock_connection_handler)
+    assert await connection.async_setup()
+
+    with patch(
+        "homeassistant.config_entries.ConfigEntries.async_update_entry"
+    ) as mock_async_update_entry:
+        await connection.async_update_device_capabilities()
+
+    mock_async_update_entry.assert_called_once()
+    mock_async_get_device_capabilities.assert_awaited_once()
+    assert "Updated device capabilities list" in caplog.text

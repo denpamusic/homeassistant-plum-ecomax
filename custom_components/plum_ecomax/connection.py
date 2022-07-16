@@ -33,7 +33,7 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
-async def get_connection_handler(
+async def async_get_connection_handler(
     hass: HomeAssistant, data: Mapping[str, Any]
 ) -> pyplumio.Connection:
     """Return connection handler object."""
@@ -49,7 +49,7 @@ async def get_connection_handler(
 
 
 @timeout(seconds=10)
-async def check_connection(
+async def async_check_connection(
     connection: Connection,
 ) -> tuple[str, ProductInfo, ConnectedModules, list[str]]:
     """Perform connection check."""
@@ -65,11 +65,11 @@ async def check_connection(
 
     await connection.close()
 
-    return (title, product, modules, await get_device_capabilities(device))
+    return (title, product, modules, await async_get_device_capabilities(device))
 
 
 @timeout(seconds=10)
-async def get_device_capabilities(device: Device) -> list[str]:
+async def async_get_device_capabilities(device: Device) -> list[str]:
     """Return device capabilities, presented as list of allowed keys."""
     sensors = await device.get_value("sensors")
     parameters = await device.get_value("parameters")
@@ -109,7 +109,7 @@ class EcomaxConnection:
         if hasattr(self._connection, name):
             return getattr(self._connection, name)
 
-        return None
+        raise AttributeError()
 
     async def async_setup(self) -> bool:
         """Setup connection and add hass stop handler."""
@@ -122,6 +122,14 @@ class EcomaxConnection:
             return False
 
         return True
+
+    async def async_update_device_capabilities(self) -> None:
+        """Update device capabilities."""
+        if self._device is not None:
+            data = {**self.entry.data}
+            data[CONF_CAPABILITIES] = await async_get_device_capabilities(self._device)
+            self._hass.config_entries.async_update_entry(self.entry, data=data)
+            _LOGGER.info("Updated device capabilities list")
 
     @property
     def device(self):

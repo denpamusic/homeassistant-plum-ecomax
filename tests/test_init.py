@@ -16,15 +16,22 @@ from custom_components.plum_ecomax.const import CONF_CAPABILITIES, DOMAIN
 
 
 @patch("custom_components.plum_ecomax.EcomaxConnection.async_setup")
+@patch("custom_components.plum_ecomax.async_setup_services")
 @patch.object(EcomaxConnection, "close", create=True, new_callable=AsyncMock)
 async def test_setup_and_unload_entry(
-    mock_close, mock_async_setup, hass: HomeAssistant, config_entry: ConfigEntry
+    mock_close,
+    async_setup_services,
+    mock_async_setup,
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
 ) -> None:
     """Test setup and unload of config entry."""
     assert await async_setup_entry(hass, config_entry)
+
     assert DOMAIN in hass.data and config_entry.entry_id in hass.data[DOMAIN]
     assert isinstance(hass.data[DOMAIN][config_entry.entry_id], EcomaxConnection)
     mock_async_setup.assert_awaited_once()
+    async_setup_services.assert_awaited_once()
 
     # Unload entry and verify that it is no longer present in hass data.
     assert await async_unload_entry(hass, config_entry)
@@ -58,16 +65,18 @@ async def test_migrate_entry(
     with patch(
         "homeassistant.config_entries.ConfigEntries.async_update_entry"
     ) as mock_async_update_entry, patch(
-        "custom_components.plum_ecomax.get_device_capabilities",
+        "custom_components.plum_ecomax.async_get_device_capabilities",
         new_callable=AsyncMock,
         return_value="test",
-    ) as mock_get_device_capabilities:
+    ) as mock_async_get_device_capabilities:
         assert not await async_migrate_entry(hass, config_entry)
         config_entry.version = 1
         assert await async_migrate_entry(hass, config_entry)
 
     assert mock_connect.call_count == 2
-    mock_get_device_capabilities.assert_awaited_once_with(mock_get_device.return_value)
+    mock_async_get_device_capabilities.assert_awaited_once_with(
+        mock_get_device.return_value
+    )
     mock_close.assert_awaited_once()
     data = {**config_entry.data}
     data[CONF_CAPABILITIES] = "test"

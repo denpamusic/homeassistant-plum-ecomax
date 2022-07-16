@@ -1,3 +1,26 @@
+set_parameter:
+  name: Set Parameter
+  description: Set device parameter value.
+  fields:
+    name:
+      name: Name
+      description: Name of the parameter
+      example: "heating_set_temp"
+      required: true
+      selector:
+        text:
+    value:
+      name: Value
+      description: A value that parameter will be set to
+      example: "65"
+      required: true
+      selector:
+        text:
+
+update_capabilities:
+  name: Update Capabilities
+  description: Update device capability list.
+
 reset_meter:
   name: Reset Meter
   description: Reset meter value.
@@ -14,7 +37,7 @@ calibrate_meter:
   fields:
     value:
       name: Value
-      description: Meter will be set to this value
+      description: A value that meter will be set to
       example: "100"
       required: true
       selector:

@@ -119,7 +119,7 @@ async def test_async_setup_and_update_entry(
     assert mock_throttle_filter.await_count == 1
     assert mock_on_change_filter.await_count == 3
     mock_device.remove_callback = Mock()
-    await water_heater.async_removed_from_hass()
+    await water_heater.async_will_remove_from_hass()
     remove_calls = (
         call(f"{key}_temp", water_heater.async_update),
         call(f"{key}_target_temp", water_heater.async_update_target_temp),

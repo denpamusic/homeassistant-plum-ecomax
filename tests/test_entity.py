@@ -37,7 +37,7 @@ async def test_base_entity(mock_connection, mock_async_update) -> None:
         "test_entity", entity.entity_description.filter_fn.return_value
     )
     mock_filter.assert_awaited_once()
-    await entity.async_removed_from_hass()
+    await entity.async_will_remove_from_hass()
     entity.device.remove_callback.assert_called_once_with(
         "test_entity", mock_async_update
     )

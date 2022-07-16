@@ -141,7 +141,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
 
             self.device.register_callback(name, func)
 
-    async def async_removed_from_hass(self):
+    async def async_will_remove_from_hass(self):
         """Called when an entity is about to be removed."""
         key = self.entity_description.key
         self.device.remove_callback(f"{key}_temp", self.async_update)

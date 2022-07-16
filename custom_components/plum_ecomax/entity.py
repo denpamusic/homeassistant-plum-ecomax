@@ -12,6 +12,7 @@ class EcomaxEntity(ABC):
 
     _connection: EcomaxConnection
     entity_description: EntityDescription
+    _attr_entity_registry_enabled_default: bool
 
     async def async_added_to_hass(self):
         """Called when an entity has their entity_id assigned."""
@@ -24,7 +25,7 @@ class EcomaxEntity(ABC):
 
         self.device.register_callback(self.entity_description.key, func)
 
-    async def async_removed_from_hass(self):
+    async def async_will_remove_from_hass(self):
         """Called when an entity is about to be removed."""
         self.device.remove_callback(self.entity_description.key, self.async_update)
 
