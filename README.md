@@ -63,7 +63,7 @@ __TCP connection__: you will need to fill Host and Port. Device path will be ign
 ![Success](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/success.png)
 
 ## Entities
-This integration provides following entities:
+This integration provides the following entities:
 
 ### Sensors
 - Heating Temperature
@@ -103,6 +103,7 @@ This integration provides following entities:
 - Maximum Heating Power
 - Minimum Heating Temperature
 - Maximum Heating Temperature
+- Fuel Calorific Value (in kWh/kg)
 
 ### Diagnostics
 - Service Password
@@ -115,32 +116,32 @@ Integration provides full control for connected indirect water heater.
 This includes ability to set target temperature, switch into priority, non-priority mode or turn off.
 
 ## Services
-This integration provides following services:
+This integration provides the following services:
 
 ### Set Parameter
-Provides ability to set device parameter by name. Any parameter that is supported by the device can be set here. To get parameter names, please download and open diagnostics data and look for a parameters key.
+Provides ability to set device parameter by name. Any parameter that is supported by the device can be used with this service. To get parameter names, please download and open diagnostics data and look for a `parameters` key.
 
 Fields:
 - __name__ - parameter name
 - __value__ - parameter value (allowed values: positive integer, "on", "off")
 
 ### Update Capabilities
-Updates list of sensors and parameters supported by device. Can be useful if new features has been introduced by the firmware update.
+Updates list of sensors and parameters that are supported by the device. Can be useful if new features has been introduced by the firmware update.
 
 ### Calibrate Meter
-Allows to set meter to specific value. Can be used to set value for total fuel burned sensor.
+Allows to set meter to the specific value. Can be used to set a value for total fuel burned sensor.
 
 Targets:
- - __fuel_burned__ - counts total burned fuel in kilograms
+ - __total_fuel_burned__ - counts total burned fuel in kilograms
 
 Fields:
  - __value__ - target sensor will be set to this value
 
 ### Reset Meter
-Allows to reset meter value. Can be used to reset value for total fuel burned sensor.
+Allows to reset the meter value. Can be used to reset a value for the total fuel burned sensor.
 
 Targets:
- - __fuel_burned__ - counts total burned fuel in kilograms
+ - __total_fuel_burned__ - counts total burned fuel in kilograms
 
 ## License
 This product is distributed under MIT license.
