@@ -147,9 +147,8 @@ async def test_async_update_capabilities(
     caplog,
 ):
     """Test update capabilities."""
-    mock_device = AsyncMock(spec=Device)
     mock_connection_handler = AsyncMock(spec=TcpConnection)
-    mock_connection_handler.get_device = AsyncMock(side_effect=mock_device)
+    mock_connection_handler.get_device = AsyncMock(spec=Device)
     connection = EcomaxConnection(hass, config_entry, mock_connection_handler)
     assert await connection.async_setup()
 
