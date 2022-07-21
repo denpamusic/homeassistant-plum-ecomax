@@ -1,0 +1,67 @@
+name: Bug report
+description: Use this to file a bug report.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking your time to fill this report form.
+  - type: checkboxes
+    attributes:
+      label: "Is there an existing issue for this?"
+      description: |
+        Please search issues in this repository and [PyPlumIO](https://github.com/denpamusic/PyPlumIO/issues) repository to
+        see if an issue already exists for the bug you've encountered.
+      options:
+        - label: I have searched the existing issues
+          required: true
+  - type: textarea
+    attributes:
+      label: "I'm having the following issue:"
+      description: Describe your problem here with as much details as you can.
+    validations:
+      required: true
+  - type: checkboxes
+    attributes:
+      label: "I have following devices connected:"
+      options:
+        - label: ecoMAX 3xx series
+        - label: ecoMAX 8xx series
+        - label: ecoMAX 9xx series
+        - label: Expansion module B
+        - label: Expansion module C
+        - label: ecoSTER 200/ecoSTER Touch
+        - label: ecoLAMBDA
+        - label: ecoNET 300
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: "I'm connecting to my devices using:"
+      description: Tell us what connection method are you using?
+      options:
+        - Ethernet/WiFi to RS-485 converter
+        - USB to RS-485 adapter
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "I'm seeing following log messages:"
+      description: |
+        Please paste any relevant log output here.
+      render: shell
+  - type: textarea
+    attributes:
+      label: "My diagnostics data:"
+      description: |
+        Please paste or drag & drop your diagnostics data here.
+
+        Tip: You can learn more about diagnostics [here](https://www.home-assistant.io/integrations/diagnostics/).
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/denpamusic/homeassistant-plum-ecomax/blob/main/.github/CODE_OF_CONDUCT.md)
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
