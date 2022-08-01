@@ -37,7 +37,7 @@ class EcomaxEntity(ABC):
     @property
     def available(self) -> bool:
         """Indicates whether the entity is available."""
-        return self.connection.device is not None
+        return self.connection.connected.is_set() and self.connection.device is not None
 
     @property
     def device_info(self) -> DeviceInfo:
