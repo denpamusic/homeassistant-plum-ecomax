@@ -1,5 +1,6 @@
 """Test Plum ecoMAX base entity."""
 
+import asyncio
 from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.helpers.entity import EntityDescription
@@ -29,6 +30,7 @@ async def test_base_entity(mock_connection, mock_async_update) -> None:
     entity.entity_description.filter_fn = Mock(return_value=mock_filter)
     mock_connection.device = Mock(spec=Device)
     mock_connection.device.test_entity = "test"
+    mock_connection.connected = Mock(spec=asyncio.Event)
 
     # Test added/removed to/from hass.
     await entity.async_added_to_hass()
