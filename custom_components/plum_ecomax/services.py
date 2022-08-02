@@ -38,8 +38,8 @@ async def _setup_set_parameter_service(
 
     async def set_parameter_service(service_call: ServiceCall) -> None:
         """Service to set a parameter."""
-        name = service_call.data["name"]
-        value = service_call.data["value"]
+        name = service_call.data[ATTR_NAME]
+        value = service_call.data[ATTR_VALUE]
 
         if connection.device is not None and name in connection.capabilities:
             try:
