@@ -32,6 +32,7 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+DEFAULT_TIMEOUT: Final = 30
 
 async def async_get_connection_handler(
     hass: HomeAssistant, data: Mapping[str, Any]
@@ -48,7 +49,7 @@ async def async_get_connection_handler(
     return pyplumio.SerialConnection(data[CONF_DEVICE], ethernet_parameters=ethernet)
 
 
-@timeout(seconds=10)
+@timeout(seconds=DEFAULT_TIMEOUT)
 async def async_check_connection(
     connection: Connection,
 ) -> tuple[str, ProductInfo, ConnectedModules, list[str]]:
@@ -68,7 +69,7 @@ async def async_check_connection(
     return (title, product, modules, await async_get_device_capabilities(device))
 
 
-@timeout(seconds=10)
+@timeout(seconds=DEFAULT_TIMEOUT)
 async def async_get_device_capabilities(device: Device) -> list[str]:
     """Return device capabilities, presented as list of allowed keys."""
     sensors = await device.get_value("sensors")
