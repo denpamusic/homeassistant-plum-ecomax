@@ -2,7 +2,7 @@
 
 
 import datetime as dt
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 from homeassistant.components.logbook.const import (
     LOGBOOK_ENTRY_MESSAGE,
