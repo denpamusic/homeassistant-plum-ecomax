@@ -15,7 +15,15 @@ async def test_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry):
     """Test config entry diagnostics."""
     mock_connection = AsyncMock(spec=EcomaxConnection)
     mock_connection.device = AsyncMock(spec=Device)
-    for attr in ("product", "modules", "sensors", "regdata", "parameters", "mixers"):
+    for attr in (
+        "product",
+        "modules",
+        "sensors",
+        "regdata",
+        "parameters",
+        "mixers",
+        "alerts",
+    ):
         setattr(mock_connection.device, attr, attr)
 
     hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = mock_connection
@@ -41,4 +49,5 @@ async def test_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry):
         "regdata": "regdata",
         "parameters": "parameters",
         "mixers": "mixers",
+        "alerts": "alerts",
     }

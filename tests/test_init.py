@@ -1,19 +1,29 @@
 """Test Plum ecoMAX setup process."""
 
 import asyncio
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
+from homeassistant.util import dt as dt_util
+from pyplumio.structures.alerts import Alert
 
 from custom_components.plum_ecomax import (
     async_migrate_entry,
     async_setup_entry,
+    async_setup_events,
     async_unload_entry,
 )
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import CONF_CAPABILITIES, DOMAIN
+from custom_components.plum_ecomax.const import (
+    ATTR_CODE,
+    ATTR_FROM,
+    ATTR_TO,
+    CONF_CAPABILITIES,
+    DOMAIN,
+    ECOMAX_ALERT_EVENT,
+)
 
 
 @patch("custom_components.plum_ecomax.EcomaxConnection.async_setup")
@@ -46,6 +56,24 @@ async def test_setup_and_unload_entry(
     # Test when already unloaded.
     assert await async_unload_entry(hass, config_entry)
     mock_close.assert_not_awaited()
+
+
+@patch("pyplumio.helpers.filters._Delta")
+@patch("homeassistant.core.EventBus.async_fire")
+async def test_setup_events(mock_async_fire, mock_delta, hass: HomeAssistant) -> None:
+    """Test setup events."""
+    mock_connection = Mock(spec=EcomaxConnection)
+    await async_setup_events(hass, mock_connection)
+    mock_register_callback = mock_connection.device.register_callback
+    mock_register_callback.assert_called_once_with("alerts", mock_delta.return_value)
+    args, _ = mock_delta.call_args
+    callback = args[0]
+    utcnow = dt_util.utcnow()
+    alert = Alert(code=0, from_dt=utcnow, to_dt=None)
+    await callback([alert])
+    mock_async_fire.assert_called_once_with(
+        ECOMAX_ALERT_EVENT, {ATTR_CODE: 0, ATTR_FROM: utcnow, ATTR_TO: None}
+    )
 
 
 @patch.object(EcomaxConnection, "get_device", create=True, new_callable=AsyncMock)

@@ -7,6 +7,8 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
+from pyplumio.helpers.filters import delta
+from pyplumio.structures.alerts import Alert
 
 from custom_components.plum_ecomax.services import async_setup_services
 
@@ -15,7 +17,14 @@ from .connection import (
     async_get_connection_handler,
     async_get_device_capabilities,
 )
-from .const import CONF_CAPABILITIES, DOMAIN
+from .const import (
+    ATTR_CODE,
+    ATTR_FROM,
+    ATTR_TO,
+    CONF_CAPABILITIES,
+    DOMAIN,
+    ECOMAX_ALERT_EVENT,
+)
 
 PLATFORMS: list[str] = [
     "sensor",
@@ -45,9 +54,29 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     load_ok = await connection.async_setup()
     await async_setup_services(hass, connection)
+    await async_setup_events(hass, connection)
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = connection
     hass.config_entries.async_setup_platforms(entry, PLATFORMS)
     return load_ok
+
+
+async def async_setup_events(hass: HomeAssistant, connection: EcomaxConnection) -> None:
+    """Setup ecoMAX events."""
+
+    async def _alerts_event(alerts: list[Alert]):
+        """Handle ecoMAX alerts."""
+        for alert in alerts:
+            hass.bus.async_fire(
+                ECOMAX_ALERT_EVENT,
+                {
+                    ATTR_CODE: alert.code,
+                    ATTR_FROM: alert.from_dt,
+                    ATTR_TO: alert.to_dt,
+                },
+            )
+
+    if connection.device is not None:
+        connection.device.register_callback("alerts", delta(_alerts_event))
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

@@ -25,6 +25,7 @@ async def async_get_config_entry_diagnostics(
             "regdata",
             "parameters",
             "mixers",
+            "alerts",
         ):
             device_data[name] = getattr(device, name, None)
 

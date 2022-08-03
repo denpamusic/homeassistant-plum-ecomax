@@ -16,6 +16,9 @@ CONF_CAPABILITIES: Final = "capabilities"
 
 
 ATTR_VALUE: Final = "value"
+ATTR_CODE: Final = "code"
+ATTR_FROM: Final = "from"
+ATTR_TO: Final = "to"
 
 CONNECTION_TYPE_TCP: Final = "TCP"
 CONNECTION_TYPE_SERIAL: Final = "Serial"
@@ -27,3 +30,5 @@ DEFAULT_DEVICE: Final = "/dev/ttyUSB0"
 
 FLOW_KGH: Final = "kg/h"
 CALORIFIC_KWH_KG: Final = "kWh/kg"
+
+ECOMAX_ALERT_EVENT: Final = "alert"
