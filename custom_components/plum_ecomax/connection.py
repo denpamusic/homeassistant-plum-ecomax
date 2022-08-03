@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Mapping
 import logging
-from typing import Any
+from typing import Any, Final
 
 from homeassistant.components.network import async_get_source_ip
 from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
@@ -33,6 +33,8 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_TIMEOUT: Final = 30
+DEVICE_TIMEOUT: Final = 10
+
 
 async def async_get_connection_handler(
     hass: HomeAssistant, data: Mapping[str, Any]
@@ -79,7 +81,7 @@ async def async_get_device_capabilities(device: Device) -> list[str]:
     capabilities += list(parameters.keys())
     for capability in ("fuel_burned", "boiler_control", "password"):
         try:
-            await device.get_value(capability)
+            await device.get_value(capability, timeout=5)
             capabilities.append(capability)
         except asyncio.TimeoutError:
             continue
@@ -117,7 +119,9 @@ class EcomaxConnection:
 
         await self.connection.connect()
         try:
-            self._device = await self.connection.get_device("ecomax")
+            self._device = await self.connection.get_device(
+                "ecomax", timeout=DEVICE_TIMEOUT
+            )
         except asyncio.TimeoutError:
             _LOGGER.error("Device has failed to respond in time")
             return False

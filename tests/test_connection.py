@@ -66,9 +66,9 @@ async def test_async_check_connection() -> None:
         call("modules"),
         call("sensors"),
         call("parameters"),
-        call("fuel_burned"),
-        call("boiler_control"),
-        call("password"),
+        call("fuel_burned", timeout=5),
+        call("boiler_control", timeout=5),
+        call("password", timeout=5),
     )
     mock_device.get_value.assert_has_calls(calls)
     mock_connection.close.assert_awaited_once()
@@ -105,7 +105,7 @@ async def test_async_setup(
     assert await connection.async_setup()
 
     mock_connection_handler.connect.assert_awaited_once()
-    mock_connection_handler.get_device.assert_awaited_once_with("ecomax")
+    mock_connection_handler.get_device.assert_awaited_once_with("ecomax", timeout=10)
 
     # Check connection class properties.
     assert connection.host == "localhost"
