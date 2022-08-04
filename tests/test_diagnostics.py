@@ -15,17 +15,7 @@ async def test_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry):
     """Test config entry diagnostics."""
     mock_connection = AsyncMock(spec=EcomaxConnection)
     mock_connection.device = AsyncMock(spec=Device)
-    for attr in (
-        "product",
-        "modules",
-        "sensors",
-        "regdata",
-        "parameters",
-        "mixers",
-        "alerts",
-    ):
-        setattr(mock_connection.device, attr, attr)
-
+    mock_connection.device.data = {"test_data": "test_value"}
     hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = mock_connection
     result = await async_get_config_entry_diagnostics(hass, config_entry)
     assert "pyplumio" in result
@@ -42,12 +32,4 @@ async def test_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry):
             "capabilities": ["fuel_burned", "heating_temp"],
         },
     }
-    assert result["data"] == {
-        "product": "product",
-        "modules": "modules",
-        "sensors": "sensors",
-        "regdata": "regdata",
-        "parameters": "parameters",
-        "mixers": "mixers",
-        "alerts": "alerts",
-    }
+    assert result["data"] == {"test_data": "test_value"}

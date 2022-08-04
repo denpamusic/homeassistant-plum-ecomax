@@ -99,6 +99,12 @@ async def test_async_setup_and_update_entry(
     mock_throttle_filter = AsyncMock(spec=Filter)
     mock_on_change_filter = AsyncMock(spec=Filter)
     mock_device.register_callback = Mock()
+    mock_device.data = {
+        "water_heater_temp": 45,
+        "water_heater_target_temp": 50,
+        "water_heater_work_mode": 0,
+        "water_heater_hysteresis": 5,
+    }
     with patch(
         "custom_components.plum_ecomax.water_heater.throttle",
         return_value=mock_throttle_filter,

@@ -135,9 +135,8 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
 
         for name, func in callbacks.items():
             # Feed initial value to the callback function.
-            value = getattr(self.device, name, None)
-            if value is not None:
-                await func(value)
+            if name in self.device.data:
+                await func(self.device.data[name])
 
             self.device.register_callback(name, func)
 

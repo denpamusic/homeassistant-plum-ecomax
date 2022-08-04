@@ -29,7 +29,7 @@ async def test_base_entity(mock_connection, mock_async_update) -> None:
     mock_filter = AsyncMock(spec=Filter)
     entity.entity_description.filter_fn = Mock(return_value=mock_filter)
     mock_connection.device = Mock(spec=Device)
-    mock_connection.device.test_entity = "test"
+    mock_connection.device.data = {"test_entity": "test"}
     mock_connection.connected = Mock(spec=asyncio.Event)
 
     # Test added/removed to/from hass.

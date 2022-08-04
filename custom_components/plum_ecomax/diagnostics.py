@@ -16,19 +16,6 @@ async def async_get_config_entry_diagnostics(
 ) -> dict[str, Any]:
     """Return diagnostics for a config entry."""
     device: Device = hass.data[DOMAIN][entry.entry_id].device
-    device_data = {}
-    if device is not None:
-        for name in (
-            "product",
-            "modules",
-            "sensors",
-            "regdata",
-            "parameters",
-            "mixers",
-            "alerts",
-        ):
-            device_data[name] = getattr(device, name, None)
-
     return {
         "entry": {
             "title": entry.title,
@@ -37,5 +24,5 @@ async def async_get_config_entry_diagnostics(
         "pyplumio": {
             "version": pyplumio_version,
         },
-        "data": device_data,
+        "data": device.data,
     }

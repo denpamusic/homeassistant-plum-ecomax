@@ -19,9 +19,8 @@ class EcomaxEntity(ABC):
         func = self.entity_description.filter_fn(self.async_update)
 
         # Feed initial value to the callback function.
-        value = getattr(self.device, self.entity_description.key, None)
-        if value is not None:
-            await func(value)
+        if self.entity_description.key in self.device.data:
+            await func(self.device.data[self.entity_description.key])
 
         self.device.register_callback(self.entity_description.key, func)
 
