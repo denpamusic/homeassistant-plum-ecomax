@@ -8,7 +8,10 @@ from pyplumio.devices import Device
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import DOMAIN
-from custom_components.plum_ecomax.diagnostics import async_get_config_entry_diagnostics
+from custom_components.plum_ecomax.diagnostics import (
+    REDACTED,
+    async_get_config_entry_diagnostics,
+)
 
 
 async def test_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry):
@@ -26,7 +29,7 @@ async def test_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry):
             "device": "/dev/ttyUSB0",
             "host": "example.com",
             "port": 8899,
-            "uid": "D251PAKR3GCPZ1K8G05G0",
+            "uid": REDACTED,
             "model": "EMTEST",
             "software": "1.13.5.A1",
             "capabilities": ["fuel_burned", "heating_temp"],
