@@ -54,12 +54,17 @@ async def test_async_check_connection() -> None:
     mock_device.get_value.side_effect = (
         mock_product,
         mock_modules,
-        {"test_sensor": "test_value", "water_heater_temp": 50},
-        {"test_parameter": "test_value"},
+        True,
+        True,
         "fuel_burned",
         "boiler_control",
         asyncio.TimeoutError,
     )
+    mock_device.data = {
+        "test_sensor": "test_value",
+        "water_heater_temp": 50,
+        "test_parameter": "test_value",
+    }
     result = await async_check_connection(mock_connection)
     calls = (
         call("product"),

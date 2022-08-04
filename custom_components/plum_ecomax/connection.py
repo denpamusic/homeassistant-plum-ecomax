@@ -74,11 +74,10 @@ async def async_check_connection(
 @timeout(seconds=DEFAULT_TIMEOUT)
 async def async_get_device_capabilities(device: Device) -> list[str]:
     """Return device capabilities, presented as list of allowed keys."""
-    sensors = await device.get_value("sensors")
-    parameters = await device.get_value("parameters")
+    await device.get_value("sensors")
+    await device.get_value("parameters")
     capabilities = ["product", "modules"]
-    capabilities += list(sensors.keys())
-    capabilities += list(parameters.keys())
+    capabilities += list(device.data.keys())
     for capability in ("fuel_burned", "boiler_control", "password"):
         try:
             await device.get_value(capability, timeout=5)
