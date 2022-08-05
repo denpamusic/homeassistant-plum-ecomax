@@ -27,7 +27,7 @@ async def test_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry):
         "data": {
             "connection_type": "TCP",
             "device": "/dev/ttyUSB0",
-            "host": "example.com",
+            "host": REDACTED,
             "port": 8899,
             "uid": REDACTED,
             "model": "EMTEST",

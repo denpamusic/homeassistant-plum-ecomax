@@ -23,8 +23,9 @@ def _redact_device_data(device_data: dict[str, Any]) -> dict[str, Any]:
 
 def _redact_entry_data(entry_data: dict[str, Any]) -> dict[str, Any]:
     """Redact sensitive information in config entry data."""
-    if "uid" in entry_data:
-        entry_data["uid"] = REDACTED
+    for field in ("uid", "host"):
+        if field in entry_data:
+            entry_data[field] = REDACTED
 
     return entry_data
 
