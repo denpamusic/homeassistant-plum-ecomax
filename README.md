@@ -15,7 +15,7 @@ It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and sup
 - [Installation](#installation)
   - [HACS](#hacs)
   - [Manual](#manual)
-- [Usage](#usage)
+- [Configuration](#configuration)
 - [Entities](#entities)
 - [Services](#services)
 - [License](#license)
@@ -47,20 +47,36 @@ cp -r ./homeassistant-plum-ecomax/custom_components ~/.homeassistant
 4. Restart Home Assistant.
 
 
-## Usage
-1. Click `Add Integration` button and search for `Plum ecoMAX`.
+## Configuration
+
+Adding Plum ecoMAX integration to your Home Assistant instance can be done via user interface, by using this My button:
+
+
+[![Add integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start?domain=plum_ecomax)
+<details>
+  <summary><b>Manual Configuration Steps</b></summary>
+  
+If the above My button doesn’t work, you can also perform the following steps manually:
+
+1. Browse to your Home Assistant instance.
+2. In the sidebar click on Settings.
+3. From the configuration menu select: Devices & Services.
+4. In the bottom right, click on the Add Integration button.
+5. From the list, search and select "Plum ecoMAX".
 
 ![Search dialog](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/search.png)
 
-2. Enter your connection details and click `Submit`.  
+6. Enter your connection details and click `Submit`.  
 __Serial connection__: you will need to fill Device path. Host and Port will be ignored.  
-__TCP connection__: you will need to fill Host and Port. Device path will be ignored.
+__TCP connection__: you will need to fill Host and Port. Device path will be ignored
 
 ![Configuration dialog](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/config.png)
 
-3. Your device should now be available in your Home Assistant installation.
+7. Your device should now be available in your Home Assistant installation.
 
 ![Success](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/success.png)
+  
+</details>
 
 ## Entities
 This integration provides the following entities:
