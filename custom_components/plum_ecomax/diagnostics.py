@@ -18,6 +18,9 @@ def _redact_device_data(device_data: dict[str, Any]) -> dict[str, Any]:
     if "product" in device_data:
         device_data["product"].uid = REDACTED
 
+    if "password" in device_data:
+        device_data["password"] = REDACTED
+
     return device_data
 
 

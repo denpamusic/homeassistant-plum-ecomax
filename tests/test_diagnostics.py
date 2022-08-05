@@ -23,6 +23,7 @@ async def test_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry):
     mock_connection.device.data = {
         "test_data": "test_value",
         "product": mock_product_info,
+        "password": "0000",
     }
     hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = mock_connection
     result = await async_get_config_entry_diagnostics(hass, config_entry)
@@ -40,5 +41,9 @@ async def test_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry):
             "capabilities": ["fuel_burned", "heating_temp"],
         },
     }
-    assert result["data"] == {"test_data": "test_value", "product": mock_product_info}
+    assert result["data"] == {
+        "test_data": "test_value",
+        "product": mock_product_info,
+        "password": REDACTED,
+    }
     assert mock_product_info.uid == REDACTED
