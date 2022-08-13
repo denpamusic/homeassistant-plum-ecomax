@@ -76,7 +76,7 @@ async def async_setup_events(hass: HomeAssistant, connection: EcomaxConnection) 
             )
 
     if connection.device is not None:
-        connection.device.register_callback("alerts", delta(_alerts_event))
+        connection.device.subscribe("alerts", delta(_alerts_event))
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

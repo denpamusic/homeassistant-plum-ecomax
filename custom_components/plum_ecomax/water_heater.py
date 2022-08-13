@@ -138,15 +138,15 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
             if name in self.device.data:
                 await func(self.device.data[name])
 
-            self.device.register_callback(name, func)
+            self.device.subscribe(name, func)
 
     async def async_will_remove_from_hass(self):
         """Called when an entity is about to be removed."""
         key = self.entity_description.key
-        self.device.remove_callback(f"{key}_temp", self.async_update)
-        self.device.remove_callback(f"{key}_target_temp", self.async_update_target_temp)
-        self.device.remove_callback(f"{key}_work_mode", self.async_update_work_mode)
-        self.device.remove_callback(f"{key}_hysteresis", self.async_update_hysteresis)
+        self.device.unsubscribe(f"{key}_temp", self.async_update)
+        self.device.unsubscribe(f"{key}_target_temp", self.async_update_target_temp)
+        self.device.unsubscribe(f"{key}_work_mode", self.async_update_work_mode)
+        self.device.unsubscribe(f"{key}_hysteresis", self.async_update_hysteresis)
 
     @property
     def hysteresis(self) -> int:

@@ -64,8 +64,8 @@ async def test_setup_events(mock_async_fire, mock_delta, hass: HomeAssistant) ->
     """Test setup events."""
     mock_connection = Mock(spec=EcomaxConnection)
     await async_setup_events(hass, mock_connection)
-    mock_register_callback = mock_connection.device.register_callback
-    mock_register_callback.assert_called_once_with("alerts", mock_delta.return_value)
+    mock_subscribe = mock_connection.device.subscribe
+    mock_subscribe.assert_called_once_with("alerts", mock_delta.return_value)
     args, _ = mock_delta.call_args
     callback = args[0]
     utcnow = dt_util.utcnow()

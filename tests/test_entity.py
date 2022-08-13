@@ -35,14 +35,12 @@ async def test_base_entity(mock_connection, mock_async_update) -> None:
     # Test added/removed to/from hass.
     await entity.async_added_to_hass()
     entity.entity_description.filter_fn.assert_called_once()
-    entity.device.register_callback.assert_called_once_with(
+    entity.device.subscribe.assert_called_once_with(
         "test_entity", entity.entity_description.filter_fn.return_value
     )
     mock_filter.assert_awaited_once()
     await entity.async_will_remove_from_hass()
-    entity.device.remove_callback.assert_called_once_with(
-        "test_entity", mock_async_update
-    )
+    entity.device.unsubscribe.assert_called_once_with("test_entity", mock_async_update)
 
     # Test device property.
     assert entity.device == mock_connection.device

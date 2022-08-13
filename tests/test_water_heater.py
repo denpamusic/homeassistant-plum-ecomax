@@ -98,7 +98,7 @@ async def test_async_setup_and_update_entry(
     # Check added/removed to/from hass callbacks.
     mock_throttle_filter = AsyncMock(spec=Filter)
     mock_on_change_filter = AsyncMock(spec=Filter)
-    mock_device.register_callback = Mock()
+    mock_device.subscribe = Mock()
     mock_device.data = {
         "water_heater_temp": 45,
         "water_heater_target_temp": 50,
@@ -121,10 +121,10 @@ async def test_async_setup_and_update_entry(
         call(f"{key}_work_mode", mock_on_change_filter),
         call(f"{key}_hysteresis", mock_on_change_filter),
     )
-    mock_device.register_callback.assert_has_calls(register_calls, any_order=True)
+    mock_device.subscribe.assert_has_calls(register_calls, any_order=True)
     assert mock_throttle_filter.await_count == 1
     assert mock_on_change_filter.await_count == 3
-    mock_device.remove_callback = Mock()
+    mock_device.unsubscribe = Mock()
     await water_heater.async_will_remove_from_hass()
     remove_calls = (
         call(f"{key}_temp", water_heater.async_update),
@@ -132,4 +132,4 @@ async def test_async_setup_and_update_entry(
         call(f"{key}_work_mode", water_heater.async_update_work_mode),
         call(f"{key}_hysteresis", water_heater.async_update_hysteresis),
     )
-    mock_device.remove_callback.assert_has_calls(remove_calls)
+    mock_device.unsubscribe.assert_has_calls(remove_calls)

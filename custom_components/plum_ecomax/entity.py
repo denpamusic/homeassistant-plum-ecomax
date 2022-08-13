@@ -22,11 +22,11 @@ class EcomaxEntity(ABC):
         if self.entity_description.key in self.device.data:
             await func(self.device.data[self.entity_description.key])
 
-        self.device.register_callback(self.entity_description.key, func)
+        self.device.subscribe(self.entity_description.key, func)
 
     async def async_will_remove_from_hass(self):
         """Called when an entity is about to be removed."""
-        self.device.remove_callback(self.entity_description.key, self.async_update)
+        self.device.unsubscribe(self.entity_description.key, self.async_update)
 
     @property
     def device(self):
