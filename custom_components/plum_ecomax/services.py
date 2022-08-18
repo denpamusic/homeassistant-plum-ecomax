@@ -103,7 +103,7 @@ async def _setup_set_schedule_service(
         start_time = service_call.data[ATTR_START]
         end_time = service_call.data[ATTR_END]
 
-        name = name.lower().replace("", "_")
+        name = name.lower().replace(" ", "_")
         if connection.device is not None and name in connection.device.data.get(
             "schedules", {}
         ):
