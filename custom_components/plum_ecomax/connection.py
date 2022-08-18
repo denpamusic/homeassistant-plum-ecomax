@@ -78,7 +78,7 @@ async def async_get_device_capabilities(device: Device) -> list[str]:
     await device.get_value("parameters")
     capabilities = ["product", "modules"]
     capabilities += list(device.data.keys())
-    for capability in ("fuel_burned", "boiler_control", "password"):
+    for capability in ("fuel_burned", "boiler_control", "password", "schedules"):
         try:
             await device.get_value(capability, timeout=5)
             capabilities.append(capability)

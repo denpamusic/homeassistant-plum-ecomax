@@ -51,6 +51,7 @@ async def test_async_check_connection() -> None:
     mock_connection.get_device.return_value = mock_device
     mock_product = Mock(spec=ProductInfo)
     mock_modules = Mock(spec=ConnectedModules)
+    mock_schedules = Mock()
     mock_device.get_value.side_effect = (
         mock_product,
         mock_modules,
@@ -59,6 +60,7 @@ async def test_async_check_connection() -> None:
         "fuel_burned",
         "boiler_control",
         asyncio.TimeoutError,
+        mock_schedules,
     )
     mock_device.data = {
         "test_sensor": "test_value",
@@ -74,6 +76,7 @@ async def test_async_check_connection() -> None:
         call("fuel_burned", timeout=5),
         call("boiler_control", timeout=5),
         call("password", timeout=5),
+        call("schedules", timeout=5),
     )
     mock_device.get_value.assert_has_calls(calls)
     mock_connection.close.assert_awaited_once()
@@ -89,6 +92,7 @@ async def test_async_check_connection() -> None:
             "test_parameter",
             "fuel_burned",
             "boiler_control",
+            "schedules",
             "water_heater",
         ],
     )

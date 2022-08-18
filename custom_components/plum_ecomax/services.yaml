@@ -17,6 +17,57 @@ set_parameter:
       selector:
         text:
 
+set_schedule:
+  name: Set Schedule
+  description: Set device schedule.
+  fields:
+    name:
+      name: Name
+      description: Name of the schedule
+      example: "heating"
+      required: true
+      selector:
+        select:
+          options:
+            - "Heating"
+            - "Water Heater"
+    weekday:
+      name: Weekday
+      description: Weekday to set the schedule
+      example: "monday"
+      required: true
+      selector:
+        select:
+          options:
+            - "Monday"
+            - "Tuesday"
+            - "Wednesday"
+            - "Thursday"
+            - "Friday"
+            - "Saturday"
+            - "Sunday"
+    state:
+      name: State
+      description: State at scheduled time
+      example: false
+      required: true
+      selector:
+        boolean:
+    start:
+      name: Start
+      description: Time at which scheduled state will be set
+      example: "00:00:00"
+      required: false
+      selector:
+        time:
+    end:
+      name: End
+      description: Time at which scheduled state will be cleared
+      example: "12:00:00"
+      required: false
+      selector:
+        time:
+
 update_capabilities:
   name: Update Capabilities
   description: Update device capability list.
