@@ -35,6 +35,8 @@ _LOGGER = logging.getLogger(__name__)
 DEFAULT_TIMEOUT: Final = 30
 DEVICE_TIMEOUT: Final = 10
 
+MANUFACTURER: Final = "Plum Sp. z o.o."
+
 
 async def async_get_connection_handler(
     hass: HomeAssistant, data: Mapping[str, Any]
@@ -179,7 +181,7 @@ class EcomaxConnection:
         return DeviceInfo(
             name=self.name,
             identifiers={(DOMAIN, self.uid)},
-            manufacturer="Plum Sp. z o.o.",
+            manufacturer=MANUFACTURER,
             model=f"{self.model}",
             sw_version=self.software,
         )
