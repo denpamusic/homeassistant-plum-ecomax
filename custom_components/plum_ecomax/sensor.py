@@ -185,7 +185,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         icon="mdi:fire",
         native_unit_of_measurement=FLOW_KGH,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda x: x,
+        value_fn=lambda x: round(x, 2),
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
@@ -202,7 +202,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=POWER_KILO_WATT,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.POWER,
-        value_fn=lambda x: x,
+        value_fn=lambda x: round(x, 2),
     ),
     EcomaxSensorEntityDescription(
         key="password",
