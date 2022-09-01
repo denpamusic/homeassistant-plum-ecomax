@@ -261,7 +261,7 @@ METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
         icon="mdi:counter",
         native_unit_of_measurement=MASS_KILOGRAMS,
         state_class=SensorStateClass.TOTAL_INCREASING,
-        value_fn=lambda x: round(x, 1),
+        value_fn=lambda x: round(x, 2),
         filter_fn=lambda x: aggregate(x, seconds=30),
     ),
 )
@@ -296,10 +296,12 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
 
     async def async_update(self, value) -> None:
         """Update meter state."""
-        self._attr_native_value = self.entity_description.value_fn(
-            self._attr_native_value + value
-        )
+        self._attr_native_value += value
         self.async_write_ha_state()
+
+    @property
+    def native_value(self) -> StateType:
+        return self.entity_description.value_fn(self._attr_native_value)
 
 
 async def async_setup_entry(
