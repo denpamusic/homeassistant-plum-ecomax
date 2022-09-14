@@ -14,7 +14,7 @@
     "@denpamusic"
   ],
   "iot_class": "local_push",
-  "version": "0.2.15",
+  "version": "0.2.16",
   "loggers": [
     "pyplumio"
   ]
