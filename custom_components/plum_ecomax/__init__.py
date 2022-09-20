@@ -7,6 +7,7 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryNotReady
 from pyplumio.helpers.filters import delta
 from pyplumio.structures.alerts import Alert
 
@@ -53,7 +54,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, async_close_connection)
     )
 
-    load_ok = await connection.async_setup()
+    load_ok, error_message = await connection.async_setup()
+    if not load_ok:
+        raise ConfigEntryNotReady(error_message)
+
     await async_setup_services(hass, connection)
     await async_setup_events(hass, connection)
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = connection
@@ -84,7 +88,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         try:
-            connection = hass.data[DOMAIN][entry.entry_id]
+            connection: EcomaxConnection = hass.data[DOMAIN][entry.entry_id]
             await connection.close()
             hass.data[DOMAIN].pop(entry.entry_id)
         except KeyError:

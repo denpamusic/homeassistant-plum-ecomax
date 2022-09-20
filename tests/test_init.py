@@ -6,8 +6,10 @@ from unittest.mock import AsyncMock, Mock, patch
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.util import dt as dt_util
 from pyplumio.structures.alerts import Alert
+import pytest
 
 from custom_components.plum_ecomax import (
     async_migrate_entry,
@@ -26,7 +28,10 @@ from custom_components.plum_ecomax.const import (
 )
 
 
-@patch("custom_components.plum_ecomax.EcomaxConnection.async_setup")
+@patch(
+    "custom_components.plum_ecomax.EcomaxConnection.async_setup",
+    side_effect=((True, None), (False, "error message")),
+)
 @patch("custom_components.plum_ecomax.async_setup_services")
 @patch.object(EcomaxConnection, "close", create=True, new_callable=AsyncMock)
 async def test_setup_and_unload_entry(
@@ -41,10 +46,14 @@ async def test_setup_and_unload_entry(
     assert DOMAIN in hass.data and config_entry.entry_id in hass.data[DOMAIN]
     assert isinstance(hass.data[DOMAIN][config_entry.entry_id], EcomaxConnection)
 
+    # Test with exception.
+    with pytest.raises(ConfigEntryNotReady):
+        await async_setup_entry(hass, config_entry)
+
     # Send HA stop event and check that connection was closed.
     hass.bus.async_fire(EVENT_HOMEASSISTANT_STOP)
     await hass.async_block_till_done()
-    mock_close.assert_awaited_once()
+    assert mock_close.call_count == 2
     mock_close.reset_mock()
 
     # Unload entry and verify that it is no longer present in hass data.

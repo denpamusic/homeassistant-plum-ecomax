@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Mapping
 import logging
-from typing import Any, Final
+from typing import Any, Final, Tuple
 
 from homeassistant.components.network import async_get_source_ip
 from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
@@ -116,19 +116,21 @@ class EcomaxConnection:
 
         raise AttributeError()
 
-    async def async_setup(self) -> bool:
+    async def async_setup(self) -> Tuple[bool, str | None]:
         """Setup connection and add hass stop handler."""
 
+        error_message = None
         await self.connection.connect()
         try:
             self._device = await self.connection.get_device(
-                "ecomax", timeout=DEVICE_TIMEOUT
+                ECOMAX, timeout=DEVICE_TIMEOUT
             )
         except asyncio.TimeoutError:
-            _LOGGER.error("Device has failed to respond in time")
-            return False
+            error_message = "Device has failed to respond in time"
+            await self.connection.close()
+            return False, error_message
 
-        return True
+        return True, error_message
 
     async def async_update_device_capabilities(self) -> None:
         """Update device capabilities."""

@@ -114,7 +114,7 @@ async def test_async_setup(
     assert await connection.async_setup()
 
     mock_connection_handler.connect.assert_awaited_once()
-    mock_connection_handler.get_device.assert_awaited_once_with(ECOMAX, timeout=10)
+    mock_connection_handler.get_device.assert_awaited_once_with(ECOMAX, timeout=20)
 
     # Check connection class properties.
     assert connection.host == "localhost"
@@ -135,8 +135,9 @@ async def test_async_setup(
     )
 
     # Check with device timeout.
-    assert not await connection.async_setup()
-    assert "Device has failed to respond in time" in caplog.text
+    load_ok, error_message = await connection.async_setup()
+    assert not load_ok
+    assert error_message == "Device has failed to respond in time"
 
     # Check name with serial connection.
     mock_connection_handler = AsyncMock(spec=SerialConnection)
