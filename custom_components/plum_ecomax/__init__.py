@@ -23,6 +23,7 @@ from .const import (
     ATTR_TO,
     CONF_CAPABILITIES,
     DOMAIN,
+    ECOMAX,
     ECOMAX_ALERT_EVENT,
 )
 
@@ -108,7 +109,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
             )
             await connection.connect()
             data[CONF_CAPABILITIES] = await async_get_device_capabilities(
-                await connection.get_device("ecomax")
+                await connection.get_device(ECOMAX)
             )
             await connection.close()
 

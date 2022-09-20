@@ -14,6 +14,7 @@ CONF_MODEL: Final = "model"
 CONF_SOFTWARE: Final = "software"
 CONF_CAPABILITIES: Final = "capabilities"
 
+ECOMAX: Final = "ecomax"
 
 ATTR_VALUE: Final = "value"
 ATTR_CODE: Final = "code"

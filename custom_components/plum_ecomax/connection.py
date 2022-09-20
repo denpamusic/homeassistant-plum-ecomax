@@ -28,6 +28,7 @@ from .const import (
     CONF_UID,
     CONNECTION_TYPE_TCP,
     DOMAIN,
+    ECOMAX,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -64,7 +65,7 @@ async def async_check_connection(
         else connection.device
     )
     await connection.connect()
-    device = await connection.get_device("ecomax")
+    device = await connection.get_device(ECOMAX)
     product = await device.get_value("product")
     modules = await device.get_value("modules")
 

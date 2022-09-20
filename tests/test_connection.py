@@ -16,7 +16,7 @@ from custom_components.plum_ecomax.connection import (
     async_check_connection,
     async_get_connection_handler,
 )
-from custom_components.plum_ecomax.const import DOMAIN
+from custom_components.plum_ecomax.const import DOMAIN, ECOMAX
 from tests.const import MOCK_CONFIG_DATA, MOCK_CONFIG_DATA_SERIAL
 
 
@@ -114,7 +114,7 @@ async def test_async_setup(
     assert await connection.async_setup()
 
     mock_connection_handler.connect.assert_awaited_once()
-    mock_connection_handler.get_device.assert_awaited_once_with("ecomax", timeout=10)
+    mock_connection_handler.get_device.assert_awaited_once_with(ECOMAX, timeout=10)
 
     # Check connection class properties.
     assert connection.host == "localhost"
