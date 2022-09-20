@@ -34,7 +34,7 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_TIMEOUT: Final = 30
-DEVICE_TIMEOUT: Final = 10
+DEVICE_TIMEOUT: Final = 20
 
 MANUFACTURER: Final = "Plum Sp. z o.o."
 
