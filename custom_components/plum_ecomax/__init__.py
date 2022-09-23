@@ -54,15 +54,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, async_close_connection)
     )
 
-    load_ok, error_message = await connection.async_setup()
-    if not load_ok:
-        raise ConfigEntryNotReady(error_message)
+    try:
+        await connection.async_setup()
+    except asyncio.TimeoutError as e:
+        raise ConfigEntryNotReady("Device has failed to respond in time") from e
 
     await async_setup_services(hass, connection)
     await async_setup_events(hass, connection)
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = connection
     hass.config_entries.async_setup_platforms(entry, PLATFORMS)
-    return load_ok
+    return True
 
 
 async def async_setup_events(hass: HomeAssistant, connection: EcomaxConnection) -> None:

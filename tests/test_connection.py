@@ -10,6 +10,7 @@ from homeassistant.helpers.entity import DeviceInfo
 from pyplumio import SerialConnection, TcpConnection
 from pyplumio.devices import Device
 from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
+import pytest
 
 from custom_components.plum_ecomax.connection import (
     EcomaxConnection,
@@ -111,7 +112,7 @@ async def test_async_setup(
         side_effect=(mock_device, asyncio.TimeoutError)
     )
     connection = EcomaxConnection(hass, config_entry, mock_connection_handler)
-    assert await connection.async_setup()
+    await connection.async_setup()
 
     mock_connection_handler.connect.assert_awaited_once()
     mock_connection_handler.get_device.assert_awaited_once_with(ECOMAX, timeout=20)
@@ -135,9 +136,8 @@ async def test_async_setup(
     )
 
     # Check with device timeout.
-    load_ok, error_message = await connection.async_setup()
-    assert not load_ok
-    assert error_message == "Device has failed to respond in time"
+    with pytest.raises(asyncio.TimeoutError):
+        await connection.async_setup()
 
     # Check name with serial connection.
     mock_connection_handler = AsyncMock(spec=SerialConnection)
@@ -160,7 +160,7 @@ async def test_async_update_capabilities(
     mock_connection_handler = AsyncMock(spec=TcpConnection)
     mock_connection_handler.get_device = AsyncMock(spec=Device)
     connection = EcomaxConnection(hass, config_entry, mock_connection_handler)
-    assert await connection.async_setup()
+    await connection.async_setup()
 
     with patch(
         "homeassistant.config_entries.ConfigEntries.async_update_entry"

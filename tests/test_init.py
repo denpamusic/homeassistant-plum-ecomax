@@ -30,7 +30,7 @@ from custom_components.plum_ecomax.const import (
 
 @patch(
     "custom_components.plum_ecomax.EcomaxConnection.async_setup",
-    side_effect=((True, None), (False, "error message")),
+    side_effect=(None, asyncio.TimeoutError),
 )
 @patch("custom_components.plum_ecomax.async_setup_services")
 @patch.object(EcomaxConnection, "close", create=True, new_callable=AsyncMock)
