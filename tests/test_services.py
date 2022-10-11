@@ -50,15 +50,14 @@ async def test_setup_services(hass: HomeAssistant, caplog) -> None:
 
     mock_service_call.data = {ATTR_NAME: "test_name", ATTR_VALUE: 39}
     mock_connection.capabilities = ["test_name"]
-    with patch("asyncio.wait_for"):
-        await func(mock_service_call)
+    mock_connection.device.set_value = AsyncMock()
+    await func(mock_service_call)
 
-    mock_connection.device.set_value.assert_called_once_with("test_name", 39)
+    mock_connection.device.set_value.assert_called_once_with("test_name", 39, timeout=5)
 
     # Check that error is raised if device timed-out.
-    with pytest.raises(HomeAssistantError), patch(
-        "asyncio.wait_for", side_effect=asyncio.TimeoutError
-    ):
+    mock_connection.device.set_value.side_effect = asyncio.TimeoutError
+    with pytest.raises(HomeAssistantError):
         await func(mock_service_call)
 
     assert "Service timed out while waiting" in caplog.text
