@@ -72,9 +72,7 @@ async def _setup_set_parameter_service(
 
         if connection.device is not None and name in connection.capabilities:
             try:
-                return await asyncio.wait_for(
-                    connection.device.set_value(name, value), timeout=5
-                )
+                return await connection.device.set_value(name, value, timeout=5)
             except asyncio.TimeoutError:
                 _LOGGER.error("Service timed out while waiting for %s parameter", name)
 
