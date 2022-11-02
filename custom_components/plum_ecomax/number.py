@@ -125,7 +125,9 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
     async def async_set_native_value(self, value: float) -> None:
         """Update current value."""
         await self.device.set_value(
-            self.entity_description.key, self.entity_description.value_set_fn(value)
+            self.entity_description.key,
+            self.entity_description.value_set_fn(value),
+            await_confirmation=False,
         )
         self._attr_native_value = value
         self.async_write_ha_state()

@@ -82,7 +82,9 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
     async def async_turn_on(self, **kwargs) -> None:
         """Turn the entity on."""
         await self.device.set_value(
-            self.entity_description.key, self.entity_description.state_on
+            self.entity_description.key,
+            self.entity_description.state_on,
+            await_confirmation=False,
         )
         self._attr_is_on = True
         self.async_write_ha_state()
@@ -90,7 +92,9 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
     async def async_turn_off(self, **kwargs) -> None:
         """Turn the entity off."""
         await self.device.set_value(
-            self.entity_description.key, self.entity_description.state_off
+            self.entity_description.key,
+            self.entity_description.state_off,
+            await_confirmation=False,
         )
         self._attr_is_on = False
         self.async_write_ha_state()

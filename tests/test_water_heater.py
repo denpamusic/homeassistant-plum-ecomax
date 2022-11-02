@@ -83,7 +83,9 @@ async def test_async_setup_and_update_entry(
     # Set target temperature.
     await water_heater.async_set_temperature(temperature=0)
     mock_device.set_value.assert_called_once_with(
-        f"{water_heater.entity_description.key}_target_temp", 0
+        f"{water_heater.entity_description.key}_target_temp",
+        0,
+        await_confirmation=False,
     )
     assert water_heater.target_temperature == 0
     mock_device.reset_mock()
@@ -91,7 +93,7 @@ async def test_async_setup_and_update_entry(
     # Set current operation.
     await water_heater.async_set_operation_mode(STATE_OFF)
     mock_device.set_value.assert_called_once_with(
-        f"{water_heater.entity_description.key}_work_mode", 0
+        f"{water_heater.entity_description.key}_work_mode", 0, await_confirmation=False
     )
     assert water_heater.current_operation == STATE_OFF
 

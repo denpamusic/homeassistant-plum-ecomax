@@ -39,7 +39,9 @@ async def test_async_setup_and_update_entry(
     # Turn the switch off.
     await switch.async_turn_off()
     mock_device.set_value.assert_called_once_with(
-        switch.entity_description.key, switch.entity_description.state_off
+        switch.entity_description.key,
+        switch.entity_description.state_off,
+        await_confirmation=False,
     )
     assert not switch.is_on
     mock_device.reset_mock()
@@ -47,6 +49,8 @@ async def test_async_setup_and_update_entry(
     # Turn the switch back on.
     await switch.async_turn_on()
     mock_device.set_value.assert_called_once_with(
-        switch.entity_description.key, switch.entity_description.state_on
+        switch.entity_description.key,
+        switch.entity_description.state_on,
+        await_confirmation=False,
     )
     assert switch.is_on
