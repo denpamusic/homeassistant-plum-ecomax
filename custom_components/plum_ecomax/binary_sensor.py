@@ -47,6 +47,12 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         device_class=BinarySensorDeviceClass.RUNNING,
     ),
     EcomaxBinarySensorEntityDescription(
+        key="feeder",
+        name="Feeder",
+        icon="mdi:screw-lag",
+        device_class=BinarySensorDeviceClass.RUNNING,
+    ),
+    EcomaxBinarySensorEntityDescription(
         key="lighter",
         name="Lighter",
         icon="mdi:fire",
