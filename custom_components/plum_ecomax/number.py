@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Optional
 
 from homeassistant.components.number import (
     EntityDescription,
@@ -39,6 +39,8 @@ class EcomaxNumberEntityDescription(
 
     filter_fn: Callable[[Any], Any] = on_change
     mode: NumberMode = NumberMode.AUTO
+    min_value_key: Optional[str] = None
+    max_value_key: Optional[str] = None
 
 
 NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
@@ -49,6 +51,8 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         native_step=1,
         value_get_fn=lambda x: x,
         value_set_fn=lambda x: x,
+        min_value_key="min_heating_target_temp",
+        max_value_key="max_heating_target_temp",
     ),
     EcomaxNumberEntityDescription(
         key="heating_temp_grate",
@@ -57,6 +61,8 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         native_step=1,
         value_get_fn=lambda x: x,
         value_set_fn=lambda x: x,
+        min_value_key="min_heating_target_temp",
+        max_value_key="max_heating_target_temp",
     ),
     EcomaxNumberEntityDescription(
         key="min_heating_target_temp",
@@ -122,6 +128,16 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
         self._attr_native_max_value = None
         self._attr_mode = description.mode
 
+    async def async_set_min_value(self, value: Parameter) -> None:
+        """Update minimum bound for target temperature."""
+        self._attr_native_min_value = self.entity_description.value_get_fn(value.value)
+        self.async_write_ha_state()
+
+    async def async_set_max_value(self, value: Parameter) -> None:
+        """Update maximum bound for target temperature."""
+        self._attr_native_max_value = self.entity_description.value_get_fn(value.value)
+        self.async_write_ha_state()
+
     async def async_set_native_value(self, value: float) -> None:
         """Update current value."""
         await self.device.set_value(
@@ -131,6 +147,36 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
         )
         self._attr_native_value = value
         self.async_write_ha_state()
+
+    async def async_added_to_hass(self):
+        """Called when an entity has their entity_id assigned."""
+        if self.entity_description.min_value_key is not None:
+            self.device.subscribe(
+                self.entity_description.min_value_key,
+                on_change(self.async_set_min_value),
+            )
+
+        if self.entity_description.max_value_key is not None:
+            self.device.subscribe(
+                self.entity_description.max_value_key,
+                on_change(self.async_set_max_value),
+            )
+
+        await super().async_added_to_hass()
+
+    async def async_will_remove_from_hass(self):
+        """Called when an entity is about to be removed."""
+        if self.entity_description.min_value_key is not None:
+            self.device.unsubscribe(
+                self.entity_description.min_value_key, self.async_set_min_value
+            )
+
+        if self.entity_description.max_value_key is not None:
+            self.device.unsubscribe(
+                self.entity_description.max_value_key, self.async_set_max_value
+            )
+
+        await super().async_will_remove_from_hass()
 
     async def async_update(self, value: Parameter) -> None:
         """Update entity state."""
