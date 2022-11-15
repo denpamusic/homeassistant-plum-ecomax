@@ -23,6 +23,7 @@ async def test_async_setup_and_update_entry(
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
     bypass_hass_write_ha_state,
+    bypass_model_check,
 ) -> None:
     """Test setup and update sensor entry."""
 
@@ -80,3 +81,43 @@ async def test_async_setup_and_update_entry(
     assert meter.native_value == 0
     await meter.async_update(3)
     assert meter.native_value == 3
+
+
+@patch("custom_components.plum_ecomax.sensor.async_get_current_platform")
+@patch("homeassistant.helpers.entity_platform.AddEntitiesCallback")
+async def test_model_check(
+    mock_async_add_entities,
+    mock_async_get_current_platform,
+    hass: HomeAssistant,
+    config_entry: MockConfigEntry,
+):
+    """Test sensor model check."""
+    for model_sensor in (
+        ("EM860p", "fuel_burned"),
+        ("EM350P-R2", "fuel_burned"),
+        ("ecoMAX 850i", "fireplace_temp"),
+    ):
+        with patch(
+            "custom_components.plum_ecomax.connection.EcomaxConnection.model",
+            model_sensor[0],
+        ):
+            await async_setup_entry(hass, config_entry, mock_async_add_entities)
+            args, _ = mock_async_add_entities.call_args
+            sensor = args[0].pop()
+            assert sensor.entity_description.key == model_sensor[1]
+
+
+@patch("homeassistant.helpers.entity_platform.AddEntitiesCallback")
+async def test_model_check_with_unknown_model(
+    mock_async_add_entities,
+    hass: HomeAssistant,
+    config_entry: MockConfigEntry,
+    caplog,
+):
+    """Test model check with the unknown model."""
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.model",
+        "unknown",
+    ):
+        assert not await async_setup_entry(hass, config_entry, mock_async_add_entities)
+        assert "Couldn't setup platform" in caplog.text

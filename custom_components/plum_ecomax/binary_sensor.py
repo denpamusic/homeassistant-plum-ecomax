@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+import logging
 from typing import Any
 
 from homeassistant.components.binary_sensor import (
@@ -16,8 +17,10 @@ from homeassistant.helpers.typing import ConfigType
 from pyplumio.helpers.filters import on_change
 
 from .connection import EcomaxConnection
-from .const import DOMAIN
+from .const import DOMAIN, ECOMAX_I, ECOMAX_P
 from .entity import EcomaxEntity
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -41,6 +44,15 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         device_class=BinarySensorDeviceClass.RUNNING,
     ),
     EcomaxBinarySensorEntityDescription(
+        key="ciculation_pump",
+        name="Circulation Pump",
+        icon="mdi:pump",
+        device_class=BinarySensorDeviceClass.RUNNING,
+    ),
+)
+
+ECOMAX_P_BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
+    EcomaxBinarySensorEntityDescription(
         key="fan",
         name="Fan",
         icon="mdi:fan",
@@ -56,6 +68,21 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         key="lighter",
         name="Lighter",
         icon="mdi:fire",
+        device_class=BinarySensorDeviceClass.RUNNING,
+    ),
+)
+
+ECOMAX_I_BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
+    EcomaxBinarySensorEntityDescription(
+        key="solar_pump",
+        name="Solar Pump",
+        icon="mdi:pump",
+        device_class=BinarySensorDeviceClass.RUNNING,
+    ),
+    EcomaxBinarySensorEntityDescription(
+        key="fireplace_pump",
+        name="Fireplace Pump",
+        icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
     ),
 )
@@ -86,10 +113,38 @@ async def async_setup_entry(
 ) -> bool:
     """Set up the sensor platform."""
     connection = hass.data[DOMAIN][config_entry.entry_id]
-    return async_add_entities(
-        [
-            EcomaxBinarySensor(connection, description)
-            for description in BINARY_SENSOR_TYPES
-        ],
-        False,
+
+    if ECOMAX_P.search(connection.model):
+        return async_add_entities(
+            [
+                *[
+                    EcomaxBinarySensor(connection, description)
+                    for description in BINARY_SENSOR_TYPES
+                ],
+                *[
+                    EcomaxBinarySensor(connection, description)
+                    for description in ECOMAX_P_BINARY_SENSOR_TYPES
+                ],
+            ],
+            False,
+        )
+
+    if ECOMAX_I.search(connection.model):
+        return async_add_entities(
+            [
+                *[
+                    EcomaxBinarySensor(connection, description)
+                    for description in BINARY_SENSOR_TYPES
+                ],
+                *[
+                    EcomaxBinarySensor(connection, description)
+                    for description in ECOMAX_I_BINARY_SENSOR_TYPES
+                ],
+            ],
+            False,
+        )
+
+    _LOGGER.error(
+        "Couldn't setup platform due to unknown controller model '%s'", connection.model
     )
+    return False

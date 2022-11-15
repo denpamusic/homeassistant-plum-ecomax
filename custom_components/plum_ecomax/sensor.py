@@ -4,6 +4,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date, datetime
+import logging
 from typing import Any, Final
 
 from homeassistant.components.sensor import (
@@ -36,7 +37,7 @@ from pyplumio.helpers.filters import aggregate, on_change, throttle
 import voluptuous as vol
 
 from .connection import EcomaxConnection
-from .const import ATTR_VALUE, DOMAIN, FLOW_KGH
+from .const import ATTR_VALUE, DOMAIN, ECOMAX_I, ECOMAX_P, FLOW_KGH
 from .entity import EcomaxEntity
 
 SERVICE_RESET_METER: Final = "reset_meter"
@@ -59,6 +60,8 @@ STATES: list[str] = [
     STATE_IDLE,
     STATE_STANDBY,
 ]
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -99,16 +102,6 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
-        key="exhaust_temp",
-        name="Exhaust Temperature",
-        icon="mdi:thermometer",
-        native_unit_of_measurement=TEMP_CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
-        filter_fn=lambda x: throttle(on_change(x), seconds=10),
-    ),
-    EcomaxSensorEntityDescription(
         key="outside_temp",
         name="Outside Temperature",
         icon="mdi:thermometer",
@@ -137,72 +130,11 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         value_fn=lambda x: round(x, 1),
     ),
     EcomaxSensorEntityDescription(
-        key="feeder_temp",
-        name="Feeder Temperature",
-        icon="mdi:thermometer",
-        native_unit_of_measurement=TEMP_CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
-        filter_fn=lambda x: throttle(on_change(x), seconds=10),
-    ),
-    EcomaxSensorEntityDescription(
-        key="load",
-        name="Load",
-        icon="mdi:gauge",
-        native_unit_of_measurement=PERCENTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda x: x,
-    ),
-    EcomaxSensorEntityDescription(
-        key="fan_power",
-        name="Fan Power",
-        icon="mdi:fan",
-        native_unit_of_measurement=PERCENTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda x: round(x, 1),
-    ),
-    EcomaxSensorEntityDescription(
-        key="fuel_level",
-        name="Fuel Level",
-        icon="mdi:gas-station",
-        native_unit_of_measurement=PERCENTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda x: x,
-    ),
-    EcomaxSensorEntityDescription(
-        key="optical_temp",
-        name="Flame Intensity",
-        icon="mdi:fire",
-        native_unit_of_measurement=PERCENTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda x: x,
-        filter_fn=lambda x: throttle(on_change(x), seconds=10),
-    ),
-    EcomaxSensorEntityDescription(
-        key="fuel_consumption",
-        name="Fuel Consumption",
-        icon="mdi:fire",
-        native_unit_of_measurement=FLOW_KGH,
-        state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda x: round(x, 2),
-        filter_fn=lambda x: throttle(on_change(x), seconds=10),
-    ),
-    EcomaxSensorEntityDescription(
         key="mode",
         name="Mode",
         icon="mdi:eye",
         value_fn=lambda x: STATES[x] if x < len(STATES) else STATE_UNKNOWN,
         device_class=DEVICE_CLASS_STATE,
-    ),
-    EcomaxSensorEntityDescription(
-        key="power",
-        name="Power",
-        icon="mdi:radiator",
-        native_unit_of_measurement=POWER_KILO_WATT,
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.POWER,
-        value_fn=lambda x: round(x, 2),
     ),
     EcomaxSensorEntityDescription(
         key="password",
@@ -222,6 +154,113 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         name="UID",
         value_fn=lambda x: x.uid,
         entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+)
+
+ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
+    EcomaxSensorEntityDescription(
+        key="power",
+        name="Power",
+        icon="mdi:radiator",
+        native_unit_of_measurement=POWER_KILO_WATT,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.POWER,
+        value_fn=lambda x: round(x, 2),
+    ),
+    EcomaxSensorEntityDescription(
+        key="fuel_level",
+        name="Fuel Level",
+        icon="mdi:gas-station",
+        native_unit_of_measurement=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda x: x,
+    ),
+    EcomaxSensorEntityDescription(
+        key="fuel_consumption",
+        name="Fuel Consumption",
+        icon="mdi:fire",
+        native_unit_of_measurement=FLOW_KGH,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda x: round(x, 2),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+    EcomaxSensorEntityDescription(
+        key="load",
+        name="Load",
+        icon="mdi:gauge",
+        native_unit_of_measurement=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda x: x,
+    ),
+    EcomaxSensorEntityDescription(
+        key="fan_power",
+        name="Fan Power",
+        icon="mdi:fan",
+        native_unit_of_measurement=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda x: round(x, 1),
+    ),
+    EcomaxSensorEntityDescription(
+        key="optical_temp",
+        name="Flame Intensity",
+        icon="mdi:fire",
+        native_unit_of_measurement=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda x: x,
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+    EcomaxSensorEntityDescription(
+        key="feeder_temp",
+        name="Feeder Temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        value_fn=lambda x: round(x, 1),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+    EcomaxSensorEntityDescription(
+        key="exhaust_temp",
+        name="Exhaust Temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        value_fn=lambda x: round(x, 1),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+)
+
+ECOMAX_I_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
+    EcomaxSensorEntityDescription(
+        key="lower_solar_temp",
+        name="Lower Solar Temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        value_fn=lambda x: round(x, 1),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+    EcomaxSensorEntityDescription(
+        key="upper_solar_temp",
+        name="Upper Solar Temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        value_fn=lambda x: round(x, 1),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+    EcomaxSensorEntityDescription(
+        key="fireplace_temp",
+        name="Fireplace Temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        value_fn=lambda x: round(x, 1),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
 )
 
@@ -312,22 +351,51 @@ async def async_setup_entry(
     """Set up the sensor platform."""
     connection = hass.data[DOMAIN][config_entry.entry_id]
 
-    platform = async_get_current_platform()
-    platform.async_register_entity_service(
-        SERVICE_RESET_METER,
-        {},
-        "async_reset_meter",
-    )
-    platform.async_register_entity_service(
-        SERVICE_CALIBRATE_METER,
-        {vol.Required(ATTR_VALUE): cv.positive_float},
-        "async_calibrate_meter",
-    )
+    if ECOMAX_P.search(connection.model):
 
-    return async_add_entities(
-        [
-            *[EcomaxSensor(connection, description) for description in SENSOR_TYPES],
-            *[EcomaxMeter(connection, description) for description in METER_TYPES],
-        ],
-        False,
+        platform = async_get_current_platform()
+        platform.async_register_entity_service(
+            SERVICE_RESET_METER,
+            {},
+            "async_reset_meter",
+        )
+        platform.async_register_entity_service(
+            SERVICE_CALIBRATE_METER,
+            {vol.Required(ATTR_VALUE): cv.positive_float},
+            "async_calibrate_meter",
+        )
+
+        return async_add_entities(
+            [
+                *[
+                    EcomaxSensor(connection, description)
+                    for description in SENSOR_TYPES
+                ],
+                *[
+                    EcomaxSensor(connection, description)
+                    for description in ECOMAX_P_SENSOR_TYPES
+                ],
+                *[EcomaxMeter(connection, description) for description in METER_TYPES],
+            ],
+            False,
+        )
+
+    if ECOMAX_I.search(connection.model):
+        return async_add_entities(
+            [
+                *[
+                    EcomaxSensor(connection, description)
+                    for description in SENSOR_TYPES
+                ],
+                *[
+                    EcomaxSensor(connection, description)
+                    for description in ECOMAX_I_SENSOR_TYPES
+                ],
+            ],
+            False,
+        )
+
+    _LOGGER.error(
+        "Couldn't setup platform due to unknown controller model '%s'", connection.model
     )
+    return False

@@ -1,12 +1,13 @@
 """Fixtures for Plum ecoMAX test suite."""
 
 from typing import Generator
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio import Connection
 from pyplumio.helpers.parameter import Parameter
+from pyplumio.helpers.product_info import ProductInfo
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -35,6 +36,15 @@ def fixture_async_add_entities() -> Generator[AddEntitiesCallback, None, None]:
 def fixture_bypass_hass_write_ha_state() -> Generator[None, None, None]:
     """Bypass writing state to hass."""
     with patch("homeassistant.helpers.entity.Entity.async_write_ha_state"):
+        yield
+
+
+@pytest.fixture(name="bypass_model_check")
+def fixture_bypass_model_check() -> Generator[None, None, None]:
+    """Bypass controller model check."""
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.model", "EM860P"
+    ):
         yield
 
 

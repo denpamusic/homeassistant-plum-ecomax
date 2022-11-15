@@ -1,5 +1,6 @@
 """Constants for the Plum ecoMAX integration."""
 
+import re
 from typing import Final
 
 DOMAIN = "plum_ecomax"
@@ -33,3 +34,6 @@ FLOW_KGH: Final = "kg/h"
 CALORIFIC_KWH_KG: Final = "kWh/kg"
 
 ECOMAX_ALERT_EVENT: Final = "alert"
+
+ECOMAX_P = re.compile(r"(em|ecomax)\s{0,}[0-9]{3,}p", re.IGNORECASE)
+ECOMAX_I = re.compile(r"(em|ecomax)\s{0,}[0-9]{3,}i", re.IGNORECASE)
