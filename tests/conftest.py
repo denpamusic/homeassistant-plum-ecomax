@@ -1,13 +1,12 @@
 """Fixtures for Plum ecoMAX test suite."""
 
 from typing import Generator
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, patch
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio import Connection
 from pyplumio.helpers.parameter import Parameter
-from pyplumio.helpers.product_info import ProductInfo
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
