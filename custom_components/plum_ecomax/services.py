@@ -71,13 +71,14 @@ async def _setup_set_parameter_service(
         value = service_call.data[ATTR_VALUE]
 
         if connection.device is not None and name in connection.capabilities:
-            try:
-                return await connection.device.set_value(name, value, timeout=5)
-            except asyncio.TimeoutError:
-                _LOGGER.error("Service timed out while waiting for %s parameter", name)
+
+            if result := await connection.device.set_value(
+                name, value, await_confirmation=True
+            ):
+                return result
 
         raise HomeAssistantError(
-            f"{name} parameter is not supported by the device, check logs for more info"
+            f"Couldn't set parameter '{name}', please check logs for more info"
         )
 
     hass.services.async_register(
