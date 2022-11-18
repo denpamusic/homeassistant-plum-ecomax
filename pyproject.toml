@@ -14,6 +14,7 @@ good-names = [
     "k",
     "v",
     "ip",
+    "dr",
 ]
 
 [tool.pylint."MESSAGES CONTROL"]
