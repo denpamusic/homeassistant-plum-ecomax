@@ -5,7 +5,7 @@
   "documentation": "https://github.com/denpamusic/homeassistant-plum-ecomax",
   "issue_tracker": "https://github.com/denpamusic/homeassistant-plum-ecomax/issues",
   "requirements": [
-    "pyplumio==0.2.22"
+    "pyplumio==0.2.23"
   ],
   "dependencies": [
     "network"
