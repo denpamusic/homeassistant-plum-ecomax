@@ -15,6 +15,7 @@ REDACTED: Final = "**REDACTED**"
 
 def _redact_device_data(device_data: dict[str, Any]) -> dict[str, Any]:
     """Redact sensitive information in device data."""
+    device_data = device_data.copy()
     if "product" in device_data:
         device_data["product"].uid = REDACTED
 
@@ -26,6 +27,7 @@ def _redact_device_data(device_data: dict[str, Any]) -> dict[str, Any]:
 
 def _redact_entry_data(entry_data: dict[str, Any]) -> dict[str, Any]:
     """Redact sensitive information in config entry data."""
+    entry_data = entry_data.copy()
     for field in ("uid", "host"):
         if field in entry_data:
             entry_data[field] = REDACTED
