@@ -38,7 +38,7 @@ import voluptuous as vol
 
 from .connection import EcomaxConnection
 from .const import ATTR_VALUE, DOMAIN, ECOMAX_I, ECOMAX_P, FLOW_KGH
-from .entity import EcomaxEntity
+from .entity import EcomaxEntity, MixerEntity
 
 SERVICE_RESET_METER: Final = "reset_meter"
 SERVICE_CALIBRATE_METER: Final = "calibrate_meter"
@@ -286,6 +286,44 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
         self.async_write_ha_state()
 
 
+MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
+    EcomaxSensorEntityDescription(
+        key="mixer_temp",
+        name="Mixer Temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        value_fn=lambda x: round(x, 1),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+    EcomaxSensorEntityDescription(
+        key="mixer_target_temp",
+        name="Mixer Target Temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        value_fn=lambda x: round(x, 1),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+)
+
+
+class MixerSensor(MixerEntity, EcomaxSensor):
+    """Represents mixer sensor platform."""
+
+    def __init__(
+        self,
+        connection: EcomaxConnection,
+        description: EcomaxSensorEntityDescription,
+        mixer_number: int,
+    ):
+        """Initialize ecoMAX sensor object."""
+        self.mixer_number = mixer_number
+        super().__init__(connection, description)
+
+
 @dataclass
 class EcomaxMeterEntityDescription(EcomaxSensorEntityDescription):
     """Describes ecoMAX meter entity."""
@@ -343,57 +381,86 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
         return self.entity_description.value_fn(self._attr_native_value)
 
 
+def setup_ecomax_p(
+    connection: EcomaxConnection,
+    entities: list[EcomaxEntity],
+    async_add_entities: AddEntitiesCallback,
+):
+    """Setup sensor platform for ecoMAX P series controllers."""
+
+    platform = async_get_current_platform()
+    platform.async_register_entity_service(
+        SERVICE_RESET_METER,
+        {},
+        "async_reset_meter",
+    )
+    platform.async_register_entity_service(
+        SERVICE_CALIBRATE_METER,
+        {vol.Required(ATTR_VALUE): cv.positive_float},
+        "async_calibrate_meter",
+    )
+
+    return async_add_entities(
+        [
+            *entities,
+            *[
+                EcomaxSensor(connection, description)
+                for description in ECOMAX_P_SENSOR_TYPES
+            ],
+            *[EcomaxMeter(connection, description) for description in METER_TYPES],
+        ],
+        False,
+    )
+
+
+def setup_ecomax_i(
+    connection: EcomaxConnection,
+    entities: list[EcomaxEntity],
+    async_add_entities: AddEntitiesCallback,
+):
+    """Setup sensor platform for ecoMAX I series controllers."""
+
+    return async_add_entities(
+        [
+            *entities,
+            *[
+                EcomaxSensor(connection, description)
+                for description in ECOMAX_I_SENSOR_TYPES
+            ],
+        ],
+        False,
+    )
+
+
+def get_mixer_entities(connection: EcomaxConnection) -> list[MixerEntity]:
+    """Setup mixers sensor platform."""
+    entities: list[MixerEntity] = []
+
+    if connection.device is not None and "mixers" in connection.device.data:
+        for mixer in connection.device.data["mixers"]:
+            for description in MIXER_SENSOR_TYPES:
+                entities.append(MixerSensor(connection, description, mixer.index))
+
+    return entities
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigType,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the sensor platform."""
-    connection = hass.data[DOMAIN][config_entry.entry_id]
+    connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
+    entities: list[EcomaxEntity] = [
+        *[EcomaxSensor(connection, description) for description in SENSOR_TYPES],
+        *get_mixer_entities(connection),
+    ]
 
     if ECOMAX_P.search(connection.model):
-
-        platform = async_get_current_platform()
-        platform.async_register_entity_service(
-            SERVICE_RESET_METER,
-            {},
-            "async_reset_meter",
-        )
-        platform.async_register_entity_service(
-            SERVICE_CALIBRATE_METER,
-            {vol.Required(ATTR_VALUE): cv.positive_float},
-            "async_calibrate_meter",
-        )
-
-        return async_add_entities(
-            [
-                *[
-                    EcomaxSensor(connection, description)
-                    for description in SENSOR_TYPES
-                ],
-                *[
-                    EcomaxSensor(connection, description)
-                    for description in ECOMAX_P_SENSOR_TYPES
-                ],
-                *[EcomaxMeter(connection, description) for description in METER_TYPES],
-            ],
-            False,
-        )
+        return setup_ecomax_p(connection, entities, async_add_entities)
 
     if ECOMAX_I.search(connection.model):
-        return async_add_entities(
-            [
-                *[
-                    EcomaxSensor(connection, description)
-                    for description in SENSOR_TYPES
-                ],
-                *[
-                    EcomaxSensor(connection, description)
-                    for description in ECOMAX_I_SENSOR_TYPES
-                ],
-            ],
-            False,
-        )
+        return setup_ecomax_i(connection, entities, async_add_entities)
 
     _LOGGER.error(
         "Couldn't setup platform due to unknown controller model '%s'", connection.model

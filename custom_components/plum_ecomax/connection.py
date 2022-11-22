@@ -35,6 +35,7 @@ _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_TIMEOUT: Final = 30
 DEVICE_TIMEOUT: Final = 20
+MIXERS_TIMEOUT: Final = 5
 
 MANUFACTURER: Final = "Plum Sp. z o.o."
 
@@ -81,7 +82,13 @@ async def async_get_device_capabilities(device: Device) -> list[str]:
     await device.get_value("parameters")
     capabilities = ["product", "modules"]
     capabilities += list(device.data.keys())
-    for capability in ("fuel_burned", "boiler_control", "password", "schedules"):
+    for capability in (
+        "fuel_burned",
+        "boiler_control",
+        "password",
+        "schedules",
+        "mixers",
+    ):
         try:
             await device.get_value(capability, timeout=5)
             capabilities.append(capability)
@@ -121,6 +128,11 @@ class EcomaxConnection:
 
         await self.connection.connect()
         self._device = await self.connection.get_device(ECOMAX, timeout=DEVICE_TIMEOUT)
+        if "mixers" in self.capabilities:
+            try:
+                await self._device.get_value("mixers", timeout=MIXERS_TIMEOUT)
+            except asyncio.TimeoutError:
+                _LOGGER.info("Couldn't find any mixers")
 
     async def async_update_device_capabilities(self) -> None:
         """Update device capabilities."""
@@ -177,4 +189,7 @@ class EcomaxConnection:
             manufacturer=MANUFACTURER,
             model=f"{self.model}",
             sw_version=self.software,
+            configuration_url=f"http://{self.entry.data[CONF_HOST]}"
+            if self.entry.data[CONF_CONNECTION_TYPE] == CONNECTION_TYPE_TCP
+            else None,
         )

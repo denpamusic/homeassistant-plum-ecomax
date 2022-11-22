@@ -20,7 +20,7 @@ from pyplumio.helpers.parameter import Parameter
 
 from .connection import EcomaxConnection
 from .const import CALORIFIC_KWH_KG, DOMAIN
-from .entity import EcomaxEntity
+from .entity import EcomaxEntity, MixerEntity
 
 
 @dataclass
@@ -190,13 +190,73 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
         self.async_write_ha_state()
 
 
+MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
+    EcomaxNumberEntityDescription(
+        key="mixer_target_temp",
+        name="Mixer Target Temperature",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        native_step=1,
+        value_get_fn=lambda x: x,
+        value_set_fn=lambda x: x,
+        min_value_key="min_heating_target_temp",
+        max_value_key="max_heating_target_temp",
+    ),
+    EcomaxNumberEntityDescription(
+        key="min_mixer_target_temp",
+        name="Minimum Mixer Temperature",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        native_step=1,
+        value_get_fn=lambda x: x,
+        value_set_fn=lambda x: x,
+    ),
+    EcomaxNumberEntityDescription(
+        key="max_mixer_target_temp",
+        name="Maximum Mixer Temperature",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        native_step=1,
+        value_get_fn=lambda x: x,
+        value_set_fn=lambda x: x,
+    ),
+)
+
+
+class MixerNumber(MixerEntity, EcomaxNumber):
+    """Represents mixer number platform."""
+
+    def __init__(
+        self,
+        connection: EcomaxConnection,
+        description: EcomaxNumberEntityDescription,
+        mixer_number: int,
+    ):
+        """Initialize ecoMAX sensor object."""
+        self.mixer_number = mixer_number
+        super().__init__(connection, description)
+
+
+def get_mixer_entities(connection: EcomaxConnection) -> list[MixerEntity]:
+    """Setup mixers sensor platform."""
+    entities: list[MixerEntity] = []
+
+    if connection.device is not None and "mixers" in connection.device.data:
+        for mixer in connection.device.data["mixers"]:
+            for description in MIXER_NUMBER_TYPES:
+                entities.append(MixerNumber(connection, description, mixer.index))
+
+    return entities
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigType,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the number platform."""
-    connection = hass.data[DOMAIN][config_entry.entry_id]
+    connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     return async_add_entities(
-        [EcomaxNumber(connection, description) for description in NUMBER_TYPES], False
+        [
+            *[EcomaxNumber(connection, description) for description in NUMBER_TYPES],
+            *get_mixer_entities(connection),
+        ],
+        False,
     )

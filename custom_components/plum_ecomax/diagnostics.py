@@ -22,6 +22,9 @@ def _redact_device_data(device_data: dict[str, Any]) -> dict[str, Any]:
     if "password" in device_data:
         device_data["password"] = REDACTED
 
+    if "mixers" in device_data:
+        device_data["mixers"] = list(map(lambda x: x.data, device_data["mixers"]))
+
     return device_data
 
 

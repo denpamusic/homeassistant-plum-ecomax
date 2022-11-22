@@ -1,10 +1,10 @@
 """Test Plum ecoMAX services."""
 
-import asyncio
 from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
+from pyplumio.exceptions import ParameterNotFoundError
 from pyplumio.helpers.schedule import Schedule, ScheduleDay
 import pytest
 
@@ -53,18 +53,13 @@ async def test_setup_services(hass: HomeAssistant, caplog) -> None:
     mock_connection.device.set_value = AsyncMock()
     await func(mock_service_call)
 
-    mock_connection.device.set_value.assert_called_once_with("test_name", 39, timeout=5)
+    mock_connection.device.set_value.assert_called_once_with(
+        "test_name", 39, await_confirmation=True
+    )
 
     # Check that error is raised if device timed-out.
-    mock_connection.device.set_value.side_effect = asyncio.TimeoutError
+    mock_connection.device.set_value.side_effect = ParameterNotFoundError
     with pytest.raises(HomeAssistantError):
-        await func(mock_service_call)
-
-    assert "Service timed out while waiting" in caplog.text
-
-    # Check that error is raised if parameter is not in capability list.
-    mock_connection.capabilities = []
-    with pytest.raises(HomeAssistantError), patch("asyncio.wait_for"):
         await func(mock_service_call)
 
     # Test set schedule service.

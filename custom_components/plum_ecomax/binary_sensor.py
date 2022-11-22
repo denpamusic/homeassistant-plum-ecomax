@@ -18,7 +18,7 @@ from pyplumio.helpers.filters import on_change
 
 from .connection import EcomaxConnection
 from .const import DOMAIN, ECOMAX_I, ECOMAX_P
-from .entity import EcomaxEntity
+from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -106,6 +106,78 @@ class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
         self.async_write_ha_state()
 
 
+MIXER_BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
+    EcomaxBinarySensorEntityDescription(
+        key="mixer_pump",
+        name="Mixer Pump",
+        icon="mdi:pump",
+        device_class=BinarySensorDeviceClass.RUNNING,
+    ),
+)
+
+
+class MixerBinarySensor(MixerEntity, EcomaxBinarySensor):
+    """Represents mixer binary sensor platform."""
+
+    def __init__(
+        self,
+        connection: EcomaxConnection,
+        description: EcomaxBinarySensorEntityDescription,
+        mixer_number: int,
+    ):
+        """Initialize ecoMAX sensor object."""
+        self.mixer_number = mixer_number
+        super().__init__(connection, description)
+
+
+def setup_ecomax_p(
+    connection: EcomaxConnection,
+    entities: list[EcomaxEntity],
+    async_add_entities: AddEntitiesCallback,
+):
+    """Setup binary sensor platform for ecoMAX P series controllers."""
+    return async_add_entities(
+        [
+            *entities,
+            *[
+                EcomaxBinarySensor(connection, description)
+                for description in ECOMAX_P_BINARY_SENSOR_TYPES
+            ],
+        ],
+        False,
+    )
+
+
+def setup_ecomax_i(
+    connection: EcomaxConnection,
+    entities: list[EcomaxEntity],
+    async_add_entities: AddEntitiesCallback,
+):
+    """Setup binary sensor platform for ecoMAX I series controllers."""
+    return async_add_entities(
+        [
+            *entities,
+            *[
+                EcomaxBinarySensor(connection, description)
+                for description in ECOMAX_I_BINARY_SENSOR_TYPES
+            ],
+        ],
+        False,
+    )
+
+
+def get_mixer_entities(connection: EcomaxConnection) -> list[MixerEntity]:
+    """Setup mixers binary sensor platform."""
+    entities: list[MixerEntity] = []
+
+    if connection.device is not None and "mixers" in connection.device.data:
+        for mixer in connection.device.data["mixers"]:
+            for description in MIXER_BINARY_SENSOR_TYPES:
+                entities.append(MixerBinarySensor(connection, description, mixer.index))
+
+    return entities
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigType,
@@ -113,36 +185,19 @@ async def async_setup_entry(
 ) -> bool:
     """Set up the sensor platform."""
     connection = hass.data[DOMAIN][config_entry.entry_id]
+    entities: list[EcomaxEntity] = [
+        *[
+            EcomaxBinarySensor(connection, description)
+            for description in BINARY_SENSOR_TYPES
+        ],
+        *get_mixer_entities(connection),
+    ]
 
     if ECOMAX_P.search(connection.model):
-        return async_add_entities(
-            [
-                *[
-                    EcomaxBinarySensor(connection, description)
-                    for description in BINARY_SENSOR_TYPES
-                ],
-                *[
-                    EcomaxBinarySensor(connection, description)
-                    for description in ECOMAX_P_BINARY_SENSOR_TYPES
-                ],
-            ],
-            False,
-        )
+        return setup_ecomax_p(connection, entities, async_add_entities)
 
     if ECOMAX_I.search(connection.model):
-        return async_add_entities(
-            [
-                *[
-                    EcomaxBinarySensor(connection, description)
-                    for description in BINARY_SENSOR_TYPES
-                ],
-                *[
-                    EcomaxBinarySensor(connection, description)
-                    for description in ECOMAX_I_BINARY_SENSOR_TYPES
-                ],
-            ],
-            False,
-        )
+        return setup_ecomax_i(connection, entities, async_add_entities)
 
     _LOGGER.error(
         "Couldn't setup platform due to unknown controller model '%s'", connection.model

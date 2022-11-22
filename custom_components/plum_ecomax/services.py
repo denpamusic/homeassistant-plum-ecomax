@@ -1,17 +1,18 @@
 """Contains Plum ecoMAX services."""
 from __future__ import annotations
 
-import asyncio
 import logging
 from typing import Final
 
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import device_registry
 import homeassistant.helpers.config_validation as cv
+from pyplumio.exceptions import ParameterNotFoundError
 import voluptuous as vol
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import ATTR_VALUE, DOMAIN
+from custom_components.plum_ecomax.const import ATTR_DEVICE_ID, ATTR_VALUE, DOMAIN
 
 ATTR_NAME: Final = "name"
 ATTR_WEEKDAY: Final = "weekday"
@@ -60,6 +61,26 @@ SERVICE_UPDATE_CAPABILITIES = "update_capabilities"
 _LOGGER = logging.getLogger(__name__)
 
 
+def _get_target_device(device_id, hass: HomeAssistant, connection: EcomaxConnection):
+    """Get target device by device id."""
+    dr = device_registry.async_get(hass)
+    device = dr.async_get(device_id)
+    if not device:
+        return connection.device
+
+    identifier = list(device.identifiers)[0][1]
+    if "mixer" in identifier:
+        mixer_number = identifier.split("-", 3).pop()
+        if (
+            connection.device is not None
+            and hasattr(connection.device, "mixers")
+            and len(connection.device.mixers) <= mixer_number
+        ):
+            return connection.device.mixers[mixer_number]
+
+    return connection.device
+
+
 async def _setup_set_parameter_service(
     hass: HomeAssistant, connection: EcomaxConnection
 ) -> None:
@@ -69,13 +90,21 @@ async def _setup_set_parameter_service(
         """Service to set a parameter."""
         name = service_call.data[ATTR_NAME]
         value = service_call.data[ATTR_VALUE]
+        device_id = service_call.data.get(ATTR_DEVICE_ID)
+        target_device = (
+            connection.device
+            if device_id is None
+            else _get_target_device(device_id, hass, connection)
+        )
 
-        if connection.device is not None and name in connection.capabilities:
-
-            if result := await connection.device.set_value(
-                name, value, await_confirmation=True
-            ):
-                return result
+        if target_device is not None:
+            try:
+                if result := await target_device.set_value(
+                    name, value, await_confirmation=True
+                ):
+                    return result
+            except ParameterNotFoundError as e:
+                _LOGGER.exception(e)
 
         raise HomeAssistantError(
             f"Couldn't set parameter '{name}', please check logs for more info"

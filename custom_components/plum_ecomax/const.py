@@ -21,6 +21,7 @@ ATTR_VALUE: Final = "value"
 ATTR_CODE: Final = "code"
 ATTR_FROM: Final = "from"
 ATTR_TO: Final = "to"
+ATTR_DEVICE_ID: Final = "device_id"
 
 CONNECTION_TYPE_TCP: Final = "TCP"
 CONNECTION_TYPE_SERIAL: Final = "Serial"

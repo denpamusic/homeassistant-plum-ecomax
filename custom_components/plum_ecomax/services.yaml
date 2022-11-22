@@ -1,6 +1,9 @@
 set_parameter:
   name: Set Parameter
-  description: Set device parameter value.
+  description: Set controller or mixer parameter value.
+  target:
+    device:
+      integration: "plum_ecomax"
   fields:
     name:
       name: Name

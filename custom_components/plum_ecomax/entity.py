@@ -4,7 +4,8 @@ from abc import ABC, abstractmethod
 
 from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 
-from .connection import EcomaxConnection
+from .connection import MANUFACTURER, EcomaxConnection
+from .const import DOMAIN
 
 
 class EcomaxEntity(ABC):
@@ -71,3 +72,47 @@ class EcomaxEntity(ABC):
     @abstractmethod
     async def async_update(self, value) -> None:
         """Retrieve latest state."""
+
+
+class MixerEntity(EcomaxEntity):
+    """Represents base mixer entity."""
+
+    mixer_number: int
+
+    @property
+    def entity_registry_enabled_default(self) -> bool:
+        """Indicate if the entity should be enabled when first added."""
+        return self.entity_description.key in self.device.data.keys()
+
+    @property
+    def unique_id(self) -> str:
+        """A unique identifier for this entity."""
+        return (
+            f"{self.connection.uid}-mixer-"
+            + f"{self.mixer_number}-{self.entity_description.key}"
+        )
+
+    @property
+    def name(self) -> str:
+        """Name of the entity."""
+        return (
+            f"{self.connection.name} Mixer "
+            + f"{self.mixer_number} {self.entity_description.name}"
+        )
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device info."""
+        return DeviceInfo(
+            name=f"{self.connection.name} Mixer {self.mixer_number}",
+            identifiers={(DOMAIN, f"{self.connection.uid}-mixer-{self.mixer_number}")},
+            manufacturer=MANUFACTURER,
+            model=f"{self.connection.model}",
+            sw_version=self.connection.software,
+            via_device=(DOMAIN, self.connection.uid),
+        )
+
+    @property
+    def device(self):
+        """Return mixer object."""
+        return self.connection.device.data["mixers"][self.mixer_number]
