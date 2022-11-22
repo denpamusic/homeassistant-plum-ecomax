@@ -11,14 +11,15 @@ import homeassistant.helpers.config_validation as cv
 from pyplumio.exceptions import ParameterNotFoundError
 import voluptuous as vol
 
-from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import ATTR_DEVICE_ID, ATTR_VALUE, DOMAIN
+from .connection import EcomaxConnection
+from .const import ATTR_MIXERS, ATTR_SCHEDULES, ATTR_VALUE, DOMAIN
 
 ATTR_NAME: Final = "name"
 ATTR_WEEKDAY: Final = "weekday"
 ATTR_STATE: Final = "state"
 ATTR_START: Final = "start"
 ATTR_END: Final = "end"
+ATTR_DEVICE_ID: Final = "device_id"
 
 STATE_ON: Final = "on"
 STATE_OFF: Final = "off"
@@ -61,22 +62,23 @@ SERVICE_UPDATE_CAPABILITIES = "update_capabilities"
 _LOGGER = logging.getLogger(__name__)
 
 
-def _get_target_device(device_id, hass: HomeAssistant, connection: EcomaxConnection):
+def _get_target_device(
+    device_id: str, hass: HomeAssistant, connection: EcomaxConnection
+):
     """Get target device by device id."""
     dr = device_registry.async_get(hass)
     device = dr.async_get(device_id)
     if not device:
-        return connection.device
+        raise HomeAssistantError(
+            f"Selected device '{device_id}' was not found, plese try again"
+        )
 
     identifier = list(device.identifiers)[0][1]
     if "mixer" in identifier:
         mixer_number = identifier.split("-", 3).pop()
-        if (
-            connection.device is not None
-            and hasattr(connection.device, "mixers")
-            and len(connection.device.mixers) <= mixer_number
-        ):
-            return connection.device.mixers[mixer_number]
+        mixers = connection.device.data.get(ATTR_MIXERS, [])
+        if mixer_number < len(mixers):
+            return connection.device.data[ATTR_MIXERS][mixer_number]
 
     return connection.device
 
@@ -132,10 +134,8 @@ async def _setup_set_schedule_service(
         end_time = service_call.data[ATTR_END]
 
         name = name.lower().replace(" ", "_")
-        if connection.device is not None and name in connection.device.data.get(
-            "schedules", {}
-        ):
-            schedule = connection.device.data["schedules"][name]
+        if name in connection.device.data.get(ATTR_SCHEDULES, {}):
+            schedule = connection.device.data[ATTR_SCHEDULES][name]
             schedule_day = getattr(schedule, weekday.lower())
             try:
                 schedule_day.set_state(

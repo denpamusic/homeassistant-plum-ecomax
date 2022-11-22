@@ -40,6 +40,7 @@ async def test_setup_and_unload_entry(
     mock_async_setup,
     hass: HomeAssistant,
     config_entry: ConfigEntry,
+    mock_device,
 ) -> None:
     """Test setup and unload of config entry."""
     assert await async_setup_entry(hass, config_entry)

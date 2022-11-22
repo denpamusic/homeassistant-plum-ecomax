@@ -19,7 +19,7 @@ from pyplumio.helpers.filters import on_change
 from pyplumio.helpers.parameter import Parameter
 
 from .connection import EcomaxConnection
-from .const import CALORIFIC_KWH_KG, DOMAIN
+from .const import ATTR_MIXERS, CALORIFIC_KWH_KG, DOMAIN
 from .entity import EcomaxEntity, MixerEntity
 
 
@@ -237,13 +237,11 @@ class MixerNumber(MixerEntity, EcomaxNumber):
 def get_mixer_entities(connection: EcomaxConnection) -> list[MixerEntity]:
     """Setup mixers sensor platform."""
     entities: list[MixerEntity] = []
-
-    if connection.device is not None and "mixers" in connection.device.data:
-        for mixer in connection.device.data["mixers"]:
-            entities.extend(
-                MixerNumber(connection, description, mixer.index)
-                for description in MIXER_NUMBER_TYPES
-            )
+    for mixer in connection.device.data.get(ATTR_MIXERS, []):
+        entities.extend(
+            MixerNumber(connection, description, mixer.index)
+            for description in MIXER_NUMBER_TYPES
+        )
 
     return entities
 

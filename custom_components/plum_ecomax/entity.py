@@ -1,11 +1,13 @@
 """Base ecoMAX entity class."""
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
 from homeassistant.helpers.entity import DeviceInfo, EntityDescription
+from pyplumio.devices import Device
 
 from .connection import MANUFACTURER, EcomaxConnection
-from .const import DOMAIN
+from .const import ATTR_MIXERS, DOMAIN
 
 
 class EcomaxEntity(ABC):
@@ -30,14 +32,14 @@ class EcomaxEntity(ABC):
         self.device.unsubscribe(self.entity_description.key, self.async_update)
 
     @property
-    def device(self):
+    def device(self) -> Device:
         """Return device object."""
         return self.connection.device
 
     @property
     def available(self) -> bool:
         """Indicates whether the entity is available."""
-        return self.connection.connected.is_set() and self.connection.device is not None
+        return self.connection.connected.is_set()
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -113,6 +115,6 @@ class MixerEntity(EcomaxEntity):
         )
 
     @property
-    def device(self):
+    def device(self) -> Device:
         """Return mixer object."""
-        return self.connection.device.data["mixers"][self.mixer_number]
+        return self.connection.device.data[ATTR_MIXERS][self.mixer_number]

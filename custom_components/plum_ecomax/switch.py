@@ -14,7 +14,7 @@ from pyplumio.helpers.filters import on_change
 from pyplumio.helpers.parameter import Parameter
 
 from .connection import EcomaxConnection
-from .const import DOMAIN
+from .const import ATTR_BOILER_CONTROL, DOMAIN
 from .entity import EcomaxEntity
 
 
@@ -29,7 +29,7 @@ class EcomaxSwitchEntityDescription(SwitchEntityDescription):
 
 SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     EcomaxSwitchEntityDescription(
-        key="boiler_control",
+        key=ATTR_BOILER_CONTROL,
         name="Regulator Switch",
     ),
     EcomaxSwitchEntityDescription(

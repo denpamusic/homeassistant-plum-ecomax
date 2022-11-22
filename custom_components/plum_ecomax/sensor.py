@@ -37,7 +37,17 @@ from pyplumio.helpers.filters import aggregate, on_change, throttle
 import voluptuous as vol
 
 from .connection import EcomaxConnection
-from .const import ATTR_VALUE, DOMAIN, ECOMAX_I, ECOMAX_P, FLOW_KGH
+from .const import (
+    ATTR_FUEL_BURNED,
+    ATTR_MIXERS,
+    ATTR_PASSWORD,
+    ATTR_PRODUCT,
+    ATTR_VALUE,
+    DOMAIN,
+    ECOMAX_I,
+    ECOMAX_P,
+    FLOW_KGH,
+)
 from .entity import EcomaxEntity, MixerEntity
 
 SERVICE_RESET_METER: Final = "reset_meter"
@@ -137,7 +147,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         device_class=DEVICE_CLASS_STATE,
     ),
     EcomaxSensorEntityDescription(
-        key="password",
+        key=ATTR_PASSWORD,
         name="Service Password",
         icon="mdi:form-textbox-password",
         value_fn=lambda x: x,
@@ -150,7 +160,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     EcomaxSensorEntityDescription(
-        key="product",
+        key=ATTR_PRODUCT,
         name="UID",
         value_fn=lambda x: x.uid,
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -333,7 +343,7 @@ class EcomaxMeterEntityDescription(EcomaxSensorEntityDescription):
 
 METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
     EcomaxMeterEntityDescription(
-        key="fuel_burned",
+        key=ATTR_FUEL_BURNED,
         name="Total Fuel Burned",
         icon="mdi:counter",
         native_unit_of_measurement=MASS_KILOGRAMS,
@@ -435,15 +445,13 @@ def setup_ecomax_i(
 def get_mixer_entities(connection: EcomaxConnection) -> list[MixerEntity]:
     """Setup mixers sensor platform."""
     entities: list[MixerEntity] = []
-
-    if connection.device is not None and "mixers" in connection.device.data:
-        for mixer in connection.device.data["mixers"]:
-            entities.extend(
-                [
-                    MixerSensor(connection, description, mixer.index)
-                    for description in MIXER_SENSOR_TYPES
-                ]
-            )
+    for mixer in connection.device.data.get(ATTR_MIXERS, []):
+        entities.extend(
+            [
+                MixerSensor(connection, description, mixer.index)
+                for description in MIXER_SENSOR_TYPES
+            ]
+        )
 
     return entities
 

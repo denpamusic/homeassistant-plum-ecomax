@@ -8,7 +8,8 @@ from homeassistant.core import HomeAssistant
 from pyplumio import __version__ as pyplumio_version
 from pyplumio.devices import Device
 
-from .const import DOMAIN
+from .const import ATTR_MIXERS, CONF_HOST, CONF_UID, DOMAIN
+from .sensor import ATTR_PASSWORD, ATTR_PRODUCT
 
 REDACTED: Final = "**REDACTED**"
 
@@ -16,14 +17,14 @@ REDACTED: Final = "**REDACTED**"
 def _redact_device_data(device_data: dict[str, Any]) -> dict[str, Any]:
     """Redact sensitive information in device data."""
     device_data = device_data.copy()
-    if "product" in device_data:
-        device_data["product"].uid = REDACTED
+    if ATTR_PRODUCT in device_data:
+        device_data[ATTR_PRODUCT].uid = REDACTED
 
-    if "password" in device_data:
-        device_data["password"] = REDACTED
+    if ATTR_PASSWORD in device_data:
+        device_data[ATTR_PASSWORD] = REDACTED
 
-    if "mixers" in device_data:
-        device_data["mixers"] = list(map(lambda x: x.data, device_data["mixers"]))
+    if ATTR_MIXERS in device_data:
+        device_data[ATTR_MIXERS] = list(map(lambda x: x.data, device_data[ATTR_MIXERS]))
 
     return device_data
 
@@ -31,7 +32,7 @@ def _redact_device_data(device_data: dict[str, Any]) -> dict[str, Any]:
 def _redact_entry_data(entry_data: dict[str, Any]) -> dict[str, Any]:
     """Redact sensitive information in config entry data."""
     entry_data = entry_data.copy()
-    for field in ("uid", "host"):
+    for field in (CONF_UID, CONF_HOST):
         if field in entry_data:
             entry_data[field] = REDACTED
 

@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, patch
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio import Connection
+from pyplumio.devices import Device
 from pyplumio.helpers.parameter import Parameter
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -20,6 +21,16 @@ from .const import MOCK_CONFIG
 def auto_enable_custom_integrations(enable_custom_integrations):
     """Enable custom integrations for hass."""
     yield
+
+
+@pytest.fixture(name="mock_device")
+def fixture_mock_device() -> Generator[Device, None, None]:
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.device"
+    ) as mock_device:
+        mock_device.data = {}
+        mock_device.set_value = AsyncMock()
+        yield mock_device
 
 
 @pytest.fixture(name="async_add_entities")

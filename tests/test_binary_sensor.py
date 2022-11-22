@@ -19,6 +19,7 @@ async def test_async_setup_and_update_entry(
     config_entry: MockConfigEntry,
     bypass_hass_write_ha_state,
     bypass_model_check,
+    mock_device,
 ) -> None:
     """Test setup and update binary sensor entry."""
     assert await async_setup_entry(hass, config_entry, async_add_entities)
@@ -42,6 +43,7 @@ async def test_model_check(
     mock_async_get_current_platform,
     hass: HomeAssistant,
     config_entry: MockConfigEntry,
+    mock_device,
 ):
     """Test sensor model check."""
     for model_sensor in (
@@ -65,6 +67,7 @@ async def test_model_check_with_unknown_model(
     hass: HomeAssistant,
     config_entry: MockConfigEntry,
     caplog,
+    mock_device,
 ):
     """Test model check with the unknown model."""
     with patch(

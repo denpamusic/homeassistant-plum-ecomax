@@ -21,10 +21,12 @@ from pyplumio.helpers.filters import on_change, throttle
 from pyplumio.helpers.parameter import Parameter
 
 from .connection import EcomaxConnection
-from .const import DOMAIN
+from .const import ATTR_WATER_HEATER, DOMAIN
 from .entity import EcomaxEntity
 
 WATER_HEATER_MODES: Final = [STATE_OFF, STATE_PERFORMANCE, STATE_ECO]
+
+ATTR_TEMPERATURE: Final = "temperature"
 
 
 @dataclass
@@ -34,7 +36,7 @@ class EcomaxWaterHeaterEntityDescription(WaterHeaterEntityEntityDescription):
 
 WATER_HEATER_TYPES: tuple[EcomaxWaterHeaterEntityDescription, ...] = (
     EcomaxWaterHeaterEntityDescription(
-        key="water_heater",
+        key=ATTR_WATER_HEATER,
         name="Indirect Water Heater",
     ),
 )
@@ -79,7 +81,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
 
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
-        temperature = kwargs["temperature"]
+        temperature = kwargs[ATTR_TEMPERATURE]
         await self.device.set_value(
             f"{self.entity_description.key}_target_temp",
             int(temperature),

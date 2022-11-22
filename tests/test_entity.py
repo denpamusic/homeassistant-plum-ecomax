@@ -22,7 +22,7 @@ class TestEntity(EcomaxEntity):
     "custom_components.plum_ecomax.entity.EcomaxEntity.connection",
     new_callable=AsyncMock,
 )
-async def test_base_entity(mock_connection, mock_async_update) -> None:
+async def test_base_entity(mock_connection, mock_async_update, mock_device) -> None:
     """Test base entity."""
     entity = TestEntity()
     entity.entity_description = EntityDescription("test_entity", name="Test Entity")
@@ -46,7 +46,7 @@ async def test_base_entity(mock_connection, mock_async_update) -> None:
     assert entity.device == mock_connection.device
 
     # Test available property.
-    mock_connection.device = None
+    mock_connection.connected.is_set = Mock(return_value=False)
     assert not entity.available
     mock_connection.reset_mock()
 

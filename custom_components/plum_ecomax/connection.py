@@ -10,6 +10,7 @@ from homeassistant.components.network import async_get_source_ip
 from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.entity import DeviceInfo
 import pyplumio
 from pyplumio.connection import Connection
@@ -18,6 +19,13 @@ from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
 from pyplumio.helpers.timeout import timeout
 
 from .const import (
+    ATTR_BOILER_CONTROL,
+    ATTR_FUEL_BURNED,
+    ATTR_MIXERS,
+    ATTR_PASSWORD,
+    ATTR_PRODUCT,
+    ATTR_SCHEDULES,
+    ATTR_WATER_HEATER,
     CONF_CAPABILITIES,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
@@ -29,6 +37,7 @@ from .const import (
     CONNECTION_TYPE_TCP,
     DOMAIN,
     ECOMAX,
+    MANUFACTURER,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -37,7 +46,10 @@ DEFAULT_TIMEOUT: Final = 30
 DEVICE_TIMEOUT: Final = 20
 MIXERS_TIMEOUT: Final = 5
 
-MANUFACTURER: Final = "Plum Sp. z o.o."
+ATTR_MODULES: Final = "modules"
+ATTR_SENSORS: Final = "sensors"
+ATTR_PARAMETERS: Final = "parameters"
+ATTR_WATER_HEATER_TEMP: Final = "water_heater_temp"
 
 
 async def async_get_connection_handler(
@@ -67,8 +79,8 @@ async def async_check_connection(
     )
     await connection.connect()
     device = await connection.get_device(ECOMAX)
-    product = await device.get_value("product")
-    modules = await device.get_value("modules")
+    product = await device.get_value(ATTR_PRODUCT)
+    modules = await device.get_value(ATTR_MODULES)
 
     await connection.close()
 
@@ -78,16 +90,16 @@ async def async_check_connection(
 @timeout(seconds=DEFAULT_TIMEOUT)
 async def async_get_device_capabilities(device: Device) -> list[str]:
     """Return device capabilities, presented as list of allowed keys."""
-    await device.get_value("sensors")
-    await device.get_value("parameters")
-    capabilities = ["product", "modules"]
+    await device.get_value(ATTR_SENSORS)
+    await device.get_value(ATTR_PARAMETERS)
+    capabilities = [ATTR_PRODUCT, ATTR_MODULES]
     capabilities += list(device.data.keys())
     for capability in (
-        "fuel_burned",
-        "boiler_control",
-        "password",
-        "schedules",
-        "mixers",
+        ATTR_FUEL_BURNED,
+        ATTR_BOILER_CONTROL,
+        ATTR_PASSWORD,
+        ATTR_SCHEDULES,
+        ATTR_MIXERS,
     ):
         try:
             await device.get_value(capability, timeout=5)
@@ -95,8 +107,8 @@ async def async_get_device_capabilities(device: Device) -> list[str]:
         except asyncio.TimeoutError:
             continue
 
-    if "water_heater_temp" in capabilities:
-        capabilities.append("water_heater")
+    if ATTR_WATER_HEATER_TEMP in capabilities:
+        capabilities.append(ATTR_WATER_HEATER)
 
     return capabilities
 
@@ -127,30 +139,34 @@ class EcomaxConnection:
         """Setup connection and add hass stop handler."""
 
         await self.connection.connect()
-        self._device = await self.connection.get_device(ECOMAX, timeout=DEVICE_TIMEOUT)
-        if "mixers" in self.capabilities:
+        self._device = await self.connection.get_device(
+            ECOMAX.lower(), timeout=DEVICE_TIMEOUT
+        )
+        if ATTR_MIXERS in self.capabilities:
             try:
-                await self._device.get_value("mixers", timeout=MIXERS_TIMEOUT)
+                await self.device.get_value(ATTR_MIXERS, timeout=MIXERS_TIMEOUT)
             except asyncio.TimeoutError:
                 _LOGGER.info("Couldn't find any mixers")
 
     async def async_update_device_capabilities(self) -> None:
         """Update device capabilities."""
-        if self.device is not None:
-            data = {**self.entry.data}
-            data[CONF_CAPABILITIES] = await async_get_device_capabilities(self.device)
-            self._hass.config_entries.async_update_entry(self.entry, data=data)
-            _LOGGER.info("Updated device capabilities list")
+        data = {**self.entry.data}
+        data[CONF_CAPABILITIES] = await async_get_device_capabilities(self.device)
+        self._hass.config_entries.async_update_entry(self.entry, data=data)
+        _LOGGER.info("Updated device capabilities list")
 
     @property
-    def device(self) -> Device | None:
+    def device(self) -> Device:
         """Return connection state."""
+        if self._device is None:
+            raise ConfigEntryNotReady("Device not found")
+
         return self._device
 
     @property
     def model(self) -> str:
         """Return the product model."""
-        return self.entry.data[CONF_MODEL].replace("EM", "ecoMAX ")
+        return self.entry.data[CONF_MODEL].replace("EM", f"{ECOMAX} ")
 
     @property
     def uid(self) -> str:

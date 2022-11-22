@@ -57,7 +57,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     try:
         await connection.async_setup()
     except asyncio.TimeoutError as e:
-        raise ConfigEntryNotReady("Device has failed to respond in time") from e
+        raise ConfigEntryNotReady("Device not found") from e
 
     await async_setup_services(hass, connection)
     await async_setup_events(hass, connection)
@@ -81,8 +81,7 @@ async def async_setup_events(hass: HomeAssistant, connection: EcomaxConnection) 
                 },
             )
 
-    if connection.device is not None:
-        connection.device.subscribe("alerts", delta(_alerts_event))
+    connection.device.subscribe("alerts", delta(_alerts_event))
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

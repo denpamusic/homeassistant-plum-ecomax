@@ -17,7 +17,7 @@ from homeassistant.helpers.typing import ConfigType
 from pyplumio.helpers.filters import on_change
 
 from .connection import EcomaxConnection
-from .const import DOMAIN, ECOMAX_I, ECOMAX_P
+from .const import ATTR_MIXERS, DOMAIN, ECOMAX_I, ECOMAX_P
 from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -169,15 +169,13 @@ def setup_ecomax_i(
 def get_mixer_entities(connection: EcomaxConnection) -> list[MixerEntity]:
     """Setup mixers binary sensor platform."""
     entities: list[MixerEntity] = []
-
-    if connection.device is not None and "mixers" in connection.device.data:
-        for mixer in connection.device.data["mixers"]:
-            entities.extend(
-                [
-                    MixerBinarySensor(connection, description, mixer.index)
-                    for description in MIXER_BINARY_SENSOR_TYPES
-                ]
-            )
+    for mixer in connection.device.data.get(ATTR_MIXERS, []):
+        entities.extend(
+            [
+                MixerBinarySensor(connection, description, mixer.index)
+                for description in MIXER_BINARY_SENSOR_TYPES
+            ]
+        )
 
     return entities
 

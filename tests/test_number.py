@@ -1,6 +1,6 @@
 """Test Plum ecoMAX number platform."""
 
-from unittest.mock import AsyncMock, Mock, call, patch
+from unittest.mock import Mock, call, patch
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -10,17 +10,13 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.plum_ecomax.number import EcomaxNumber, async_setup_entry
 
 
-@patch(
-    "custom_components.plum_ecomax.connection.EcomaxConnection.device",
-    new_callable=AsyncMock,
-)
 @patch("custom_components.plum_ecomax.connection.EcomaxConnection.name", "test")
 async def test_async_added_removed_to_hass(
-    mock_device,
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
     bypass_hass_write_ha_state,
+    mock_device,
 ) -> None:
     """Test adding and removing entity to/from hass."""
     assert await async_setup_entry(hass, config_entry, async_add_entities)
@@ -29,7 +25,6 @@ async def test_async_added_removed_to_hass(
     args, _ = async_add_entities.call_args
     numbers = args[0]
     heating_target_temp = numbers.pop(0)
-    mock_device.subscribe = Mock()
     subscribe_calls = [
         call("min_heating_target_temp", heating_target_temp.async_set_min_value),
         call("max_heating_target_temp", heating_target_temp.async_set_max_value),
@@ -48,19 +43,16 @@ async def test_async_added_removed_to_hass(
     mock_device.unsubscribe.assert_has_calls(unsubscribe_calls)
 
 
-@patch(
-    "custom_components.plum_ecomax.connection.EcomaxConnection.device",
-    new_callable=AsyncMock,
-)
 async def test_async_setup_and_update_entry(
-    mock_device,
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
     boiler_parameter: Parameter,
     bypass_hass_write_ha_state,
+    mock_device,
 ) -> None:
     """Test setup and update number entry."""
+    mock_device.data = {}
     assert await async_setup_entry(hass, config_entry, async_add_entities)
     await hass.async_block_till_done()
     async_add_entities.assert_called_once()
