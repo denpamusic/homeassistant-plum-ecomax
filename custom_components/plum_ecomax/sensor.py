@@ -438,8 +438,12 @@ def get_mixer_entities(connection: EcomaxConnection) -> list[MixerEntity]:
 
     if connection.device is not None and "mixers" in connection.device.data:
         for mixer in connection.device.data["mixers"]:
-            for description in MIXER_SENSOR_TYPES:
-                entities.append(MixerSensor(connection, description, mixer.index))
+            entities.extend(
+                [
+                    MixerSensor(connection, description, mixer.index)
+                    for description in MIXER_SENSOR_TYPES
+                ]
+            )
 
     return entities
 
