@@ -75,7 +75,7 @@ def _get_target_device(
 
     identifier = list(device.identifiers)[0][1]
     if "mixer" in identifier:
-        mixer_number = identifier.split("-", 3).pop()
+        mixer_number = int(identifier.split("-", 3).pop())
         mixers = connection.device.data.get(ATTR_MIXERS, [])
         if mixer_number < len(mixers):
             return connection.device.data[ATTR_MIXERS][mixer_number]
