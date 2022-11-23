@@ -1,5 +1,5 @@
 set_parameter:
-  name: Set Parameter
+  name: Set parameter
   description: Set controller or mixer parameter value.
   target:
     device:
@@ -21,7 +21,7 @@ set_parameter:
         text:
 
 set_schedule:
-  name: Set Schedule
+  name: Set schedule
   description: Set device schedule.
   fields:
     name:
@@ -72,18 +72,18 @@ set_schedule:
         time:
 
 update_capabilities:
-  name: Update Capabilities
+  name: Update capabilities
   description: Update device capability list.
 
 reset_meter:
-  name: Reset Meter
+  name: Reset meter
   description: Reset meter value.
   target:
     entity:
       device_class: "plum_ecomax__meter"
 
 calibrate_meter:
-  name: Calibrate Meter
+  name: Calibrate meter
   description: Calibrate meter value.
   target:
     entity:
