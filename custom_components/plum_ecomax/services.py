@@ -8,6 +8,7 @@ from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry
 import homeassistant.helpers.config_validation as cv
+from pyplumio.devices import Device
 from pyplumio.exceptions import ParameterNotFoundError
 import voluptuous as vol
 
@@ -64,7 +65,7 @@ _LOGGER = logging.getLogger(__name__)
 
 def _get_target_device(
     device_id: str, hass: HomeAssistant, connection: EcomaxConnection
-):
+) -> Device:
     """Get target device by device id."""
     dr = device_registry.async_get(hass)
     device = dr.async_get(device_id)
@@ -74,7 +75,7 @@ def _get_target_device(
         )
 
     identifier = list(device.identifiers)[0][1]
-    if "mixer" in identifier:
+    if "-mixer-" in identifier:
         mixer_number = int(identifier.split("-", 3).pop())
         mixers = connection.device.data.get(ATTR_MIXERS, [])
         if mixer_number < len(mixers):
