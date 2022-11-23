@@ -1,13 +1,14 @@
 """Fixtures for Plum ecoMAX test suite."""
 
 from typing import Generator
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio import Connection
-from pyplumio.devices import Device
+from pyplumio.devices import Device, Mixer
 from pyplumio.helpers.parameter import Parameter
+from pyplumio.helpers.product_info import ProductInfo
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -25,17 +26,29 @@ def auto_enable_custom_integrations(enable_custom_integrations):
 
 @pytest.fixture(name="mock_device")
 def fixture_mock_device() -> Generator[Device, None, None]:
+    """Mock device instance."""
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.device"
     ) as mock_device:
-        mock_device.data = {}
+        mock_product_info = Mock(spec=ProductInfo)
+        mock_mixer = AsyncMock(spec=Mixer)
+        mock_mixer.index = 0
+        mock_mixer.data = {
+            "test_mixer_data": "test_mixer_value",
+        }
+        mock_device.data = {
+            "test_data": "test_value",
+            "product": mock_product_info,
+            "password": "0000",
+            "mixers": [mock_mixer],
+        }
         mock_device.set_value = AsyncMock()
         yield mock_device
 
 
 @pytest.fixture(name="async_add_entities")
 def fixture_async_add_entities() -> Generator[AddEntitiesCallback, None, None]:
-    """Simulate add entities callback."""
+    """Mock add entities callback."""
     with patch(
         "homeassistant.helpers.entity_platform.AddEntitiesCallback"
     ) as mock_async_add_entities:

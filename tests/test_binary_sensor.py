@@ -26,14 +26,17 @@ async def test_async_setup_and_update_entry(
     await hass.async_block_till_done()
     async_add_entities.assert_called_once()
     args, _ = async_add_entities.call_args
-    binary_sensors = args[0]
-    binary_sensor = binary_sensors.pop(0)
+    binary_sensors: list[EcomaxBinarySensor] = []
+    for binary_sensor in args[0]:
+        if binary_sensor.entity_description.key in ("mixer_pump", "heating_pump"):
+            binary_sensors.append(binary_sensor)
 
-    # Check that binary sensor state is unknown and update it.
-    assert isinstance(binary_sensor, EcomaxBinarySensor)
-    assert binary_sensor.is_on is None
-    await binary_sensor.async_update(True)
-    assert binary_sensor.is_on
+    for binary_sensor in binary_sensors:
+        # Check that binary sensor state is unknown and update it.
+        assert isinstance(binary_sensor, EcomaxBinarySensor)
+        assert binary_sensor.is_on is None
+        await binary_sensor.async_update(True)
+        assert binary_sensor.is_on
 
 
 @patch("custom_components.plum_ecomax.sensor.async_get_current_platform")

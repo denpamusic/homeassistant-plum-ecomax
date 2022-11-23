@@ -1,11 +1,9 @@
 """Test Plum ecoMAX diagnostics."""
 
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from pyplumio.devices import Device
-from pyplumio.helpers.product_info import ProductInfo
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import DOMAIN
@@ -15,16 +13,11 @@ from custom_components.plum_ecomax.diagnostics import (
 )
 
 
-async def test_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry):
+async def test_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry, mock_device):
     """Test config entry diagnostics."""
-    mock_product_info = Mock(spec=ProductInfo)
     mock_connection = AsyncMock(spec=EcomaxConnection)
-    mock_connection.device = AsyncMock(spec=Device)
-    mock_connection.device.data = {
-        "test_data": "test_value",
-        "product": mock_product_info,
-        "password": "0000",
-    }
+    mock_connection.device = mock_device
+
     hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = mock_connection
     result = await async_get_config_entry_diagnostics(hass, config_entry)
     assert "pyplumio" in result
@@ -38,12 +31,13 @@ async def test_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry):
             "uid": REDACTED,
             "model": "EMTEST",
             "software": "1.13.5.A1",
-            "capabilities": ["fuel_burned", "heating_temp"],
+            "capabilities": ["fuel_burned", "heating_temp", "mixers"],
         },
     }
     assert result["data"] == {
         "test_data": "test_value",
-        "product": mock_product_info,
+        "product": mock_connection.device.data["product"],
         "password": REDACTED,
+        "mixers": [{"test_mixer_data": "test_mixer_value"}],
     }
-    assert mock_product_info.uid == REDACTED
+    assert mock_connection.device.data["product"].uid == REDACTED

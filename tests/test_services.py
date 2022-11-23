@@ -11,6 +11,7 @@ import pytest
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import ATTR_VALUE
 from custom_components.plum_ecomax.services import (
+    ATTR_DEVICE_ID,
     ATTR_END,
     ATTR_NAME,
     ATTR_START,
@@ -25,9 +26,10 @@ from custom_components.plum_ecomax.services import (
 )
 
 
-async def test_setup_services(hass: HomeAssistant, caplog) -> None:
+async def test_setup_services(hass: HomeAssistant, caplog, mock_device) -> None:
     """Test services setup."""
     mock_connection = AsyncMock(spec=EcomaxConnection)
+    mock_connection.device = mock_device
     mock_service_call = AsyncMock(spec=ServiceCall)
 
     with patch(
@@ -49,17 +51,53 @@ async def test_setup_services(hass: HomeAssistant, caplog) -> None:
     assert schema == SERVICE_SET_PARAMETER_SCHEMA
 
     mock_service_call.data = {ATTR_NAME: "test_name", ATTR_VALUE: 39}
-    mock_connection.capabilities = ["test_name"]
-    mock_connection.device.set_value = AsyncMock()
     await func(mock_service_call)
 
     mock_connection.device.set_value.assert_called_once_with(
         "test_name", 39, await_confirmation=True
     )
 
-    # Check that error is raised if device timed-out.
+    # Check that error is raised if parameter not found.
     mock_connection.device.set_value.side_effect = ParameterNotFoundError
     with pytest.raises(HomeAssistantError):
+        await func(mock_service_call)
+
+    # Test set mixer parameters.
+    mock_hass_device = Mock()
+    mock_hass_device.identifiers = {("test", "test-mixer-0")}
+    mock_service_call.data = {
+        ATTR_NAME: "test_name",
+        ATTR_VALUE: 39,
+        ATTR_DEVICE_ID: "test-mixer",
+    }
+    with patch(
+        "homeassistant.helpers.device_registry.DeviceRegistry.async_get",
+        return_value=mock_hass_device,
+    ):
+        await func(mock_service_call)
+        mock_connection.device.data["mixers"][0].set_value.assert_awaited_once_with(
+            "test_name", 39, await_confirmation=True
+        )
+
+    # Check that ecomax parameter is set when device is not mixer.
+    mock_hass_device = Mock()
+    mock_hass_device.identifiers = {("test", "test-nonmixer-0")}
+    mock_connection.device.set_value.reset_mock()
+    mock_connection.device.set_value.side_effect = None
+    with patch(
+        "homeassistant.helpers.device_registry.DeviceRegistry.async_get",
+        return_value=mock_hass_device,
+    ):
+        await func(mock_service_call)
+        mock_connection.device.set_value.assert_awaited_once_with(
+            "test_name", 39, await_confirmation=True
+        )
+
+    # Check for error when device not found.
+    with patch(
+        "homeassistant.helpers.device_registry.DeviceRegistry.async_get",
+        return_value=False,
+    ), pytest.raises(HomeAssistantError):
         await func(mock_service_call)
 
     # Test set schedule service.

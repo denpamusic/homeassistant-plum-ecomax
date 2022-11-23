@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, Mock, call, patch
 from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.entity import DeviceInfo
 from pyplumio import SerialConnection, TcpConnection
 from pyplumio.devices import Device
@@ -112,16 +113,24 @@ async def test_async_setup(
     mock_connection_handler = AsyncMock(spec=TcpConnection)
     mock_connection_handler.host = "localhost"
     mock_device = AsyncMock(spec=Device)
+    mock_device.get_value = AsyncMock(side_effect=asyncio.TimeoutError)
     mock_connection_handler.get_device = AsyncMock(
         side_effect=(mock_device, asyncio.TimeoutError)
     )
+    mock_connection_handler.capabilities = ["mixers"]
     connection = EcomaxConnection(hass, config_entry, mock_connection_handler)
+
+    # Test device not ready.
+    with pytest.raises(ConfigEntryNotReady):
+        assert connection.device is None
+
     await connection.async_setup()
 
     mock_connection_handler.connect.assert_awaited_once()
     mock_connection_handler.get_device.assert_awaited_once_with(
         ECOMAX.lower(), timeout=20
     )
+    mock_device.get_value.assert_awaited_once_with("mixers", timeout=5)
 
     # Check connection class properties.
     assert connection.host == "localhost"
@@ -130,7 +139,7 @@ async def test_async_setup(
     assert connection.model == "ecoMAX TEST"
     assert connection.uid == "D251PAKR3GCPZ1K8G05G0"
     assert connection.software == "1.13.5.A1"
-    assert connection.capabilities == ["fuel_burned", "heating_temp"]
+    assert connection.capabilities == ["fuel_burned", "heating_temp", "mixers"]
     assert connection.name == "localhost"
     assert connection.connection == mock_connection_handler
     assert connection.device_info == DeviceInfo(

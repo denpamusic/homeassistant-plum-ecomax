@@ -57,34 +57,40 @@ async def test_async_setup_and_update_entry(
     await hass.async_block_till_done()
     async_add_entities.assert_called_once()
     args, _ = async_add_entities.call_args
-    numbers = args[0]
-    number = numbers.pop(0)
+    numbers: list[EcomaxNumber] = []
+    for number in args[0]:
+        if number.entity_description.key in (
+            "mixer_target_temp",
+            "heating_target_temp",
+        ):
+            numbers.append(number)
 
-    # Check that number values is unknown and update them.
-    assert isinstance(number, EcomaxNumber)
-    assert number.native_value is None
-    assert number.native_min_value is None
-    assert number.native_max_value is None
-    await number.async_update(boiler_parameter)
-    assert number.native_value == 1
-    assert number.native_min_value == 0
-    assert number.native_max_value == 1
+    for number in numbers:
+        # Check that number values is unknown and update them.
+        assert isinstance(number, EcomaxNumber)
+        assert number.native_value is None
+        assert number.native_min_value is None
+        assert number.native_max_value is None
+        await number.async_update(boiler_parameter)
+        assert number.native_value == 1
+        assert number.native_min_value == 0
+        assert number.native_max_value == 1
 
-    # Change number value.
-    await number.async_set_native_value(2.2)
-    mock_device.set_value.assert_called_once_with(
-        number.entity_description.key, 2.2, await_confirmation=False
-    )
-    assert number.native_value == 2.2
+        # Change number value.
+        await number.async_set_native_value(2.2)
+        mock_device.set_value.assert_called_once_with(
+            number.entity_description.key, 2.2, await_confirmation=False
+        )
+        assert number.native_value == 2.2
 
-    # Change min value.
-    boiler_parameter.value = 4
-    assert number.native_min_value == 0
-    await number.async_set_min_value(boiler_parameter)
-    assert number.native_min_value == 4
+        # Change min value.
+        boiler_parameter.value = 4
+        assert number.native_min_value == 0
+        await number.async_set_min_value(boiler_parameter)
+        assert number.native_min_value == 4
 
-    # Change max value.
-    boiler_parameter.value = 5
-    assert number.native_max_value == 1
-    await number.async_set_max_value(boiler_parameter)
-    assert number.native_max_value == 5
+        # Change max value.
+        boiler_parameter.value = 5
+        assert number.native_max_value == 1
+        await number.async_set_max_value(boiler_parameter)
+        assert number.native_max_value == 5

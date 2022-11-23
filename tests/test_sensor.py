@@ -34,21 +34,30 @@ async def test_async_setup_and_update_entry(
 
     async_add_entities.assert_called_once()
     args, _ = async_add_entities.call_args
-    sensors = args[0]
-    sensor = sensors.pop(0)
-    meter = sensors.pop()
+    sensors: list[EcomaxSensor] = []
+    for sensor in args[0]:
+        if sensor.entity_description.key in ("mixer_temp", "heating_temp"):
+            sensors.append(sensor)
 
-    # Check that sensor state is unknown and update it.
-    assert isinstance(sensor, EcomaxSensor)
-    assert sensor.native_value is None
-    await sensor.async_update(65)
-    assert sensor.native_value == 65
+        if sensor.entity_description.key == "fuel_burned":
+            meter = sensor
 
-    # Check sensor callbacks.
-    callback = AsyncMock()
-    assert sensor.entity_description.filter_fn(callback) == mock_throttle.return_value
-    mock_throttle.assert_called_once_with(mock_on_change.return_value, seconds=10)
-    mock_on_change.assert_called_once_with(callback)
+    for sensor in sensors:
+        # Check that sensor state is unknown and update it.
+        assert isinstance(sensor, EcomaxSensor)
+        assert sensor.native_value is None
+        await sensor.async_update(65)
+        assert sensor.native_value == 65
+
+        # Check sensor callbacks.
+        callback = AsyncMock()
+        assert (
+            sensor.entity_description.filter_fn(callback) == mock_throttle.return_value
+        )
+        mock_throttle.assert_called_once_with(mock_on_change.return_value, seconds=10)
+        mock_on_change.assert_called_once_with(callback)
+        mock_throttle.reset_mock()
+        mock_on_change.reset_mock()
 
     # Check meter.
     mock_last_sensor_data = Mock()

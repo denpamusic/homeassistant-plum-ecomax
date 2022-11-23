@@ -33,7 +33,7 @@ MOCK_DEVICE_DATA = {
     CONF_UID: "D251PAKR3GCPZ1K8G05G0",
     CONF_MODEL: "EMTEST",
     CONF_SOFTWARE: "1.13.5.A1",
-    CONF_CAPABILITIES: ["fuel_burned", "heating_temp"],
+    CONF_CAPABILITIES: ["fuel_burned", "heating_temp", "mixers"],
 }
 
 # Mock config entry data.
