@@ -34,6 +34,7 @@ from homeassistant.helpers.entity_platform import (
 from homeassistant.helpers.typing import ConfigType, StateType
 import homeassistant.util.dt as dt_util
 from pyplumio.helpers.filters import aggregate, on_change, throttle
+from pyplumio.helpers.product_info import ProductTypes
 import voluptuous as vol
 
 from .connection import EcomaxConnection
@@ -44,8 +45,6 @@ from .const import (
     ATTR_PRODUCT,
     ATTR_VALUE,
     DOMAIN,
-    ECOMAX_I,
-    ECOMAX_P,
     FLOW_KGH,
 )
 from .entity import EcomaxEntity, MixerEntity
@@ -468,10 +467,10 @@ async def async_setup_entry(
         *get_mixer_entities(connection),
     ]
 
-    if ECOMAX_P.search(connection.model):
+    if connection.product_type == ProductTypes.ECOMAX_P:
         return setup_ecomax_p(connection, entities, async_add_entities)
 
-    if ECOMAX_I.search(connection.model):
+    if connection.product_type == ProductTypes.ECOMAX_I:
         return setup_ecomax_i(connection, entities, async_add_entities)
 
     _LOGGER.error(

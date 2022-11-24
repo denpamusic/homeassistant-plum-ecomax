@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+import logging
 from typing import Any
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
@@ -12,10 +13,13 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from pyplumio.helpers.filters import on_change
 from pyplumio.helpers.parameter import Parameter
+from pyplumio.helpers.product_info import ProductTypes
 
 from .connection import EcomaxConnection
-from .const import ATTR_BOILER_CONTROL, DOMAIN
+from .const import ATTR_ECOMAX_CONTROL, DOMAIN
 from .entity import EcomaxEntity
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -29,12 +33,8 @@ class EcomaxSwitchEntityDescription(SwitchEntityDescription):
 
 SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     EcomaxSwitchEntityDescription(
-        key=ATTR_BOILER_CONTROL,
-        name="Regulator Switch",
-    ),
-    EcomaxSwitchEntityDescription(
-        key="heating_weather_control",
-        name="Weather Control Switch",
+        key=ATTR_ECOMAX_CONTROL,
+        name="Controller Switch",
     ),
     EcomaxSwitchEntityDescription(
         key="water_heater_disinfection",
@@ -49,6 +49,14 @@ SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
         key="summer_mode",
         name="Summer Mode Switch",
     ),
+)
+
+
+ECOMAX_P_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
+    EcomaxSwitchEntityDescription(
+        key="heating_weather_control",
+        name="Weather Control Switch",
+    ),
     EcomaxSwitchEntityDescription(
         key="fuzzy_logic",
         name="Fuzzy Logic Switch",
@@ -62,6 +70,8 @@ SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
         name="Water Heater Schedule Switch",
     ),
 )
+
+ECOMAX_I_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = ()
 
 
 class EcomaxSwitch(EcomaxEntity, SwitchEntity):
@@ -109,13 +119,60 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
         self.async_write_ha_state()
 
 
+def setup_ecomax_p(
+    connection: EcomaxConnection,
+    entities: list[EcomaxEntity],
+    async_add_entities: AddEntitiesCallback,
+):
+    """Setup number platform for ecoMAX P series controllers."""
+    return async_add_entities(
+        [
+            *entities,
+            *[
+                EcomaxSwitch(connection, description)
+                for description in ECOMAX_P_SWITCH_TYPES
+            ],
+        ],
+        False,
+    )
+
+
+def setup_ecomax_i(
+    connection: EcomaxConnection,
+    entities: list[EcomaxEntity],
+    async_add_entities: AddEntitiesCallback,
+):
+    """Setup number platform for ecoMAX I series controllers."""
+    return async_add_entities(
+        [
+            *entities,
+            *[
+                EcomaxSwitch(connection, description)
+                for description in ECOMAX_I_SWITCH_TYPES
+            ],
+        ],
+        False,
+    )
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigType,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the sensor platform."""
-    connection = hass.data[DOMAIN][config_entry.entry_id]
-    return async_add_entities(
-        [EcomaxSwitch(connection, description) for description in SWITCH_TYPES], False
+    connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
+    entities: list[EcomaxEntity] = [
+        *[EcomaxSwitch(connection, description) for description in SWITCH_TYPES],
+    ]
+
+    if connection.product_type == ProductTypes.ECOMAX_P:
+        return setup_ecomax_p(connection, entities, async_add_entities)
+
+    if connection.product_type == ProductTypes.ECOMAX_I:
+        return setup_ecomax_i(connection, entities, async_add_entities)
+
+    _LOGGER.error(
+        "Couldn't setup platform due to unknown controller model '%s'", connection.model
     )
+    return False

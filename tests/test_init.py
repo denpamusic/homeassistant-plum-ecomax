@@ -23,6 +23,7 @@ from custom_components.plum_ecomax.const import (
     ATTR_FROM,
     ATTR_TO,
     CONF_CAPABILITIES,
+    CONF_PRODUCT_TYPE,
     DOMAIN,
     ECOMAX_ALERT_EVENT,
 )
@@ -95,7 +96,7 @@ async def test_setup_events(mock_async_fire, mock_delta, hass: HomeAssistant) ->
     side_effect=(asyncio.TimeoutError, None),
 )
 @patch.object(EcomaxConnection, "close", create=True, new_callable=AsyncMock)
-async def test_migrate_entry(
+async def test_migrate_entry_from_v1_to_v2(
     mock_close,
     mock_connect,
     mock_get_device,
@@ -124,3 +125,47 @@ async def test_migrate_entry(
     data[CONF_CAPABILITIES] = "test"
     mock_async_update_entry.assert_called_once_with(config_entry, data=data)
     assert config_entry.version == 2
+
+
+@patch.object(EcomaxConnection, "get_device", create=True, new_callable=AsyncMock)
+@patch.object(
+    EcomaxConnection,
+    "connect",
+    create=True,
+    new_callable=AsyncMock,
+    side_effect=(asyncio.TimeoutError, None),
+)
+@patch.object(EcomaxConnection, "close", create=True, new_callable=AsyncMock)
+async def test_migrate_entry_from_v2_to_v3(
+    mock_close,
+    mock_connect,
+    mock_get_device,
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+) -> None:
+    """Test migrating entry to a new version."""
+    config_entry.version = 2
+    mock_product = Mock()
+    mock_product.type = 0
+    mock_get_device.return_value.get_value.return_value = mock_product
+    with patch(
+        "homeassistant.config_entries.ConfigEntries.async_update_entry"
+    ) as mock_async_update_entry, patch(
+        "custom_components.plum_ecomax.async_get_device_capabilities",
+        new_callable=AsyncMock,
+        return_value="test",
+    ) as mock_async_get_device_capabilities:
+        assert not await async_migrate_entry(hass, config_entry)
+        config_entry.version = 2
+        assert await async_migrate_entry(hass, config_entry)
+
+    assert mock_connect.call_count == 2
+    mock_async_get_device_capabilities.assert_awaited_once_with(
+        mock_get_device.return_value
+    )
+    mock_close.assert_awaited_once()
+    data = {**config_entry.data}
+    data[CONF_CAPABILITIES] = "test"
+    data[CONF_PRODUCT_TYPE] = 0
+    mock_async_update_entry.assert_called_once_with(config_entry, data=data)
+    assert config_entry.version == 3

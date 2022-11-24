@@ -66,7 +66,7 @@ def fixture_bypass_hass_write_ha_state() -> Generator[None, None, None]:
 def fixture_bypass_model_check() -> Generator[None, None, None]:
     """Bypass controller model check."""
     with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.model", "EM860P"
+        "custom_components.plum_ecomax.connection.EcomaxConnection.product_type", 0
     ):
         yield
 

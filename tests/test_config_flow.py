@@ -12,6 +12,7 @@ from custom_components.plum_ecomax.const import (
     CONF_DEVICE,
     CONF_HOST,
     CONF_MODEL,
+    CONF_PRODUCT_TYPE,
     CONF_SOFTWARE,
     CONF_UID,
     DOMAIN,
@@ -32,6 +33,7 @@ async def test_form_tcp(hass: HomeAssistant) -> None:
     product = Mock()
     product.uid = MOCK_DEVICE_DATA[CONF_UID]
     product.model = MOCK_DEVICE_DATA[CONF_MODEL]
+    product.type = MOCK_DEVICE_DATA[CONF_PRODUCT_TYPE]
     modules = Mock()
     modules.module_a = MOCK_DEVICE_DATA[CONF_SOFTWARE]
     capabilities = MOCK_DEVICE_DATA[CONF_CAPABILITIES]
@@ -71,6 +73,7 @@ async def test_form_serial(hass: HomeAssistant) -> None:
     product = Mock()
     product.uid = MOCK_DEVICE_DATA[CONF_UID]
     product.model = MOCK_DEVICE_DATA[CONF_MODEL]
+    product.type = MOCK_DEVICE_DATA[CONF_PRODUCT_TYPE]
     modules = Mock()
     modules.module_a = MOCK_DEVICE_DATA[CONF_SOFTWARE]
     capabilities = MOCK_DEVICE_DATA[CONF_CAPABILITIES]

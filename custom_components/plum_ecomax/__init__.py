@@ -14,6 +14,7 @@ from pyplumio.structures.alerts import Alert
 from custom_components.plum_ecomax.services import async_setup_services
 
 from .connection import (
+    DEFAULT_TIMEOUT,
     EcomaxConnection,
     async_get_connection_handler,
     async_get_device_capabilities,
@@ -21,8 +22,10 @@ from .connection import (
 from .const import (
     ATTR_CODE,
     ATTR_FROM,
+    ATTR_PRODUCT,
     ATTR_TO,
     CONF_CAPABILITIES,
+    CONF_PRODUCT_TYPE,
     DOMAIN,
     ECOMAX,
     ECOMAX_ALERT_EVENT,
@@ -103,9 +106,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
     try:
         if config_entry.version == 1:
-
             data = {**config_entry.data}
-
             connection = EcomaxConnection(
                 hass,
                 config_entry,
@@ -118,6 +119,23 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
             await connection.close()
 
             config_entry.version = 2
+            hass.config_entries.async_update_entry(config_entry, data=data)
+
+        elif config_entry.version == 2:
+            data = {**config_entry.data}
+            connection = EcomaxConnection(
+                hass,
+                config_entry,
+                await async_get_connection_handler(hass, config_entry.data),
+            )
+            await connection.connect()
+            device = await connection.get_device(ECOMAX)
+            product = await device.get_value(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
+            data[CONF_CAPABILITIES] = await async_get_device_capabilities(device)
+            data[CONF_PRODUCT_TYPE] = product.type
+            await connection.close()
+
+            config_entry.version = 3
             hass.config_entries.async_update_entry(config_entry, data=data)
 
         _LOGGER.info("Migration to version %s successful", config_entry.version)

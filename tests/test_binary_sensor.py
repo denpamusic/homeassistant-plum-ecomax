@@ -26,12 +26,9 @@ async def test_async_setup_and_update_entry(
     await hass.async_block_till_done()
     async_add_entities.assert_called_once()
     args, _ = async_add_entities.call_args
-    binary_sensors: list[EcomaxBinarySensor] = []
-    for binary_sensor in args[0]:
-        if binary_sensor.entity_description.key in ("mixer_pump", "heating_pump"):
-            binary_sensors.append(binary_sensor)
-
-    for binary_sensor in binary_sensors:
+    for binary_sensor in [
+        x for x in args[0] if x.entity_description.key in ("mixer_pump", "heating_pump")
+    ]:
         # Check that binary sensor state is unknown and update it.
         assert isinstance(binary_sensor, EcomaxBinarySensor)
         assert binary_sensor.is_on is None
@@ -50,12 +47,11 @@ async def test_model_check(
 ):
     """Test sensor model check."""
     for model_sensor in (
-        ("EM860p", "lighter"),
-        ("EM350P-R2", "lighter"),
-        ("ecoMAX 850i", "fireplace_pump"),
+        (0, "lighter"),
+        (1, "fireplace_pump"),
     ):
         with patch(
-            "custom_components.plum_ecomax.connection.EcomaxConnection.model",
+            "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
             model_sensor[0],
         ):
             await async_setup_entry(hass, config_entry, mock_async_add_entities)
@@ -74,8 +70,7 @@ async def test_model_check_with_unknown_model(
 ):
     """Test model check with the unknown model."""
     with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.model",
-        "unknown",
+        "custom_components.plum_ecomax.connection.EcomaxConnection.product_type", 2
     ):
         assert not await async_setup_entry(hass, config_entry, mock_async_add_entities)
         assert "Couldn't setup platform" in caplog.text

@@ -19,7 +19,7 @@ from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
 from pyplumio.helpers.timeout import timeout
 
 from .const import (
-    ATTR_BOILER_CONTROL,
+    ATTR_ECOMAX_CONTROL,
     ATTR_FUEL_BURNED,
     ATTR_MIXERS,
     ATTR_PASSWORD,
@@ -32,6 +32,7 @@ from .const import (
     CONF_HOST,
     CONF_MODEL,
     CONF_PORT,
+    CONF_PRODUCT_TYPE,
     CONF_SOFTWARE,
     CONF_UID,
     CONNECTION_TYPE_TCP,
@@ -96,7 +97,7 @@ async def async_get_device_capabilities(device: Device) -> list[str]:
     capabilities += list(device.data.keys())
     for capability in (
         ATTR_FUEL_BURNED,
-        ATTR_BOILER_CONTROL,
+        ATTR_ECOMAX_CONTROL,
         ATTR_PASSWORD,
         ATTR_SCHEDULES,
         ATTR_MIXERS,
@@ -167,6 +168,11 @@ class EcomaxConnection:
     def model(self) -> str:
         """Return the product model."""
         return self.entry.data[CONF_MODEL].replace("EM", f"{ECOMAX} ")
+
+    @property
+    def product_type(self) -> int:
+        """Return the product type."""
+        return self.entry.data[CONF_PRODUCT_TYPE]
 
     @property
     def uid(self) -> str:

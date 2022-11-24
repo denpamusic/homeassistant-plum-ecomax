@@ -84,52 +84,62 @@ This integration provides the following entities:
 ### Sensors
 - Heating Temperature
 - Water Heater Temperature
-- Exhaust Temperature
 - Outside Temperature
 - Heating Target Temperature
 - Water Heater Target Temperature
-- Feeder Temperature
-- Heating Load
-- Fan Power
-- Fuel Level
-- Fuel Consumption
-- Total Fuel Burned
 - Heating Mode
-- Heating Power
-- Flame Intensity (if supported by the controller)
+- Solar Temperature (I-series)
+- Fireplace Temperature (I-series)
+- Exhaust Temperature (P-series)
+- Feeder Temperature (P-series)
+- Heating Load (P-series)
+- Fan Power (P-series)
+- Fuel Level (P-series)
+- Fuel Consumption (P-series)
+- Total Fuel Burned (P-series)
+- Heating Power (P-series)
+- Flame Intensity (P-series, if supported by the controller) 
 
 ### Binary Sensors
 - Heating Pump State
 - Water Heater Pump State
-- Fan State
-- Lighter State
+- Circulation Pump State
+- Fireplace Pump State (I-series)
+- Solar Pump State (I-series)
+- Fan State (P-series)
+- Lighter State (P-series)
 
 ### Switches
 - Regulator Master Switch
-- Weather Control Switch
 - Water Heater Disinfection Switch
 - Water Heater Pump Switch
 - Summer Mode Switch
-- Fuzzy Logic Switch
+- Weather Control Switch (P-series)
+- Fuzzy Logic Switch (P-series)
+- Heating Schedule Switch (P-series)
+- Water Heater Schedule Switch (P-series)
 
 ### Changeable Numbers
-- Heating Temperature
-- Grate Mode Temperature
-- Minimum Heating Power
-- Maximum Heating Power
-- Minimum Heating Temperature
-- Maximum Heating Temperature
-- Fuel Calorific Value (in kWh/kg)
+- Heating Temperature (P-series)
+- Minimum Heating Power (P-series)
+- Maximum Heating Power (P-series)
+- Minimum Heating Temperature (P-series)
+- Maximum Heating Temperature (P-series)
+- Grate Mode Temperature (P-series)
+- Fuel Calorific Value (P-series, in kWh/kg)
 
 ### Diagnostics
 - Service Password
 - UID
 - Software Version
-- Update Capabilities (button)
+- Update Capabilities
 
 ### Water Heater
 Integration provides full control for connected indirect water heater.  
 This includes ability to set target temperature, switch into priority, non-priority mode or turn off.
+
+### Mixers
+Integration provides ability to set target temperature and view current temperature and pump status of connected mixers.
 
 ## Services
 This integration provides the following services:

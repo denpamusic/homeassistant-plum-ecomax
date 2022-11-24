@@ -15,9 +15,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from pyplumio.helpers.filters import on_change
+from pyplumio.helpers.product_info import ProductTypes
 
 from .connection import EcomaxConnection
-from .const import ATTR_MIXERS, DOMAIN, ECOMAX_I, ECOMAX_P
+from .const import ATTR_MIXERS, DOMAIN
 from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -186,7 +187,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the sensor platform."""
-    connection = hass.data[DOMAIN][config_entry.entry_id]
+    connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     entities: list[EcomaxEntity] = [
         *[
             EcomaxBinarySensor(connection, description)
@@ -195,10 +196,10 @@ async def async_setup_entry(
         *get_mixer_entities(connection),
     ]
 
-    if ECOMAX_P.search(connection.model):
+    if connection.product_type == ProductTypes.ECOMAX_P:
         return setup_ecomax_p(connection, entities, async_add_entities)
 
-    if ECOMAX_I.search(connection.model):
+    if connection.product_type == ProductTypes.ECOMAX_I:
         return setup_ecomax_i(connection, entities, async_add_entities)
 
     _LOGGER.error(

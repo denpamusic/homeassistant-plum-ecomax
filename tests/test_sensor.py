@@ -34,15 +34,9 @@ async def test_async_setup_and_update_entry(
 
     async_add_entities.assert_called_once()
     args, _ = async_add_entities.call_args
-    sensors: list[EcomaxSensor] = []
-    for sensor in args[0]:
-        if sensor.entity_description.key in ("mixer_temp", "heating_temp"):
-            sensors.append(sensor)
-
-        if sensor.entity_description.key == "fuel_burned":
-            meter = sensor
-
-    for sensor in sensors:
+    for sensor in [
+        x for x in args[0] if x.entity_description.key in ("mixer_temp", "heating_temp")
+    ]:
         # Check that sensor state is unknown and update it.
         assert isinstance(sensor, EcomaxSensor)
         assert sensor.native_value is None
@@ -60,6 +54,7 @@ async def test_async_setup_and_update_entry(
         mock_on_change.reset_mock()
 
     # Check meter.
+    meter = [x for x in args[0] if x.entity_description.key == "fuel_burned"][0]
     mock_last_sensor_data = Mock()
     mock_last_sensor_data.native_value = 2
     mock_last_sensor_data.native_unit_of_measurement = "kg"
@@ -104,12 +99,11 @@ async def test_model_check(
 ):
     """Test sensor model check."""
     for model_sensor in (
-        ("EM860p", "fuel_burned"),
-        ("EM350P-R2", "fuel_burned"),
-        ("ecoMAX 850i", "fireplace_temp"),
+        (0, "fuel_burned"),
+        (1, "fireplace_temp"),
     ):
         with patch(
-            "custom_components.plum_ecomax.connection.EcomaxConnection.model",
+            "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
             model_sensor[0],
         ):
             await async_setup_entry(hass, config_entry, mock_async_add_entities)
@@ -128,8 +122,7 @@ async def test_model_check_with_unknown_model(
 ):
     """Test model check with the unknown model."""
     with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.model",
-        "unknown",
+        "custom_components.plum_ecomax.connection.EcomaxConnection.product_type", 2
     ):
         assert not await async_setup_entry(hass, config_entry, mock_async_add_entities)
         assert "Couldn't setup platform" in caplog.text

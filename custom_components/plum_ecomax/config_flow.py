@@ -22,6 +22,7 @@ from .const import (
     CONF_HOST,
     CONF_MODEL,
     CONF_PORT,
+    CONF_PRODUCT_TYPE,
     CONF_SOFTWARE,
     CONF_TITLE,
     CONF_UID,
@@ -66,6 +67,7 @@ async def validate_input(
         CONF_TITLE: title,
         CONF_UID: product.uid,
         CONF_MODEL: product.model,
+        CONF_PRODUCT_TYPE: product.type,
         CONF_SOFTWARE: modules.module_a,
         CONF_CAPABILITIES: capabilities,
     }
@@ -74,7 +76,7 @@ async def validate_input(
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Plum ecoMAX integration."""
 
-    VERSION = 2
+    VERSION = 3
 
     async def async_step_user(
         self, user_input: MutableMapping[str, Any] | None = None
@@ -97,7 +99,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             _LOGGER.exception("Unexpected exception")
             errors["base"] = "unknown"
         else:
-            for field in (CONF_UID, CONF_MODEL, CONF_SOFTWARE, CONF_CAPABILITIES):
+            for field in (
+                CONF_UID,
+                CONF_MODEL,
+                CONF_PRODUCT_TYPE,
+                CONF_SOFTWARE,
+                CONF_CAPABILITIES,
+            ):
                 user_input[field] = info[field]
 
             await self.async_set_unique_id(info[CONF_UID])

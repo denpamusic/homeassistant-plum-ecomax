@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+import logging
 from typing import Any, Optional
 
 from homeassistant.components.number import (
@@ -17,10 +18,13 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from pyplumio.helpers.filters import on_change
 from pyplumio.helpers.parameter import Parameter
+from pyplumio.helpers.product_info import ProductTypes
 
 from .connection import EcomaxConnection
 from .const import ATTR_MIXERS, CALORIFIC_KWH_KG, DOMAIN
 from .entity import EcomaxEntity, MixerEntity
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -43,20 +47,12 @@ class EcomaxNumberEntityDescription(
     max_value_key: Optional[str] = None
 
 
-NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
+NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = ()
+
+ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="heating_target_temp",
         name="Heating Target Temperature",
-        native_unit_of_measurement=TEMP_CELSIUS,
-        native_step=1,
-        value_get_fn=lambda x: x,
-        value_set_fn=lambda x: x,
-        min_value_key="min_heating_target_temp",
-        max_value_key="max_heating_target_temp",
-    ),
-    EcomaxNumberEntityDescription(
-        key="heating_temp_grate",
-        name="Grate Mode Temperature",
         native_unit_of_measurement=TEMP_CELSIUS,
         native_step=1,
         value_get_fn=lambda x: x,
@@ -79,6 +75,16 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         native_step=1,
         value_get_fn=lambda x: x,
         value_set_fn=lambda x: x,
+    ),
+    EcomaxNumberEntityDescription(
+        key="heating_temp_grate",
+        name="Grate Mode Temperature",
+        native_unit_of_measurement=TEMP_CELSIUS,
+        native_step=1,
+        value_get_fn=lambda x: x,
+        value_set_fn=lambda x: x,
+        min_value_key="min_heating_target_temp",
+        max_value_key="max_heating_target_temp",
     ),
     EcomaxNumberEntityDescription(
         key="min_fuzzy_logic_power",
@@ -106,6 +112,8 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         mode=NumberMode.BOX,
     ),
 )
+
+ECOMAX_I_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = ()
 
 
 class EcomaxNumber(EcomaxEntity, NumberEntity):
@@ -234,6 +242,42 @@ class MixerNumber(MixerEntity, EcomaxNumber):
         super().__init__(connection, description)
 
 
+def setup_ecomax_p(
+    connection: EcomaxConnection,
+    entities: list[EcomaxEntity],
+    async_add_entities: AddEntitiesCallback,
+) -> bool:
+    """Setup number platform for ecoMAX P series controllers."""
+    return async_add_entities(
+        [
+            *entities,
+            *[
+                EcomaxNumber(connection, description)
+                for description in ECOMAX_P_NUMBER_TYPES
+            ],
+        ],
+        False,
+    )
+
+
+def setup_ecomax_i(
+    connection: EcomaxConnection,
+    entities: list[EcomaxEntity],
+    async_add_entities: AddEntitiesCallback,
+) -> bool:
+    """Setup number platform for ecoMAX I series controllers."""
+    return async_add_entities(
+        [
+            *entities,
+            *[
+                EcomaxNumber(connection, description)
+                for description in ECOMAX_I_NUMBER_TYPES
+            ],
+        ],
+        False,
+    )
+
+
 def get_mixer_entities(connection: EcomaxConnection) -> list[MixerEntity]:
     """Setup mixers sensor platform."""
     entities: list[MixerEntity] = []
@@ -253,10 +297,18 @@ async def async_setup_entry(
 ) -> bool:
     """Set up the number platform."""
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
-    return async_add_entities(
-        [
-            *[EcomaxNumber(connection, description) for description in NUMBER_TYPES],
-            *get_mixer_entities(connection),
-        ],
-        False,
+    entities: list[EcomaxEntity] = [
+        *[EcomaxNumber(connection, description) for description in NUMBER_TYPES],
+        *get_mixer_entities(connection),
+    ]
+
+    if connection.product_type == ProductTypes.ECOMAX_P:
+        return setup_ecomax_p(connection, entities, async_add_entities)
+
+    if connection.product_type == ProductTypes.ECOMAX_I:
+        return setup_ecomax_i(connection, entities, async_add_entities)
+
+    _LOGGER.error(
+        "Couldn't setup platform due to unknown controller model '%s'", connection.model
     )
+    return False
