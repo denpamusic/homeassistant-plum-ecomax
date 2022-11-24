@@ -6,7 +6,7 @@
 [![stability-beta](https://img.shields.io/badge/stability-beta-33bbff.svg)](https://github.com/mkenney/software-guides/blob/master/STABILITY-BADGES.md#beta)
 
 ## Overview
-This Home Assistant integration provides support for ecoMAX automatic pellet boilers controllers manufactured by [Plum Sp. z o.o.](https://www.plum.pl/)
+This Home Assistant integration provides support for ecoMAX controllers manufactured by [Plum Sp. z o.o.](https://www.plum.pl/)
 
 It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and supports connection to ecoMAX controller via RS-485 to Ethernet/Wifi converters or via RS-485 to USB adapter.
 ![ecoMAX controllers](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/ecomax.png)
@@ -139,7 +139,7 @@ Integration provides full control for connected indirect water heater.
 This includes ability to set target temperature, switch into priority, non-priority mode or turn off.
 
 ### Mixers
-Integration provides ability to set target temperature and view current temperature and pump status of connected mixers.
+Integration provides ability to set and view temperature and pump status of connected mixers.
 
 ## Services
 This integration provides the following services:
