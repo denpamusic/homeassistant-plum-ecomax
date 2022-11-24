@@ -79,7 +79,7 @@ async def async_check_connection(
         else connection.device
     )
     await connection.connect()
-    device = await connection.get_device(ECOMAX)
+    device = await connection.get_device(ECOMAX.lower())
     product = await device.get_value(ATTR_PRODUCT)
     modules = await device.get_value(ATTR_MODULES)
 
