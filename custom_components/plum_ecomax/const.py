@@ -41,4 +41,4 @@ DEFAULT_DEVICE: Final = "/dev/ttyUSB0"
 FLOW_KGH: Final = "kg/h"
 CALORIFIC_KWH_KG: Final = "kWh/kg"
 
-ECOMAX_ALERT_EVENT: Final = "alert"
+ECOMAX_ALERT_EVENT: Final = "plum_ecomax_event"

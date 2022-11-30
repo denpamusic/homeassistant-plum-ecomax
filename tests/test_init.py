@@ -12,6 +12,7 @@ from pyplumio.structures.alerts import Alert
 import pytest
 
 from custom_components.plum_ecomax import (
+    DATE_STR_FORMAT,
     async_migrate_entry,
     async_setup_entry,
     async_setup_events,
@@ -83,7 +84,12 @@ async def test_setup_events(mock_async_fire, mock_delta, hass: HomeAssistant) ->
     alert = Alert(code=0, from_dt=utcnow, to_dt=None)
     await callback([alert])
     mock_async_fire.assert_called_once_with(
-        ECOMAX_ALERT_EVENT, {ATTR_CODE: 0, ATTR_FROM: utcnow, ATTR_TO: None}
+        ECOMAX_ALERT_EVENT,
+        {
+            ATTR_CODE: 0,
+            ATTR_FROM: dt_util.as_local(utcnow).strftime(DATE_STR_FORMAT),
+            ATTR_TO: None,
+        },
     )
 
 

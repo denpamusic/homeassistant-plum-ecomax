@@ -3,11 +3,13 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from typing import Final
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.util import dt as dt_util
 from pyplumio.helpers.filters import delta
 from pyplumio.structures.alerts import Alert
 
@@ -39,6 +41,10 @@ PLATFORMS: list[str] = [
     "water_heater",
     "button",
 ]
+
+DATE_STR_FORMAT: Final = "%Y-%m-%d %H:%M:%S"
+
+ATTR_ALERTS: Final = "alerts"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -79,12 +85,18 @@ async def async_setup_events(hass: HomeAssistant, connection: EcomaxConnection) 
                 ECOMAX_ALERT_EVENT,
                 {
                     ATTR_CODE: alert.code,
-                    ATTR_FROM: alert.from_dt,
-                    ATTR_TO: alert.to_dt,
+                    ATTR_FROM: dt_util.as_local(alert.from_dt).strftime(
+                        DATE_STR_FORMAT
+                    ),
+                    ATTR_TO: (
+                        None
+                        if alert.to_dt is None
+                        else dt_util.as_local(alert.to_dt).strftime(DATE_STR_FORMAT)
+                    ),
                 },
             )
 
-    connection.device.subscribe("alerts", delta(_alerts_event))
+    connection.device.subscribe(ATTR_ALERTS, delta(_alerts_event))
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

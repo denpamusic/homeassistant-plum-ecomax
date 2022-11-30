@@ -1,7 +1,6 @@
 """Test Plum ecoMAX logbook events."""
 
 
-import datetime as dt
 from unittest.mock import Mock
 
 from homeassistant.components.logbook.const import (
@@ -29,13 +28,15 @@ async def test_logbook(hass: HomeAssistant) -> None:
     assert args[0] == DOMAIN
     assert args[1] == ECOMAX_ALERT_EVENT
     callback = args[2]
-    from_dt = dt.datetime(2012, 12, 12, hour=12, minute=12)
-    to_dt = dt.datetime(2012, 12, 12, hour=12, minute=14)
     mock_event = Mock(spec=Event)
-    mock_event.data = {ATTR_CODE: 0, ATTR_FROM: from_dt, ATTR_TO: to_dt}
+    mock_event.data = {
+        ATTR_CODE: 0,
+        ATTR_FROM: "2012-12-12 00:00:00",
+        ATTR_TO: "2012-12-12 01:00:00",
+    }
     result = callback(mock_event)
     assert result == {
         LOGBOOK_ENTRY_NAME: "ecoMAX alert",
-        LOGBOOK_ENTRY_MESSAGE: "The alert with code '0' was generated 2012-12-12 "
-        + "12:12:00 and resolved 2012-12-12 12:14:00",
+        LOGBOOK_ENTRY_MESSAGE: "The alert with code '0' was generated at 2012-12-12 "
+        + "00:00:00 and resolved at 2012-12-12 01:00:00",
     }
