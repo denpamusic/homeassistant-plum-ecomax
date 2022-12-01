@@ -43,9 +43,9 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-DEFAULT_TIMEOUT: Final = 30
-DEVICE_TIMEOUT: Final = 20
-CAPABILITY_TIMEOUT: Final = 5
+DEFAULT_TIMEOUT: Final = 60
+DEVICE_TIMEOUT: Final = 30
+CAPABILITY_TIMEOUT: Final = 3
 
 ATTR_MODULES: Final = "modules"
 ATTR_SENSORS: Final = "sensors"
