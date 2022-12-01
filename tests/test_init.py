@@ -81,14 +81,14 @@ async def test_setup_events(mock_async_fire, mock_delta, hass: HomeAssistant) ->
     args, _ = mock_delta.call_args
     callback = args[0]
     utcnow = dt_util.utcnow()
-    alert = Alert(code=0, from_dt=utcnow, to_dt=None)
+    alert = Alert(code=0, from_dt=utcnow, to_dt=utcnow)
     await callback([alert])
     mock_async_fire.assert_called_once_with(
         ECOMAX_ALERT_EVENT,
         {
             ATTR_CODE: 0,
-            ATTR_FROM: dt_util.as_local(utcnow).strftime(DATE_STR_FORMAT),
-            ATTR_TO: None,
+            ATTR_FROM: utcnow.strftime(DATE_STR_FORMAT),
+            ATTR_TO: utcnow.strftime(DATE_STR_FORMAT),
         },
     )
 

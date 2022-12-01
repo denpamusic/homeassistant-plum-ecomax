@@ -30,9 +30,9 @@ def async_describe_events(
         """Describe ecomax logbook event."""
         alert_code = event.data[ATTR_CODE]
         start_time = event.data[ATTR_FROM]
-        end_time = event.data[ATTR_TO]
         time_string = f"was generated at {start_time}"
-        if end_time is not None:
+        if ATTR_TO in event.data:
+            end_time = event.data[ATTR_TO]
             time_string += f" and resolved at {end_time}"
 
         return {

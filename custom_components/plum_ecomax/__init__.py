@@ -81,20 +81,14 @@ async def async_setup_events(hass: HomeAssistant, connection: EcomaxConnection) 
     async def _alerts_event(alerts: list[Alert]):
         """Handle ecoMAX alerts."""
         for alert in alerts:
-            hass.bus.async_fire(
-                ECOMAX_ALERT_EVENT,
-                {
-                    ATTR_CODE: alert.code,
-                    ATTR_FROM: dt_util.as_local(alert.from_dt).strftime(
-                        DATE_STR_FORMAT
-                    ),
-                    ATTR_TO: (
-                        None
-                        if alert.to_dt is None
-                        else dt_util.as_local(alert.to_dt).strftime(DATE_STR_FORMAT)
-                    ),
-                },
-            )
+            event_data = {
+                ATTR_CODE: alert.code,
+                ATTR_FROM: alert.from_dt.strftime(DATE_STR_FORMAT),
+            }
+            if alert.to_dt is not None:
+                event_data[ATTR_TO] = alert.to_dt.strftime(DATE_STR_FORMAT)
+
+            hass.bus.async_fire(ECOMAX_ALERT_EVENT, event_data)
 
     connection.device.subscribe(ATTR_ALERTS, delta(_alerts_event))
 
