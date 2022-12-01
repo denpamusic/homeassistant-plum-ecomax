@@ -79,7 +79,7 @@ async def async_check_connection(
         else connection.device
     )
     await connection.connect()
-    device = await connection.get_device(ECOMAX.lower())
+    device = await connection.get_device(ECOMAX)
     product = await device.get_value(ATTR_PRODUCT)
     modules = await device.get_value(ATTR_MODULES)
 
@@ -140,9 +140,7 @@ class EcomaxConnection:
         """Setup connection and add hass stop handler."""
 
         await self.connection.connect()
-        self._device = await self.connection.get_device(
-            ECOMAX.lower(), timeout=DEVICE_TIMEOUT
-        )
+        self._device = await self.connection.get_device(ECOMAX, timeout=DEVICE_TIMEOUT)
         if ATTR_MIXERS in self.capabilities:
             try:
                 await self.device.get_value(ATTR_MIXERS, timeout=MIXERS_TIMEOUT)
@@ -167,7 +165,7 @@ class EcomaxConnection:
     @property
     def model(self) -> str:
         """Return the product model."""
-        return self.entry.data[CONF_MODEL].replace("EM", f"{ECOMAX} ")
+        return self.entry.data[CONF_MODEL].replace("EM", "ecoMAX ")
 
     @property
     def product_type(self) -> int:
@@ -209,7 +207,7 @@ class EcomaxConnection:
             name=self.name,
             identifiers={(DOMAIN, self.uid)},
             manufacturer=MANUFACTURER,
-            model=f"{self.model}",
+            model=self.model,
             sw_version=self.software,
             configuration_url=f"http://{self.entry.data[CONF_HOST]}"
             if self.entry.data[CONF_CONNECTION_TYPE] == CONNECTION_TYPE_TCP

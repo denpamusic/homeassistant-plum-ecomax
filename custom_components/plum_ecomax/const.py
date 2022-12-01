@@ -16,7 +16,7 @@ CONF_SOFTWARE: Final = "software"
 CONF_CAPABILITIES: Final = "capabilities"
 
 MANUFACTURER: Final = "Plum Sp. z o.o."
-ECOMAX: Final = "ecoMAX"
+ECOMAX: Final = "ecomax"
 
 ATTR_VALUE: Final = "value"
 ATTR_CODE: Final = "code"

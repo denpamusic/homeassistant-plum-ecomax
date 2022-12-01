@@ -127,9 +127,7 @@ async def test_async_setup(
     await connection.async_setup()
 
     mock_connection_handler.connect.assert_awaited_once()
-    mock_connection_handler.get_device.assert_awaited_once_with(
-        ECOMAX.lower(), timeout=20
-    )
+    mock_connection_handler.get_device.assert_awaited_once_with(ECOMAX, timeout=20)
     mock_device.get_value.assert_awaited_once_with("mixers", timeout=5)
 
     # Check connection class properties.

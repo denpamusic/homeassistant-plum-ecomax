@@ -119,7 +119,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
             )
             await connection.connect()
             data[CONF_CAPABILITIES] = await async_get_device_capabilities(
-                await connection.get_device(ECOMAX.lower())
+                await connection.get_device(ECOMAX)
             )
             await connection.close()
 
@@ -134,7 +134,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
                 await async_get_connection_handler(hass, config_entry.data),
             )
             await connection.connect()
-            device = await connection.get_device(ECOMAX.lower())
+            device = await connection.get_device(ECOMAX)
             product = await device.get_value(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
             data[CONF_CAPABILITIES] = await async_get_device_capabilities(device)
             data[CONF_PRODUCT_TYPE] = product.type
