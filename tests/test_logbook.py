@@ -36,7 +36,7 @@ async def test_logbook(hass: HomeAssistant) -> None:
     }
     result = callback(mock_event)
     assert result == {
-        LOGBOOK_ENTRY_NAME: "ecoMAX alert",
+        LOGBOOK_ENTRY_NAME: "ecoMAX",
         LOGBOOK_ENTRY_MESSAGE: "The alert with code '0' was generated at 2012-12-12 "
         + "00:00:00 and resolved at 2012-12-12 01:00:00",
     }
