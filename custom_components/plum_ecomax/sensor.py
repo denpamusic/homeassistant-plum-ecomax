@@ -307,7 +307,7 @@ MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
-        key="mixer_target_temp",
+        key="mixer_target",
         name="Mixer Target Temperature",
         icon="mdi:thermometer",
         native_unit_of_measurement=TEMP_CELSIUS,
