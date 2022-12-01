@@ -70,6 +70,25 @@ async def test_setup_and_unload_entry(
     mock_close.assert_not_awaited()
 
 
+@patch(
+    "custom_components.plum_ecomax.EcomaxConnection.async_setup",
+    side_effect=(None, asyncio.TimeoutError),
+)
+@patch("custom_components.plum_ecomax.async_setup_services")
+async def test_setup_mixers(
+    async_setup_services,
+    mock_async_setup,
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    mock_device,
+    caplog,
+) -> None:
+    """Test setup mixers."""
+    mock_device.get_value.side_effect = asyncio.TimeoutError
+    assert await async_setup_entry(hass, config_entry)
+    assert "Couldn't find any mixers" in caplog.text
+
+
 @patch("pyplumio.helpers.filters._Delta")
 @patch("homeassistant.core.EventBus.async_fire")
 async def test_setup_events(mock_async_fire, mock_delta, hass: HomeAssistant) -> None:

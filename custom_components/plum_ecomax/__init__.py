@@ -67,6 +67,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     except asyncio.TimeoutError as e:
         raise ConfigEntryNotReady("Device not found") from e
 
+    try:
+        await connection.async_setup_mixers()
+    except asyncio.TimeoutError:
+        _LOGGER.info("Couldn't find any mixers")
+
     await async_setup_services(hass, connection)
     await async_setup_events(hass, connection)
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = connection

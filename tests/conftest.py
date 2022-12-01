@@ -43,6 +43,7 @@ def fixture_mock_device() -> Generator[Device, None, None]:
             "mixers": [mock_mixer],
         }
         mock_device.set_value = AsyncMock()
+        mock_device.get_value = AsyncMock()
         yield mock_device
 
 

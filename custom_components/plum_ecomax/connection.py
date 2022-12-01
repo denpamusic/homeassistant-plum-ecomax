@@ -138,14 +138,13 @@ class EcomaxConnection:
 
     async def async_setup(self) -> None:
         """Setup connection and add hass stop handler."""
-
         await self.connection.connect()
         self._device = await self.connection.get_device(ECOMAX, timeout=DEVICE_TIMEOUT)
+
+    async def async_setup_mixers(self) -> None:
+        """Setup mixers."""
         if ATTR_MIXERS in self.capabilities:
-            try:
-                await self.device.get_value(ATTR_MIXERS, timeout=CAPABILITY_TIMEOUT)
-            except asyncio.TimeoutError:
-                _LOGGER.info("Couldn't find any mixers")
+            await self.device.get_value(ATTR_MIXERS, timeout=CAPABILITY_TIMEOUT)
 
     async def async_update_device_capabilities(self) -> None:
         """Update device capabilities."""
