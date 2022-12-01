@@ -173,7 +173,7 @@ def get_mixer_entities(connection: EcomaxConnection) -> list[MixerEntity]:
     for mixer in connection.device.data.get(ATTR_MIXERS, []):
         entities.extend(
             [
-                MixerBinarySensor(connection, description, mixer.index)
+                MixerBinarySensor(connection, description, mixer.mixer_number)
                 for description in MIXER_BINARY_SENSOR_TYPES
             ]
         )

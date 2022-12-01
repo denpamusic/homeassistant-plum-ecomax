@@ -32,7 +32,7 @@ def fixture_mock_device() -> Generator[Device, None, None]:
     ) as mock_device:
         mock_product_info = Mock(spec=ProductInfo)
         mock_mixer = AsyncMock(spec=Mixer)
-        mock_mixer.index = 0
+        mock_mixer.mixer_number = 0
         mock_mixer.data = {
             "test_mixer_data": "test_mixer_value",
         }
