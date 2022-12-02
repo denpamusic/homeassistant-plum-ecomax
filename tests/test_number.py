@@ -5,9 +5,17 @@ from unittest.mock import Mock, call, patch
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.helpers.parameter import Parameter
+from pyplumio.helpers.product_info import ProductTypes
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.plum_ecomax.number import EcomaxNumber, async_setup_entry
+from custom_components.plum_ecomax.number import (
+    ECOMAX_I_NUMBER_TYPES,
+    ECOMAX_P_NUMBER_TYPES,
+    MIXER_NUMBER_TYPES,
+    NUMBER_TYPES,
+    EcomaxNumber,
+    async_setup_entry,
+)
 
 
 @patch("custom_components.plum_ecomax.connection.EcomaxConnection.name", "test")
@@ -108,17 +116,33 @@ async def test_model_check(
 ):
     """Test sensor model check."""
     for model_sensor in (
-        (0, "fuel_calorific_value_kwh_kg"),
-        (1, "max_mixer_target_temp"),
+        (
+            ProductTypes.ECOMAX_P,
+            "mixer_target_temp",
+            "fuel_calorific_value_kwh_kg",
+            ECOMAX_P_NUMBER_TYPES,
+        ),
+        (
+            ProductTypes.ECOMAX_I,
+            "mixer_target_temp",
+            "max_mixer_target_temp",
+            ECOMAX_I_NUMBER_TYPES,
+        ),
     ):
+        product_type, first_number_key, last_number_key, number_types = model_sensor
+        number_types_length = len(NUMBER_TYPES) + len(MIXER_NUMBER_TYPES)
         with patch(
             "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
-            model_sensor[0],
+            product_type,
         ):
             await async_setup_entry(hass, config_entry, mock_async_add_entities)
             args, _ = mock_async_add_entities.call_args
-            sensor = args[0].pop()
-            assert sensor.entity_description.key == model_sensor[1]
+            numbers = args[0]
+            assert len(numbers) == (number_types_length + len(number_types))
+            first_number = numbers[0]
+            last_number = numbers[-1]
+            assert first_number.entity_description.key == first_number_key
+            assert last_number.entity_description.key == last_number_key
 
 
 @patch("homeassistant.helpers.entity_platform.AddEntitiesCallback")

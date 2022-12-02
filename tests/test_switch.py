@@ -5,10 +5,17 @@ from unittest.mock import AsyncMock, patch
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.helpers.parameter import Parameter
+from pyplumio.helpers.product_info import ProductTypes
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.const import ATTR_ECOMAX_CONTROL
-from custom_components.plum_ecomax.switch import EcomaxSwitch, async_setup_entry
+from custom_components.plum_ecomax.switch import (
+    ECOMAX_I_SWITCH_TYPES,
+    ECOMAX_P_SWITCH_TYPES,
+    SWITCH_TYPES,
+    EcomaxSwitch,
+    async_setup_entry,
+)
 
 
 @patch(
@@ -67,17 +74,32 @@ async def test_model_check(
 ):
     """Test sensor model check."""
     for model_sensor in (
-        (0, "schedule_water_heater_switch"),
-        (1, "summer_mode"),
+        (
+            ProductTypes.ECOMAX_P,
+            ATTR_ECOMAX_CONTROL,
+            "schedule_water_heater_switch",
+            ECOMAX_P_SWITCH_TYPES,
+        ),
+        (
+            ProductTypes.ECOMAX_I,
+            ATTR_ECOMAX_CONTROL,
+            "summer_mode",
+            ECOMAX_I_SWITCH_TYPES,
+        ),
     ):
+        product_type, first_switch_key, last_switch_key, switch_types = model_sensor
         with patch(
             "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
-            model_sensor[0],
+            product_type,
         ):
             await async_setup_entry(hass, config_entry, mock_async_add_entities)
             args, _ = mock_async_add_entities.call_args
-            sensor = args[0].pop()
-            assert sensor.entity_description.key == model_sensor[1]
+            switches = args[0]
+            assert len(switches) == (len(SWITCH_TYPES) + len(switch_types))
+            first_switch = switches[0]
+            last_switch = switches[-1]
+            assert first_switch.entity_description.key == first_switch_key
+            assert last_switch.entity_description.key == last_switch_key
 
 
 @patch("homeassistant.helpers.entity_platform.AddEntitiesCallback")
