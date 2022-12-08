@@ -215,7 +215,7 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         icon="mdi:fire",
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda x: x,
+        value_fn=lambda x: round(x, 1),
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
