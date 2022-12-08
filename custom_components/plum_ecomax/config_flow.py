@@ -14,6 +14,7 @@ import homeassistant.helpers.config_validation as cv
 from pyplumio.exceptions import ConnectionFailedError
 import voluptuous as vol
 
+from . import format_model_name
 from .connection import async_check_connection, async_get_connection_handler
 from .const import (
     CONF_CAPABILITIES,
@@ -66,7 +67,7 @@ async def validate_input(
     return {
         CONF_TITLE: title,
         CONF_UID: product.uid,
-        CONF_MODEL: product.model,
+        CONF_MODEL: format_model_name(product.model),
         CONF_PRODUCT_TYPE: product.type,
         CONF_SOFTWARE: modules.module_a,
         CONF_CAPABILITIES: capabilities,
@@ -76,7 +77,7 @@ async def validate_input(
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Plum ecoMAX integration."""
 
-    VERSION = 3
+    VERSION = 4
 
     async def async_step_user(
         self, user_input: MutableMapping[str, Any] | None = None

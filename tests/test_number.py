@@ -113,7 +113,7 @@ async def test_model_check(
     hass: HomeAssistant,
     config_entry: MockConfigEntry,
     mock_device,
-):
+) -> None:
     """Test sensor model check."""
     for model_sensor in (
         (
@@ -152,7 +152,7 @@ async def test_model_check_with_unknown_model(
     config_entry: MockConfigEntry,
     caplog,
     mock_device,
-):
+) -> None:
     """Test model check with the unknown model."""
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.product_type", 2

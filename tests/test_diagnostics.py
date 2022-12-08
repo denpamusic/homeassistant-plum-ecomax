@@ -30,7 +30,7 @@ async def test_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry, mock_
             "port": 8899,
             "uid": REDACTED,
             "product_type": 0,
-            "model": "EMTEST",
+            "model": "ecoMAX 123A",
             "software": "1.13.5.A1",
             "capabilities": ["fuel_burned", "heating_temp", "mixers"],
         },

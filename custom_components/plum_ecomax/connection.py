@@ -164,7 +164,7 @@ class EcomaxConnection:
     @property
     def model(self) -> str:
         """Return the product model."""
-        return self.entry.data[CONF_MODEL].replace("EM", "ecoMAX ")
+        return self.entry.data[CONF_MODEL]
 
     @property
     def product_type(self) -> int:

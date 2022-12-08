@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 from typing import Final
 
 from homeassistant.config_entries import ConfigEntry
@@ -26,6 +27,7 @@ from .const import (
     ATTR_PRODUCT,
     ATTR_TO,
     CONF_CAPABILITIES,
+    CONF_MODEL,
     CONF_PRODUCT_TYPE,
     DOMAIN,
     ECOMAX,
@@ -46,6 +48,16 @@ DATE_STR_FORMAT: Final = "%Y-%m-%d %H:%M:%S"
 ATTR_ALERTS: Final = "alerts"
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def format_model_name(model_name: str) -> str:
+    """Format the device model."""
+    if m := re.match(r"^([A-Z]+)\s{0,}([0-9]{3,})(.+)$", model_name, re.IGNORECASE):
+        model_device, model_number, model_suffix = m.groups()
+        model_device = "ecoMAX" if model_device == "EM" else model_device
+        return f"{model_device} {model_number}{model_suffix}"
+
+    return model_name
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -110,28 +122,12 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 
-async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Migrate old entry."""
     _LOGGER.debug("Migrating from version %s", config_entry.version)
 
     try:
-        if config_entry.version == 1:
-            data = {**config_entry.data}
-            connection = EcomaxConnection(
-                hass,
-                config_entry,
-                await async_get_connection_handler(hass, config_entry.data),
-            )
-            await connection.connect()
-            data[CONF_CAPABILITIES] = await async_get_device_capabilities(
-                await connection.get_device(ECOMAX)
-            )
-            await connection.close()
-
-            config_entry.version = 2
-            hass.config_entries.async_update_entry(config_entry, data=data)
-
-        elif config_entry.version == 2:
+        if config_entry.version in (1, 2):
             data = {**config_entry.data}
             connection = EcomaxConnection(
                 hass,
@@ -146,6 +142,13 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
             await connection.close()
 
             config_entry.version = 3
+            hass.config_entries.async_update_entry(config_entry, data=data)
+
+        elif config_entry.version == 3:
+            data = {**config_entry.data}
+            data[CONF_MODEL] = format_model_name(data[CONF_MODEL])
+
+            config_entry.version = 4
             hass.config_entries.async_update_entry(config_entry, data=data)
 
         _LOGGER.info("Migration to version %s successful", config_entry.version)

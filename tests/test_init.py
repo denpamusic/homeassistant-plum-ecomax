@@ -17,6 +17,7 @@ from custom_components.plum_ecomax import (
     async_setup_entry,
     async_setup_events,
     async_unload_entry,
+    format_model_name,
 )
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
@@ -121,61 +122,20 @@ async def test_setup_events(mock_async_fire, mock_delta, hass: HomeAssistant) ->
     side_effect=(asyncio.TimeoutError, None),
 )
 @patch.object(EcomaxConnection, "close", create=True, new_callable=AsyncMock)
-async def test_migrate_entry_from_v1_to_v2(
+async def test_migrate_entry_from_v1v2_to_v3(
     mock_close,
     mock_connect,
     mock_get_device,
     hass: HomeAssistant,
     config_entry: ConfigEntry,
 ) -> None:
-    """Test migrating entry to a new version."""
-    config_entry.version = 1
-    with patch(
-        "homeassistant.config_entries.ConfigEntries.async_update_entry"
-    ) as mock_async_update_entry, patch(
-        "custom_components.plum_ecomax.async_get_device_capabilities",
-        new_callable=AsyncMock,
-        return_value="test",
-    ) as mock_async_get_device_capabilities:
-        assert not await async_migrate_entry(hass, config_entry)
-        config_entry.version = 1
-        assert await async_migrate_entry(hass, config_entry)
-
-    assert mock_connect.call_count == 2
-    mock_async_get_device_capabilities.assert_awaited_once_with(
-        mock_get_device.return_value
-    )
-    mock_close.assert_awaited_once()
-    data = {**config_entry.data}
-    data[CONF_CAPABILITIES] = "test"
-    mock_async_update_entry.assert_called_once_with(config_entry, data=data)
-    assert config_entry.version == 2
-
-
-@patch.object(EcomaxConnection, "get_device", create=True, new_callable=AsyncMock)
-@patch.object(
-    EcomaxConnection,
-    "connect",
-    create=True,
-    new_callable=AsyncMock,
-    side_effect=(asyncio.TimeoutError, None),
-)
-@patch.object(EcomaxConnection, "close", create=True, new_callable=AsyncMock)
-async def test_migrate_entry_from_v2_to_v3(
-    mock_close,
-    mock_connect,
-    mock_get_device,
-    hass: HomeAssistant,
-    config_entry: ConfigEntry,
-) -> None:
-    """Test migrating entry to a new version."""
+    """Test migrating entry from version 1 or 2 to version 3."""
     config_entry.version = 2
     mock_product = Mock()
     mock_product.type = 0
     mock_get_device.return_value.get_value.return_value = mock_product
+
     with patch(
-        "homeassistant.config_entries.ConfigEntries.async_update_entry"
-    ) as mock_async_update_entry, patch(
         "custom_components.plum_ecomax.async_get_device_capabilities",
         new_callable=AsyncMock,
         return_value="test",
@@ -192,5 +152,32 @@ async def test_migrate_entry_from_v2_to_v3(
     data = {**config_entry.data}
     data[CONF_CAPABILITIES] = "test"
     data[CONF_PRODUCT_TYPE] = 0
-    mock_async_update_entry.assert_called_once_with(config_entry, data=data)
     assert config_entry.version == 3
+
+
+async def test_migrate_entry_from_v3_to_v4(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+) -> None:
+    """Test migrating entry from version 3 to version 4."""
+    config_entry.version = 3
+    data = {**config_entry.data}
+    data["model"] = "EM123A"
+    hass.config_entries.async_update_entry(config_entry, data=data)
+    assert await async_migrate_entry(hass, config_entry)
+    data = {**config_entry.data}
+    assert data["model"] == "ecoMAX 123A"
+    assert config_entry.version == 4
+
+
+async def test_format_model_name() -> None:
+    """Test model name formatter."""
+    model_names = (
+        ("EM350P2-ZF", "ecoMAX 350P2-ZF"),
+        ("ecoMAXX800R3", "ecoMAXX 800R3"),
+        ("ecoMAX 850i", "ecoMAX 850i"),
+        ("ignore", "ignore"),
+    )
+
+    for raw, formatted in model_names:
+        assert format_model_name(raw) == formatted

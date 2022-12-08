@@ -133,7 +133,7 @@ async def test_async_setup(
     assert connection.host == "localhost"
     assert not hasattr(connection, "nonexistent")
     assert connection.device == mock_device
-    assert connection.model == "ecoMAX TEST"
+    assert connection.model == "ecoMAX 123A"
     assert connection.uid == "D251PAKR3GCPZ1K8G05G0"
     assert connection.software == "1.13.5.A1"
     assert connection.capabilities == ["fuel_burned", "heating_temp", "mixers"]
@@ -168,7 +168,7 @@ async def test_async_update_capabilities(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
     caplog,
-):
+) -> None:
     """Test update capabilities."""
     mock_connection_handler = AsyncMock(spec=TcpConnection)
     mock_connection_handler.get_device = AsyncMock(spec=Device)
