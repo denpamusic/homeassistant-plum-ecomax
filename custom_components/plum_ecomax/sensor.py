@@ -58,6 +58,7 @@ DEVICE_CLASS_STATE: Final = "plum_ecomax__mode"
 STATE_FANNING: Final = "fanning"
 STATE_KINDLING: Final = "kindling"
 STATE_HEATING: Final = "heating"
+STATE_BURNING_OFF: Final = "burning_off"
 STATE_UNKNOWN: Final = "unknown"
 
 STATES: list[str] = [
@@ -68,6 +69,7 @@ STATES: list[str] = [
     STATE_PAUSED,
     STATE_IDLE,
     STATE_STANDBY,
+    STATE_BURNING_OFF,
 ]
 
 _LOGGER = logging.getLogger(__name__)

@@ -8,7 +8,8 @@
       "paused": "Paused",
       "idle": "Idle",
       "standby": "Standby",
-      "unknown": "Unknown"
+      "unknown": "Unknown",
+      "burning_off": "Burning Off"
     }
   }
 }

@@ -6,9 +6,10 @@
       "kindling": "Rozpalanie",
       "heating": "Praca",
       "paused": "Nadzór",
-      "idle": "Wygaszanie",
+      "idle": "Postój",
       "standby": "Wygaszanie na żądanie",
-      "unknown": "Nieznany"
+      "unknown": "Nieznany",
+      "burning_off": "Wygaszanie"
     }
   }
 }
