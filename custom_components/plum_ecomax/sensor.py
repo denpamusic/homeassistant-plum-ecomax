@@ -349,6 +349,7 @@ METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
         icon="mdi:counter",
         native_unit_of_measurement=UnitOfMass.KILOGRAMS,
         state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.WEIGHT,
         value_fn=lambda x: round(x, 2),
         filter_fn=lambda x: aggregate(x, seconds=30),
     ),
