@@ -12,7 +12,7 @@ from homeassistant.components.number import (
     NumberEntityDescription,
     NumberMode,
 )
-from homeassistant.const import PERCENTAGE, TEMP_CELSIUS
+from homeassistant.const import PERCENTAGE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
@@ -53,7 +53,7 @@ ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="heating_target_temp",
         name="Heating Target Temperature",
-        native_unit_of_measurement=TEMP_CELSIUS,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         value_get_fn=lambda x: x,
         value_set_fn=lambda x: x,
@@ -63,7 +63,7 @@ ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="min_heating_target_temp",
         name="Minimum Heating Temperature",
-        native_unit_of_measurement=TEMP_CELSIUS,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         value_get_fn=lambda x: x,
         value_set_fn=lambda x: x,
@@ -71,7 +71,7 @@ ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="max_heating_target_temp",
         name="Maximum Heating Temperature",
-        native_unit_of_measurement=TEMP_CELSIUS,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         value_get_fn=lambda x: x,
         value_set_fn=lambda x: x,
@@ -79,7 +79,7 @@ ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="heating_temp_grate",
         name="Grate Mode Temperature",
-        native_unit_of_measurement=TEMP_CELSIUS,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         value_get_fn=lambda x: x,
         value_set_fn=lambda x: x,
@@ -202,7 +202,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="mixer_target_temp",
         name="Mixer Target Temperature",
-        native_unit_of_measurement=TEMP_CELSIUS,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         value_get_fn=lambda x: x,
         value_set_fn=lambda x: x,
@@ -212,7 +212,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="min_mixer_target_temp",
         name="Minimum Mixer Temperature",
-        native_unit_of_measurement=TEMP_CELSIUS,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         value_get_fn=lambda x: x,
         value_set_fn=lambda x: x,
@@ -220,7 +220,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="max_mixer_target_temp",
         name="Maximum Mixer Temperature",
-        native_unit_of_measurement=TEMP_CELSIUS,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         value_get_fn=lambda x: x,
         value_set_fn=lambda x: x,

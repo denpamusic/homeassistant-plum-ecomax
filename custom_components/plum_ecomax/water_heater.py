@@ -12,7 +12,7 @@ from homeassistant.components.water_heater import (
     WaterHeaterEntityEntityDescription,
     WaterHeaterEntityFeature,
 )
-from homeassistant.const import PRECISION_WHOLE, TEMP_CELSIUS
+from homeassistant.const import PRECISION_WHOLE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -63,7 +63,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     def __init__(self, connection, description: WaterHeaterEntityEntityDescription):
         self._connection = connection
         self.entity_description = description
-        self._attr_temperature_unit = TEMP_CELSIUS
+        self._attr_temperature_unit = UnitOfTemperature.CELSIUS
         self._attr_precision = PRECISION_WHOLE
         self._attr_supported_features = (
             WaterHeaterEntityFeature.TARGET_TEMPERATURE

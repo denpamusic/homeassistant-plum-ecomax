@@ -7,7 +7,7 @@ from homeassistant.components.water_heater import (
     STATE_PERFORMANCE,
     WaterHeaterEntityFeature,
 )
-from homeassistant.const import PRECISION_WHOLE, TEMP_CELSIUS
+from homeassistant.const import PRECISION_WHOLE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.helpers.filters import Filter
@@ -43,7 +43,7 @@ async def test_async_setup_and_update_entry(
 
     # Check that switch state is unknown and update it.
     assert isinstance(water_heater, EcomaxWaterHeater)
-    assert water_heater.temperature_unit == TEMP_CELSIUS
+    assert water_heater.temperature_unit == UnitOfTemperature.CELSIUS
     assert water_heater.precision == PRECISION_WHOLE
     assert water_heater.supported_features == (
         WaterHeaterEntityFeature.TARGET_TEMPERATURE
