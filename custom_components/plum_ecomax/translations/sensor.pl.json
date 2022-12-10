@@ -8,8 +8,8 @@
       "paused": "Nadzór",
       "idle": "Postój",
       "standby": "Wygaszanie na żądanie",
-      "unknown": "Nieznany",
-      "burning_off": "Wygaszanie"
+      "burning_off": "Wygaszanie",
+      "unknown": "Nieznany"
     }
   }
 }
