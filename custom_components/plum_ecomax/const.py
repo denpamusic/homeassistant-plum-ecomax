@@ -29,6 +29,7 @@ ATTR_PRODUCT: Final = "product"
 ATTR_FUEL_BURNED: Final = "fuel_burned"
 ATTR_WATER_HEATER: Final = "water_heater"
 ATTR_ECOMAX_CONTROL: Final = "ecomax_control"
+ATTR_DEVICE_ID: Final = "device_id"
 
 CONNECTION_TYPE_TCP: Final = "TCP"
 CONNECTION_TYPE_SERIAL: Final = "Serial"
@@ -41,4 +42,4 @@ DEFAULT_DEVICE: Final = "/dev/ttyUSB0"
 FLOW_KGH: Final = "kg/h"
 CALORIFIC_KWH_KG: Final = "kWh/kg"
 
-ECOMAX_ALERT_EVENT: Final = "plum_ecomax_event"
+EVENT_PLUM_ECOMAX_ALERT: Final = "plum_ecomax_alert"

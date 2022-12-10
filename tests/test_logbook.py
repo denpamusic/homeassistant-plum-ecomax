@@ -14,7 +14,7 @@ from custom_components.plum_ecomax.const import (
     ATTR_FROM,
     ATTR_TO,
     DOMAIN,
-    ECOMAX_ALERT_EVENT,
+    EVENT_PLUM_ECOMAX_ALERT,
 )
 from custom_components.plum_ecomax.logbook import async_describe_events
 
@@ -26,7 +26,7 @@ async def test_logbook(hass: HomeAssistant) -> None:
     mock_async_describe_event.assert_called_once()
     args, _ = mock_async_describe_event.call_args
     assert args[0] == DOMAIN
-    assert args[1] == ECOMAX_ALERT_EVENT
+    assert args[1] == EVENT_PLUM_ECOMAX_ALERT
     callback = args[2]
     mock_event = Mock(spec=Event)
     mock_event.data = {

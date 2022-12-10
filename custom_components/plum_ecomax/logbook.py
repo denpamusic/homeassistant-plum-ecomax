@@ -14,7 +14,7 @@ from custom_components.plum_ecomax.const import (
     ATTR_FROM,
     ATTR_TO,
     DOMAIN,
-    ECOMAX_ALERT_EVENT,
+    EVENT_PLUM_ECOMAX_ALERT,
 )
 
 
@@ -40,4 +40,4 @@ def async_describe_events(
             LOGBOOK_ENTRY_MESSAGE: f"The alert with code '{alert_code}' {time_string}",
         }
 
-    async_describe_event(DOMAIN, ECOMAX_ALERT_EVENT, async_describe_alert_event)
+    async_describe_event(DOMAIN, EVENT_PLUM_ECOMAX_ALERT, async_describe_alert_event)

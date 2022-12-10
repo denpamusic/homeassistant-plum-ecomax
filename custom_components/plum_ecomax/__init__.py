@@ -10,19 +10,19 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers import device_registry
 from pyplumio.helpers.filters import delta
 from pyplumio.structures.alerts import Alert
 
-from custom_components.plum_ecomax.services import async_setup_services
-
 from .connection import (
-    DEFAULT_TIMEOUT,
+    VALUE_TIMEOUT,
     EcomaxConnection,
     async_get_connection_handler,
     async_get_device_capabilities,
 )
 from .const import (
     ATTR_CODE,
+    ATTR_DEVICE_ID,
     ATTR_FROM,
     ATTR_PRODUCT,
     ATTR_TO,
@@ -31,8 +31,9 @@ from .const import (
     CONF_PRODUCT_TYPE,
     DOMAIN,
     ECOMAX,
-    ECOMAX_ALERT_EVENT,
+    EVENT_PLUM_ECOMAX_ALERT,
 )
+from .services import async_setup_services
 
 PLATFORMS: list[str] = [
     "sensor",
@@ -94,19 +95,31 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_setup_events(hass: HomeAssistant, connection: EcomaxConnection) -> None:
     """Setup ecoMAX events."""
 
-    async def _alerts_event(alerts: list[Alert]):
-        """Handle ecoMAX alerts."""
+    dr = device_registry.async_get(hass)
+
+    async def _displatch_alert_events(alerts: list[Alert]) -> None:
+        """Handle ecoMAX alert events."""
+        try:
+            product_info = await connection.device.get_value(
+                ATTR_PRODUCT, timeout=VALUE_TIMEOUT
+            )
+        except asyncio.TimeoutError:
+            _LOGGER.error("Event dispatch failed. Couldn't get the device UID in time")
+            return
+
+        device = dr.async_get_device({(DOMAIN, product_info.uid)})
         for alert in alerts:
             event_data = {
+                ATTR_DEVICE_ID: device.id,
                 ATTR_CODE: alert.code,
                 ATTR_FROM: alert.from_dt.strftime(DATE_STR_FORMAT),
             }
             if alert.to_dt is not None:
                 event_data[ATTR_TO] = alert.to_dt.strftime(DATE_STR_FORMAT)
 
-            hass.bus.async_fire(ECOMAX_ALERT_EVENT, event_data)
+            hass.bus.async_fire(EVENT_PLUM_ECOMAX_ALERT, event_data)
 
-    connection.device.subscribe(ATTR_ALERTS, delta(_alerts_event))
+    connection.device.subscribe(ATTR_ALERTS, delta(_displatch_alert_events))
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -136,7 +149,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             )
             await connection.connect()
             device = await connection.get_device(ECOMAX)
-            product = await device.get_value(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
+            product = await device.get_value(ATTR_PRODUCT, timeout=(VALUE_TIMEOUT * 2))
             data[CONF_CAPABILITIES] = await async_get_device_capabilities(device)
             data[CONF_PRODUCT_TYPE] = product.type
             await connection.close()

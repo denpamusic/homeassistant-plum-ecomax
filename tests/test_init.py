@@ -19,15 +19,17 @@ from custom_components.plum_ecomax import (
     async_unload_entry,
     format_model_name,
 )
-from custom_components.plum_ecomax.connection import EcomaxConnection
+from custom_components.plum_ecomax.connection import VALUE_TIMEOUT, EcomaxConnection
 from custom_components.plum_ecomax.const import (
     ATTR_CODE,
+    ATTR_DEVICE_ID,
     ATTR_FROM,
+    ATTR_PRODUCT,
     ATTR_TO,
     CONF_CAPABILITIES,
     CONF_PRODUCT_TYPE,
     DOMAIN,
-    ECOMAX_ALERT_EVENT,
+    EVENT_PLUM_ECOMAX_ALERT,
 )
 
 
@@ -92,25 +94,48 @@ async def test_setup_mixers(
 
 @patch("pyplumio.helpers.filters._Delta")
 @patch("homeassistant.core.EventBus.async_fire")
-async def test_setup_events(mock_async_fire, mock_delta, hass: HomeAssistant) -> None:
+async def test_setup_events(
+    mock_async_fire,
+    mock_delta,
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    mock_device,
+    caplog,
+) -> None:
     """Test setup events."""
-    mock_connection = Mock(spec=EcomaxConnection)
-    await async_setup_events(hass, mock_connection)
-    mock_subscribe = mock_connection.device.subscribe
-    mock_subscribe.assert_called_once_with("alerts", mock_delta.return_value)
+    connection = hass.data[DOMAIN][config_entry.entry_id]
+    await async_setup_events(hass, connection)
+    mock_device.subscribe.assert_called_once_with("alerts", mock_delta.return_value)
     args, _ = mock_delta.call_args
+
+    # Test calling the callback with an alert.
     callback = args[0]
     utcnow = dt_util.utcnow()
     alert = Alert(code=0, from_dt=utcnow, to_dt=utcnow)
+    mock_device_entry = Mock()
+    with patch(
+        "homeassistant.helpers.device_registry.DeviceRegistry.async_get_device",
+        return_value=mock_device_entry,
+    ):
+        await callback([alert])
+        mock_device.get_value.assert_called_once_with(
+            ATTR_PRODUCT, timeout=VALUE_TIMEOUT
+        )
+        mock_async_fire.assert_called_once_with(
+            EVENT_PLUM_ECOMAX_ALERT,
+            {
+                ATTR_DEVICE_ID: mock_device_entry.id,
+                ATTR_CODE: 0,
+                ATTR_FROM: utcnow.strftime(DATE_STR_FORMAT),
+                ATTR_TO: utcnow.strftime(DATE_STR_FORMAT),
+            },
+        )
+
+    # Test with timeout error while getting product info.
+    mock_device.get_value = AsyncMock(side_effect=asyncio.TimeoutError)
     await callback([alert])
-    mock_async_fire.assert_called_once_with(
-        ECOMAX_ALERT_EVENT,
-        {
-            ATTR_CODE: 0,
-            ATTR_FROM: utcnow.strftime(DATE_STR_FORMAT),
-            ATTR_TO: utcnow.strftime(DATE_STR_FORMAT),
-        },
-    )
+    await async_setup_events(hass, connection)
+    assert "Event dispatch failed" in caplog.text
 
 
 @patch.object(EcomaxConnection, "get_device", create=True, new_callable=AsyncMock)

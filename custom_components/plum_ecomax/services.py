@@ -13,14 +13,13 @@ from pyplumio.exceptions import ParameterNotFoundError
 import voluptuous as vol
 
 from .connection import EcomaxConnection
-from .const import ATTR_MIXERS, ATTR_SCHEDULES, ATTR_VALUE, DOMAIN
+from .const import ATTR_DEVICE_ID, ATTR_MIXERS, ATTR_SCHEDULES, ATTR_VALUE, DOMAIN
 
 ATTR_NAME: Final = "name"
 ATTR_WEEKDAY: Final = "weekday"
 ATTR_STATE: Final = "state"
 ATTR_START: Final = "start"
 ATTR_END: Final = "end"
-ATTR_DEVICE_ID: Final = "device_id"
 
 STATE_ON: Final = "on"
 STATE_OFF: Final = "off"

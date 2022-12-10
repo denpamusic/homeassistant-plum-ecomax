@@ -45,7 +45,7 @@ _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_TIMEOUT: Final = 60
 DEVICE_TIMEOUT: Final = 30
-CAPABILITY_TIMEOUT: Final = 3
+VALUE_TIMEOUT: Final = 3
 
 ATTR_MODULES: Final = "modules"
 ATTR_SENSORS: Final = "sensors"
@@ -103,7 +103,7 @@ async def async_get_device_capabilities(device: Device) -> list[str]:
         ATTR_MIXERS,
     ):
         try:
-            await device.get_value(capability, timeout=CAPABILITY_TIMEOUT)
+            await device.get_value(capability, timeout=VALUE_TIMEOUT)
             capabilities.append(capability)
         except asyncio.TimeoutError:
             continue
@@ -144,7 +144,7 @@ class EcomaxConnection:
     async def async_setup_mixers(self) -> None:
         """Setup mixers."""
         if ATTR_MIXERS in self.capabilities:
-            await self.device.get_value(ATTR_MIXERS, timeout=CAPABILITY_TIMEOUT)
+            await self.device.get_value(ATTR_MIXERS, timeout=VALUE_TIMEOUT)
 
     async def async_update_device_capabilities(self) -> None:
         """Update device capabilities."""
