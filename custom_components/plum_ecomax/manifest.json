@@ -1,6 +1,7 @@
 {
   "domain": "plum_ecomax",
   "name": "Plum ecoMAX",
+  "integration_type": "hub",
   "config_flow": true,
   "documentation": "https://github.com/denpamusic/homeassistant-plum-ecomax",
   "issue_tracker": "https://github.com/denpamusic/homeassistant-plum-ecomax/issues",
