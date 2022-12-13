@@ -167,14 +167,17 @@ def setup_ecomax_i(
     )
 
 
-def get_mixer_entities(connection: EcomaxConnection) -> list[MixerEntity]:
+def get_mixer_entities(
+    connection: EcomaxConnection,
+    binary_sensor_types: tuple[EcomaxBinarySensorEntityDescription, ...],
+) -> list[MixerEntity]:
     """Setup mixers binary sensor platform."""
     entities: list[MixerEntity] = []
     for mixer in connection.device.data.get(ATTR_MIXERS, []):
         entities.extend(
             [
                 MixerBinarySensor(connection, description, mixer.mixer_number)
-                for description in MIXER_BINARY_SENSOR_TYPES
+                for description in binary_sensor_types
             ]
         )
 
@@ -193,7 +196,7 @@ async def async_setup_entry(
             EcomaxBinarySensor(connection, description)
             for description in BINARY_SENSOR_TYPES
         ],
-        *get_mixer_entities(connection),
+        *get_mixer_entities(connection, MIXER_BINARY_SENSOR_TYPES),
     ]
 
     if connection.product_type == ProductTypes.ECOMAX_P:

@@ -206,8 +206,8 @@ MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         native_step=1,
         value_get_fn=lambda x: x,
         value_set_fn=lambda x: x,
-        min_value_key="min_heating_target_temp",
-        max_value_key="max_heating_target_temp",
+        min_value_key="min_mixer_target_temp",
+        max_value_key="max_mixer_target_temp",
     ),
     EcomaxNumberEntityDescription(
         key="min_mixer_target_temp",
@@ -224,6 +224,29 @@ MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         native_step=1,
         value_get_fn=lambda x: x,
         value_set_fn=lambda x: x,
+    ),
+)
+
+ECOMAX_I_MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
+    EcomaxNumberEntityDescription(
+        key="day_mixer_target_temp",
+        name="Day Mixer Target Temperature",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        native_step=1,
+        value_get_fn=lambda x: x,
+        value_set_fn=lambda x: x,
+        min_value_key="min_mixer_target_temp",
+        max_value_key="max_mixer_target_temp",
+    ),
+    EcomaxNumberEntityDescription(
+        key="night_mixer_target_temp",
+        name="Night Mixer Target Temperature",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        native_step=1,
+        value_get_fn=lambda x: x,
+        value_set_fn=lambda x: x,
+        min_value_key="min_mixer_target_temp",
+        max_value_key="max_mixer_target_temp",
     ),
 )
 
@@ -269,6 +292,7 @@ def setup_ecomax_i(
     return async_add_entities(
         [
             *entities,
+            *get_mixer_entities(connection, ECOMAX_I_MIXER_NUMBER_TYPES),
             *[
                 EcomaxNumber(connection, description)
                 for description in ECOMAX_I_NUMBER_TYPES
@@ -278,13 +302,16 @@ def setup_ecomax_i(
     )
 
 
-def get_mixer_entities(connection: EcomaxConnection) -> list[MixerEntity]:
+def get_mixer_entities(
+    connection: EcomaxConnection,
+    number_types: tuple[EcomaxNumberEntityDescription, ...],
+) -> list[MixerEntity]:
     """Setup mixers sensor platform."""
     entities: list[MixerEntity] = []
     for mixer in connection.device.data.get(ATTR_MIXERS, []):
         entities.extend(
             MixerNumber(connection, description, mixer.mixer_number)
-            for description in MIXER_NUMBER_TYPES
+            for description in number_types
         )
 
     return entities
@@ -299,7 +326,7 @@ async def async_setup_entry(
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     entities: list[EcomaxEntity] = [
         *[EcomaxNumber(connection, description) for description in NUMBER_TYPES],
-        *get_mixer_entities(connection),
+        *get_mixer_entities(connection, MIXER_NUMBER_TYPES),
     ]
 
     if connection.product_type == ProductTypes.ECOMAX_P:

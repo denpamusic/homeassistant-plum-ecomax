@@ -444,14 +444,17 @@ def setup_ecomax_i(
     )
 
 
-def get_mixer_entities(connection: EcomaxConnection) -> list[MixerEntity]:
+def get_mixer_entities(
+    connection: EcomaxConnection,
+    sensor_types: tuple[EcomaxSensorEntityDescription, ...],
+) -> list[MixerEntity]:
     """Setup mixers sensor platform."""
     entities: list[MixerEntity] = []
     for mixer in connection.device.data.get(ATTR_MIXERS, []):
         entities.extend(
             [
                 MixerSensor(connection, description, mixer.mixer_number)
-                for description in MIXER_SENSOR_TYPES
+                for description in sensor_types
             ]
         )
 
@@ -467,7 +470,7 @@ async def async_setup_entry(
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     entities: list[EcomaxEntity] = [
         *[EcomaxSensor(connection, description) for description in SENSOR_TYPES],
-        *get_mixer_entities(connection),
+        *get_mixer_entities(connection, MIXER_SENSOR_TYPES),
     ]
 
     if connection.product_type == ProductTypes.ECOMAX_P:
