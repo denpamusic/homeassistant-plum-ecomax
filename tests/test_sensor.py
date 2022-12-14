@@ -94,7 +94,6 @@ async def test_async_setup_and_update_entry(
     assert meter.native_value == 3
 
 
-@patch("custom_components.plum_ecomax.connection.EcomaxConnection.name", "test")
 @patch("custom_components.plum_ecomax.sensor.async_get_current_platform")
 @patch("homeassistant.helpers.entity_platform.AddEntitiesCallback")
 async def test_model_check(

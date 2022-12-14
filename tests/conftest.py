@@ -28,6 +28,8 @@ def auto_enable_custom_integrations(enable_custom_integrations):
 def fixture_mock_device() -> Generator[Device, None, None]:
     """Mock device instance."""
     with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.name", "Test"
+    ), patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.device"
     ) as mock_device:
         mock_product_info = Mock(spec=ProductInfo)

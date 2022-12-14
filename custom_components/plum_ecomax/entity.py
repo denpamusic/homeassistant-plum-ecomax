@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 
 from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 from pyplumio.devices import Device
+from pyplumio.helpers.product_info import ProductType
 
 from .connection import MANUFACTURER, EcomaxConnection
 from .const import ATTR_MIXERS, DOMAIN
@@ -37,14 +38,14 @@ class EcomaxEntity(ABC):
         return self.connection.device
 
     @property
-    def available(self) -> bool:
-        """Indicates whether the entity is available."""
-        return self.connection.connected.is_set()
-
-    @property
     def device_info(self) -> DeviceInfo:
         """Return device info."""
         return self.connection.device_info
+
+    @property
+    def available(self) -> bool:
+        """Indicates whether the entity is available."""
+        return self.connection.connected.is_set()
 
     @property
     def entity_registry_enabled_default(self) -> bool:
@@ -98,15 +99,24 @@ class MixerEntity(EcomaxEntity):
     def name(self) -> str:
         """Name of the entity."""
         return (
-            f"{self.connection.name} Mixer "
-            + f"{self.mixer_number} {self.entity_description.name}"
+            f"{self.connection.name} {self.device_name} "
+            + f"{self.mixer_number + 1} {self.entity_description.name}"
+        )
+
+    @property
+    def device_name(self) -> str:
+        """Name of the device."""
+        return (
+            "Circuit"
+            if self.connection.product_type == ProductType.ECOMAX_I
+            else "Mixer"
         )
 
     @property
     def device_info(self) -> DeviceInfo:
         """Return device info."""
         return DeviceInfo(
-            name=f"{self.connection.name} Mixer {self.mixer_number}",
+            name=f"{self.connection.name} {self.device_name} {self.mixer_number + 1}",
             identifiers={(DOMAIN, f"{self.connection.uid}-mixer-{self.mixer_number}")},
             manufacturer=MANUFACTURER,
             model=f"{self.connection.model}",

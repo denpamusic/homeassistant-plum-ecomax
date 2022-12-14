@@ -8,6 +8,7 @@ from pyplumio.helpers.parameter import Parameter
 from pyplumio.helpers.product_info import ProductType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.plum_ecomax.const import ATTR_MIXERS
 from custom_components.plum_ecomax.number import (
     ECOMAX_I_MIXER_NUMBER_TYPES,
     ECOMAX_I_NUMBER_TYPES,
@@ -19,7 +20,6 @@ from custom_components.plum_ecomax.number import (
 )
 
 
-@patch("custom_components.plum_ecomax.connection.EcomaxConnection.name", "test")
 async def test_async_added_removed_to_hass(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
@@ -62,7 +62,6 @@ async def test_async_setup_and_update_entry(
     mock_device,
 ) -> None:
     """Test setup and update number entry."""
-    mock_device.data = {}
     assert await async_setup_entry(hass, config_entry, async_add_entities)
     await hass.async_block_till_done()
     async_add_entities.assert_called_once()
@@ -87,8 +86,13 @@ async def test_async_setup_and_update_entry(
         assert number.native_max_value == 1
 
         # Change number value.
+        target_device = (
+            mock_device
+            if number.entity_description.key == "heating_target_temp"
+            else mock_device.data[ATTR_MIXERS][0]
+        )
         await number.async_set_native_value(2.2)
-        mock_device.set_value.assert_called_once_with(
+        target_device.set_value.assert_called_once_with(
             number.entity_description.key, 2.2, await_confirmation=False
         )
         assert number.native_value == 2.2
@@ -104,6 +108,23 @@ async def test_async_setup_and_update_entry(
         assert number.native_max_value == 1
         await number.async_set_max_value(boiler_parameter)
         assert number.native_max_value == 5
+
+        # Reset values.
+        boiler_parameter.value = 1
+        boiler_parameter.min_value = 0
+        boiler_parameter.max_value = 1
+
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
+        ProductType.ECOMAX_I,
+    ):
+        assert numbers[0].device_info["name"] == "Test Circuit 1"
+
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
+        ProductType.ECOMAX_P,
+    ):
+        assert numbers[0].device_info["name"] == "Test Mixer 1"
 
 
 @patch("custom_components.plum_ecomax.sensor.async_get_current_platform")
