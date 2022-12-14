@@ -15,7 +15,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from pyplumio.helpers.filters import on_change
-from pyplumio.helpers.product_info import ProductTypes
+from pyplumio.helpers.product_info import ProductType
 
 from .connection import EcomaxConnection
 from .const import ATTR_MIXERS, DOMAIN
@@ -199,10 +199,10 @@ async def async_setup_entry(
         *get_mixer_entities(connection, MIXER_BINARY_SENSOR_TYPES),
     ]
 
-    if connection.product_type == ProductTypes.ECOMAX_P:
+    if connection.product_type == ProductType.ECOMAX_P:
         return setup_ecomax_p(connection, entities, async_add_entities)
 
-    if connection.product_type == ProductTypes.ECOMAX_I:
+    if connection.product_type == ProductType.ECOMAX_I:
         return setup_ecomax_i(connection, entities, async_add_entities)
 
     _LOGGER.error(

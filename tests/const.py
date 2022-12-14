@@ -1,6 +1,6 @@
 """Constants for Plum ecoMAX test suite."""
 
-from pyplumio.helpers.product_info import ProductTypes
+from pyplumio.helpers.product_info import ProductType
 
 from custom_components.plum_ecomax.const import (
     CONF_CAPABILITIES,
@@ -36,7 +36,7 @@ MOCK_DEVICE_DATA = {
     CONF_UID: "D251PAKR3GCPZ1K8G05G0",
     CONF_MODEL: "ecoMAX 123A",
     CONF_SOFTWARE: "1.13.5.A1",
-    CONF_PRODUCT_TYPE: ProductTypes.ECOMAX_P,
+    CONF_PRODUCT_TYPE: ProductType.ECOMAX_P,
     CONF_CAPABILITIES: ["fuel_burned", "heating_temp", "mixers"],
 }
 

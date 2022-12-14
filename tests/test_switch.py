@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, patch
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.helpers.parameter import Parameter
-from pyplumio.helpers.product_info import ProductTypes
+from pyplumio.helpers.product_info import ProductType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.const import ATTR_ECOMAX_CONTROL
@@ -75,13 +75,13 @@ async def test_model_check(
     """Test sensor model check."""
     for model_sensor in (
         (
-            ProductTypes.ECOMAX_P,
+            ProductType.ECOMAX_P,
             ATTR_ECOMAX_CONTROL,
             "schedule_water_heater_switch",
             ECOMAX_P_SWITCH_TYPES,
         ),
         (
-            ProductTypes.ECOMAX_I,
+            ProductType.ECOMAX_I,
             ATTR_ECOMAX_CONTROL,
             "summer_mode",
             ECOMAX_I_SWITCH_TYPES,

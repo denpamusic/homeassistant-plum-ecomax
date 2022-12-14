@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyplumio.helpers.product_info import ProductTypes
+from pyplumio.helpers.product_info import ProductType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.binary_sensor import (
@@ -53,13 +53,13 @@ async def test_model_check(
     """Test sensor model check."""
     for model_sensor in (
         (
-            ProductTypes.ECOMAX_P,
+            ProductType.ECOMAX_P,
             "heating_pump",
             "lighter",
             ECOMAX_P_BINARY_SENSOR_TYPES,
         ),
         (
-            ProductTypes.ECOMAX_I,
+            ProductType.ECOMAX_I,
             "heating_pump",
             "fireplace_pump",
             ECOMAX_I_BINARY_SENSOR_TYPES,
