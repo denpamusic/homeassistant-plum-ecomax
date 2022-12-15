@@ -9,6 +9,7 @@
       "idle": "[%key:common::state::idle%]",
       "standby": "[%key:common::state::standby%]",
       "burning_off": "Burning Off",
+      "alert": "Alert",
       "unknown": "Unknown"
     }
   }

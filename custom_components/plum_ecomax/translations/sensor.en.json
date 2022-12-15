@@ -9,6 +9,7 @@
       "idle": "Idle",
       "standby": "Standby",
       "burning_off": "Burning Off",
+      "alert": "Alert",
       "unknown": "Unknown"
     }
   }

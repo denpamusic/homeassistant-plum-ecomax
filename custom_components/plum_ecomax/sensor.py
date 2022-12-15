@@ -59,6 +59,7 @@ STATE_FANNING: Final = "fanning"
 STATE_KINDLING: Final = "kindling"
 STATE_HEATING: Final = "heating"
 STATE_BURNING_OFF: Final = "burning_off"
+STATE_ALERT: Final = "alert"
 STATE_UNKNOWN: Final = "unknown"
 
 STATES: tuple[str, ...] = (
@@ -70,6 +71,7 @@ STATES: tuple[str, ...] = (
     STATE_IDLE,
     STATE_STANDBY,
     STATE_BURNING_OFF,
+    STATE_ALERT,
 )
 
 _LOGGER = logging.getLogger(__name__)

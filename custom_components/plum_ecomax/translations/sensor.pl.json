@@ -9,6 +9,7 @@
       "idle": "Postój",
       "standby": "Wygaszanie na żądanie",
       "burning_off": "Wygaszanie",
+      "alert": "Alarm",
       "unknown": "Nieznany"
     }
   }
