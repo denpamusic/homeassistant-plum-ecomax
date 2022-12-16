@@ -80,14 +80,16 @@ reset_meter:
   description: Reset meter value.
   target:
     entity:
-      device_class: "plum_ecomax__meter"
+      integration: "plum_ecomax"
+      device_class: "weight"
 
 calibrate_meter:
   name: Calibrate meter
   description: Calibrate meter value.
   target:
     entity:
-      device_class: "plum_ecomax__meter"
+      integration: "plum_ecomax"
+      device_class: "weight"
   fields:
     value:
       name: Value

@@ -52,7 +52,6 @@ from .entity import EcomaxEntity, MixerEntity
 SERVICE_RESET_METER: Final = "reset_meter"
 SERVICE_CALIBRATE_METER: Final = "calibrate_meter"
 
-DEVICE_CLASS_METER: Final = "plum_ecomax__meter"
 DEVICE_CLASS_STATE: Final = "plum_ecomax__mode"
 
 STATE_FANNING: Final = "fanning"
@@ -340,8 +339,6 @@ class MixerSensor(MixerEntity, EcomaxSensor):
 @dataclass
 class EcomaxMeterEntityDescription(EcomaxSensorEntityDescription):
     """Describes ecoMAX meter entity."""
-
-    device_class: str = DEVICE_CLASS_METER
 
 
 METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
