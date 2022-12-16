@@ -25,7 +25,16 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
-class EcomaxBinarySensorEntityDescription(BinarySensorEntityDescription):
+class EcomaxBinarySensorEntityAdditionalKeys:
+    """Additional keys for ecoMAX binary sensor entity description."""
+
+    value_fn: Callable[[Any], Any]
+
+
+@dataclass
+class EcomaxBinarySensorEntityDescription(
+    BinarySensorEntityDescription, EcomaxBinarySensorEntityAdditionalKeys
+):
     """Describes ecoMAX binary sensor entity."""
 
     filter_fn: Callable[[Any], Any] = on_change
@@ -37,18 +46,27 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         name="Heating Pump",
         icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="water_heater_pump",
         name="Water Heater Pump",
         icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="ciculation_pump",
         name="Circulation Pump",
         icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=lambda x: x,
+    ),
+    EcomaxBinarySensorEntityDescription(
+        key="pending_alerts",
+        name="Alert",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        value_fn=lambda x: len(x) > 0,
     ),
 )
 
@@ -58,18 +76,21 @@ ECOMAX_P_BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = 
         name="Fan",
         icon="mdi:fan",
         device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="feeder",
         name="Feeder",
         icon="mdi:screw-lag",
         device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="lighter",
         name="Lighter",
         icon="mdi:fire",
         device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=lambda x: x,
     ),
 )
 
@@ -79,12 +100,14 @@ ECOMAX_I_BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = 
         name="Solar Pump",
         icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="fireplace_pump",
         name="Fireplace Pump",
         icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=lambda x: x,
     ),
 )
 
@@ -103,7 +126,7 @@ class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
 
     async def async_update(self, value) -> None:
         """Retrieve latest state."""
-        self._attr_is_on = value
+        self._attr_is_on = self.entity_description.value_fn(value)
         self.async_write_ha_state()
 
 
@@ -113,6 +136,7 @@ MIXER_BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         name="Mixer Pump",
         icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=lambda x: x,
     ),
 )
 
