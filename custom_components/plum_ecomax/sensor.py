@@ -290,6 +290,7 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
         """Initialize ecoMAX sensor object."""
         self._connection = connection
         self.entity_description = description
+        self._attr_available = False
         self._attr_native_value = None
 
     async def async_update(self, value) -> None:
@@ -357,6 +358,13 @@ METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
 
 class EcomaxMeter(RestoreSensor, EcomaxSensor):
     """Represents ecoMAX sensor that restores previous value."""
+
+    def __init__(
+        self, connection: EcomaxConnection, description: EcomaxSensorEntityDescription
+    ):
+        """Initialize ecoMAX meter object."""
+        super().__init__(connection, description)
+        self._attr_available = True
 
     async def async_added_to_hass(self):
         """Called when an entity has their entity_id assigned."""

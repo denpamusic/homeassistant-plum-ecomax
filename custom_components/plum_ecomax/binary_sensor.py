@@ -122,6 +122,7 @@ class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
     ):
         self._connection = connection
         self.entity_description = description
+        self._attr_available = False
         self._attr_is_on = None
 
     async def async_update(self, value) -> None:

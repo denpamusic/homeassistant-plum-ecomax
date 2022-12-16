@@ -87,6 +87,7 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
         """Initialize ecoMAX switch object."""
         self._connection = connection
         self.entity_description = description
+        self._attr_available = False
         self._attr_is_on = None
 
     async def async_turn_on(self, **kwargs) -> None:

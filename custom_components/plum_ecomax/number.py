@@ -131,6 +131,7 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
     ):
         self._connection = connection
         self.entity_description = description
+        self._attr_available = False
         self._attr_native_value = None
         self._attr_native_min_value = None
         self._attr_native_max_value = None

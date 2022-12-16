@@ -16,17 +16,22 @@ class EcomaxEntity(ABC):
 
     _connection: EcomaxConnection
     entity_description: EntityDescription
-    _attr_entity_registry_enabled_default: bool
+    _attr_available: bool
 
     async def async_added_to_hass(self):
         """Called when an entity has their entity_id assigned."""
+
+        async def async_set_available(data=None):
+            self._attr_available = True
+
         func = self.entity_description.filter_fn(self.async_update)
+        self.device.subscribe_once(self.entity_description.key, async_set_available)
+        self.device.subscribe(self.entity_description.key, func)
 
         # Feed initial value to the callback function.
         if self.entity_description.key in self.device.data:
+            await async_set_available()
             await func(self.device.data[self.entity_description.key])
-
-        self.device.subscribe(self.entity_description.key, func)
 
     async def async_will_remove_from_hass(self):
         """Called when an entity is about to be removed."""
@@ -45,7 +50,7 @@ class EcomaxEntity(ABC):
     @property
     def available(self) -> bool:
         """Indicates whether the entity is available."""
-        return self.connection.connected.is_set()
+        return self.connection.connected.is_set() and self._attr_available
 
     @property
     def entity_registry_enabled_default(self) -> bool:

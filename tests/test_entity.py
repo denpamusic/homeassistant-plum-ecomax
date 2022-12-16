@@ -38,6 +38,7 @@ async def test_base_entity(mock_connection, mock_async_update, mock_device) -> N
     entity.device.subscribe.assert_called_once_with(
         "test_entity", entity.entity_description.filter_fn.return_value
     )
+    entity.device.subscribe_once.assert_called_once()
     mock_filter.assert_awaited_once()
     await entity.async_will_remove_from_hass()
     entity.device.unsubscribe.assert_called_once_with("test_entity", mock_async_update)
@@ -46,6 +47,7 @@ async def test_base_entity(mock_connection, mock_async_update, mock_device) -> N
     assert entity.device == mock_connection.device
 
     # Test available property.
+    assert entity.available
     mock_connection.connected.is_set = Mock(return_value=False)
     assert not entity.available
     mock_connection.reset_mock()
