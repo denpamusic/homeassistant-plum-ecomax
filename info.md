@@ -24,84 +24,118 @@ __TCP connection__: you will need to fill Host and Port. Device path will be ign
 ![Success](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/success.png)
 
 ## Entities
-This integration provides the following entities:
+This integration provides the following entities, split between controller device and mixer sub-devices.
+Not all entities might be available for your controller model. Entities that are deemed as unsupported during
+initial setup will be disabled.
 
-### Sensors
-- Heating Temperature
-- Water Heater Temperature
-- Exhaust Temperature
-- Outside Temperature
-- Heating Target Temperature
-- Water Heater Target Temperature
-- Feeder Temperature
-- Heating Load
-- Fan Power
-- Fuel Level
-- Fuel Consumption
-- Total Fuel Burned
-- Heating Mode
-- Heating Power
-- Flame Intensity (if supported by the controller)
+> LEGEND: 🇵 - ecoMAX __P-series__ (e. g. ecoMAX 860**p**), 🇮 - ecoMAX __I-series__ (e. g. ecoMAX 850**i**)
 
-### Binary Sensors
-- Heating Pump State
-- Water Heater Pump State
-- Fan State
-- Lighter State
+### Controller (Hub)
+#### Sensors
+- Heating temperature
+- Water heater temperature
+- Outside temperature
+- Heating target temperature
+- Water heater target temperature 
+- Heating mode
+- Solar temperature 🇮
+- Fireplace temperature 🇮
+- Exhaust temperature 🇵
+- Feeder temperature 🇵
+- Heating load 🇵
+- Fan power 🇵
+- Fuel level 🇵
+- Fuel consumption 🇵
+- Total fuel burned 🇵
+- Heating power 🇵
+- Flame intensity 🇵 _(if supported by the controller)_
 
-### Switches
-- Regulator Master Switch
-- Weather Control Switch
-- Water Heater Disinfection Switch
-- Water Heater Pump Switch
-- Summer Mode Switch
-- Fuzzy Logic Switch
+#### Binary Sensors
+- Heating pump state
+- Water heater pump state
+- Circulation pump state
+- Fireplace pump state 🇮
+- Solar pump state 🇮
+- Fan state 🇵
+- Lighter state 🇵
 
-### Changeable Numbers
-- Heating Temperature
-- Grate Mode Temperature
-- Minimum Heating Power
-- Maximum Heating Power
-- Minimum Heating Temperature
-- Maximum Heating Temperature
-- Fuel Calorific Value (in kWh/kg)
+#### Switches
+- Controller power switch
+- Water heater disinfection switch
+- Water heater pump switch
+- Summer mode switch
+- Weather control switch 🇵
+- Fuzzy logic switch 🇵
+- Heating schedule switch 🇵
+- Water heater schedule switch 🇵
 
-### Diagnostics
-- Service Password
-- UID
-- Software Version
-- Update Capabilities (button)
+#### Changeable Numbers
+- Heating temperature 🇵
+- Minimum heating power 🇵
+- Maximum heating power 🇵
+- Minimum heating temperature 🇵
+- Maximum heating temperature 🇵
+- Grate mode temperature 🇵
+- Fuel calorific value 🇵 _(in kWh/kg)_
 
-### Water Heater
-Integration provides full control for connected indirect water heater.  
+#### Water Heater
+The integration provides full control for the connected indirect water heater.  
 This includes ability to set target temperature, switch into priority, non-priority mode or turn off.
 
-## Services
-This integration provides the following services:
+#### Diagnostics
+- Alert
+- Service password
+- UID
+- Software version
+- Update capabilities
 
-### Set Parameter
-Provides ability to set device parameter by name. Any parameter that is supported by the device can be used with this service. To get parameter names, please download and open diagnostics data and look for a `parameters` key.
+### Mixers (Sub-Devices)
+Mixer are added as sub-device for the controller. Each sub device can contain following entities.
+
+#### Sensors
+- Mixer temperature
+- Mixer target temperature
+
+#### Binary Sensors
+- Mixer pump
+
+#### Numbers
+- Mixer temperature
+- Minimum mixer temperature
+- Maximum mixer temperature
+- Day mixer temperature 🇮
+- Night mixer temperature 🇮
+
+## Services
+This integration provides following services:
+
+### Set parameter
+Provides ability to set device/sub-device parameter by name. Any parameter that is supported by the device/sub-device can be used with this service. To get parameter names, please download and open diagnostics data and look for a `parameters` key.
 
 Fields:
 - __name__ - parameter name
 - __value__ - parameter value (allowed values: positive integer, "on", "off")
 
-### Update Capabilities
-Updates list of sensors and parameters that are supported by the device. Can be useful if new features has been introduced by the firmware update.
+Targets (Devices):
+- __controller__ (default) - set parameter on the ecoMAX controller itself
+- __sub-device__ - set parameter on one of sub-devices (e. g. mixer/circuit)
 
-### Calibrate Meter
-Allows to set meter to the specific value. Can be used to set a value for total fuel burned sensor.
+### Update capabilities
+Updates list of sensors and parameters that are supported by the device. This list is then used by integration to determine what entities are supported by the controller. If you're not seeing some entities and/or sub-devices, try pressing this button.
 
-Targets:
+### Calibrate meter 🇵
+Allows to set meter to a specific value. Currently this can be used to set a value of a `Total Fuel Burned` sensor.
+
+Targets (Entities):
  - __total_fuel_burned__ - counts total burned fuel in kilograms
 
 Fields:
  - __value__ - target sensor will be set to this value
 
-### Reset Meter
-Allows to reset the meter value. Can be used to reset a value for the total fuel burned sensor.
+### Reset meter 🇵
+Allows to reset the meter value. Can be used to reset a value for the `Total Fuel Burned` sensor.
 
-Targets:
+Targets (Entities):
  - __total_fuel_burned__ - counts total burned fuel in kilograms
 
 ## License
