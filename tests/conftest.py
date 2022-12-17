@@ -8,12 +8,17 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio import Connection
 from pyplumio.devices import Device, Mixer
 from pyplumio.helpers.parameter import Parameter
-from pyplumio.helpers.product_info import ProductInfo
+from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import DOMAIN
+from custom_components.plum_ecomax.connection import ATTR_MODULES, EcomaxConnection
+from custom_components.plum_ecomax.const import (
+    ATTR_MIXERS,
+    ATTR_PASSWORD,
+    ATTR_PRODUCT,
+    DOMAIN,
+)
 
 from .const import MOCK_CONFIG
 
@@ -32,17 +37,17 @@ def fixture_mock_device() -> Generator[Device, None, None]:
     ), patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.device"
     ) as mock_device:
-        mock_product_info = Mock(spec=ProductInfo)
         mock_mixer = AsyncMock(spec=Mixer)
         mock_mixer.mixer_number = 0
         mock_mixer.data = {
             "test_mixer_data": "test_mixer_value",
         }
         mock_device.data = {
+            ATTR_PRODUCT: Mock(spec=ProductInfo),
+            ATTR_MODULES: Mock(spec=ConnectedModules),
+            ATTR_PASSWORD: "0000",
+            ATTR_MIXERS: [mock_mixer],
             "test_data": "test_value",
-            "product": mock_product_info,
-            "password": "0000",
-            "mixers": [mock_mixer],
         }
         mock_device.set_value = AsyncMock()
         mock_device.get_value = AsyncMock()

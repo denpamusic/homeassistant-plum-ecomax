@@ -5,8 +5,17 @@ from unittest.mock import AsyncMock
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import DOMAIN
+from custom_components.plum_ecomax.connection import ATTR_MODULES, EcomaxConnection
+from custom_components.plum_ecomax.const import (
+    ATTR_MIXERS,
+    ATTR_PASSWORD,
+    ATTR_PRODUCT,
+    CONF_CONNECTION_TYPE,
+    CONF_DEVICE,
+    CONF_HOST,
+    CONF_PORT,
+    DOMAIN,
+)
 from custom_components.plum_ecomax.diagnostics import (
     REDACTED,
     async_get_config_entry_diagnostics,
@@ -24,10 +33,10 @@ async def test_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry, mock_
     assert result["entry"] == {
         "title": "Mock Title",
         "data": {
-            "connection_type": "TCP",
-            "device": "/dev/ttyUSB0",
-            "host": REDACTED,
-            "port": 8899,
+            CONF_CONNECTION_TYPE: "TCP",
+            CONF_DEVICE: "/dev/ttyUSB0",
+            CONF_HOST: REDACTED,
+            CONF_PORT: 8899,
             "uid": REDACTED,
             "product_type": 0,
             "model": "ecoMAX 123A",
@@ -37,8 +46,9 @@ async def test_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry, mock_
     }
     assert result["data"] == {
         "test_data": "test_value",
-        "product": mock_connection.device.data["product"],
-        "password": REDACTED,
-        "mixers": [{"test_mixer_data": "test_mixer_value"}],
+        ATTR_PRODUCT: mock_connection.device.data[ATTR_PRODUCT],
+        ATTR_PASSWORD: REDACTED,
+        ATTR_MIXERS: [{"test_mixer_data": "test_mixer_value"}],
+        ATTR_MODULES: mock_connection.device.data[ATTR_MODULES],
     }
-    assert mock_connection.device.data["product"].uid == REDACTED
+    assert mock_connection.device.data[ATTR_PRODUCT].uid == REDACTED

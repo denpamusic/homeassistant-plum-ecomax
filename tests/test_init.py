@@ -12,6 +12,7 @@ from pyplumio.structures.alerts import Alert
 import pytest
 
 from custom_components.plum_ecomax import (
+    ATTR_ALERTS,
     DATE_STR_FORMAT,
     async_migrate_entry,
     async_setup_entry,
@@ -105,7 +106,7 @@ async def test_setup_events(
     """Test setup events."""
     connection = hass.data[DOMAIN][config_entry.entry_id]
     await async_setup_events(hass, connection)
-    mock_device.subscribe.assert_called_once_with("alerts", mock_delta.return_value)
+    mock_device.subscribe.assert_called_once_with(ATTR_ALERTS, mock_delta.return_value)
     args, _ = mock_delta.call_args
 
     # Test calling the callback with an alert.

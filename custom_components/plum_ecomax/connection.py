@@ -50,6 +50,8 @@ VALUE_TIMEOUT: Final = 3
 ATTR_MODULES: Final = "modules"
 ATTR_SENSORS: Final = "sensors"
 ATTR_PARAMETERS: Final = "parameters"
+ATTR_MIXER_SENSORS: Final = "mixer_sensors"
+ATTR_MIXER_PARAMETERS: Final = "mixer_parameters"
 ATTR_WATER_HEATER_TEMP: Final = "water_heater_temp"
 
 
@@ -68,10 +70,9 @@ async def async_get_connection_handler(
     return pyplumio.SerialConnection(data[CONF_DEVICE], ethernet_parameters=ethernet)
 
 
-@timeout(seconds=DEFAULT_TIMEOUT)
 async def async_check_connection(
     connection: Connection,
-) -> tuple[str, ProductInfo, ConnectedModules, list[str]]:
+) -> tuple[str, ProductInfo, ConnectedModules, set[str]]:
     """Perform connection check."""
     title = (
         connection.host
@@ -79,37 +80,45 @@ async def async_check_connection(
         else connection.device
     )
     await connection.connect()
-    device = await connection.get_device(ECOMAX)
-    product = await device.get_value(ATTR_PRODUCT)
-    modules = await device.get_value(ATTR_MODULES)
-
+    device = await connection.get_device(ECOMAX, timeout=DEVICE_TIMEOUT)
+    product = await device.get_value(ATTR_PRODUCT, timeout=(VALUE_TIMEOUT * 2))
+    modules = await device.get_value(ATTR_MODULES, timeout=(VALUE_TIMEOUT * 2))
+    capabilities = await async_get_device_capabilities(device)
     await connection.close()
 
-    return (title, product, modules, await async_get_device_capabilities(device))
+    return (title, product, modules, capabilities)
 
 
 @timeout(seconds=DEFAULT_TIMEOUT)
-async def async_get_device_capabilities(device: Device) -> list[str]:
-    """Return device capabilities, presented as list of allowed keys."""
+async def async_get_device_capabilities(device: Device) -> set[str]:
+    """Return device capabilities, presented as set of allowed keys."""
+    capabilities: set[str] = {ATTR_PRODUCT, ATTR_MODULES}
     await device.get_value(ATTR_SENSORS)
     await device.get_value(ATTR_PARAMETERS)
-    capabilities = [ATTR_PRODUCT, ATTR_MODULES]
-    capabilities += list(device.data.keys())
+    capabilities.update(set(device.data.keys()))
     for capability in (
         ATTR_FUEL_BURNED,
         ATTR_ECOMAX_CONTROL,
         ATTR_PASSWORD,
         ATTR_SCHEDULES,
         ATTR_MIXERS,
+        ATTR_MIXER_SENSORS,
+        ATTR_MIXER_PARAMETERS,
     ):
         try:
             await device.get_value(capability, timeout=VALUE_TIMEOUT)
-            capabilities.append(capability)
+            capabilities.add(capability)
         except asyncio.TimeoutError:
             continue
 
+    if ATTR_MIXERS in capabilities:
+        for mixer in device.data[ATTR_MIXERS]:
+            capabilities.update(
+                {f"mixer-{mixer.mixer_number}-{x}" for x in mixer.data.keys()}
+            )
+
     if ATTR_WATER_HEATER_TEMP in capabilities:
-        capabilities.append(ATTR_WATER_HEATER)
+        capabilities.add(ATTR_WATER_HEATER)
 
     return capabilities
 
@@ -182,7 +191,7 @@ class EcomaxConnection:
         return self.entry.data[CONF_SOFTWARE]
 
     @property
-    def capabilities(self) -> list[str]:
+    def capabilities(self) -> set[str]:
         """Return the product capabilities."""
         return self.entry.data[CONF_CAPABILITIES]
 

@@ -14,6 +14,7 @@ from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
 import pytest
 
 from custom_components.plum_ecomax.connection import (
+    VALUE_TIMEOUT,
     EcomaxConnection,
     async_check_connection,
     async_get_connection_handler,
@@ -53,8 +54,9 @@ async def test_async_check_connection() -> None:
     mock_connection.get_device.return_value = mock_device
     mock_product = Mock(spec=ProductInfo)
     mock_modules = Mock(spec=ConnectedModules)
-    mock_schedules = Mock()
-    mock_mixers = Mock()
+    mock_mixer = Mock()
+    mock_mixer.mixer_number = 0
+    mock_mixer.data = {"test_parameter": "test_value"}
     mock_device.get_value.side_effect = (
         mock_product,
         mock_modules,
@@ -63,13 +65,16 @@ async def test_async_check_connection() -> None:
         "fuel_burned",
         "ecomax_control",
         asyncio.TimeoutError,
-        mock_schedules,
-        mock_mixers,
+        [],
+        [],
+        True,
+        True,
     )
     mock_device.data = {
         "test_sensor": "test_value",
         "water_heater_temp": 50,
         "test_parameter": "test_value",
+        "mixers": [mock_mixer],
     }
     result = await async_check_connection(mock_connection)
     calls = (
@@ -77,11 +82,13 @@ async def test_async_check_connection() -> None:
         call("modules"),
         call("sensors"),
         call("parameters"),
-        call("fuel_burned", timeout=3),
-        call("ecomax_control", timeout=3),
-        call("password", timeout=3),
-        call("schedules", timeout=3),
-        call("mixers", timeout=3),
+        call("fuel_burned", timeout=VALUE_TIMEOUT),
+        call("ecomax_control", timeout=VALUE_TIMEOUT),
+        call("password", timeout=VALUE_TIMEOUT),
+        call("schedules", timeout=VALUE_TIMEOUT),
+        call("mixers", timeout=VALUE_TIMEOUT),
+        call("mixer_sensors", timeout=VALUE_TIMEOUT),
+        call("mixer_parameters", timeout=VALUE_TIMEOUT),
     )
     mock_device.get_value.assert_has_calls(calls)
     mock_connection.close.assert_awaited_once()
@@ -89,7 +96,7 @@ async def test_async_check_connection() -> None:
         "localhost",
         mock_product,
         mock_modules,
-        [
+        {
             "product",
             "modules",
             "test_sensor",
@@ -99,8 +106,11 @@ async def test_async_check_connection() -> None:
             "ecomax_control",
             "schedules",
             "mixers",
+            "mixer_sensors",
+            "mixer_parameters",
             "water_heater",
-        ],
+            "mixer-0-test_parameter",
+        },
     )
 
 

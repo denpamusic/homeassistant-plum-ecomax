@@ -9,7 +9,7 @@ from pyplumio.helpers.schedule import Schedule, ScheduleDay
 import pytest
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import ATTR_VALUE
+from custom_components.plum_ecomax.const import ATTR_MIXERS, ATTR_VALUE
 from custom_components.plum_ecomax.services import (
     ATTR_DEVICE_ID,
     ATTR_END,
@@ -75,7 +75,7 @@ async def test_setup_services(hass: HomeAssistant, caplog, mock_device) -> None:
         return_value=mock_hass_device,
     ):
         await func(mock_service_call)
-        mock_connection.device.data["mixers"][0].set_value.assert_awaited_once_with(
+        mock_connection.device.data[ATTR_MIXERS][0].set_value.assert_awaited_once_with(
             "test_name", 39, await_confirmation=True
         )
 

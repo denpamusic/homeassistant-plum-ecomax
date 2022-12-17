@@ -90,7 +90,8 @@ class MixerEntity(EcomaxEntity):
     @property
     def entity_registry_enabled_default(self) -> bool:
         """Indicate if the entity should be enabled when first added."""
-        return self.entity_description.key in self.device.data.keys()
+        entity_key = f"mixer-{self.mixer_number}-{self.entity_description.key}"
+        return entity_key in self.connection.capabilities
 
     @property
     def unique_id(self) -> str:
@@ -124,7 +125,7 @@ class MixerEntity(EcomaxEntity):
             name=f"{self.connection.name} {self.device_name} {self.mixer_number + 1}",
             identifiers={(DOMAIN, f"{self.connection.uid}-mixer-{self.mixer_number}")},
             manufacturer=MANUFACTURER,
-            model=f"{self.connection.model}",
+            model=f"{self.connection.model} ({self.device_name} {self.mixer_number + 1})",
             sw_version=self.connection.software,
             via_device=(DOMAIN, self.connection.uid),
         )
