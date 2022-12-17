@@ -34,20 +34,20 @@ class EcomaxSwitchEntityDescription(SwitchEntityDescription):
 SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     EcomaxSwitchEntityDescription(
         key=ATTR_ECOMAX_CONTROL,
-        name="Controller Switch",
+        name="Controller switch",
     ),
     EcomaxSwitchEntityDescription(
         key="water_heater_disinfection",
-        name="Water Heater Disinfection Switch",
+        name="Water heater disinfection switch",
     ),
     EcomaxSwitchEntityDescription(
         key="water_heater_work_mode",
-        name="Water Heater Pump Switch",
+        name="Water heater pump switch",
         state_on=2,
     ),
     EcomaxSwitchEntityDescription(
         key="summer_mode",
-        name="Summer Mode Switch",
+        name="Summer mode switch",
     ),
 )
 
@@ -55,19 +55,19 @@ SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
 ECOMAX_P_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     EcomaxSwitchEntityDescription(
         key="heating_weather_control",
-        name="Weather Control Switch",
+        name="Weather control switch",
     ),
     EcomaxSwitchEntityDescription(
         key="fuzzy_logic",
-        name="Fuzzy Logic Switch",
+        name="Fuzzy logic switch",
     ),
     EcomaxSwitchEntityDescription(
         key="schedule_heating_switch",
-        name="Heating Schedule Switch",
+        name="Heating schedule switch",
     ),
     EcomaxSwitchEntityDescription(
         key="schedule_water_heater_switch",
-        name="Water Heater Schedule Switch",
+        name="Water heater schedule switch",
     ),
 )
 

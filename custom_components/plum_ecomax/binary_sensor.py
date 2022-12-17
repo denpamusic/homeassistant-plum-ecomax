@@ -44,21 +44,21 @@ class EcomaxBinarySensorEntityDescription(
 BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     EcomaxBinarySensorEntityDescription(
         key="heating_pump",
-        name="Heating Pump",
+        name="Heating pump",
         icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="water_heater_pump",
-        name="Water Heater Pump",
+        name="Water heater pump",
         icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="ciculation_pump",
-        name="Circulation Pump",
+        name="Circulation pump",
         icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         value_fn=lambda x: x,
@@ -99,14 +99,14 @@ ECOMAX_P_BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = 
 ECOMAX_I_BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     EcomaxBinarySensorEntityDescription(
         key="solar_pump",
-        name="Solar Pump",
+        name="Solar pump",
         icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="fireplace_pump",
-        name="Fireplace Pump",
+        name="Fireplace pump",
         icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         value_fn=lambda x: x,
@@ -136,7 +136,7 @@ class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
 MIXER_BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     EcomaxBinarySensorEntityDescription(
         key="mixer_pump",
-        name="Mixer Pump",
+        name="Mixer pump",
         icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         value_fn=lambda x: x,

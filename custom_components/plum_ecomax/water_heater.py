@@ -37,7 +37,7 @@ class EcomaxWaterHeaterEntityDescription(WaterHeaterEntityEntityDescription):
 WATER_HEATER_TYPES: tuple[EcomaxWaterHeaterEntityDescription, ...] = (
     EcomaxWaterHeaterEntityDescription(
         key=ATTR_WATER_HEATER,
-        name="Indirect Water Heater",
+        name="Indirect water heater",
     ),
 )
 

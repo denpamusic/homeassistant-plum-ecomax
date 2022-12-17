@@ -202,7 +202,7 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
 MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="mixer_target_temp",
-        name="Mixer Target Temperature",
+        name="Mixer target temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         value_get_fn=lambda x: x,
@@ -212,7 +212,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     ),
     EcomaxNumberEntityDescription(
         key="min_mixer_target_temp",
-        name="Minimum Mixer Temperature",
+        name="Minimum mixer temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         value_get_fn=lambda x: x,
@@ -220,7 +220,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     ),
     EcomaxNumberEntityDescription(
         key="max_mixer_target_temp",
-        name="Maximum Mixer Temperature",
+        name="Maximum mixer temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         value_get_fn=lambda x: x,
@@ -231,7 +231,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
 ECOMAX_I_MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="day_mixer_target_temp",
-        name="Day Mixer Target Temperature",
+        name="Day mixer target temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         value_get_fn=lambda x: x,
@@ -241,7 +241,7 @@ ECOMAX_I_MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     ),
     EcomaxNumberEntityDescription(
         key="night_mixer_target_temp",
-        name="Night Mixer Target Temperature",
+        name="Night mixer target temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         value_get_fn=lambda x: x,
