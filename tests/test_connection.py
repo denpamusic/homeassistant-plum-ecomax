@@ -78,8 +78,8 @@ async def test_async_check_connection() -> None:
     }
     result = await async_check_connection(mock_connection)
     calls = (
-        call("product"),
-        call("modules"),
+        call("product", timeout=(VALUE_TIMEOUT*2)),
+        call("modules", timeout=(VALUE_TIMEOUT*2)),
         call("sensors"),
         call("parameters"),
         call("fuel_burned", timeout=VALUE_TIMEOUT),
