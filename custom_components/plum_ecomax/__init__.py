@@ -7,7 +7,7 @@ import re
 from typing import Final
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EVENT_HOMEASSISTANT_STOP
+from homeassistant.const import EVENT_HOMEASSISTANT_STOP, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry
@@ -35,13 +35,13 @@ from .const import (
 )
 from .services import async_setup_services
 
-PLATFORMS: list[str] = [
-    "sensor",
-    "binary_sensor",
-    "switch",
-    "number",
-    "water_heater",
-    "button",
+PLATFORMS: list[Platform] = [
+    Platform.SENSOR,
+    Platform.BINARY_SENSOR,
+    Platform.SWITCH,
+    Platform.NUMBER,
+    Platform.WATER_HEATER,
+    Platform.BUTTON,
 ]
 
 DATE_STR_FORMAT: Final = "%Y-%m-%d %H:%M:%S"
