@@ -207,11 +207,11 @@ MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         native_step=1,
         value_get_fn=lambda x: x,
         value_set_fn=lambda x: x,
-        min_value_key="min_mixer_target_temp",
-        max_value_key="max_mixer_target_temp",
+        min_value_key="min_target_temp",
+        max_value_key="max_target_temp",
     ),
     EcomaxNumberEntityDescription(
-        key="min_mixer_target_temp",
+        key="min_target_temp",
         name="Minimum mixer temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
@@ -219,7 +219,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         value_set_fn=lambda x: x,
     ),
     EcomaxNumberEntityDescription(
-        key="max_mixer_target_temp",
+        key="max_target_temp",
         name="Maximum mixer temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
@@ -230,24 +230,24 @@ MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
 
 ECOMAX_I_MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
-        key="day_mixer_target_temp",
+        key="day_target_temp",
         name="Day mixer target temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         value_get_fn=lambda x: x,
         value_set_fn=lambda x: x,
-        min_value_key="min_mixer_target_temp",
-        max_value_key="max_mixer_target_temp",
+        min_value_key="min_target_temp",
+        max_value_key="max_target_temp",
     ),
     EcomaxNumberEntityDescription(
-        key="night_mixer_target_temp",
+        key="night_target_temp",
         name="Night mixer target temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         value_get_fn=lambda x: x,
         value_set_fn=lambda x: x,
-        min_value_key="min_mixer_target_temp",
-        max_value_key="max_mixer_target_temp",
+        min_value_key="min_target_temp",
+        max_value_key="max_target_temp",
     ),
 )
 
@@ -259,10 +259,10 @@ class MixerNumber(MixerEntity, EcomaxNumber):
         self,
         connection: EcomaxConnection,
         description: EcomaxNumberEntityDescription,
-        mixer_number: int,
+        index: int,
     ):
         """Initialize ecoMAX sensor object."""
-        self.mixer_number = mixer_number
+        self.index = index
         super().__init__(connection, description)
 
 
@@ -311,7 +311,7 @@ def get_mixer_entities(
     entities: list[MixerEntity] = []
     for mixer in connection.device.data.get(ATTR_MIXERS, []):
         entities.extend(
-            MixerNumber(connection, description, mixer.mixer_number)
+            MixerNumber(connection, description, mixer.index)
             for description in number_types
         )
 

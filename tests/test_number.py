@@ -57,7 +57,7 @@ async def test_async_setup_and_update_entry(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
-    boiler_parameter: Parameter,
+    numeric_parameter: Parameter,
     bypass_hass_write_ha_state,
     mock_device,
 ) -> None:
@@ -80,10 +80,10 @@ async def test_async_setup_and_update_entry(
         assert number.native_value is None
         assert number.native_min_value is None
         assert number.native_max_value is None
-        await number.async_update(boiler_parameter)
+        await number.async_update(numeric_parameter)
         assert number.native_value == 1
         assert number.native_min_value == 0
-        assert number.native_max_value == 1
+        assert number.native_max_value == 2
 
         # Change number value.
         target_device = (
@@ -98,21 +98,21 @@ async def test_async_setup_and_update_entry(
         assert number.native_value == 2.2
 
         # Change min value.
-        boiler_parameter.value = 4
+        numeric_parameter.value = 4
         assert number.native_min_value == 0
-        await number.async_set_min_value(boiler_parameter)
+        await number.async_set_min_value(numeric_parameter)
         assert number.native_min_value == 4
 
         # Change max value.
-        boiler_parameter.value = 5
-        assert number.native_max_value == 1
-        await number.async_set_max_value(boiler_parameter)
+        numeric_parameter.value = 5
+        assert number.native_max_value == 2
+        await number.async_set_max_value(numeric_parameter)
         assert number.native_max_value == 5
 
         # Reset values.
-        boiler_parameter.value = 1
-        boiler_parameter.min_value = 0
-        boiler_parameter.max_value = 1
+        numeric_parameter.value = 1
+        numeric_parameter.min_value = 0
+        numeric_parameter.max_value = 2
 
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
@@ -147,7 +147,7 @@ async def test_model_check(
         (
             ProductType.ECOMAX_I,
             "mixer_target_temp",
-            "night_mixer_target_temp",
+            "night_target_temp",
             ECOMAX_I_NUMBER_TYPES + ECOMAX_I_MIXER_NUMBER_TYPES,
         ),
     ):

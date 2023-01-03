@@ -27,7 +27,7 @@ async def test_async_setup_and_update_entry(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
-    boiler_parameter: Parameter,
+    binary_parameter: Parameter,
     bypass_hass_write_ha_state,
 ) -> None:
     """Test setup and update switch entry."""
@@ -40,7 +40,7 @@ async def test_async_setup_and_update_entry(
     # Check that switch state is unknown and update it.
     assert isinstance(switch, EcomaxSwitch)
     assert switch.is_on is None
-    await switch.async_update(boiler_parameter)
+    await switch.async_update(binary_parameter)
     assert switch.is_on
 
     # Turn the switch off.

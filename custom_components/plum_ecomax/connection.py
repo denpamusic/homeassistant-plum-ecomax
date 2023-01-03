@@ -49,7 +49,7 @@ VALUE_TIMEOUT: Final = 3
 
 ATTR_MODULES: Final = "modules"
 ATTR_SENSORS: Final = "sensors"
-ATTR_PARAMETERS: Final = "parameters"
+ATTR_ECOMAX_PARAMETERS: Final = "ecomax_parameters"
 ATTR_MIXER_SENSORS: Final = "mixer_sensors"
 ATTR_MIXER_PARAMETERS: Final = "mixer_parameters"
 ATTR_WATER_HEATER_TEMP: Final = "water_heater_temp"
@@ -94,7 +94,7 @@ async def async_get_device_capabilities(device: Device) -> set[str]:
     """Return device capabilities, presented as set of allowed keys."""
     capabilities: set[str] = {ATTR_PRODUCT, ATTR_MODULES}
     await device.get_value(ATTR_SENSORS)
-    await device.get_value(ATTR_PARAMETERS)
+    await device.get_value(ATTR_ECOMAX_PARAMETERS)
     capabilities.update(set(device.data.keys()))
     for capability in (
         ATTR_FUEL_BURNED,
@@ -113,9 +113,7 @@ async def async_get_device_capabilities(device: Device) -> set[str]:
 
     if ATTR_MIXERS in capabilities:
         for mixer in device.data[ATTR_MIXERS]:
-            capabilities.update(
-                {f"mixer-{mixer.mixer_number}-{x}" for x in mixer.data.keys()}
-            )
+            capabilities.update({f"mixer-{mixer.index}-{x}" for x in mixer.data.keys()})
 
     if ATTR_WATER_HEATER_TEMP in capabilities:
         capabilities.add(ATTR_WATER_HEATER)

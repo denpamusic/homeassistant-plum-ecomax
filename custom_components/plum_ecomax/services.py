@@ -13,17 +13,21 @@ from pyplumio.exceptions import ParameterNotFoundError
 import voluptuous as vol
 
 from .connection import EcomaxConnection
-from .const import ATTR_DEVICE_ID, ATTR_MIXERS, ATTR_SCHEDULES, ATTR_VALUE, DOMAIN
+from .const import (
+    ATTR_DEVICE_ID,
+    ATTR_MIXERS,
+    ATTR_SCHEDULES,
+    ATTR_VALUE,
+    DOMAIN,
+    STATE_OFF,
+    STATE_ON,
+)
 
 ATTR_NAME: Final = "name"
 ATTR_WEEKDAY: Final = "weekday"
 ATTR_STATE: Final = "state"
 ATTR_START: Final = "start"
 ATTR_END: Final = "end"
-
-STATE_ON: Final = "on"
-STATE_OFF: Final = "off"
-
 
 SERVICE_SET_PARAMETER = "set_parameter"
 SERVICE_SET_PARAMETER_SCHEMA = vol.Schema(
@@ -75,10 +79,10 @@ def _get_target_device(
 
     identifier = list(device.identifiers)[0][1]
     if "-mixer-" in identifier:
-        mixer_number = int(identifier.split("-", 3).pop())
+        index = int(identifier.split("-", 3).pop())
         mixers = connection.device.data.get(ATTR_MIXERS, [])
-        if mixer_number < len(mixers):
-            return connection.device.data[ATTR_MIXERS][mixer_number]
+        if index < len(mixers):
+            return connection.device.data[ATTR_MIXERS][index]
 
     return connection.device
 

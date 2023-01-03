@@ -9,7 +9,7 @@ from pyplumio.helpers.schedule import Schedule, ScheduleDay
 import pytest
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import ATTR_MIXERS, ATTR_VALUE
+from custom_components.plum_ecomax.const import ATTR_MIXERS, ATTR_VALUE, STATE_ON
 from custom_components.plum_ecomax.services import (
     ATTR_DEVICE_ID,
     ATTR_END,
@@ -21,7 +21,6 @@ from custom_components.plum_ecomax.services import (
     SERVICE_SET_PARAMETER_SCHEMA,
     SERVICE_SET_SCHEDULE,
     SERVICE_UPDATE_CAPABILITIES,
-    STATE_ON,
     async_setup_services,
 )
 

@@ -330,10 +330,10 @@ class MixerSensor(MixerEntity, EcomaxSensor):
         self,
         connection: EcomaxConnection,
         description: EcomaxSensorEntityDescription,
-        mixer_number: int,
+        index: int,
     ):
         """Initialize ecoMAX sensor object."""
-        self.mixer_number = mixer_number
+        self.index = index
         super().__init__(connection, description)
 
 
@@ -460,7 +460,7 @@ def get_mixer_entities(
     for mixer in connection.device.data.get(ATTR_MIXERS, []):
         entities.extend(
             [
-                MixerSensor(connection, description, mixer.mixer_number)
+                MixerSensor(connection, description, mixer.index)
                 for description in sensor_types
             ]
         )

@@ -85,12 +85,12 @@ class EcomaxEntity(ABC):
 class MixerEntity(EcomaxEntity):
     """Represents base mixer entity."""
 
-    mixer_number: int
+    index: int
 
     @property
     def entity_registry_enabled_default(self) -> bool:
         """Indicate if the entity should be enabled when first added."""
-        entity_key = f"mixer-{self.mixer_number}-{self.entity_description.key}"
+        entity_key = f"mixer-{self.index}-{self.entity_description.key}"
         return entity_key in self.connection.capabilities
 
     @property
@@ -98,7 +98,7 @@ class MixerEntity(EcomaxEntity):
         """A unique identifier for this entity."""
         return (
             f"{self.connection.uid}-mixer-"
-            + f"{self.mixer_number}-{self.entity_description.key}"
+            + f"{self.index}-{self.entity_description.key}"
         )
 
     @property
@@ -106,7 +106,7 @@ class MixerEntity(EcomaxEntity):
         """Name of the entity."""
         return (
             f"{self.connection.name} {self.device_name} "
-            + f"{self.mixer_number + 1} {self.entity_description.name}"
+            + f"{self.index + 1} {self.entity_description.name}"
         )
 
     @property
@@ -122,10 +122,10 @@ class MixerEntity(EcomaxEntity):
     def device_info(self) -> DeviceInfo:
         """Return device info."""
         return DeviceInfo(
-            name=f"{self.connection.name} {self.device_name} {self.mixer_number + 1}",
-            identifiers={(DOMAIN, f"{self.connection.uid}-mixer-{self.mixer_number}")},
+            name=f"{self.connection.name} {self.device_name} {self.index + 1}",
+            identifiers={(DOMAIN, f"{self.connection.uid}-mixer-{self.index}")},
             manufacturer=MANUFACTURER,
-            model=f"{self.connection.model} ({self.device_name} {self.mixer_number + 1})",
+            model=f"{self.connection.model} ({self.device_name} {self.index + 1})",
             sw_version=self.connection.software,
             via_device=(DOMAIN, self.connection.uid),
         )
@@ -133,4 +133,4 @@ class MixerEntity(EcomaxEntity):
     @property
     def device(self) -> Device:
         """Return mixer object."""
-        return self.connection.device.data[ATTR_MIXERS][self.mixer_number]
+        return self.connection.device.data[ATTR_MIXERS][self.index]

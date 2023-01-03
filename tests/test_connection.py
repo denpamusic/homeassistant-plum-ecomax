@@ -55,7 +55,7 @@ async def test_async_check_connection() -> None:
     mock_product = Mock(spec=ProductInfo)
     mock_modules = Mock(spec=ConnectedModules)
     mock_mixer = Mock()
-    mock_mixer.mixer_number = 0
+    mock_mixer.index = 0
     mock_mixer.data = {"test_parameter": "test_value"}
     mock_device.get_value.side_effect = (
         mock_product,
@@ -81,7 +81,7 @@ async def test_async_check_connection() -> None:
         call("product", timeout=(VALUE_TIMEOUT * 2)),
         call("modules", timeout=(VALUE_TIMEOUT * 2)),
         call("sensors"),
-        call("parameters"),
+        call("ecomax_parameters"),
         call("fuel_burned", timeout=VALUE_TIMEOUT),
         call("ecomax_control", timeout=VALUE_TIMEOUT),
         call("password", timeout=VALUE_TIMEOUT),

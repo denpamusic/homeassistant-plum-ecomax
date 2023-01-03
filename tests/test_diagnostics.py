@@ -10,6 +10,7 @@ from custom_components.plum_ecomax.const import (
     ATTR_MIXERS,
     ATTR_PASSWORD,
     ATTR_PRODUCT,
+    ATTR_THERMOSTATS,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
@@ -49,6 +50,7 @@ async def test_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry, mock_
         ATTR_PRODUCT: mock_connection.device.data[ATTR_PRODUCT],
         ATTR_PASSWORD: REDACTED,
         ATTR_MIXERS: [{"test_mixer_data": "test_mixer_value"}],
+        ATTR_THERMOSTATS: [{"test_thermostat_data": "test_thermostat_value"}],
         ATTR_MODULES: mock_connection.device.data[ATTR_MODULES],
     }
     assert mock_connection.device.data[ATTR_PRODUCT].uid == REDACTED

@@ -14,9 +14,10 @@ from homeassistant.helpers.typing import ConfigType
 from pyplumio.helpers.filters import on_change
 from pyplumio.helpers.parameter import Parameter
 from pyplumio.helpers.product_info import ProductType
+from pyplumio.helpers.typing import ParameterValueType
 
 from .connection import EcomaxConnection
-from .const import ATTR_ECOMAX_CONTROL, DOMAIN
+from .const import ATTR_ECOMAX_CONTROL, DOMAIN, STATE_OFF, STATE_ON
 from .entity import EcomaxEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -26,8 +27,8 @@ _LOGGER = logging.getLogger(__name__)
 class EcomaxSwitchEntityDescription(SwitchEntityDescription):
     """Describes ecoMAX switch entity."""
 
-    state_off: int = 0
-    state_on: int = 1
+    state_off: ParameterValueType = STATE_OFF
+    state_on: ParameterValueType = STATE_ON
     filter_fn: Callable[[Any], Any] = on_change
 
 
@@ -43,11 +44,14 @@ SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     EcomaxSwitchEntityDescription(
         key="water_heater_work_mode",
         name="Water heater pump switch",
+        state_off=0,
         state_on=2,
     ),
     EcomaxSwitchEntityDescription(
         key="summer_mode",
         name="Summer mode switch",
+        state_off=0,
+        state_on=1,
     ),
 )
 

@@ -68,7 +68,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         name="Alert",
         device_class=BinarySensorDeviceClass.PROBLEM,
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda x: len(x) > 0,
+        value_fn=lambda x: x > 0,
     ),
 )
 
@@ -151,10 +151,10 @@ class MixerBinarySensor(MixerEntity, EcomaxBinarySensor):
         self,
         connection: EcomaxConnection,
         description: EcomaxBinarySensorEntityDescription,
-        mixer_number: int,
+        index: int,
     ):
         """Initialize ecoMAX sensor object."""
-        self.mixer_number = mixer_number
+        self.index = index
         super().__init__(connection, description)
 
 
@@ -203,7 +203,7 @@ def get_mixer_entities(
     for mixer in connection.device.data.get(ATTR_MIXERS, []):
         entities.extend(
             [
-                MixerBinarySensor(connection, description, mixer.mixer_number)
+                MixerBinarySensor(connection, description, mixer.index)
                 for description in binary_sensor_types
             ]
         )

@@ -30,7 +30,7 @@ async def test_async_setup_and_update_entry(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
-    boiler_parameter: Parameter,
+    numeric_parameter: Parameter,
     bypass_hass_write_ha_state,
 ) -> None:
     """Test setup and update water_heater entry."""
@@ -60,19 +60,19 @@ async def test_async_setup_and_update_entry(
     assert water_heater.hysteresis == 0
 
     # Update current operation.
-    await water_heater.async_update_work_mode(boiler_parameter)
+    await water_heater.async_update_work_mode(numeric_parameter)
     assert water_heater.current_operation == STATE_PERFORMANCE
 
     # Update target temperature.
-    await water_heater.async_update_target_temp(boiler_parameter)
+    await water_heater.async_update_target_temp(numeric_parameter)
     assert water_heater.min_temp == 0
-    assert water_heater.max_temp == 1
+    assert water_heater.max_temp == 2
     assert water_heater.target_temperature == 1
     assert water_heater.target_temperature_high == 1
     assert water_heater.target_temperature_low == 1
 
     # Update hysteresis.
-    await water_heater.async_update_hysteresis(boiler_parameter)
+    await water_heater.async_update_hysteresis(numeric_parameter)
     assert water_heater.hysteresis == 1
     assert water_heater.target_temperature_low == 0
 
