@@ -12,6 +12,7 @@ from custom_components.plum_ecomax.sensor import (
     ECOMAX_P_SENSOR_TYPES,
     METER_TYPES,
     MIXER_SENSOR_TYPES,
+    MODULE_B_SENSOR_TYPES,
     SENSOR_TYPES,
     EcomaxMeter,
     EcomaxSensor,
@@ -22,7 +23,9 @@ from custom_components.plum_ecomax.sensor import (
 
 @patch("custom_components.plum_ecomax.sensor.on_change")
 @patch("custom_components.plum_ecomax.sensor.throttle")
+@patch("custom_components.plum_ecomax.sensor.async_get_module_entites")
 async def test_async_setup_and_update_entry(
+    mock_async_get_module_entities,
     mock_throttle,
     mock_on_change,
     hass: HomeAssistant,
@@ -39,6 +42,7 @@ async def test_async_setup_and_update_entry(
         await hass.async_block_till_done()
 
     async_add_entities.assert_called_once()
+    mock_async_get_module_entities.assert_awaited_once()
     args, _ = async_add_entities.call_args
     for sensor in [
         x for x in args[0] if x.entity_description.key in ("mixer_temp", "heating_temp")
@@ -126,6 +130,7 @@ async def test_model_check(
                 sensor_types_length
                 + len(sensor_types)
                 + (len(METER_TYPES) if product_type == 0 else 0)
+                + len(MODULE_B_SENSOR_TYPES)
             )
             first_sensor = sensors[0]
             last_sensor = sensors[-1]

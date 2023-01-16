@@ -1,6 +1,7 @@
 """Platform for sensor integration."""
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date, datetime
@@ -34,13 +35,15 @@ from homeassistant.helpers.entity_platform import (
 from homeassistant.helpers.typing import ConfigType, StateType
 import homeassistant.util.dt as dt_util
 from pyplumio.helpers.filters import aggregate, on_change, throttle
-from pyplumio.helpers.product_info import ProductType
+from pyplumio.helpers.product_info import ConnectedModules, ProductType
 import voluptuous as vol
 
-from .connection import EcomaxConnection
+from .connection import VALUE_TIMEOUT, EcomaxConnection
 from .const import (
     ATTR_FUEL_BURNED,
     ATTR_MIXERS,
+    ATTR_MODULE_B,
+    ATTR_MODULES,
     ATTR_PASSWORD,
     ATTR_PRODUCT,
     ATTR_VALUE,
@@ -276,6 +279,33 @@ ECOMAX_I_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
 )
 
+MODULE_B_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
+    EcomaxSensorEntityDescription(
+        key="lower_buffer_temp",
+        name="Lower buffer temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        value_fn=lambda x: round(x, 1),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+    EcomaxSensorEntityDescription(
+        key="upper_buffer_temp",
+        name="Upper buffer temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        value_fn=lambda x: round(x, 1),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+)
+
+MODULE_SENSOR_TYPES: tuple[tuple[str, tuple[EcomaxSensorEntityDescription, ...]]] = (
+    (ATTR_MODULE_B, MODULE_B_SENSOR_TYPES),
+)
+
 
 class EcomaxSensor(EcomaxEntity, SensorEntity):
     """Represents ecoMAX sensor platform."""
@@ -468,6 +498,23 @@ def get_mixer_entities(
     return entities
 
 
+async def async_get_module_entites(
+    connection: EcomaxConnection,
+) -> list[EcomaxEntity]:
+    """Setup module-specific entities."""
+    entities: list[EcomaxEntity] = []
+    modules: ConnectedModules = await connection.device.get_value(
+        ATTR_MODULES, timeout=VALUE_TIMEOUT
+    )
+    for module, sensor_types in MODULE_SENSOR_TYPES:
+        if getattr(modules, module) is not None:
+            entities.extend(
+                [EcomaxSensor(connection, description) for description in sensor_types]
+            )
+
+    return entities
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigType,
@@ -479,6 +526,11 @@ async def async_setup_entry(
         *[EcomaxSensor(connection, description) for description in SENSOR_TYPES],
         *get_mixer_entities(connection, MIXER_SENSOR_TYPES),
     ]
+
+    try:
+        entities.extend(await async_get_module_entites(connection))
+    except asyncio.TimeoutError:
+        _LOGGER.error("Timeout while trying to get a list of connected modules")
 
     if connection.product_type == ProductType.ECOMAX_P:
         return setup_ecomax_p(connection, entities, async_add_entities)
