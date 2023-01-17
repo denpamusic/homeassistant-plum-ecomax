@@ -77,7 +77,7 @@ async def test_model_check(
         (
             ProductType.ECOMAX_P,
             ATTR_ECOMAX_CONTROL,
-            "schedule_water_heater_switch",
+            "water_heater_schedule_switch",
             ECOMAX_P_SWITCH_TYPES,
         ),
         (

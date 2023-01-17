@@ -66,11 +66,11 @@ ECOMAX_P_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
         name="Fuzzy logic switch",
     ),
     EcomaxSwitchEntityDescription(
-        key="schedule_heating_switch",
+        key="heating_schedule_switch",
         name="Heating schedule switch",
     ),
     EcomaxSwitchEntityDescription(
-        key="schedule_water_heater_switch",
+        key="water_heater_schedule_switch",
         name="Water heater schedule switch",
     ),
 )

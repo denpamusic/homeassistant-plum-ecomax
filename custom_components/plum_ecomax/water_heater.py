@@ -120,7 +120,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
 
     async def async_update_work_mode(self, value: Parameter) -> None:
         """Update current operation."""
-        self._attr_current_operation = ecomax_to_hass_mode(value.value)
+        self._attr_current_operation = ecomax_to_hass_mode(int(value.value))
         self.async_write_ha_state()
 
     async def async_update(self, value) -> None:
