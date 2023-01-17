@@ -28,17 +28,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
-class EcomaxNumberEntityAdditionalKeys:
-    """Additional keys for ecoMAX number entity description."""
-
-    value_get_fn: Callable[[Any], Any]
-    value_set_fn: Callable[[Any], Any]
-
-
-@dataclass
-class EcomaxNumberEntityDescription(
-    NumberEntityDescription, EcomaxNumberEntityAdditionalKeys
-):
+class EcomaxNumberEntityDescription(NumberEntityDescription):
     """Describes ecoMAX number entity."""
 
     filter_fn: Callable[[Any], Any] = on_change
@@ -55,8 +45,6 @@ ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         name="Heating Target Temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
-        value_get_fn=lambda x: x,
-        value_set_fn=lambda x: x,
         min_value_key="min_heating_target_temp",
         max_value_key="max_heating_target_temp",
     ),
@@ -65,24 +53,18 @@ ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         name="Minimum Heating Temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
-        value_get_fn=lambda x: x,
-        value_set_fn=lambda x: x,
     ),
     EcomaxNumberEntityDescription(
         key="max_heating_target_temp",
         name="Maximum Heating Temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
-        value_get_fn=lambda x: x,
-        value_set_fn=lambda x: x,
     ),
     EcomaxNumberEntityDescription(
         key="heating_temp_grate",
         name="Grate Mode Temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
-        value_get_fn=lambda x: x,
-        value_set_fn=lambda x: x,
         min_value_key="min_heating_target_temp",
         max_value_key="max_heating_target_temp",
     ),
@@ -91,24 +73,18 @@ ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         name="Fuzzy Logic Minimum Power",
         native_unit_of_measurement=PERCENTAGE,
         native_step=1,
-        value_get_fn=lambda x: x,
-        value_set_fn=lambda x: x,
     ),
     EcomaxNumberEntityDescription(
         key="max_fuzzy_logic_power",
         name="Fuzzy Logic Maximum Power",
         native_unit_of_measurement=PERCENTAGE,
         native_step=1,
-        value_get_fn=lambda x: x,
-        value_set_fn=lambda x: x,
     ),
     EcomaxNumberEntityDescription(
         key="fuel_calorific_value_kwh_kg",
         name="Fuel Calorific Value",
         native_unit_of_measurement=CALORIFIC_KWH_KG,
         native_step=0.1,
-        value_get_fn=lambda x: x / 10,
-        value_set_fn=lambda x: x * 10,
         mode=NumberMode.BOX,
     ),
 )
@@ -139,19 +115,19 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
 
     async def async_set_min_value(self, value: Parameter) -> None:
         """Update minimum bound for target temperature."""
-        self._attr_native_min_value = self.entity_description.value_get_fn(value.value)
+        self._attr_native_min_value = value.value
         self.async_write_ha_state()
 
     async def async_set_max_value(self, value: Parameter) -> None:
         """Update maximum bound for target temperature."""
-        self._attr_native_max_value = self.entity_description.value_get_fn(value.value)
+        self._attr_native_max_value = value.value
         self.async_write_ha_state()
 
     async def async_set_native_value(self, value: float) -> None:
         """Update current value."""
         await self.device.set_value(
             self.entity_description.key,
-            self.entity_description.value_set_fn(value),
+            value,
             await_confirmation=False,
         )
         self._attr_native_value = value
@@ -189,13 +165,9 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
 
     async def async_update(self, value: Parameter) -> None:
         """Update entity state."""
-        self._attr_native_value = self.entity_description.value_get_fn(value.value)
-        self._attr_native_min_value = self.entity_description.value_get_fn(
-            value.min_value
-        )
-        self._attr_native_max_value = self.entity_description.value_get_fn(
-            value.max_value
-        )
+        self._attr_native_value = value.value
+        self._attr_native_min_value = value.min_value
+        self._attr_native_max_value = value.max_value
         self.async_write_ha_state()
 
 
@@ -205,8 +177,6 @@ MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         name="Mixer target temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
-        value_get_fn=lambda x: x,
-        value_set_fn=lambda x: x,
         min_value_key="min_target_temp",
         max_value_key="max_target_temp",
     ),
@@ -215,16 +185,12 @@ MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         name="Minimum mixer temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
-        value_get_fn=lambda x: x,
-        value_set_fn=lambda x: x,
     ),
     EcomaxNumberEntityDescription(
         key="max_target_temp",
         name="Maximum mixer temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
-        value_get_fn=lambda x: x,
-        value_set_fn=lambda x: x,
     ),
 )
 
@@ -234,8 +200,6 @@ ECOMAX_I_MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         name="Day mixer target temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
-        value_get_fn=lambda x: x,
-        value_set_fn=lambda x: x,
         min_value_key="min_target_temp",
         max_value_key="max_target_temp",
     ),
@@ -244,8 +208,6 @@ ECOMAX_I_MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         name="Night mixer target temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
-        value_get_fn=lambda x: x,
-        value_set_fn=lambda x: x,
         min_value_key="min_target_temp",
         max_value_key="max_target_temp",
     ),
