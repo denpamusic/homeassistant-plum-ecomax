@@ -11,6 +11,11 @@ This Home Assistant integration provides support for ecoMAX controllers manufact
 It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and supports connection to ecoMAX controller via RS-485 to Ethernet/Wifi converters or via RS-485 to USB adapter.
 ![ecoMAX controllers](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/ecomax.png)
 
+## ecoNET 300
+While this integration is built on top of PyPlumIO library, which from the start was intended as ecoNET 300 alternative, **Patryk B** is currently developing awesome HASS integration that communicates with ecoMAX controller via ecoNET 300 device.
+
+If you have an ecoNET 300 device, be sure to [check it out](https://github.com/pblxptr/ecoNET-300-Home-Assistant-Integration)!
+
 ## Table of contents
 - [Installation](#installation)
   - [HACS](#hacs)
