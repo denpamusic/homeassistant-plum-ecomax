@@ -45,7 +45,9 @@ async def test_async_setup_and_update_entry(
     mock_async_get_module_entities.assert_awaited_once()
     args, _ = async_add_entities.call_args
     for sensor in [
-        x for x in args[0] if x.entity_description.key in ("mixer_temp", "heating_temp")
+        x
+        for x in args[0]
+        if x.entity_description.key in ("current_temp", "heating_temp")
     ]:
         # Check that sensor state is unknown and update it.
         assert isinstance(sensor, EcomaxSensor)
