@@ -1,5 +1,6 @@
 """Test Plum ecoMAX sensor."""
 
+import asyncio
 from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.core import HomeAssistant
@@ -23,7 +24,10 @@ from custom_components.plum_ecomax.sensor import (
 
 @patch("custom_components.plum_ecomax.sensor.on_change")
 @patch("custom_components.plum_ecomax.sensor.throttle")
-@patch("custom_components.plum_ecomax.sensor.async_get_module_entites")
+@patch(
+    "custom_components.plum_ecomax.sensor.async_get_module_entites",
+    side_effect=(asyncio.TimeoutError),
+)
 async def test_async_setup_and_update_entry(
     mock_async_get_module_entities,
     mock_throttle,
@@ -34,6 +38,7 @@ async def test_async_setup_and_update_entry(
     bypass_hass_write_ha_state,
     bypass_model_check,
     mock_device,
+    caplog,
 ) -> None:
     """Test setup and update sensor entry."""
 
@@ -43,6 +48,7 @@ async def test_async_setup_and_update_entry(
 
     async_add_entities.assert_called_once()
     mock_async_get_module_entities.assert_awaited_once()
+    assert "Timeout while trying to get a list of connected modules" in caplog.text
     args, _ = async_add_entities.call_args
     for sensor in [
         x
