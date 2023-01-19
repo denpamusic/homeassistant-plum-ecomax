@@ -19,12 +19,9 @@ from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
 from pyplumio.helpers.timeout import timeout
 
 from .const import (
-    ATTR_ECOMAX_CONTROL,
-    ATTR_FUEL_BURNED,
+    ATTR_LOADED,
     ATTR_MIXERS,
-    ATTR_PASSWORD,
     ATTR_PRODUCT,
-    ATTR_SCHEDULES,
     ATTR_WATER_HEATER,
     CONF_CAPABILITIES,
     CONF_CONNECTION_TYPE,
@@ -92,28 +89,12 @@ async def async_check_connection(
 @timeout(seconds=DEFAULT_TIMEOUT)
 async def async_get_device_capabilities(device: Device) -> set[str]:
     """Return device capabilities, presented as set of allowed keys."""
-    capabilities: set[str] = {ATTR_PRODUCT, ATTR_MODULES}
-    await device.get_value(ATTR_SENSORS)
-    await device.get_value(ATTR_ECOMAX_PARAMETERS)
-    capabilities.update(set(device.data.keys()))
-    for capability in (
-        ATTR_FUEL_BURNED,
-        ATTR_ECOMAX_CONTROL,
-        ATTR_PASSWORD,
-        ATTR_SCHEDULES,
-        ATTR_MIXERS,
-        ATTR_MIXER_SENSORS,
-        ATTR_MIXER_PARAMETERS,
-    ):
-        try:
-            await device.get_value(capability, timeout=VALUE_TIMEOUT)
-            capabilities.add(capability)
-        except asyncio.TimeoutError:
-            continue
+    await device.get_value(ATTR_LOADED)
+    capabilities: set[str] = set(device.data.keys())
 
     if ATTR_MIXERS in capabilities:
         for mixer in device.data[ATTR_MIXERS]:
-            capabilities.update({f"mixer-{mixer.index}-{x}" for x in mixer.data.keys()})
+            capabilities.update({f"mixer_{mixer.index}_{x}" for x in mixer.data.keys()})
 
     if ATTR_WATER_HEATER_TEMP in capabilities:
         capabilities.add(ATTR_WATER_HEATER)

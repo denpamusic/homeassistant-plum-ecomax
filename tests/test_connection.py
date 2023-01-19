@@ -14,12 +14,18 @@ from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
 import pytest
 
 from custom_components.plum_ecomax.connection import (
+    ATTR_MODULES,
     VALUE_TIMEOUT,
     EcomaxConnection,
     async_check_connection,
     async_get_connection_handler,
 )
-from custom_components.plum_ecomax.const import DOMAIN, ECOMAX
+from custom_components.plum_ecomax.const import (
+    ATTR_LOADED,
+    ATTR_PRODUCT,
+    DOMAIN,
+    ECOMAX,
+)
 from tests.const import MOCK_CONFIG_DATA, MOCK_CONFIG_DATA_SERIAL
 
 
@@ -61,14 +67,6 @@ async def test_async_check_connection() -> None:
         mock_product,
         mock_modules,
         True,
-        True,
-        "fuel_burned",
-        "ecomax_control",
-        asyncio.TimeoutError,
-        [],
-        [],
-        True,
-        True,
     )
     mock_device.data = {
         "test_sensor": "test_value",
@@ -78,17 +76,9 @@ async def test_async_check_connection() -> None:
     }
     result = await async_check_connection(mock_connection)
     calls = (
-        call("product", timeout=(VALUE_TIMEOUT * 2)),
-        call("modules", timeout=(VALUE_TIMEOUT * 2)),
-        call("sensors"),
-        call("ecomax_parameters"),
-        call("fuel_burned", timeout=VALUE_TIMEOUT),
-        call("ecomax_control", timeout=VALUE_TIMEOUT),
-        call("password", timeout=VALUE_TIMEOUT),
-        call("schedules", timeout=VALUE_TIMEOUT),
-        call("mixers", timeout=VALUE_TIMEOUT),
-        call("mixer_sensors", timeout=VALUE_TIMEOUT),
-        call("mixer_parameters", timeout=VALUE_TIMEOUT),
+        call(ATTR_PRODUCT, timeout=(VALUE_TIMEOUT * 2)),
+        call(ATTR_MODULES, timeout=(VALUE_TIMEOUT * 2)),
+        call(ATTR_LOADED),
     )
     mock_device.get_value.assert_has_calls(calls)
     mock_connection.close.assert_awaited_once()
@@ -97,19 +87,12 @@ async def test_async_check_connection() -> None:
         mock_product,
         mock_modules,
         {
-            "product",
-            "modules",
-            "test_sensor",
-            "water_heater_temp",
             "test_parameter",
-            "fuel_burned",
-            "ecomax_control",
-            "schedules",
-            "mixers",
-            "mixer_sensors",
-            "mixer_parameters",
             "water_heater",
-            "mixer-0-test_parameter",
+            "mixer_0_test_parameter",
+            "test_sensor",
+            "mixers",
+            "water_heater_temp",
         },
     )
 
