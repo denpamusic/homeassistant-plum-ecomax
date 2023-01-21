@@ -19,6 +19,7 @@ from custom_components.plum_ecomax.const import (
     CONF_PORT,
     CONF_PRODUCT_TYPE,
     CONF_SOFTWARE,
+    CONF_SUB_DEVICES,
     CONF_UID,
     DOMAIN,
 )
@@ -49,6 +50,7 @@ async def test_diagnostics(
             CONF_PRODUCT_TYPE: 0,
             CONF_MODEL: "ecoMAX 123A",
             CONF_SOFTWARE: "1.13.5.A1",
+            CONF_SUB_DEVICES: [ATTR_MIXERS],
         },
     }
     assert result["data"] == {

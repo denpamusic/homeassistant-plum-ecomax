@@ -1,7 +1,7 @@
 """Test Plum ecoMAX setup process."""
 
 import asyncio
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, Mock, call, patch
 
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
@@ -35,6 +35,7 @@ from custom_components.plum_ecomax.const import (
     CONF_CAPABILITIES,
     CONF_MODEL,
     CONF_PRODUCT_TYPE,
+    CONF_SUB_DEVICES,
     DOMAIN,
     ECOMAX,
     EVENT_PLUM_ECOMAX_ALERT,
@@ -157,13 +158,19 @@ async def test_migrate_entry(
     ) as mock_get_device:
         assert await async_migrate_entry(hass, config_entry)
 
-    mock_connect.assert_awaited_once()
-    mock_close.assert_awaited_once()
-    mock_get_device.assert_awaited_once_with(ECOMAX, timeout=DEVICE_TIMEOUT)
+    assert mock_connect.await_count == 2
+    assert mock_close.await_count == 2
+    assert mock_get_device.await_count == 2
+    awaits = [
+        call(ECOMAX, timeout=DEVICE_TIMEOUT),
+        call(ECOMAX, timeout=DEVICE_TIMEOUT),
+    ]
+    mock_get_device.assert_has_awaits(awaits)
     data = {**config_entry.data}
     data[CONF_PRODUCT_TYPE] = 0
     assert data[CONF_MODEL] == "ecoMAX 123A"
     assert CONF_CAPABILITIES not in data
+    assert CONF_SUB_DEVICES in data
     assert config_entry.version == 5
 
 

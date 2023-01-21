@@ -1,7 +1,9 @@
 """Contains the Plum ecoMAX connection."""
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Mapping
+import logging
 from typing import Any, Final
 
 from homeassistant.components.network import async_get_source_ip
@@ -16,7 +18,7 @@ from pyplumio.devices import Device
 from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
 
 from .const import (
-    ATTR_MIXER_SENSORS,
+    ATTR_MIXERS,
     ATTR_MODULES,
     ATTR_PRODUCT,
     CONF_CONNECTION_TYPE,
@@ -26,6 +28,7 @@ from .const import (
     CONF_PORT,
     CONF_PRODUCT_TYPE,
     CONF_SOFTWARE,
+    CONF_SUB_DEVICES,
     CONF_UID,
     CONNECTION_TYPE_TCP,
     DOMAIN,
@@ -35,6 +38,8 @@ from .const import (
 
 DEVICE_TIMEOUT: Final = 10
 VALUE_TIMEOUT: Final = 10
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_get_connection_handler(
@@ -53,7 +58,7 @@ async def async_get_connection_handler(
 
 async def async_check_connection(
     connection: Connection,
-) -> tuple[str, ProductInfo, ConnectedModules]:
+) -> tuple[str, ProductInfo, ConnectedModules, list[str]]:
     """Perform connection check."""
     title = (
         connection.host
@@ -64,9 +69,22 @@ async def async_check_connection(
     device = await connection.get_device(ECOMAX, timeout=DEVICE_TIMEOUT)
     product = await device.get_value(ATTR_PRODUCT, timeout=VALUE_TIMEOUT)
     modules = await device.get_value(ATTR_MODULES, timeout=VALUE_TIMEOUT)
+    sub_devices = await async_get_sub_devices(device)
     await connection.close()
 
-    return title, product, modules
+    return title, product, modules, sub_devices
+
+
+async def async_get_sub_devices(device: Device) -> list[str]:
+    """Return device subdevices."""
+    sub_devices: list[str] = list()
+    try:
+        await device.get_value(ATTR_MIXERS, timeout=VALUE_TIMEOUT)
+        sub_devices.append(ATTR_MIXERS)
+    except asyncio.TimeoutError:
+        pass
+
+    return sub_devices
 
 
 class EcomaxConnection:
@@ -76,14 +94,12 @@ class EcomaxConnection:
     _hass: HomeAssistant
     _connection: Connection
     _device: Device | None
-    _has_mixers: bool = False
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, connection: Connection):
         """Initialize new ecoMAX connection object."""
         self._hass = hass
         self._device = None
         self._connection = connection
-        self._has_mixers = False
         self.entry = entry
 
     def __getattr__(self, name: str):
@@ -98,16 +114,17 @@ class EcomaxConnection:
         await self.connection.connect()
         self._device = await self.connection.get_device(ECOMAX, timeout=DEVICE_TIMEOUT)
 
-    async def async_setup_mixers(self) -> None:
-        """Setup device mixers."""
-        self._has_mixers = await self.device.get_value(
-            ATTR_MIXER_SENSORS, timeout=VALUE_TIMEOUT
-        )
+    async def async_update_sub_devices(self) -> None:
+        """Update sub-devices."""
+        data = {**self.entry.data}
+        data[CONF_SUB_DEVICES] = await async_get_sub_devices(self.device)
+        self._hass.config_entries.async_update_entry(self.entry, data=data)
+        _LOGGER.info("Updated sub-devices")
 
     @property
     def has_mixers(self) -> bool:
         """Does device has attached mixers."""
-        return self._has_mixers
+        return ATTR_MIXERS in self.entry.data[CONF_SUB_DEVICES]
 
     @property
     def device(self) -> Device:

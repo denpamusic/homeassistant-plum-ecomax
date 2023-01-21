@@ -14,6 +14,7 @@ CONF_MODEL: Final = "model"
 CONF_PRODUCT_TYPE: Final = "product_type"
 CONF_SOFTWARE: Final = "software"
 CONF_CAPABILITIES: Final = "capabilities"
+CONF_SUB_DEVICES: Final = "sub_devices"
 
 MANUFACTURER: Final = "Plum Sp. z o.o."
 ECOMAX: Final = "ecomax"

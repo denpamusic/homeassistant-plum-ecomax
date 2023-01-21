@@ -21,7 +21,12 @@ from custom_components.plum_ecomax.connection import (
     async_check_connection,
     async_get_connection_handler,
 )
-from custom_components.plum_ecomax.const import ATTR_PRODUCT, DOMAIN, ECOMAX
+from custom_components.plum_ecomax.const import (
+    ATTR_MIXERS,
+    ATTR_PRODUCT,
+    DOMAIN,
+    ECOMAX,
+)
 from tests.const import MOCK_CONFIG_DATA, MOCK_CONFIG_DATA_SERIAL
 
 
@@ -67,7 +72,7 @@ async def test_async_check_connection(mock_device: Device) -> None:
     )
     mock_device.get_value.assert_has_calls(calls)
     mock_connection.close.assert_awaited_once()
-    assert result == ("localhost", mock_product, mock_modules)
+    assert result == ("localhost", mock_product, mock_modules, [ATTR_MIXERS])
 
 
 async def test_async_setup(

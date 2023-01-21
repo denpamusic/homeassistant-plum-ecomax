@@ -24,6 +24,7 @@ from .const import (
     CONF_PORT,
     CONF_PRODUCT_TYPE,
     CONF_SOFTWARE,
+    CONF_SUB_DEVICES,
     CONF_TITLE,
     CONF_UID,
     CONNECTION_TYPES,
@@ -55,7 +56,7 @@ async def validate_input(
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
     try:
-        title, product, modules = await async_check_connection(
+        title, product, modules, sub_devices = await async_check_connection(
             await async_get_connection_handler(hass, data)
         )
     except ConnectionFailedError as connection_failure:
@@ -69,6 +70,7 @@ async def validate_input(
         CONF_MODEL: format_model_name(product.model),
         CONF_PRODUCT_TYPE: product.type,
         CONF_SOFTWARE: modules.module_a,
+        CONF_SUB_DEVICES: sub_devices,
     }
 
 
@@ -103,6 +105,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_MODEL,
                 CONF_PRODUCT_TYPE,
                 CONF_SOFTWARE,
+                CONF_SUB_DEVICES,
             ):
                 user_input[field] = info[field]
 

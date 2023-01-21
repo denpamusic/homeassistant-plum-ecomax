@@ -19,6 +19,7 @@ from .connection import (
     VALUE_TIMEOUT,
     EcomaxConnection,
     async_get_connection_handler,
+    async_get_sub_devices,
 )
 from .const import (
     ATTR_CODE,
@@ -29,6 +30,7 @@ from .const import (
     CONF_CAPABILITIES,
     CONF_MODEL,
     CONF_PRODUCT_TYPE,
+    CONF_SUB_DEVICES,
     DOMAIN,
     ECOMAX,
     EVENT_PLUM_ECOMAX_ALERT,
@@ -39,6 +41,7 @@ PLATFORMS: list[Platform] = [
     Platform.SENSOR,
     Platform.BINARY_SENSOR,
     Platform.SWITCH,
+    Platform.BUTTON,
     Platform.NUMBER,
     Platform.WATER_HEATER,
 ]
@@ -78,11 +81,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await connection.async_setup()
     except asyncio.TimeoutError as e:
         raise ConfigEntryNotReady("Device not found") from e
-
-    try:
-        await connection.async_setup_mixers()
-    except asyncio.TimeoutError:
-        _LOGGER.info("Device has no mixers")
 
     await async_setup_services(hass, connection)
     await async_setup_events(hass, connection)
@@ -167,6 +165,10 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             except KeyError:
                 pass
 
+            await connection.connect()
+            device = await connection.get_device(ECOMAX, timeout=DEVICE_TIMEOUT)
+            data[CONF_SUB_DEVICES] = await async_get_sub_devices(device)
+            await connection.close()
             config_entry.version = 5
             hass.config_entries.async_update_entry(config_entry, data=data)
 

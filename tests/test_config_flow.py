@@ -13,6 +13,7 @@ from custom_components.plum_ecomax.const import (
     CONF_MODEL,
     CONF_PRODUCT_TYPE,
     CONF_SOFTWARE,
+    CONF_SUB_DEVICES,
     CONF_UID,
     DOMAIN,
 )
@@ -35,11 +36,12 @@ async def test_form_tcp(hass: HomeAssistant) -> None:
     product.type = MOCK_DEVICE_DATA[CONF_PRODUCT_TYPE]
     modules = Mock()
     modules.module_a = MOCK_DEVICE_DATA[CONF_SOFTWARE]
+    sub_devices = MOCK_DEVICE_DATA[CONF_SUB_DEVICES]
 
     # Set up attribute values for EcomaxTcpConnection.
     with patch(
         "custom_components.plum_ecomax.config_flow.async_check_connection",
-        return_value=(title, product, modules),
+        return_value=(title, product, modules, sub_devices),
     ), patch(
         "custom_components.plum_ecomax.async_setup_entry",
         return_value=True,
@@ -74,10 +76,11 @@ async def test_form_serial(hass: HomeAssistant) -> None:
     product.type = MOCK_DEVICE_DATA[CONF_PRODUCT_TYPE]
     modules = Mock()
     modules.module_a = MOCK_DEVICE_DATA[CONF_SOFTWARE]
+    sub_devices = MOCK_DEVICE_DATA[CONF_SUB_DEVICES]
 
     with patch(
         "custom_components.plum_ecomax.config_flow.async_check_connection",
-        return_value=(title, product, modules),
+        return_value=(title, product, modules, sub_devices),
     ), patch(
         "custom_components.plum_ecomax.async_setup_entry",
         return_value=True,

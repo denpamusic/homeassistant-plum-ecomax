@@ -38,9 +38,10 @@ from pyplumio.helpers.filters import aggregate, on_change, throttle
 from pyplumio.helpers.product_info import ConnectedModules, ProductType
 import voluptuous as vol
 
-from .connection import ATTR_MIXER_SENSORS, VALUE_TIMEOUT, EcomaxConnection
+from .connection import VALUE_TIMEOUT, EcomaxConnection
 from .const import (
     ATTR_FUEL_BURNED,
+    ATTR_MIXER_SENSORS,
     ATTR_MIXERS,
     ATTR_MODULE_B,
     ATTR_MODULES,
