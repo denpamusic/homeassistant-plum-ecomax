@@ -1,6 +1,7 @@
 """Platform for switch integration."""
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Callable
 from dataclasses import dataclass
 import logging
@@ -16,8 +17,14 @@ from pyplumio.helpers.parameter import Parameter
 from pyplumio.helpers.product_info import ProductType
 from pyplumio.helpers.typing import ParameterValueType
 
-from .connection import EcomaxConnection
-from .const import ATTR_ECOMAX_CONTROL, DOMAIN, STATE_OFF, STATE_ON
+from .connection import VALUE_TIMEOUT, EcomaxConnection
+from .const import (
+    ATTR_ECOMAX_CONTROL,
+    ATTR_ECOMAX_PARAMETERS,
+    DOMAIN,
+    STATE_OFF,
+    STATE_ON,
+)
 from .entity import EcomaxEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -75,8 +82,6 @@ ECOMAX_P_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     ),
 )
 
-ECOMAX_I_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = ()
-
 
 class EcomaxSwitch(EcomaxEntity, SwitchEntity):
     """Represents ecoMAX switch platform."""
@@ -130,16 +135,10 @@ def setup_ecomax_p(
     async_add_entities: AddEntitiesCallback,
 ):
     """Setup number platform for ecoMAX P series controllers."""
-    return async_add_entities(
-        [
-            *entities,
-            *[
-                EcomaxSwitch(connection, description)
-                for description in ECOMAX_P_SWITCH_TYPES
-            ],
-        ],
-        False,
+    entities.extend(
+        EcomaxSwitch(connection, description) for description in ECOMAX_P_SWITCH_TYPES
     )
+    return async_add_entities(entities, False)
 
 
 def setup_ecomax_i(
@@ -148,16 +147,7 @@ def setup_ecomax_i(
     async_add_entities: AddEntitiesCallback,
 ):
     """Setup number platform for ecoMAX I series controllers."""
-    return async_add_entities(
-        [
-            *entities,
-            *[
-                EcomaxSwitch(connection, description)
-                for description in ECOMAX_I_SWITCH_TYPES
-            ],
-        ],
-        False,
-    )
+    return async_add_entities(entities, False)
 
 
 async def async_setup_entry(
@@ -167,9 +157,21 @@ async def async_setup_entry(
 ) -> bool:
     """Set up the sensor platform."""
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
-    entities: list[EcomaxEntity] = [
-        *[EcomaxSwitch(connection, description) for description in SWITCH_TYPES],
-    ]
+    try:
+        await connection.device.get_value(ATTR_ECOMAX_CONTROL, timeout=VALUE_TIMEOUT)
+    except asyncio.TimeoutError:
+        _LOGGER.warning(
+            "Control parameter not present, you won't be able to turn the device on/off"
+        )
+
+    try:
+        await connection.device.get_value(ATTR_ECOMAX_PARAMETERS, timeout=VALUE_TIMEOUT)
+        entities: list[EcomaxEntity] = [
+            EcomaxSwitch(connection, description) for description in SWITCH_TYPES
+        ]
+    except asyncio.TimeoutError:
+        _LOGGER.error("Couldn't load device switches")
+        return False
 
     if connection.product_type == ProductType.ECOMAX_P:
         return setup_ecomax_p(connection, entities, async_add_entities)

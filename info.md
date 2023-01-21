@@ -87,7 +87,6 @@ This includes ability to set target temperature, switch into priority, non-prior
 - Service password
 - UID
 - Software version
-- Update capabilities
 
 ### Mixers (Sub-Devices)
 Mixer are added as sub-device for the controller. Each sub device can contain following entities.
@@ -119,9 +118,6 @@ Fields:
 Targets (Devices):
 - __controller__ (default) - set parameter on the ecoMAX controller itself
 - __sub-device__ - set parameter on one of sub-devices (e. g. mixer/circuit)
-
-### Update capabilities
-Updates list of sensors and parameters that are supported by the device. This list is then used by integration to determine what entities are supported by the controller. If you're not seeing some entities and/or sub-devices, try pressing this button.
 
 ### Calibrate meter 🇵
 Allows to set meter to a specific value. Currently this can be used to set a value of a `Total Fuel Burned` sensor.

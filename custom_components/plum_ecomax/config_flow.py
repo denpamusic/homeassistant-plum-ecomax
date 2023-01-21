@@ -17,7 +17,6 @@ import voluptuous as vol
 from . import format_model_name
 from .connection import async_check_connection, async_get_connection_handler
 from .const import (
-    CONF_CAPABILITIES,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
@@ -56,7 +55,7 @@ async def validate_input(
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
     try:
-        title, product, modules, capabilities = await async_check_connection(
+        title, product, modules = await async_check_connection(
             await async_get_connection_handler(hass, data)
         )
     except ConnectionFailedError as connection_failure:
@@ -70,14 +69,13 @@ async def validate_input(
         CONF_MODEL: format_model_name(product.model),
         CONF_PRODUCT_TYPE: product.type,
         CONF_SOFTWARE: modules.module_a,
-        CONF_CAPABILITIES: capabilities,
     }
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Plum ecoMAX integration."""
 
-    VERSION = 4
+    VERSION = 5
 
     async def async_step_user(
         self, user_input: MutableMapping[str, Any] | None = None
@@ -105,7 +103,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_MODEL,
                 CONF_PRODUCT_TYPE,
                 CONF_SOFTWARE,
-                CONF_CAPABILITIES,
             ):
                 user_input[field] = info[field]
 

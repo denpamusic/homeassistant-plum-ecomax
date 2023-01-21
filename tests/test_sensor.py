@@ -1,13 +1,15 @@
 """Test Plum ecoMAX sensor."""
 
-import asyncio
+
 from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from pyplumio.devices import Device
 from pyplumio.helpers.product_info import ProductType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.plum_ecomax.connection import VALUE_TIMEOUT
 from custom_components.plum_ecomax.sensor import (
     ECOMAX_I_SENSOR_TYPES,
     ECOMAX_P_SENSOR_TYPES,
@@ -24,10 +26,7 @@ from custom_components.plum_ecomax.sensor import (
 
 @patch("custom_components.plum_ecomax.sensor.on_change")
 @patch("custom_components.plum_ecomax.sensor.throttle")
-@patch(
-    "custom_components.plum_ecomax.sensor.async_get_module_entites",
-    side_effect=(asyncio.TimeoutError),
-)
+@patch("custom_components.plum_ecomax.sensor.async_setup_module_entites")
 async def test_async_setup_and_update_entry(
     mock_async_get_module_entities,
     mock_throttle,
@@ -35,20 +34,18 @@ async def test_async_setup_and_update_entry(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
+    mock_device: Device,
     bypass_hass_write_ha_state,
     bypass_model_check,
-    mock_device,
     caplog,
 ) -> None:
     """Test setup and update sensor entry."""
-
     with patch("custom_components.plum_ecomax.sensor.async_get_current_platform"):
         assert await async_setup_entry(hass, config_entry, async_add_entities)
         await hass.async_block_till_done()
 
     async_add_entities.assert_called_once()
     mock_async_get_module_entities.assert_awaited_once()
-    assert "Timeout while trying to get a list of connected modules" in caplog.text
     args, _ = async_add_entities.call_args
     for sensor in [
         x
@@ -66,7 +63,9 @@ async def test_async_setup_and_update_entry(
         assert (
             sensor.entity_description.filter_fn(callback) == mock_throttle.return_value
         )
-        mock_throttle.assert_called_once_with(mock_on_change.return_value, seconds=10)
+        mock_throttle.assert_called_once_with(
+            mock_on_change.return_value, seconds=VALUE_TIMEOUT
+        )
         mock_on_change.assert_called_once_with(callback)
         mock_throttle.reset_mock()
         mock_on_change.reset_mock()
@@ -106,14 +105,10 @@ async def test_async_setup_and_update_entry(
     assert meter.native_value == 3
 
 
-@patch("custom_components.plum_ecomax.sensor.async_get_current_platform")
-@patch("homeassistant.helpers.entity_platform.AddEntitiesCallback")
 async def test_model_check(
-    mock_async_add_entities,
-    mock_async_get_current_platform,
     hass: HomeAssistant,
     config_entry: MockConfigEntry,
-    mock_device,
+    mock_device: Device,
 ):
     """Test sensor model check."""
     for model_sensor in (
@@ -128,9 +123,15 @@ async def test_model_check(
         product_type, first_sensor_key, last_sensor_key, sensor_types = model_sensor
         sensor_types_length = len(SENSOR_TYPES) + len(MIXER_SENSOR_TYPES)
         with patch(
+            "custom_components.plum_ecomax.sensor.async_get_current_platform"
+        ), patch(
             "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
             product_type,
-        ):
+        ), patch(
+            "custom_components.plum_ecomax.connection.EcomaxConnection.has_mixers", True
+        ), patch(
+            "homeassistant.helpers.entity_platform.AddEntitiesCallback"
+        ) as mock_async_add_entities:
             await async_setup_entry(hass, config_entry, mock_async_add_entities)
             args, _ = mock_async_add_entities.call_args
             sensors = args[0]
@@ -146,17 +147,18 @@ async def test_model_check(
             assert last_sensor.entity_description.key == last_sensor_key
 
 
-@patch("homeassistant.helpers.entity_platform.AddEntitiesCallback")
 async def test_model_check_with_unknown_model(
-    mock_async_add_entities,
     hass: HomeAssistant,
     config_entry: MockConfigEntry,
+    mock_device: Device,
     caplog,
-    mock_device,
 ):
     """Test model check with the unknown model."""
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.product_type", 2
-    ):
+    ), patch(
+        "homeassistant.helpers.entity_platform.AddEntitiesCallback"
+    ) as mock_async_add_entities:
         assert not await async_setup_entry(hass, config_entry, mock_async_add_entities)
-        assert "Couldn't setup platform" in caplog.text
+
+    assert "Couldn't setup platform" in caplog.text

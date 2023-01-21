@@ -15,10 +15,10 @@ from pyplumio.helpers.filters import delta
 from pyplumio.structures.alerts import Alert
 
 from .connection import (
+    DEVICE_TIMEOUT,
     VALUE_TIMEOUT,
     EcomaxConnection,
     async_get_connection_handler,
-    async_get_device_capabilities,
 )
 from .const import (
     ATTR_CODE,
@@ -41,7 +41,6 @@ PLATFORMS: list[Platform] = [
     Platform.SWITCH,
     Platform.NUMBER,
     Platform.WATER_HEATER,
-    Platform.BUTTON,
 ]
 
 DATE_STR_FORMAT: Final = "%Y-%m-%d %H:%M:%S"
@@ -83,7 +82,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     try:
         await connection.async_setup_mixers()
     except asyncio.TimeoutError:
-        _LOGGER.info("Couldn't find any mixers")
+        _LOGGER.info("Device has no mixers")
 
     await async_setup_services(hass, connection)
     await async_setup_events(hass, connection)
@@ -148,20 +147,27 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                 await async_get_connection_handler(hass, config_entry.data),
             )
             await connection.connect()
-            device = await connection.get_device(ECOMAX)
-            product = await device.get_value(ATTR_PRODUCT, timeout=(VALUE_TIMEOUT * 2))
-            data[CONF_CAPABILITIES] = await async_get_device_capabilities(device)
+            device = await connection.get_device(ECOMAX, timeout=DEVICE_TIMEOUT)
+            product = await device.get_value(ATTR_PRODUCT, timeout=VALUE_TIMEOUT)
             data[CONF_PRODUCT_TYPE] = product.type
             await connection.close()
-
             config_entry.version = 3
             hass.config_entries.async_update_entry(config_entry, data=data)
 
-        elif config_entry.version == 3:
+        if config_entry.version == 3:
             data = {**config_entry.data}
             data[CONF_MODEL] = format_model_name(data[CONF_MODEL])
-
             config_entry.version = 4
+            hass.config_entries.async_update_entry(config_entry, data=data)
+
+        if config_entry.version == 4:
+            data = {**config_entry.data}
+            try:
+                del data[CONF_CAPABILITIES]
+            except KeyError:
+                pass
+
+            config_entry.version = 5
             hass.config_entries.async_update_entry(config_entry, data=data)
 
         _LOGGER.info("Migration to version %s successful", config_entry.version)

@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from pyplumio.devices import Device
 
 from custom_components.plum_ecomax.connection import ATTR_MODULES, EcomaxConnection
 from custom_components.plum_ecomax.const import (
@@ -14,7 +15,11 @@ from custom_components.plum_ecomax.const import (
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
+    CONF_MODEL,
     CONF_PORT,
+    CONF_PRODUCT_TYPE,
+    CONF_SOFTWARE,
+    CONF_UID,
     DOMAIN,
 )
 from custom_components.plum_ecomax.diagnostics import (
@@ -23,7 +28,9 @@ from custom_components.plum_ecomax.diagnostics import (
 )
 
 
-async def test_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry, mock_device):
+async def test_diagnostics(
+    hass: HomeAssistant, config_entry: ConfigEntry, mock_device: Device
+) -> None:
     """Test config entry diagnostics."""
     mock_connection = AsyncMock(spec=EcomaxConnection)
     mock_connection.device = mock_device
@@ -38,11 +45,10 @@ async def test_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry, mock_
             CONF_DEVICE: "/dev/ttyUSB0",
             CONF_HOST: REDACTED,
             CONF_PORT: 8899,
-            "uid": REDACTED,
-            "product_type": 0,
-            "model": "ecoMAX 123A",
-            "software": "1.13.5.A1",
-            "capabilities": ["fuel_burned", "heating_temp", "mixers"],
+            CONF_UID: REDACTED,
+            CONF_PRODUCT_TYPE: 0,
+            CONF_MODEL: "ecoMAX 123A",
+            CONF_SOFTWARE: "1.13.5.A1",
         },
     }
     assert result["data"] == {

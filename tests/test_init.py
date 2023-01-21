@@ -8,6 +8,7 @@ from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.util import dt as dt_util
+from pyplumio.devices import Device
 from pyplumio.structures.alerts import Alert
 import pytest
 
@@ -20,7 +21,11 @@ from custom_components.plum_ecomax import (
     async_unload_entry,
     format_model_name,
 )
-from custom_components.plum_ecomax.connection import VALUE_TIMEOUT, EcomaxConnection
+from custom_components.plum_ecomax.connection import (
+    DEVICE_TIMEOUT,
+    VALUE_TIMEOUT,
+    EcomaxConnection,
+)
 from custom_components.plum_ecomax.const import (
     ATTR_CODE,
     ATTR_DEVICE_ID,
@@ -28,25 +33,31 @@ from custom_components.plum_ecomax.const import (
     ATTR_PRODUCT,
     ATTR_TO,
     CONF_CAPABILITIES,
+    CONF_MODEL,
     CONF_PRODUCT_TYPE,
     DOMAIN,
+    ECOMAX,
     EVENT_PLUM_ECOMAX_ALERT,
 )
 
 
+@patch("custom_components.plum_ecomax.async_setup_services")
 @patch(
     "custom_components.plum_ecomax.EcomaxConnection.async_setup",
     side_effect=(None, asyncio.TimeoutError),
 )
-@patch("custom_components.plum_ecomax.async_setup_services")
-@patch.object(EcomaxConnection, "close", create=True, new_callable=AsyncMock)
+@patch(
+    "custom_components.plum_ecomax.connection.EcomaxConnection.close",
+    create=True,
+    new_callable=AsyncMock,
+)
 async def test_setup_and_unload_entry(
     mock_close,
-    async_setup_services,
     mock_async_setup,
+    mock_async_setup_services,
+    mock_device: Device,
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    mock_device,
 ) -> None:
     """Test setup and unload of config entry."""
     assert await async_setup_entry(hass, config_entry)
@@ -74,38 +85,17 @@ async def test_setup_and_unload_entry(
     mock_close.assert_not_awaited()
 
 
-@patch(
-    "custom_components.plum_ecomax.EcomaxConnection.async_setup",
-    side_effect=(None, asyncio.TimeoutError),
-)
-@patch("custom_components.plum_ecomax.async_setup_services")
-async def test_setup_mixers(
-    async_setup_services,
-    mock_async_setup,
-    hass: HomeAssistant,
-    config_entry: ConfigEntry,
-    mock_device,
-    caplog,
-) -> None:
-    """Test setup mixers."""
-    mock_device.get_value.side_effect = asyncio.TimeoutError
-    assert await async_setup_entry(hass, config_entry)
-    assert "Couldn't find any mixers" in caplog.text
-
-
-@patch("pyplumio.helpers.filters._Delta")
-@patch("homeassistant.core.EventBus.async_fire")
 async def test_setup_events(
-    mock_async_fire,
-    mock_delta,
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    mock_device,
+    mock_device: Device,
     caplog,
 ) -> None:
     """Test setup events."""
     connection = hass.data[DOMAIN][config_entry.entry_id]
-    await async_setup_events(hass, connection)
+    with patch("custom_components.plum_ecomax.delta") as mock_delta:
+        await async_setup_events(hass, connection)
+
     mock_device.subscribe.assert_called_once_with(ATTR_ALERTS, mock_delta.return_value)
     args, _ = mock_delta.call_args
 
@@ -117,7 +107,7 @@ async def test_setup_events(
     with patch(
         "homeassistant.helpers.device_registry.DeviceRegistry.async_get_device",
         return_value=mock_device_entry,
-    ):
+    ), patch("homeassistant.core.EventBus.async_fire") as mock_async_fire:
         await callback([alert])
         mock_device.get_value.assert_called_once_with(
             ATTR_PRODUCT, timeout=VALUE_TIMEOUT
@@ -139,61 +129,42 @@ async def test_setup_events(
     assert "Event dispatch failed" in caplog.text
 
 
-@patch.object(EcomaxConnection, "get_device", create=True, new_callable=AsyncMock)
-@patch.object(
-    EcomaxConnection,
-    "connect",
-    create=True,
-    new_callable=AsyncMock,
-    side_effect=(asyncio.TimeoutError, None),
-)
-@patch.object(EcomaxConnection, "close", create=True, new_callable=AsyncMock)
-async def test_migrate_entry_from_v1v2_to_v3(
-    mock_close,
-    mock_connect,
-    mock_get_device,
-    hass: HomeAssistant,
-    config_entry: ConfigEntry,
+async def test_migrate_entry(
+    hass: HomeAssistant, config_entry: ConfigEntry, mock_device: Device
 ) -> None:
-    """Test migrating entry from version 1 or 2 to version 3."""
-    config_entry.version = 2
+    """Test migrating entry from version 1 to version 5."""
+    config_entry.version = 1
     mock_product = Mock()
     mock_product.type = 0
-    mock_get_device.return_value.get_value.return_value = mock_product
-
+    mock_device.get_value = AsyncMock(return_value=mock_product)
+    data = {**config_entry.data}
+    data[CONF_MODEL] = "EM123A"
+    data[CONF_CAPABILITIES] = {"test"}
+    hass.config_entries.async_update_entry(config_entry, data=data)
     with patch(
-        "custom_components.plum_ecomax.async_get_device_capabilities",
+        "custom_components.plum_ecomax.connection.EcomaxConnection.connect",
         new_callable=AsyncMock,
-        return_value="test",
-    ) as mock_async_get_device_capabilities:
-        assert not await async_migrate_entry(hass, config_entry)
-        config_entry.version = 2
+        create=True,
+    ) as mock_connect, patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.close",
+        new_callable=AsyncMock,
+        create=True,
+    ) as mock_close, patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.get_device",
+        create=True,
+        return_value=mock_device,
+        new_callable=AsyncMock,
+    ) as mock_get_device:
         assert await async_migrate_entry(hass, config_entry)
 
-    assert mock_connect.call_count == 2
-    mock_async_get_device_capabilities.assert_awaited_once_with(
-        mock_get_device.return_value
-    )
+    mock_connect.assert_awaited_once()
     mock_close.assert_awaited_once()
+    mock_get_device.assert_awaited_once_with(ECOMAX, timeout=DEVICE_TIMEOUT)
     data = {**config_entry.data}
-    data[CONF_CAPABILITIES] = "test"
     data[CONF_PRODUCT_TYPE] = 0
-    assert config_entry.version == 3
-
-
-async def test_migrate_entry_from_v3_to_v4(
-    hass: HomeAssistant,
-    config_entry: ConfigEntry,
-) -> None:
-    """Test migrating entry from version 3 to version 4."""
-    config_entry.version = 3
-    data = {**config_entry.data}
-    data["model"] = "EM123A"
-    hass.config_entries.async_update_entry(config_entry, data=data)
-    assert await async_migrate_entry(hass, config_entry)
-    data = {**config_entry.data}
-    assert data["model"] == "ecoMAX 123A"
-    assert config_entry.version == 4
+    assert data[CONF_MODEL] == "ecoMAX 123A"
+    assert CONF_CAPABILITIES not in data
+    assert config_entry.version == 5
 
 
 async def test_format_model_name() -> None:

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-import logging
 from typing import Any, Final
 
 from homeassistant.components.network import async_get_source_ip
@@ -15,14 +14,11 @@ import pyplumio
 from pyplumio.connection import Connection
 from pyplumio.devices import Device
 from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
-from pyplumio.helpers.timeout import timeout
 
 from .const import (
-    ATTR_LOADED,
-    ATTR_MIXERS,
+    ATTR_MIXER_SENSORS,
+    ATTR_MODULES,
     ATTR_PRODUCT,
-    ATTR_WATER_HEATER,
-    CONF_CAPABILITIES,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
@@ -37,18 +33,8 @@ from .const import (
     MANUFACTURER,
 )
 
-_LOGGER = logging.getLogger(__name__)
-
-DEFAULT_TIMEOUT: Final = 60
-DEVICE_TIMEOUT: Final = 30
-VALUE_TIMEOUT: Final = 3
-
-ATTR_MODULES: Final = "modules"
-ATTR_SENSORS: Final = "sensors"
-ATTR_ECOMAX_PARAMETERS: Final = "ecomax_parameters"
-ATTR_MIXER_SENSORS: Final = "mixer_sensors"
-ATTR_MIXER_PARAMETERS: Final = "mixer_parameters"
-ATTR_WATER_HEATER_TEMP: Final = "water_heater_temp"
+DEVICE_TIMEOUT: Final = 10
+VALUE_TIMEOUT: Final = 10
 
 
 async def async_get_connection_handler(
@@ -57,7 +43,6 @@ async def async_get_connection_handler(
     """Return connection handler object."""
     public_ip = await async_get_source_ip(hass, target_ip=IPV4_BROADCAST_ADDR)
     ethernet = pyplumio.ethernet_parameters(ip=public_ip)
-
     if data[CONF_CONNECTION_TYPE] == CONNECTION_TYPE_TCP:
         return pyplumio.TcpConnection(
             data[CONF_HOST], data[CONF_PORT], ethernet_parameters=ethernet
@@ -68,7 +53,7 @@ async def async_get_connection_handler(
 
 async def async_check_connection(
     connection: Connection,
-) -> tuple[str, ProductInfo, ConnectedModules, set[str]]:
+) -> tuple[str, ProductInfo, ConnectedModules]:
     """Perform connection check."""
     title = (
         connection.host
@@ -77,28 +62,11 @@ async def async_check_connection(
     )
     await connection.connect()
     device = await connection.get_device(ECOMAX, timeout=DEVICE_TIMEOUT)
-    product = await device.get_value(ATTR_PRODUCT, timeout=(VALUE_TIMEOUT * 2))
-    modules = await device.get_value(ATTR_MODULES, timeout=(VALUE_TIMEOUT * 2))
-    capabilities = await async_get_device_capabilities(device)
+    product = await device.get_value(ATTR_PRODUCT, timeout=VALUE_TIMEOUT)
+    modules = await device.get_value(ATTR_MODULES, timeout=VALUE_TIMEOUT)
     await connection.close()
 
-    return (title, product, modules, capabilities)
-
-
-@timeout(seconds=DEFAULT_TIMEOUT)
-async def async_get_device_capabilities(device: Device) -> set[str]:
-    """Return device capabilities, presented as set of allowed keys."""
-    await device.get_value(ATTR_LOADED)
-    capabilities: set[str] = set(device.data.keys())
-
-    if ATTR_MIXERS in capabilities:
-        for mixer in device.data[ATTR_MIXERS]:
-            capabilities.update({f"mixer_{mixer.index}_{x}" for x in mixer.data.keys()})
-
-    if ATTR_WATER_HEATER_TEMP in capabilities:
-        capabilities.add(ATTR_WATER_HEATER)
-
-    return capabilities
+    return title, product, modules
 
 
 class EcomaxConnection:
@@ -108,12 +76,14 @@ class EcomaxConnection:
     _hass: HomeAssistant
     _connection: Connection
     _device: Device | None
+    _has_mixers: bool = False
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, connection: Connection):
         """Initialize new ecoMAX connection object."""
         self._hass = hass
         self._device = None
         self._connection = connection
+        self._has_mixers = False
         self.entry = entry
 
     def __getattr__(self, name: str):
@@ -121,7 +91,7 @@ class EcomaxConnection:
         if hasattr(self._connection, name):
             return getattr(self._connection, name)
 
-        raise AttributeError()
+        raise AttributeError
 
     async def async_setup(self) -> None:
         """Setup connection and add hass stop handler."""
@@ -129,16 +99,15 @@ class EcomaxConnection:
         self._device = await self.connection.get_device(ECOMAX, timeout=DEVICE_TIMEOUT)
 
     async def async_setup_mixers(self) -> None:
-        """Setup mixers."""
-        if ATTR_MIXERS in self.capabilities:
-            await self.device.get_value(ATTR_MIXERS, timeout=VALUE_TIMEOUT)
+        """Setup device mixers."""
+        self._has_mixers = await self.device.get_value(
+            ATTR_MIXER_SENSORS, timeout=VALUE_TIMEOUT
+        )
 
-    async def async_update_device_capabilities(self) -> None:
-        """Update device capabilities."""
-        data = {**self.entry.data}
-        data[CONF_CAPABILITIES] = await async_get_device_capabilities(self.device)
-        self._hass.config_entries.async_update_entry(self.entry, data=data)
-        _LOGGER.info("Updated device capabilities list")
+    @property
+    def has_mixers(self) -> bool:
+        """Does device has attached mixers."""
+        return self._has_mixers
 
     @property
     def device(self) -> Device:
@@ -167,11 +136,6 @@ class EcomaxConnection:
     def software(self) -> str:
         """Return the product software version."""
         return self.entry.data[CONF_SOFTWARE]
-
-    @property
-    def capabilities(self) -> set[str]:
-        """Return the product capabilities."""
-        return self.entry.data[CONF_CAPABILITIES]
 
     @property
     def name(self) -> str:

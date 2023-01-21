@@ -15,17 +15,13 @@ import pytest
 
 from custom_components.plum_ecomax.connection import (
     ATTR_MODULES,
+    DEVICE_TIMEOUT,
     VALUE_TIMEOUT,
     EcomaxConnection,
     async_check_connection,
     async_get_connection_handler,
 )
-from custom_components.plum_ecomax.const import (
-    ATTR_LOADED,
-    ATTR_PRODUCT,
-    DOMAIN,
-    ECOMAX,
-)
+from custom_components.plum_ecomax.const import ATTR_PRODUCT, DOMAIN, ECOMAX
 from tests.const import MOCK_CONFIG_DATA, MOCK_CONFIG_DATA_SERIAL
 
 
@@ -51,50 +47,27 @@ async def test_async_get_connection_handler(
     assert isinstance(connection_serial, SerialConnection)
 
 
-async def test_async_check_connection() -> None:
+async def test_async_check_connection(mock_device: Device) -> None:
     """Test helper function to check the connection."""
     mock_connection = AsyncMock(spec=TcpConnection)
     mock_connection.host = "localhost"
-    mock_device = AsyncMock(spec=Device)
     mock_connection.get_device = AsyncMock()
     mock_connection.get_device.return_value = mock_device
     mock_product = Mock(spec=ProductInfo)
     mock_modules = Mock(spec=ConnectedModules)
-    mock_mixer = Mock()
-    mock_mixer.index = 0
-    mock_mixer.data = {"test_parameter": "test_value"}
     mock_device.get_value.side_effect = (
         mock_product,
         mock_modules,
         True,
     )
-    mock_device.data = {
-        "test_sensor": "test_value",
-        "water_heater_temp": 50,
-        "test_parameter": "test_value",
-        "mixers": [mock_mixer],
-    }
     result = await async_check_connection(mock_connection)
     calls = (
-        call(ATTR_PRODUCT, timeout=(VALUE_TIMEOUT * 2)),
-        call(ATTR_MODULES, timeout=(VALUE_TIMEOUT * 2)),
-        call(ATTR_LOADED),
+        call(ATTR_PRODUCT, timeout=VALUE_TIMEOUT),
+        call(ATTR_MODULES, timeout=VALUE_TIMEOUT),
     )
     mock_device.get_value.assert_has_calls(calls)
     mock_connection.close.assert_awaited_once()
-    assert result == (
-        "localhost",
-        mock_product,
-        mock_modules,
-        {
-            "test_parameter",
-            "water_heater",
-            "mixer_0_test_parameter",
-            "test_sensor",
-            "mixers",
-            "water_heater_temp",
-        },
-    )
+    assert result == ("localhost", mock_product, mock_modules)
 
 
 async def test_async_setup(
@@ -110,7 +83,6 @@ async def test_async_setup(
     mock_connection_handler.get_device = AsyncMock(
         side_effect=(mock_device, asyncio.TimeoutError)
     )
-    mock_connection_handler.capabilities = ["mixers"]
     connection = EcomaxConnection(hass, config_entry, mock_connection_handler)
 
     # Test device not ready.
@@ -120,7 +92,9 @@ async def test_async_setup(
     await connection.async_setup()
 
     mock_connection_handler.connect.assert_awaited_once()
-    mock_connection_handler.get_device.assert_awaited_once_with(ECOMAX, timeout=30)
+    mock_connection_handler.get_device.assert_awaited_once_with(
+        ECOMAX, timeout=DEVICE_TIMEOUT
+    )
 
     # Check connection class properties.
     assert connection.host == "localhost"
@@ -129,7 +103,6 @@ async def test_async_setup(
     assert connection.model == "ecoMAX 123A"
     assert connection.uid == "D251PAKR3GCPZ1K8G05G0"
     assert connection.software == "1.13.5.A1"
-    assert connection.capabilities == ["fuel_burned", "heating_temp", "mixers"]
     assert connection.name == "localhost"
     assert connection.connection == mock_connection_handler
     assert connection.device_info == DeviceInfo(
@@ -150,29 +123,3 @@ async def test_async_setup(
     connection = EcomaxConnection(hass, config_entry, mock_connection_handler)
     mock_connection_handler.device = "/dev/ttyUSB0"
     assert connection.name == "/dev/ttyUSB0"
-
-
-@patch(
-    "custom_components.plum_ecomax.connection.async_get_device_capabilities",
-    new_callable=AsyncMock,
-)
-async def test_async_update_capabilities(
-    mock_async_get_device_capabilities,
-    hass: HomeAssistant,
-    config_entry: ConfigEntry,
-    caplog,
-) -> None:
-    """Test update capabilities."""
-    mock_connection_handler = AsyncMock(spec=TcpConnection)
-    mock_connection_handler.get_device = AsyncMock(spec=Device)
-    connection = EcomaxConnection(hass, config_entry, mock_connection_handler)
-    await connection.async_setup()
-
-    with patch(
-        "homeassistant.config_entries.ConfigEntries.async_update_entry"
-    ) as mock_async_update_entry:
-        await connection.async_update_device_capabilities()
-
-    mock_async_update_entry.assert_called_once()
-    mock_async_get_device_capabilities.assert_awaited_once()
-    assert "Updated device capabilities list" in caplog.text

@@ -1,7 +1,9 @@
 """Platform for sensor integration."""
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass
+import logging
 from typing import Final
 
 from homeassistant.components.water_heater import (
@@ -20,13 +22,15 @@ from homeassistant.helpers.typing import ConfigType
 from pyplumio.helpers.filters import on_change, throttle
 from pyplumio.helpers.parameter import Parameter
 
-from .connection import EcomaxConnection
-from .const import ATTR_WATER_HEATER, DOMAIN
+from .connection import VALUE_TIMEOUT, EcomaxConnection
+from .const import ATTR_WATER_HEATER, ATTR_WATER_HEATER_TEMP, DOMAIN
 from .entity import EcomaxEntity
 
 WATER_HEATER_MODES: Final = [STATE_OFF, STATE_PERFORMANCE, STATE_ECO]
 
 ATTR_TEMPERATURE: Final = "temperature"
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -175,11 +179,15 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the sensor platform."""
-    connection = hass.data[DOMAIN][config_entry.entry_id]
-    return async_add_entities(
-        [
+    connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
+    try:
+        await connection.device.get_value(ATTR_WATER_HEATER_TEMP, timeout=VALUE_TIMEOUT)
+        entities: list[EcomaxEntity] = [
             EcomaxWaterHeater(connection, description)
             for description in WATER_HEATER_TYPES
-        ],
-        False,
-    )
+        ]
+    except asyncio.TimeoutError:
+        _LOGGER.error("Couldn't load indirect water heater")
+        return False
+
+    return async_add_entities(entities, False)

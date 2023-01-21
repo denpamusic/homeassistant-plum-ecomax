@@ -71,10 +71,6 @@ set_schedule:
       selector:
         time:
 
-update_capabilities:
-  name: Update capabilities
-  description: Update device capability list.
-
 reset_meter:
   name: Reset meter
   description: Reset meter value.

@@ -10,6 +10,7 @@ from homeassistant.components.water_heater import (
 from homeassistant.const import PRECISION_WHOLE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from pyplumio.devices import Device
 from pyplumio.helpers.filters import Filter
 from pyplumio.helpers.parameter import Parameter
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -21,16 +22,12 @@ from custom_components.plum_ecomax.water_heater import (
 )
 
 
-@patch(
-    "custom_components.plum_ecomax.connection.EcomaxConnection.device",
-    new_callable=AsyncMock,
-)
 async def test_async_setup_and_update_entry(
-    mock_device,
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
     numeric_parameter: Parameter,
+    mock_device: Device,
     bypass_hass_write_ha_state,
 ) -> None:
     """Test setup and update water_heater entry."""

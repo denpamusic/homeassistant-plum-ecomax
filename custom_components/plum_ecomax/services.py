@@ -61,8 +61,6 @@ SERVICE_SET_SCHEDULE_SCHEMA = vol.Schema(
     }
 )
 
-SERVICE_UPDATE_CAPABILITIES = "update_capabilities"
-
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -166,27 +164,10 @@ async def _setup_set_schedule_service(
     )
 
 
-async def _setup_update_capabilities_service(
-    hass: HomeAssistant, connection: EcomaxConnection
-) -> None:
-    """Setup service to update device capability list."""
-
-    async def update_capabilities_service(service_call: ServiceCall) -> None:
-        """Service to update device capability list."""
-        await connection.async_update_device_capabilities()
-
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_UPDATE_CAPABILITIES,
-        update_capabilities_service,
-    )
-
-
 async def async_setup_services(
     hass: HomeAssistant, connection: EcomaxConnection
 ) -> bool:
     """Setup ecoMAX services."""
     await _setup_set_parameter_service(hass, connection)
     await _setup_set_schedule_service(hass, connection)
-    await _setup_update_capabilities_service(hass, connection)
     return True

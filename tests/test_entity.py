@@ -22,26 +22,27 @@ class TestEntity(EcomaxEntity):
     "custom_components.plum_ecomax.entity.EcomaxEntity.connection",
     new_callable=AsyncMock,
 )
-async def test_base_entity(mock_connection, mock_async_update, mock_device) -> None:
+async def test_base_entity(
+    mock_connection, mock_async_update, mock_device: Device
+) -> None:
     """Test base entity."""
     entity = TestEntity()
-    entity.entity_description = EntityDescription("test_entity", name="Test Entity")
+    entity.entity_description = EntityDescription("test_data", name="Test Data")
     mock_filter = AsyncMock(spec=Filter)
     entity.entity_description.filter_fn = Mock(return_value=mock_filter)
-    mock_connection.device = Mock(spec=Device)
-    mock_connection.device.data = {"test_entity": "test"}
+    mock_connection.device = mock_device
     mock_connection.connected = Mock(spec=asyncio.Event)
 
     # Test added/removed to/from hass.
     await entity.async_added_to_hass()
     entity.entity_description.filter_fn.assert_called_once()
     entity.device.subscribe.assert_called_once_with(
-        "test_entity", entity.entity_description.filter_fn.return_value
+        "test_data", entity.entity_description.filter_fn.return_value
     )
     entity.device.subscribe_once.assert_called_once()
     mock_filter.assert_awaited_once()
     await entity.async_will_remove_from_hass()
-    entity.device.unsubscribe.assert_called_once_with("test_entity", mock_async_update)
+    entity.device.unsubscribe.assert_called_once_with("test_data", mock_async_update)
 
     # Test device property.
     assert entity.device == mock_connection.device
@@ -55,19 +56,18 @@ async def test_base_entity(mock_connection, mock_async_update, mock_device) -> N
     # Test device info property.
     assert entity.device_info == mock_connection.device_info
 
-    # Test enabled by default property.
-    mock_connection.capabilities = set()
-    assert not entity.entity_registry_enabled_default
-    mock_connection.capabilities = set(["test_entity"])
-    assert entity.entity_registry_enabled_default
-
     # Test unique id property.
     mock_connection.uid = "test_uid"
-    assert entity.unique_id == "test_uid-test_entity"
+    assert entity.unique_id == "test_uid-test_data"
 
     # Test name property.
     mock_connection.name = "Test Connection"
-    assert entity.name == "Test Connection Test Entity"
+    assert entity.name == "Test Connection Test Data"
 
-    # Test should poll propery.
+    # Test should poll property.
     assert not entity.should_poll
+
+    # Test enabled by default property.
+    assert entity.entity_registry_enabled_default
+    entity.entity_description = EntityDescription("test_data2", name="Test Data 2")
+    assert not entity.entity_registry_enabled_default

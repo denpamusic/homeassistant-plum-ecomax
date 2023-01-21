@@ -8,7 +8,7 @@ from pyplumio.devices import Device
 from pyplumio.helpers.product_info import ProductType
 
 from .connection import MANUFACTURER, EcomaxConnection
-from .const import ATTR_MIXERS, DOMAIN
+from .const import ATTR_MIXERS, ATTR_WATER_HEATER, ATTR_WATER_HEATER_TEMP, DOMAIN
 
 
 class EcomaxEntity(ABC):
@@ -55,7 +55,12 @@ class EcomaxEntity(ABC):
     @property
     def entity_registry_enabled_default(self) -> bool:
         """Indicate if the entity should be enabled when first added."""
-        return self.entity_description.key in self.connection.capabilities
+        key = (
+            ATTR_WATER_HEATER_TEMP
+            if self.entity_description.key == ATTR_WATER_HEATER
+            else self.entity_description.key
+        )
+        return key in self.device.data
 
     @property
     def unique_id(self) -> str:
@@ -86,12 +91,6 @@ class MixerEntity(EcomaxEntity):
     """Represents base mixer entity."""
 
     index: int
-
-    @property
-    def entity_registry_enabled_default(self) -> bool:
-        """Indicate if the entity should be enabled when first added."""
-        entity_key = f"mixer-{self.index}-{self.entity_description.key}"
-        return entity_key in self.connection.capabilities
 
     @property
     def unique_id(self) -> str:

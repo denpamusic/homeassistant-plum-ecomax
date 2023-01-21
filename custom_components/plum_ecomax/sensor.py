@@ -38,7 +38,7 @@ from pyplumio.helpers.filters import aggregate, on_change, throttle
 from pyplumio.helpers.product_info import ConnectedModules, ProductType
 import voluptuous as vol
 
-from .connection import VALUE_TIMEOUT, EcomaxConnection
+from .connection import ATTR_MIXER_SENSORS, VALUE_TIMEOUT, EcomaxConnection
 from .const import (
     ATTR_FUEL_BURNED,
     ATTR_MIXERS,
@@ -46,6 +46,7 @@ from .const import (
     ATTR_MODULES,
     ATTR_PASSWORD,
     ATTR_PRODUCT,
+    ATTR_SENSORS,
     ATTR_VALUE,
     DOMAIN,
     FLOW_KGH,
@@ -430,13 +431,24 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
         return self.entity_description.value_fn(self._attr_native_value)
 
 
+def setup_ecomax_i(
+    connection: EcomaxConnection,
+    entities: list[EcomaxEntity],
+    async_add_entities: AddEntitiesCallback,
+):
+    """Setup sensor platform for ecoMAX I series controllers."""
+    entities.extend(
+        EcomaxSensor(connection, description) for description in ECOMAX_I_SENSOR_TYPES
+    )
+    return async_add_entities(entities, False)
+
+
 def setup_ecomax_p(
     connection: EcomaxConnection,
     entities: list[EcomaxEntity],
     async_add_entities: AddEntitiesCallback,
 ):
     """Setup sensor platform for ecoMAX P series controllers."""
-
     platform = async_get_current_platform()
     platform.async_register_entity_service(
         SERVICE_RESET_METER,
@@ -448,61 +460,32 @@ def setup_ecomax_p(
         {vol.Required(ATTR_VALUE): cv.positive_float},
         "async_calibrate_meter",
     )
-
-    return async_add_entities(
-        [
-            *entities,
-            *[
-                EcomaxSensor(connection, description)
-                for description in ECOMAX_P_SENSOR_TYPES
-            ],
-            *[EcomaxMeter(connection, description) for description in METER_TYPES],
-        ],
-        False,
+    entities.extend(
+        EcomaxSensor(connection, description) for description in ECOMAX_P_SENSOR_TYPES
     )
+    entities.extend(EcomaxMeter(connection, description) for description in METER_TYPES)
+
+    return async_add_entities(entities, False)
 
 
-def setup_ecomax_i(
-    connection: EcomaxConnection,
-    entities: list[EcomaxEntity],
-    async_add_entities: AddEntitiesCallback,
-):
-    """Setup sensor platform for ecoMAX I series controllers."""
-
-    return async_add_entities(
-        [
-            *entities,
-            *[
-                EcomaxSensor(connection, description)
-                for description in ECOMAX_I_SENSOR_TYPES
-            ],
-        ],
-        False,
-    )
-
-
-def get_mixer_entities(
-    connection: EcomaxConnection,
-    sensor_types: tuple[EcomaxSensorEntityDescription, ...],
-) -> list[MixerEntity]:
-    """Setup mixers sensor platform."""
-    entities: list[MixerEntity] = []
+async def async_setup_mixer_entities(
+    connection: EcomaxConnection, entities: list[EcomaxEntity]
+) -> None:
+    """Setup mixer sensors."""
+    await connection.device.get_value(ATTR_MIXER_SENSORS, timeout=VALUE_TIMEOUT)
     for mixer in connection.device.data.get(ATTR_MIXERS, []):
         entities.extend(
             [
                 MixerSensor(connection, description, mixer.index)
-                for description in sensor_types
+                for description in MIXER_SENSOR_TYPES
             ]
         )
 
-    return entities
 
-
-async def async_get_module_entites(
-    connection: EcomaxConnection,
-) -> list[EcomaxEntity]:
-    """Setup module-specific entities."""
-    entities: list[EcomaxEntity] = []
+async def async_setup_module_entites(
+    connection: EcomaxConnection, entities: list[EcomaxEntity]
+) -> None:
+    """Setup module-specific sensors."""
     modules: ConnectedModules = await connection.device.get_value(
         ATTR_MODULES, timeout=VALUE_TIMEOUT
     )
@@ -512,8 +495,6 @@ async def async_get_module_entites(
                 [EcomaxSensor(connection, description) for description in sensor_types]
             )
 
-    return entities
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -522,15 +503,21 @@ async def async_setup_entry(
 ) -> bool:
     """Set up the sensor platform."""
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
-    entities: list[EcomaxEntity] = [
-        *[EcomaxSensor(connection, description) for description in SENSOR_TYPES],
-        *get_mixer_entities(connection, MIXER_SENSOR_TYPES),
-    ]
-
     try:
-        entities.extend(await async_get_module_entites(connection))
+        await connection.device.get_value(ATTR_SENSORS, timeout=VALUE_TIMEOUT)
+        entities: list[EcomaxEntity] = [
+            EcomaxSensor(connection, description) for description in SENSOR_TYPES
+        ]
+        await async_setup_module_entites(connection, entities)
     except asyncio.TimeoutError:
-        _LOGGER.error("Timeout while trying to get a list of connected modules")
+        _LOGGER.error("Couldn't load device sensors")
+        return False
+
+    if connection.has_mixers:
+        try:
+            await async_setup_mixer_entities(connection, entities)
+        except asyncio.TimeoutError:
+            _LOGGER.warning("Couldn't load mixer sensors")
 
     if connection.product_type == ProductType.ECOMAX_P:
         return setup_ecomax_p(connection, entities, async_add_entities)

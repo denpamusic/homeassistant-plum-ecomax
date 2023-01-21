@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
+from pyplumio.devices import Device
 from pyplumio.exceptions import ParameterNotFoundError
 from pyplumio.helpers.schedule import Schedule, ScheduleDay
 import pytest
@@ -20,13 +21,25 @@ from custom_components.plum_ecomax.services import (
     SERVICE_SET_PARAMETER,
     SERVICE_SET_PARAMETER_SCHEMA,
     SERVICE_SET_SCHEDULE,
-    SERVICE_UPDATE_CAPABILITIES,
     async_setup_services,
 )
 
 
-async def test_setup_services(hass: HomeAssistant, caplog, mock_device) -> None:
+async def test_setup_services(hass: HomeAssistant, mock_device: Device) -> None:
     """Test services setup."""
+    mock_connection = AsyncMock(spec=EcomaxConnection)
+    mock_connection.device = mock_device
+
+    with patch(
+        "homeassistant.core.ServiceRegistry.async_register"
+    ) as mock_async_register:
+        await async_setup_services(hass, mock_connection)
+
+    assert mock_async_register.call_count == 2
+
+
+async def test_set_parameter_service(hass: HomeAssistant, mock_device: Device) -> None:
+    """Test set parameter service."""
     mock_connection = AsyncMock(spec=EcomaxConnection)
     mock_connection.device = mock_device
     mock_service_call = AsyncMock(spec=ServiceCall)
@@ -36,14 +49,7 @@ async def test_setup_services(hass: HomeAssistant, caplog, mock_device) -> None:
     ) as mock_async_register:
         await async_setup_services(hass, mock_connection)
 
-    assert mock_async_register.call_count == 3
-    (
-        set_parameter_service,
-        set_schedule_service,
-        update_capabilities_service,
-    ) = mock_async_register.call_args_list
-
-    # Test set parameter service.
+    set_parameter_service, _ = mock_async_register.call_args_list
     args, _ = set_parameter_service
     _, service, func, schema = args
     assert service == SERVICE_SET_PARAMETER
@@ -99,9 +105,23 @@ async def test_setup_services(hass: HomeAssistant, caplog, mock_device) -> None:
     ), pytest.raises(HomeAssistantError):
         await func(mock_service_call)
 
-    # Test set schedule service.
+
+async def test_set_schedule_service(
+    hass: HomeAssistant, mock_device: Device, caplog
+) -> None:
+    """Test set schedule service."""
+    mock_connection = AsyncMock(spec=EcomaxConnection)
+    mock_connection.device = mock_device
+    mock_service_call = AsyncMock(spec=ServiceCall)
+
+    with patch(
+        "homeassistant.core.ServiceRegistry.async_register"
+    ) as mock_async_register:
+        await async_setup_services(hass, mock_connection)
+
+    _, set_schedule_service = mock_async_register.call_args_list
     args, _ = set_schedule_service
-    _, service, func, schema = args
+    _, service, func, _ = args
     assert service == SERVICE_SET_SCHEDULE
     mock_service_call.data = {
         ATTR_NAME: "test_name",
@@ -123,11 +143,3 @@ async def test_setup_services(hass: HomeAssistant, caplog, mock_device) -> None:
     mock_connection.device.data = {}
     with pytest.raises(HomeAssistantError):
         await func(mock_service_call)
-
-    # Test update capability service.
-    args, _ = update_capabilities_service
-    _, service, func = args
-    assert service == SERVICE_UPDATE_CAPABILITIES
-    mock_service_call.data = {ATTR_NAME: "test_name", ATTR_VALUE: 39}
-    await func(mock_service_call)
-    mock_connection.async_update_device_capabilities.assert_awaited_once()

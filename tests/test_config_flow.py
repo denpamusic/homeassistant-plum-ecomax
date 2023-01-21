@@ -8,7 +8,6 @@ from homeassistant.data_entry_flow import RESULT_TYPE_CREATE_ENTRY, RESULT_TYPE_
 from pyplumio.exceptions import ConnectionFailedError
 
 from custom_components.plum_ecomax.const import (
-    CONF_CAPABILITIES,
     CONF_DEVICE,
     CONF_HOST,
     CONF_MODEL,
@@ -36,12 +35,11 @@ async def test_form_tcp(hass: HomeAssistant) -> None:
     product.type = MOCK_DEVICE_DATA[CONF_PRODUCT_TYPE]
     modules = Mock()
     modules.module_a = MOCK_DEVICE_DATA[CONF_SOFTWARE]
-    capabilities = MOCK_DEVICE_DATA[CONF_CAPABILITIES]
 
     # Set up attribute values for EcomaxTcpConnection.
     with patch(
         "custom_components.plum_ecomax.config_flow.async_check_connection",
-        return_value=(title, product, modules, capabilities),
+        return_value=(title, product, modules),
     ), patch(
         "custom_components.plum_ecomax.async_setup_entry",
         return_value=True,
@@ -76,11 +74,10 @@ async def test_form_serial(hass: HomeAssistant) -> None:
     product.type = MOCK_DEVICE_DATA[CONF_PRODUCT_TYPE]
     modules = Mock()
     modules.module_a = MOCK_DEVICE_DATA[CONF_SOFTWARE]
-    capabilities = MOCK_DEVICE_DATA[CONF_CAPABILITIES]
 
     with patch(
         "custom_components.plum_ecomax.config_flow.async_check_connection",
-        return_value=(title, product, modules, capabilities),
+        return_value=(title, product, modules),
     ), patch(
         "custom_components.plum_ecomax.async_setup_entry",
         return_value=True,
