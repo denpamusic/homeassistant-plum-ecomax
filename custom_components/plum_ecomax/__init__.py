@@ -165,6 +165,11 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             except KeyError:
                 pass
 
+            connection = EcomaxConnection(
+                hass,
+                config_entry,
+                await async_get_connection_handler(hass, config_entry.data),
+            )
             await connection.connect()
             device = await connection.get_device(ECOMAX, timeout=DEVICE_TIMEOUT)
             data[CONF_SUB_DEVICES] = await async_get_sub_devices(device)
