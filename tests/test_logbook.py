@@ -8,6 +8,7 @@ from homeassistant.components.logbook.const import (
     LOGBOOK_ENTRY_NAME,
 )
 from homeassistant.core import Event, HomeAssistant
+from pyplumio.const import AlertType
 
 from custom_components.plum_ecomax.const import (
     ATTR_CODE,
@@ -30,13 +31,13 @@ async def test_logbook(hass: HomeAssistant) -> None:
     callback = args[2]
     mock_event = Mock(spec=Event)
     mock_event.data = {
-        ATTR_CODE: 0,
+        ATTR_CODE: AlertType.POWER_LOSS,
         ATTR_FROM: "2012-12-12 00:00:00",
         ATTR_TO: "2012-12-12 01:00:00",
     }
     result = callback(mock_event)
     assert result == {
         LOGBOOK_ENTRY_NAME: "ecoMAX",
-        LOGBOOK_ENTRY_MESSAGE: "The alert with code '0' was generated at 2012-12-12 "
-        + "00:00:00 and resolved at 2012-12-12 01:00:00",
+        LOGBOOK_ENTRY_MESSAGE: "Encountered power loss from 2012-12-12 00:00:00"
+        + " to 2012-12-12 01:00:00",
     }
