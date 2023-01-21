@@ -77,7 +77,7 @@ async def async_check_connection(
 
 async def async_get_sub_devices(device: Device) -> list[str]:
     """Return device subdevices."""
-    sub_devices: list[str] = list()
+    sub_devices: list[str] = []
     try:
         await device.get_value(ATTR_MIXERS, timeout=VALUE_TIMEOUT)
         sub_devices.append(ATTR_MIXERS)
