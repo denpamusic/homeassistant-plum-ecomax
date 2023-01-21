@@ -19,14 +19,14 @@ from custom_components.plum_ecomax.const import (
 )
 
 ALERT_TYPES: dict[AlertType, str] = {
-    AlertType.POWER_LOSS: "Encountered power loss",
-    AlertType.BOILER_TEMP_SENSOR_FAILURE: "Encountered boiler temperature sensor failure",
-    AlertType.MAX_BOILER_TEMP_EXCEEDED: "Maximum boiler temperature exceeded",
-    AlertType.FEEDER_TEMP_SENSOR_FAILURE: "Encountered feeder temperature sensor failure",
-    AlertType.MAX_FEEDER_TEMP_EXCEEDED: "Maximum feeder temperature exceeded",
-    AlertType.EXHAUST_TEMP_SENSOR_FAILURE: "Exhaust temperature sensor failed",
-    AlertType.KINDLING_FAILURE: "Encountered kindling failure",
-    AlertType.FAN_FAILURE: "Encountered fan failure",
+    AlertType.POWER_LOSS: "encountered power loss",
+    AlertType.BOILER_TEMP_SENSOR_FAILURE: "encountered boiler temperature sensor failure",
+    AlertType.MAX_BOILER_TEMP_EXCEEDED: "maximum boiler temperature exceeded",
+    AlertType.FEEDER_TEMP_SENSOR_FAILURE: "encountered feeder temperature sensor failure",
+    AlertType.MAX_FEEDER_TEMP_EXCEEDED: "maximum feeder temperature exceeded",
+    AlertType.EXHAUST_TEMP_SENSOR_FAILURE: "exhaust temperature sensor failed",
+    AlertType.KINDLING_FAILURE: "encountered kindling failure",
+    AlertType.FAN_FAILURE: "encountered fan failure",
 }
 
 
@@ -51,7 +51,7 @@ def async_describe_events(
             pass
 
         alert_string = ALERT_TYPES.get(
-            alert_code, f'Encountered alert with code "{alert_code}"'
+            alert_code, f'encountered alert with code "{alert_code}"'
         )
 
         return {

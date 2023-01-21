@@ -38,6 +38,6 @@ async def test_logbook(hass: HomeAssistant) -> None:
     result = callback(mock_event)
     assert result == {
         LOGBOOK_ENTRY_NAME: "ecoMAX",
-        LOGBOOK_ENTRY_MESSAGE: "Encountered power loss from 2012-12-12 00:00:00"
+        LOGBOOK_ENTRY_MESSAGE: "encountered power loss from 2012-12-12 00:00:00"
         + " to 2012-12-12 01:00:00",
     }
