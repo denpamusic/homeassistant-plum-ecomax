@@ -1,12 +1,13 @@
 """Test Plum ecoMAX sensor."""
 
 
+import asyncio
 from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.devices import Device
-from pyplumio.helpers.product_info import ProductType
+from pyplumio.helpers.product_info import ConnectedModules, ProductType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import VALUE_TIMEOUT
@@ -103,6 +104,40 @@ async def test_async_setup_and_update_entry(
     assert meter.native_value == 0
     await meter.async_update(3)
     assert meter.native_value == 3
+
+
+async def test_async_setup_entry_with_device_sensors_timeout(
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
+    mock_device: Device,
+    caplog,
+) -> None:
+    """Test setup sensor entry with device sensors timeout."""
+    mock_device.get_value.side_effect = asyncio.TimeoutError
+    with patch("custom_components.plum_ecomax.sensor.async_get_current_platform"):
+        assert not await async_setup_entry(hass, config_entry, async_add_entities)
+
+    assert "Couldn't load device sensors" in caplog.text
+
+
+async def test_async_setup_entry_with_mixer_sensors_timeout(
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
+    mock_device: Device,
+    caplog,
+) -> None:
+    """Test setup sensor entry with mixer sensors timeout."""
+    mock_device.get_value.side_effect = (
+        None,
+        Mock(spec=ConnectedModules),
+        asyncio.TimeoutError,
+    )
+    with patch("custom_components.plum_ecomax.sensor.async_get_current_platform"):
+        assert await async_setup_entry(hass, config_entry, async_add_entities)
+
+    assert "Couldn't load mixer sensors" in caplog.text
 
 
 async def test_model_check(

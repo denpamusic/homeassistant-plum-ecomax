@@ -1,5 +1,6 @@
 """Test Plum ecoMAX number platform."""
 
+import asyncio
 from unittest.mock import Mock, call, patch
 
 from homeassistant.core import HomeAssistant
@@ -130,6 +131,32 @@ async def test_async_setup_and_update_entry(
         ProductType.ECOMAX_P,
     ):
         assert numbers[0].device_info["name"] == "Test Mixer 1"
+
+
+async def test_async_setup_entry_with_device_sensors_timeout(
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
+    mock_device: Device,
+    caplog,
+) -> None:
+    """Test setup number entry with device sensors timeout."""
+    mock_device.get_value.side_effect = asyncio.TimeoutError
+    assert not await async_setup_entry(hass, config_entry, async_add_entities)
+    assert "Couldn't load device parameters" in caplog.text
+
+
+async def test_async_setup_entry_with_mixer_sensors_timeout(
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
+    mock_device: Device,
+    caplog,
+) -> None:
+    """Test setup number entry with mixer sensors timeout."""
+    mock_device.get_value.side_effect = (None, asyncio.TimeoutError)
+    assert await async_setup_entry(hass, config_entry, async_add_entities)
+    assert "Couldn't load mixer numbers" in caplog.text
 
 
 async def test_model_check(

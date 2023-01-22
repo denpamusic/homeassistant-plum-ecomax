@@ -1,6 +1,7 @@
 """Test Plum ecoMAX binary sensor platform."""
 
 
+import asyncio
 from unittest.mock import patch
 
 from homeassistant.core import HomeAssistant
@@ -25,7 +26,6 @@ async def test_async_setup_and_update_entry(
     config_entry: MockConfigEntry,
     mock_device: Device,
     bypass_hass_write_ha_state,
-    bypass_model_check,
 ) -> None:
     """Test setup and update binary sensor entry."""
     assert await async_setup_entry(hass, config_entry, async_add_entities)
@@ -33,13 +33,39 @@ async def test_async_setup_and_update_entry(
     async_add_entities.assert_called_once()
     args, _ = async_add_entities.call_args
     for binary_sensor in [
-        x for x in args[0] if x.entity_description.key in ("mixer_pump", "heating_pump")
+        x for x in args[0] if x.entity_description.key in ("pump", "heating_pump")
     ]:
         # Check that binary sensor state is unknown and update it.
         assert isinstance(binary_sensor, EcomaxBinarySensor)
         assert binary_sensor.is_on is None
         await binary_sensor.async_update(True)
         assert binary_sensor.is_on
+
+
+async def test_async_setup_entry_with_device_sensors_timeout(
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
+    mock_device: Device,
+    caplog,
+) -> None:
+    """Test setup binary sensor entry with device sensors timeout."""
+    mock_device.get_value.side_effect = asyncio.TimeoutError
+    assert not await async_setup_entry(hass, config_entry, async_add_entities)
+    assert "Couldn't load device binary sensors" in caplog.text
+
+
+async def test_async_setup_entry_with_mixer_sensors_timeout(
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
+    mock_device: Device,
+    caplog,
+) -> None:
+    """Test setup binary sensor entry with mixer sensors timeout."""
+    mock_device.get_value.side_effect = (None, asyncio.TimeoutError)
+    assert await async_setup_entry(hass, config_entry, async_add_entities)
+    assert "Couldn't load mixer binary sensors" in caplog.text
 
 
 async def test_model_check(

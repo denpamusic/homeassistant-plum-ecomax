@@ -1,5 +1,6 @@
 """Test Plum ecoMAX switch platform."""
 
+import asyncio
 from unittest.mock import patch
 
 from homeassistant.core import HomeAssistant
@@ -93,6 +94,32 @@ async def test_model_check(
             last_switch = switches[-1]
             assert first_switch.entity_description.key == first_switch_key
             assert last_switch.entity_description.key == last_switch_key
+
+
+async def test_async_setup_entry_with_device_sensors_timeout(
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
+    mock_device: Device,
+    caplog,
+) -> None:
+    """Test setup binary sensor entry with device sensors timeout."""
+    mock_device.get_value.side_effect = asyncio.TimeoutError
+    assert not await async_setup_entry(hass, config_entry, async_add_entities)
+    assert "Couldn't load device parameters" in caplog.text
+
+
+async def test_async_setup_entry_with_mixer_sensors_timeout(
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
+    mock_device: Device,
+    caplog,
+) -> None:
+    """Test setup binary sensor entry with mixer sensors timeout."""
+    mock_device.get_value.side_effect = (None, asyncio.TimeoutError)
+    assert await async_setup_entry(hass, config_entry, async_add_entities)
+    assert "Control parameter not present" in caplog.text
 
 
 async def test_model_check_with_unknown_model(

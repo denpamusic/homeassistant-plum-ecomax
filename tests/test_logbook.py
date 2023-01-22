@@ -41,3 +41,14 @@ async def test_logbook(hass: HomeAssistant) -> None:
         LOGBOOK_ENTRY_MESSAGE: "encountered power loss from 2012-12-12 00:00:00"
         + " to 2012-12-12 01:00:00",
     }
+
+    # Test with no end date.
+    mock_event.data = {
+        ATTR_CODE: AlertType.POWER_LOSS,
+        ATTR_FROM: "2012-12-12 00:00:00",
+    }
+    result = callback(mock_event)
+    assert result == {
+        LOGBOOK_ENTRY_NAME: "ecoMAX",
+        LOGBOOK_ENTRY_MESSAGE: "encountered power loss from 2012-12-12 00:00:00",
+    }

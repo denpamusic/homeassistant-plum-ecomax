@@ -1,5 +1,6 @@
 """Test Plum ecoMAX water heater platform."""
 
+import asyncio
 from unittest.mock import AsyncMock, Mock, call, patch
 
 from homeassistant.components.water_heater import (
@@ -132,3 +133,16 @@ async def test_async_setup_and_update_entry(
         call(f"{key}_hysteresis", water_heater.async_update_hysteresis),
     )
     mock_device.unsubscribe.assert_has_calls(remove_calls)
+
+
+async def test_async_setup_entry_with_device_sensors_timeout(
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
+    mock_device: Device,
+    caplog,
+) -> None:
+    """Test setup water heater entry with device sensors timeout."""
+    mock_device.get_value.side_effect = asyncio.TimeoutError
+    assert not await async_setup_entry(hass, config_entry, async_add_entities)
+    assert "Couldn't load indirect water heater parameters" in caplog.text

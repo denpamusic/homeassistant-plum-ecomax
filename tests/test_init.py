@@ -174,6 +174,37 @@ async def test_migrate_entry(
     assert config_entry.version == 5
 
 
+async def test_migrate_entry_without_capabilities(
+    hass: HomeAssistant, config_entry: ConfigEntry, mock_device: Device
+) -> None:
+    """Test migrating entry from version 4 to version 5 when
+    capabilities is not present in the config entry data."""
+    config_entry.version = 4
+    mock_product = Mock()
+    mock_product.type = 0
+    mock_device.get_value = AsyncMock(return_value=mock_product)
+    data = {**config_entry.data}
+    data[CONF_MODEL] = "EM123A"
+    hass.config_entries.async_update_entry(config_entry, data=data)
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.connect",
+        new_callable=AsyncMock,
+        create=True,
+    ), patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.close",
+        new_callable=AsyncMock,
+        create=True,
+    ), patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.get_device",
+        create=True,
+        return_value=mock_device,
+        new_callable=AsyncMock,
+    ):
+        assert await async_migrate_entry(hass, config_entry)
+
+    assert config_entry.version == 5
+
+
 async def test_format_model_name() -> None:
     """Test model name formatter."""
     model_names = (
@@ -185,3 +216,25 @@ async def test_format_model_name() -> None:
 
     for raw, formatted in model_names:
         assert format_model_name(raw) == formatted
+
+
+async def test_migrate_entry_with_timeout(
+    hass: HomeAssistant, config_entry: ConfigEntry, mock_device: Device, caplog
+) -> None:
+    """Test migrating entry with get_device timeout."""
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.connect",
+        new_callable=AsyncMock,
+        create=True,
+    ), patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.close",
+        new_callable=AsyncMock,
+        create=True,
+    ), patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.get_device",
+        create=True,
+        side_effect=asyncio.TimeoutError,
+    ):
+        assert not await async_migrate_entry(hass, config_entry)
+
+    assert "Migration failed" in caplog.text

@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.entity import DeviceInfo
 from pyplumio import SerialConnection, TcpConnection
-from pyplumio.devices import Device
+from pyplumio.devices import Device, Mixer
 from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
 import pytest
 
@@ -20,10 +20,12 @@ from custom_components.plum_ecomax.connection import (
     EcomaxConnection,
     async_check_connection,
     async_get_connection_handler,
+    async_get_sub_devices,
 )
 from custom_components.plum_ecomax.const import (
     ATTR_MIXERS,
     ATTR_PRODUCT,
+    CONF_SUB_DEVICES,
     DOMAIN,
     ECOMAX,
 )
@@ -73,6 +75,18 @@ async def test_async_check_connection(mock_device: Device) -> None:
     mock_device.get_value.assert_has_calls(calls)
     mock_connection.close.assert_awaited_once()
     assert result == ("localhost", mock_product, mock_modules, [ATTR_MIXERS])
+
+
+async def test_async_get_sub_devices(mock_device: Device) -> None:
+    """Test helper function to check get connected sub-devices."""
+    mock_device.get_value.return_value = {0: Mock(spec=Mixer)}
+    mock_device.get_value.side_effect = (None, asyncio.TimeoutError)
+    sub_devices = await async_get_sub_devices(mock_device)
+    assert ATTR_MIXERS in sub_devices
+
+    # Test with timeout while trying to get mixers.
+    sub_devices = await async_get_sub_devices(mock_device)
+    assert not sub_devices
 
 
 async def test_async_setup(
@@ -128,3 +142,18 @@ async def test_async_setup(
     connection = EcomaxConnection(hass, config_entry, mock_connection_handler)
     mock_connection_handler.device = "/dev/ttyUSB0"
     assert connection.name == "/dev/ttyUSB0"
+
+
+async def test_async_update_sub_device(
+    hass: HomeAssistant, config_entry: ConfigEntry, mock_device: Device
+) -> None:
+    """Test function to update connected sub-devices."""
+    connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=TcpConnection))
+    with patch(
+        "custom_components.plum_ecomax.connection.async_get_sub_devices",
+        return_value=[ATTR_MIXERS],
+    ) as mock_async_get_sub_devices:
+        await connection.async_update_sub_devices()
+
+    mock_async_get_sub_devices.assert_awaited_once_with(mock_device)
+    assert config_entry.data[CONF_SUB_DEVICES] == [ATTR_MIXERS]
