@@ -136,7 +136,7 @@ class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
 
 MIXER_BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     EcomaxBinarySensorEntityDescription(
-        key="mixer_pump",
+        key="pump",
         name="Mixer pump",
         icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
