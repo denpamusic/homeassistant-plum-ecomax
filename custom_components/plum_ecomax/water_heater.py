@@ -187,7 +187,7 @@ async def async_setup_entry(
             for description in WATER_HEATER_TYPES
         ]
     except asyncio.TimeoutError:
-        _LOGGER.error("Couldn't load indirect water heater")
+        _LOGGER.error("Couldn't load indirect water heater parameters")
         return False
 
     return async_add_entities(entities, False)
