@@ -158,20 +158,20 @@ async def async_setup_entry(
     """Set up the sensor platform."""
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     try:
-        await connection.device.get_value(ATTR_ECOMAX_CONTROL, timeout=VALUE_TIMEOUT)
-    except asyncio.TimeoutError:
-        _LOGGER.warning(
-            "Control parameter not present, you won't be able to turn the device on/off"
-        )
-
-    try:
         await connection.device.get_value(ATTR_ECOMAX_PARAMETERS, timeout=VALUE_TIMEOUT)
         entities: list[EcomaxEntity] = [
             EcomaxSwitch(connection, description) for description in SWITCH_TYPES
         ]
     except asyncio.TimeoutError:
-        _LOGGER.error("Couldn't load device switches")
+        _LOGGER.error("Couldn't load device parameters")
         return False
+
+    try:
+        await connection.device.get_value(ATTR_ECOMAX_CONTROL, timeout=VALUE_TIMEOUT)
+    except asyncio.TimeoutError:
+        _LOGGER.warning(
+            "Control parameter not present, you won't be able to turn the device on/off"
+        )
 
     if connection.product_type == ProductType.ECOMAX_P:
         return setup_ecomax_p(connection, entities, async_add_entities)
