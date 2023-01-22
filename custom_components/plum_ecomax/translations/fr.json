@@ -1,0 +1,22 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Appareil déja connecté"
+        },
+        "error": {
+            "cannot_connect": "Connexion échouée",
+            "timeout_connect": "Delai de connexion dépassé",
+            "unknown": "Erreur inattendue"
+        },
+        "step": {
+            "user": {
+                "data": {
+                    "connection_type": "Type de connexion",
+                    "device": "Chemin de l'appareil",
+                    "host": "Hôte",
+                    "port": "Port"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,16 @@
+{
+    "state": {
+        "plum_ecomax__state": {
+            "off": "Off",
+            "fanning": "Ventilation",
+            "kindling": "Allumage",
+            "heating": "Chauffe",
+            "paused": "Pause",
+            "idle": "Inactif",
+            "standby": "En attente",
+            "burning_off": "Brulage",
+            "alert": "Alerte",
+            "unknown": "Unknown"
+        }
+    }
+}
