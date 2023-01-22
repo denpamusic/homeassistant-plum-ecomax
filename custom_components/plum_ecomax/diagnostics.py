@@ -17,12 +17,14 @@ REDACTED: Final = "**REDACTED**"
 def _sub_devices_as_dict(device_data: dict[str, Any]) -> dict[str, Any]:
     """Represent sub devices in the device data as dictionaries."""
     if ATTR_MIXERS in device_data:
-        device_data[ATTR_MIXERS] = list(map(lambda x: x.data, device_data[ATTR_MIXERS]))
+        device_data[ATTR_MIXERS] = {
+            x: y.data for x, y in device_data[ATTR_MIXERS].items()
+        }
 
     if ATTR_THERMOSTATS in device_data:
-        device_data[ATTR_THERMOSTATS] = list(
-            map(lambda x: x.data, device_data[ATTR_THERMOSTATS])
-        )
+        device_data[ATTR_THERMOSTATS] = {
+            x: y.data for x, y in device_data[ATTR_THERMOSTATS].items()
+        }
 
     return device_data
 

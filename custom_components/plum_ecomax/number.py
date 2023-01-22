@@ -268,15 +268,16 @@ async def async_setup_mixer_entities(
 ) -> None:
     """Setup mixer number entites."""
     await connection.device.get_value(ATTR_MIXER_PARAMETERS, timeout=VALUE_TIMEOUT)
-    for mixer in connection.device.data.get(ATTR_MIXERS, []):
+    mixers = connection.device.data.get(ATTR_MIXERS, {})
+    for index in mixers.keys():
         entities.extend(
-            MixerNumber(connection, description, mixer.index)
+            MixerNumber(connection, description, index)
             for description in MIXER_NUMBER_TYPES
         )
 
         if connection.has_mixers and connection.product_type == ProductType.ECOMAX_I:
             entities.extend(
-                MixerNumber(connection, description, mixer.index)
+                MixerNumber(connection, description, index)
                 for description in ECOMAX_I_MIXER_NUMBER_TYPES
             )
 

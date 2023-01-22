@@ -54,8 +54,8 @@ def fixture_mock_device() -> Generator[Device, None, None]:
             ATTR_PRODUCT: Mock(spec=ProductInfo),
             ATTR_MODULES: Mock(spec=ConnectedModules),
             ATTR_PASSWORD: "0000",
-            ATTR_MIXERS: [mock_mixer],
-            ATTR_THERMOSTATS: [mock_thermostat],
+            ATTR_MIXERS: {0: mock_mixer},
+            ATTR_THERMOSTATS: {0: mock_thermostat},
             "test_data": "test_value",
         }
         mock_device.set_value = AsyncMock()

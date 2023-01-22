@@ -474,10 +474,11 @@ async def async_setup_mixer_entities(
 ) -> None:
     """Setup mixer sensors."""
     await connection.device.get_value(ATTR_MIXER_SENSORS, timeout=VALUE_TIMEOUT)
-    for mixer in connection.device.data.get(ATTR_MIXERS, []):
+    mixers = connection.device.data.get(ATTR_MIXERS, {})
+    for index in mixers.keys():
         entities.extend(
             [
-                MixerSensor(connection, description, mixer.index)
+                MixerSensor(connection, description, index)
                 for description in MIXER_SENSOR_TYPES
             ]
         )

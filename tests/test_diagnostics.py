@@ -57,8 +57,8 @@ async def test_diagnostics(
         "test_data": "test_value",
         ATTR_PRODUCT: mock_connection.device.data[ATTR_PRODUCT],
         ATTR_PASSWORD: REDACTED,
-        ATTR_MIXERS: [{"test_mixer_data": "test_mixer_value"}],
-        ATTR_THERMOSTATS: [{"test_thermostat_data": "test_thermostat_value"}],
+        ATTR_MIXERS: {0: {"test_mixer_data": "test_mixer_value"}},
+        ATTR_THERMOSTATS: {0: {"test_thermostat_data": "test_thermostat_value"}},
         ATTR_MODULES: mock_connection.device.data[ATTR_MODULES],
     }
     assert mock_connection.device.data[ATTR_PRODUCT].uid == REDACTED
