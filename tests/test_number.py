@@ -13,7 +13,6 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.plum_ecomax.const import ATTR_MIXERS
 from custom_components.plum_ecomax.number import (
     ECOMAX_I_MIXER_NUMBER_TYPES,
-    ECOMAX_I_NUMBER_TYPES,
     ECOMAX_P_NUMBER_TYPES,
     MIXER_NUMBER_TYPES,
     NUMBER_TYPES,
@@ -176,7 +175,7 @@ async def test_model_check(
             ProductType.ECOMAX_I,
             "mixer_target_temp",
             "night_target_temp",
-            ECOMAX_I_NUMBER_TYPES + ECOMAX_I_MIXER_NUMBER_TYPES,
+            ECOMAX_I_MIXER_NUMBER_TYPES,
         ),
     ):
         product_type, first_number_key, last_number_key, number_types = model_sensor

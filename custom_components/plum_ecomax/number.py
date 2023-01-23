@@ -96,8 +96,6 @@ ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     ),
 )
 
-ECOMAX_I_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = ()
-
 
 class EcomaxNumber(EcomaxEntity, NumberEntity):
     """Represents ecoMAX number platform."""
@@ -257,9 +255,6 @@ def setup_ecomax_i(
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Setup number platform for ecoMAX I series controllers."""
-    entities.extend(
-        EcomaxNumber(connection, description) for description in ECOMAX_I_NUMBER_TYPES
-    )
     return async_add_entities(entities, False)
 
 
