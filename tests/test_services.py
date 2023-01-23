@@ -98,6 +98,21 @@ async def test_set_parameter_service(hass: HomeAssistant, mock_device: Device) -
             "test_name", 39, await_confirmation=True
         )
 
+    # Check that ecomax parameter is set when device is mixer with
+    # invalid index.
+    mock_hass_device = Mock()
+    mock_hass_device.identifiers = {("test", "test-mixer-1")}
+    mock_connection.device.set_value.reset_mock()
+    mock_connection.device.set_value.side_effect = None
+    with patch(
+        "homeassistant.helpers.device_registry.DeviceRegistry.async_get",
+        return_value=mock_hass_device,
+    ):
+        await func(mock_service_call)
+        mock_connection.device.set_value.assert_awaited_once_with(
+            "test_name", 39, await_confirmation=True
+        )
+
     # Check for error when device not found.
     with patch(
         "homeassistant.helpers.device_registry.DeviceRegistry.async_get",

@@ -78,9 +78,11 @@ def _get_target_device(
     identifier = list(device.identifiers)[0][1]
     if "-mixer-" in identifier:
         index = int(identifier.split("-", 3).pop())
-        mixers = connection.device.data.get(ATTR_MIXERS, [])
-        if index < len(mixers):
-            return connection.device.data[ATTR_MIXERS][index]
+        mixers = connection.device.data.get(ATTR_MIXERS, {})
+        try:
+            return mixers[index]
+        except KeyError:
+            pass
 
     return connection.device
 
