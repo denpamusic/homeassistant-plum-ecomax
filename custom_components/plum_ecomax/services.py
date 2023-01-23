@@ -33,7 +33,7 @@ SERVICE_SET_PARAMETER = "set_parameter"
 SERVICE_SET_PARAMETER_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_NAME): cv.string,
-        vol.Required(ATTR_VALUE): vol.Any(cv.positive_int, STATE_ON, STATE_OFF),
+        vol.Required(ATTR_VALUE): vol.Any(cv.positive_float, STATE_ON, STATE_OFF),
     }
 )
 
