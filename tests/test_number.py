@@ -142,7 +142,7 @@ async def test_async_setup_entry_with_device_sensors_timeout(
     """Test setup number entry with device sensors timeout."""
     mock_device.get_value.side_effect = asyncio.TimeoutError
     assert not await async_setup_entry(hass, config_entry, async_add_entities)
-    assert "Couldn't load device parameters" in caplog.text
+    assert "Couldn't load device numbers" in caplog.text
 
 
 async def test_async_setup_entry_with_mixer_sensors_timeout(

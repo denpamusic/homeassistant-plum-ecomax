@@ -163,7 +163,7 @@ async def async_setup_entry(
             EcomaxSwitch(connection, description) for description in SWITCH_TYPES
         ]
     except asyncio.TimeoutError:
-        _LOGGER.error("Couldn't load device parameters")
+        _LOGGER.error("Couldn't load device switches")
         return False
 
     try:

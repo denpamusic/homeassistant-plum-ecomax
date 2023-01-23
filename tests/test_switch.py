@@ -103,10 +103,10 @@ async def test_async_setup_entry_with_device_sensors_timeout(
     mock_device: Device,
     caplog,
 ) -> None:
-    """Test setup binary sensor entry with device sensors timeout."""
+    """Test setup switch entry with device sensors timeout."""
     mock_device.get_value.side_effect = asyncio.TimeoutError
     assert not await async_setup_entry(hass, config_entry, async_add_entities)
-    assert "Couldn't load device parameters" in caplog.text
+    assert "Couldn't load device switches" in caplog.text
 
 
 async def test_async_setup_entry_with_mixer_sensors_timeout(
@@ -116,7 +116,7 @@ async def test_async_setup_entry_with_mixer_sensors_timeout(
     mock_device: Device,
     caplog,
 ) -> None:
-    """Test setup binary sensor entry with mixer sensors timeout."""
+    """Test setup switch entry with mixer sensors timeout."""
     mock_device.get_value.side_effect = (None, asyncio.TimeoutError)
     assert await async_setup_entry(hass, config_entry, async_add_entities)
     assert "Control parameter not present" in caplog.text

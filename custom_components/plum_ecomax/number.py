@@ -290,7 +290,7 @@ async def async_setup_entry(
             EcomaxNumber(connection, description) for description in NUMBER_TYPES
         ]
     except asyncio.TimeoutError:
-        _LOGGER.error("Couldn't load device parameters")
+        _LOGGER.error("Couldn't load device numbers")
         return False
 
     if connection.has_mixers:
