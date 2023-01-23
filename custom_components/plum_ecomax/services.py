@@ -6,22 +6,19 @@ from typing import Final
 
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers import device_registry
+from homeassistant.helpers import device_registry, entity_registry
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.config_validation import make_entity_service_schema
+from homeassistant.helpers.service import (
+    SelectedEntities,
+    async_extract_referenced_entity_ids,
+)
 from pyplumio.devices import Device
 from pyplumio.exceptions import ParameterNotFoundError
 import voluptuous as vol
 
 from .connection import EcomaxConnection
-from .const import (
-    ATTR_DEVICE_ID,
-    ATTR_MIXERS,
-    ATTR_SCHEDULES,
-    ATTR_VALUE,
-    DOMAIN,
-    STATE_OFF,
-    STATE_ON,
-)
+from .const import ATTR_MIXERS, ATTR_SCHEDULES, ATTR_VALUE, DOMAIN, STATE_OFF, STATE_ON
 
 ATTR_NAME: Final = "name"
 ATTR_WEEKDAY: Final = "weekday"
@@ -30,7 +27,7 @@ ATTR_START: Final = "start"
 ATTR_END: Final = "end"
 
 SERVICE_SET_PARAMETER = "set_parameter"
-SERVICE_SET_PARAMETER_SCHEMA = vol.Schema(
+SERVICE_SET_PARAMETER_SCHEMA = make_entity_service_schema(
     {
         vol.Required(ATTR_NAME): cv.string,
         vol.Required(ATTR_VALUE): vol.Any(cv.positive_float, STATE_ON, STATE_OFF),
@@ -64,7 +61,7 @@ SERVICE_SET_SCHEDULE_SCHEMA = vol.Schema(
 _LOGGER = logging.getLogger(__name__)
 
 
-def _get_target_device(
+def extract_target_device(
     device_id: str, hass: HomeAssistant, connection: EcomaxConnection
 ) -> Device:
     """Get target device by device id."""
@@ -87,6 +84,23 @@ def _get_target_device(
     return connection.device
 
 
+def extract_referenced_devices(
+    hass: HomeAssistant, connection: EcomaxConnection, selected: SelectedEntities
+) -> set[Device]:
+    """Extract referenced devices from the selected entities."""
+    devices: set[Device] = set()
+    extracted: set[str] = set()
+    ent_reg = entity_registry.async_get(hass)
+    referenced = selected.referenced | selected.indirectly_referenced
+    for entity_id in referenced:
+        entity = ent_reg.async_get(entity_id)
+        if entity.device_id not in extracted:
+            devices.add(extract_target_device(entity.device_id, hass, connection))
+            extracted.add(entity.device_id)
+
+    return devices
+
+
 async def _setup_set_parameter_service(
     hass: HomeAssistant, connection: EcomaxConnection
 ) -> None:
@@ -96,16 +110,11 @@ async def _setup_set_parameter_service(
         """Service to set a parameter."""
         name = service_call.data[ATTR_NAME]
         value = service_call.data[ATTR_VALUE]
-        device_id = service_call.data.get(ATTR_DEVICE_ID)
-        target_device = (
-            connection.device
-            if device_id is None
-            else _get_target_device(device_id, hass, connection)
-        )
-
-        if target_device is not None:
+        selected = async_extract_referenced_entity_ids(hass, service_call)
+        devices = extract_referenced_devices(hass, connection, selected)
+        for device in devices:
             try:
-                if result := await target_device.set_value(
+                if result := await device.set_value(
                     name, value, await_confirmation=True
                 ):
                     return result

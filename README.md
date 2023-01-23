@@ -245,12 +245,12 @@ Provides ability to set device/sub-device parameter by name. Any parameter that 
 
 #### Targets
 
-| Device     | Default <sup>1</sup> | Description                             |
-|------------|:--------------------:|-----------------------------------------|
-| ecoMAX     | :white_check_mark:   | Set parameter on the ecoMAX controller. |
-| Mixer      | :x:                  | Set parameter on the mixer sub-device.  |
+| Device <sup>1</sup> | Description                             |
+|---------------------|-----------------------------------------|
+| ecoMAX              | Set parameter on the ecoMAX controller. |
+| Mixer               | Set parameter on the mixer sub-device.  |
 
-<small><sup>1</sup> If invalid or no target is selected, default to this device.</small>
+<small><sup>1</sup> Device can be targeted via any selector: area, device or entity.</small>
 
 
 ### Calibrate meter
