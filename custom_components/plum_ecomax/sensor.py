@@ -43,7 +43,6 @@ from .const import (
     ATTR_FUEL_BURNED,
     ATTR_MIXER_SENSORS,
     ATTR_MIXERS,
-    ATTR_MODULE_B,
     ATTR_MODULES,
     ATTR_PASSWORD,
     ATTR_PRODUCT,
@@ -246,6 +245,26 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         value_fn=lambda x: round(x, 1),
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
+    EcomaxSensorEntityDescription(
+        key="lower_buffer_temp",
+        name="Lower buffer temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        value_fn=lambda x: round(x, 1),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+    EcomaxSensorEntityDescription(
+        key="upper_buffer_temp",
+        name="Upper buffer temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        value_fn=lambda x: round(x, 1),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
 )
 
 ECOMAX_I_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
@@ -281,31 +300,7 @@ ECOMAX_I_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
 )
 
-MODULE_B_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
-    EcomaxSensorEntityDescription(
-        key="lower_buffer_temp",
-        name="Lower buffer temperature",
-        icon="mdi:thermometer",
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
-        filter_fn=lambda x: throttle(on_change(x), seconds=10),
-    ),
-    EcomaxSensorEntityDescription(
-        key="upper_buffer_temp",
-        name="Upper buffer temperature",
-        icon="mdi:thermometer",
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
-        filter_fn=lambda x: throttle(on_change(x), seconds=10),
-    ),
-)
-
 MODULE_SENSOR_TYPES: tuple[tuple[str, tuple[EcomaxSensorEntityDescription, ...]]] = (
-    (ATTR_MODULE_B, MODULE_B_SENSOR_TYPES),
 )
 
 

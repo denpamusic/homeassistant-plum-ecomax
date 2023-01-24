@@ -119,13 +119,12 @@ Temperature changes that are less than 0.1°C are ignored.
 | Fuel consumption                       | kg   | :white_check_mark: | :x:                 |
 | Total fuel burned <sup>1</sup>         | kg   | :white_check_mark: | :x:                 |
 | Heating power                          | kW   | :white_check_mark: | :x:                 |
+| Lower buffer temperature <sup>2</sup>  | °C   | :white_check_mark: | :x:                 |
+| Upper buffer temperature <sup>2</sup>  | °C   | :white_check_mark: | :x:                 |
 | Flame intensity <sup>2</sup>           | %    | :white_check_mark: | :x:                 |
-| Lower buffer temperature <sup>3</sup>  | °C   | :white_check_mark: | :x:                 |
-| Upper buffer temperature <sup>3</sup>  | °C   | :white_check_mark: | :x:                 |
  
-<small><sup>1</sup> This sensor is a special meter entity. It counts burned fuel when HomeAssistant is running.</small><br>
+<small><sup>1</sup> Special meter entity. It counts burned fuel when HomeAssistant is running.</small><br>
 <small><sup>2</sup> Controller support is required.</small><br>
-<small><sup>3</sup> Expansion module B is required.</small>
 
 
 #### Binary sensors
