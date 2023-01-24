@@ -82,6 +82,13 @@ ECOMAX_P_BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = 
         value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
+        key="fan2_exhaust",
+        name="Exhaust fan",
+        icon="mdi:fan",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=lambda x: x,
+    ),
+    EcomaxBinarySensorEntityDescription(
         key="feeder",
         name="Feeder",
         icon="mdi:screw-lag",

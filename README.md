@@ -141,6 +141,7 @@ Binary sensors have two states (on/off, running/not running, etc.).
 | Solar pump state        | :x:                | :white_check_mark:  |
 | Fan state               | :white_check_mark: | :x:                 |
 | Lighter state           | :white_check_mark: | :x:                 |
+| Exhaust fan state       | :white_check_mark: | :x:                 |
 
 #### Switches
 Switches have two states (on/off) that can be switched between.
