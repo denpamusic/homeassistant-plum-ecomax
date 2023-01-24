@@ -122,9 +122,11 @@ Temperature changes that are less than 0.1°C are ignored.
 | Lower buffer temperature <sup>2</sup>  | °C   | :white_check_mark: | :x:                 |
 | Upper buffer temperature <sup>2</sup>  | °C   | :white_check_mark: | :x:                 |
 | Flame intensity <sup>2</sup>           | %    | :white_check_mark: | :x:                 |
+| Oxygen level <sup>3</sup>              | %    | :white_check_mark: | :white_check_mark:  |
  
 <small><sup>1</sup> Special meter entity. It counts burned fuel when HomeAssistant is running.</small><br>
 <small><sup>2</sup> Controller support is required.</small><br>
+<small><sup>3</sup> ecoLAMBDA module is required.</small>
 
 
 #### Binary sensors

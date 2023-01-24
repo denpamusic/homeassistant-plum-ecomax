@@ -16,6 +16,7 @@ from custom_components.plum_ecomax.sensor import (
     ECOMAX_P_SENSOR_TYPES,
     METER_TYPES,
     MIXER_SENSOR_TYPES,
+    MODULE_LAMBDA_SENSOR_TYPES,
     SENSOR_TYPES,
     EcomaxMeter,
     EcomaxSensor,
@@ -173,6 +174,7 @@ async def test_model_check(
                 sensor_types_length
                 + len(sensor_types)
                 + (len(METER_TYPES) if product_type == 0 else 0)
+                + len(MODULE_LAMBDA_SENSOR_TYPES)
             )
             first_sensor = sensors[0]
             last_sensor = sensors[-1]

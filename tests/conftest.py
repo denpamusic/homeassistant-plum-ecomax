@@ -14,6 +14,8 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import ATTR_MODULES, EcomaxConnection
 from custom_components.plum_ecomax.const import (
+    ATTR_LAMBDA,
+    ATTR_LEVEL,
     ATTR_MIXERS,
     ATTR_PASSWORD,
     ATTR_PRODUCT,
@@ -56,6 +58,7 @@ def fixture_mock_device() -> Generator[Device, None, None]:
             ATTR_PASSWORD: "0000",
             ATTR_MIXERS: {0: mock_mixer},
             ATTR_THERMOSTATS: {0: mock_thermostat},
+            ATTR_LAMBDA: {ATTR_LEVEL: 166},
             "test_data": "test_value",
         }
         mock_device.set_value = AsyncMock()

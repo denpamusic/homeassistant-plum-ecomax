@@ -8,6 +8,8 @@ from pyplumio.devices import Device
 
 from custom_components.plum_ecomax.connection import ATTR_MODULES, EcomaxConnection
 from custom_components.plum_ecomax.const import (
+    ATTR_LAMBDA,
+    ATTR_LEVEL,
     ATTR_MIXERS,
     ATTR_PASSWORD,
     ATTR_PRODUCT,
@@ -55,6 +57,7 @@ async def test_diagnostics(
     }
     assert result["data"] == {
         "test_data": "test_value",
+        ATTR_LAMBDA: {ATTR_LEVEL: 166},
         ATTR_PRODUCT: mock_connection.device.data[ATTR_PRODUCT],
         ATTR_PASSWORD: REDACTED,
         ATTR_MIXERS: {0: {"test_mixer_data": "test_mixer_value"}},
