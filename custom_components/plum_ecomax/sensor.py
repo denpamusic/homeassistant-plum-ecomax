@@ -41,8 +41,7 @@ import voluptuous as vol
 from .connection import VALUE_TIMEOUT, EcomaxConnection
 from .const import (
     ATTR_FUEL_BURNED,
-    ATTR_LAMBDA,
-    ATTR_LEVEL,
+    ATTR_LAMBDA_LEVEL,
     ATTR_MIXER_SENSORS,
     ATTR_MIXERS,
     ATTR_MODULE_LAMBDA,
@@ -305,14 +304,12 @@ ECOMAX_I_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
 
 MODULE_LAMBDA_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
-        key=ATTR_LAMBDA,
+        key=ATTR_LAMBDA_LEVEL,
         name="Oxygen level",
         icon="mdi:weather-windy",
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda x: x
-        if x[ATTR_LEVEL] is None
-        else round((x[ATTR_LEVEL] / 10), 1),
+        value_fn=lambda x: x if x is None else round((x / 10), 1),
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
 )
