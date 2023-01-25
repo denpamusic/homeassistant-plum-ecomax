@@ -58,8 +58,6 @@ from .entity import EcomaxEntity, MixerEntity
 SERVICE_RESET_METER: Final = "reset_meter"
 SERVICE_CALIBRATE_METER: Final = "calibrate_meter"
 
-DEVICE_CLASS_STATE: Final = "plum_ecomax__state"
-
 STATE_FANNING: Final = "fanning"
 STATE_KINDLING: Final = "kindling"
 STATE_HEATING: Final = "heating"
@@ -152,7 +150,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         name="State",
         icon="mdi:eye",
         value_fn=lambda x: STATES[x] if x < len(STATES) else STATE_UNKNOWN,
-        device_class=DEVICE_CLASS_STATE,
+        translation_key="ecomax_state",
     ),
     EcomaxSensorEntityDescription(
         key=ATTR_PASSWORD,

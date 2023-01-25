@@ -49,7 +49,6 @@ While this integration is built on top of PyPlumIO library, which from the start
 
 If you have an ecoNET 300 device, be sure to [check it out](https://github.com/pblxptr/ecoNET-300-Home-Assistant-Integration)!
 
-
 ## Installation
 ### HACS
 1. Follow [this guide](https://hacs.xyz/docs/faq/custom_repositories) to add homeassistant-plum-ecomax as custom repository to the HACS.  
@@ -75,7 +74,6 @@ cp -r ./homeassistant-plum-ecomax/custom_components ~/.homeassistant
 
 3. Add empty `plum_ecomax:` section to your `configuration.yaml` file.
 4. Restart Home Assistant.
-
 
 ## Configuration
 
@@ -150,7 +148,6 @@ Temperature changes that are less than 0.1°C are ignored.
 <small><sup>2</sup> Controller support is required.</small><br>
 <small><sup>3</sup> ecoLAMBDA module is required.</small>
 
-
 #### Binary sensors
 Binary sensors have two states (on/off, running/not running, etc.).
 
@@ -179,7 +176,6 @@ Switches have two states (on/off) that can be switched between.
 | Heating schedule switch          | :white_check_mark: | :x:                 |
 | Water heater schedule switch     | :white_check_mark: | :x:                 |
 
-
 #### Numbers
 Numbers are represented as changeable sliders or input boxes.
 
@@ -192,7 +188,6 @@ Numbers are represented as changeable sliders or input boxes.
 | Maximum heating temperature | °C     | slider | :white_check_mark: | :x:                 |
 | Grate mode temperature      | °C     | slider | :white_check_mark: | :x:                 |
 | Fuel calorific value        | kWh/kg | box    | :white_check_mark: | :x:                 |
-
 
 #### Diagnostics
 Diagnostics are random entities that provide you with service and debug information.
@@ -209,15 +204,6 @@ Diagnostics are random entities that provide you with service and debug informat
 The integration provides full control for the connected indirect water heater using Home Assistant's [internal water heater integration](https://www.home-assistant.io/integrations/water_heater/).
 
 This includes ability to set target temperature, switch into priority, non-priority mode or turn off.
-
-Please note, that due to the way internal integration is implemented, it is impossible to set custom mode names, so please use the following reference table to convert between modes displayed in Home Assistant and ecoMAX.
-
-| HomeAssistant water heater mode | ecoMAX water heater mode       |
-|---------------------------------|--------------------------------|
-| Off                             | Water heater disabled          |
-| Performance                     | Water heater priority mode     |
-| Eco                             | Water heater non-priority mode |
-
 
 ### Mixers/Circuits (Sub-devices)
 Following section lists entities that are added to each sub-device.

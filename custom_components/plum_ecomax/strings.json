@@ -18,5 +18,32 @@
     "abort": {
       "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
     }
+  },
+  "entity": {
+    "sensor": {
+      "ecomax_state": {
+        "state": {
+          "off": "[%key:common::state::off%]",
+          "fanning": "Fanning",
+          "kindling": "Kindling",
+          "heating": "Heating",
+          "paused": "[%key:common::state::paused%]",
+          "idle": "[%key:common::state::idle%]",
+          "standby": "[%key:common::state::standby%]",
+          "burning_off": "Burning Off",
+          "alert": "Alert",
+          "unknown": "Unknown"
+        }
+      }
+    },
+    "water_heater": {
+      "ecomax_water_heater": {
+        "state": {
+          "off": "[%key:common::state::off%]",
+          "priority": "Priority",
+          "non_priority": "Non-priority"
+        }
+      }
+    }
   }
 }

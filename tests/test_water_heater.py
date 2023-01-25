@@ -3,11 +3,7 @@
 import asyncio
 from unittest.mock import AsyncMock, Mock, call, patch
 
-from homeassistant.components.water_heater import (
-    STATE_OFF,
-    STATE_PERFORMANCE,
-    WaterHeaterEntityFeature,
-)
+from homeassistant.components.water_heater import STATE_OFF, WaterHeaterEntityFeature
 from homeassistant.const import PRECISION_WHOLE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -17,6 +13,7 @@ from pyplumio.helpers.parameter import Parameter
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.water_heater import (
+    STATE_PRIORITY,
     WATER_HEATER_MODES,
     EcomaxWaterHeater,
     async_setup_entry,
@@ -59,7 +56,7 @@ async def test_async_setup_and_update_entry(
 
     # Update current operation.
     await water_heater.async_update_work_mode(numeric_parameter)
-    assert water_heater.current_operation == STATE_PERFORMANCE
+    assert water_heater.current_operation == STATE_PRIORITY
 
     # Update target temperature.
     await water_heater.async_update_target_temp(numeric_parameter)

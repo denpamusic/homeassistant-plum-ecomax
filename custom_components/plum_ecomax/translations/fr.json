@@ -18,5 +18,32 @@
         }
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "ecomax_state": {
+        "state": {
+          "off": "Off",
+          "fanning": "Ventilation",
+          "kindling": "Allumage",
+          "heating": "Chauffe",
+          "paused": "Pause",
+          "idle": "Inactif",
+          "standby": "En attente",
+          "burning_off": "Brulage",
+          "alert": "Alerte",
+          "unknown": "Unknown"
+        }
+      }
+    },
+    "water_heater": {
+      "ecomax_water_heater": {
+        "state": {
+          "off": "Off",
+          "priority": "Priorité",
+          "non_priority": "Non prioritaire"
+        }
+      }
+    }
   }
 }

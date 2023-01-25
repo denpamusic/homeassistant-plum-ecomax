@@ -18,5 +18,32 @@
         }
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "ecomax_state": {
+        "state": {
+          "off": "Вимкнено",
+          "fanning": "Роздув",
+          "kindling": "Розпалювання",
+          "heating": "Нагрів",
+          "paused": "Підтримка",
+          "idle": "Застій",
+          "standby": "Очікування",
+          "burning_off": "Очищення",
+          "alert": "Тривога",
+          "unknown": "Невідомо"
+        }
+      }
+    },
+    "water_heater": {
+      "ecomax_water_heater": {
+        "state": {
+          "off": "Вимкнено",
+          "priority": "Пріоритет",
+          "non_priority": "Без пріоритету"
+        }
+      }
+    }
   }
 }

@@ -7,14 +7,12 @@ import logging
 from typing import Final
 
 from homeassistant.components.water_heater import (
-    STATE_ECO,
     STATE_OFF,
-    STATE_PERFORMANCE,
     WaterHeaterEntity,
     WaterHeaterEntityEntityDescription,
     WaterHeaterEntityFeature,
 )
-from homeassistant.const import PRECISION_WHOLE, UnitOfTemperature
+from homeassistant.const import ATTR_TEMPERATURE, PRECISION_WHOLE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -26,9 +24,10 @@ from .connection import VALUE_TIMEOUT, EcomaxConnection
 from .const import ATTR_WATER_HEATER, ATTR_WATER_HEATER_TEMP, DOMAIN
 from .entity import EcomaxEntity
 
-WATER_HEATER_MODES: Final = [STATE_OFF, STATE_PERFORMANCE, STATE_ECO]
+STATE_PRIORITY: Final = "priority"
+STATE_NON_PRIORITY: Final = "non_priority"
 
-ATTR_TEMPERATURE: Final = "temperature"
+WATER_HEATER_MODES: Final = [STATE_OFF, STATE_PRIORITY, STATE_NON_PRIORITY]
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -42,6 +41,7 @@ WATER_HEATER_TYPES: tuple[EcomaxWaterHeaterEntityDescription, ...] = (
     EcomaxWaterHeaterEntityDescription(
         key=ATTR_WATER_HEATER,
         name="Indirect water heater",
+        translation_key="ecomax_water_heater",
     ),
 )
 
