@@ -306,7 +306,7 @@ MODULE_LAMBDA_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key=ATTR_LAMBDA_LEVEL,
         name="Oxygen level",
-        icon="mdi:weather-windy",
+        icon="mdi:weather-windy-variant",
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda x: x if x is None else round((x / 10), 1),
