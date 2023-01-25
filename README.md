@@ -9,17 +9,14 @@
 This Home Assistant integration provides support for ecoMAX controllers manufactured by [Plum Sp. z o.o.](https://www.plum.pl/)
 
 It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and supports connection to ecoMAX controller via RS-485 to Ethernet/Wifi converters or via RS-485 to USB adapter.
+
 ![ecoMAX controllers](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/ecomax.png)
-
-## ecoNET 300
-While this integration is built on top of PyPlumIO library, which from the start was intended as ecoNET 300 alternative, **Patryk B** is currently developing awesome HASS integration that communicates with ecoMAX controller via ecoNET 300 device.
-
-If you have an ecoNET 300 device, be sure to [check it out](https://github.com/pblxptr/ecoNET-300-Home-Assistant-Integration)!
 
 ## Table of contents
 - [Installation](#installation)
   - [HACS](#hacs)
   - [Manual](#manual)
+- [Connect the ecoMAX](#connect-the-ecomax)
 - [Configuration](#configuration)
 - [Entities](#entities)
   - [Controller](#controller-hub)
@@ -27,6 +24,31 @@ If you have an ecoNET 300 device, be sure to [check it out](https://github.com/p
   - [Mixers/Circuits](#mixerscircuits-sub-devices)
 - [Services](#services)
 - [License](#license)
+
+## Connect the ecoMAX
+
+With this integration you have two ways of connecting to you ecoMAX controller. One is directly connecting the PC that runs Home Assistant via **RS485 to USB adapter**.
+
+Other way is to use **RS485 to WiFi converter**. This has a benefit of being able to move PC that runs Home Assistant away from the boiler and connect to it wirelessly.
+
+![RS485 adapter and converters](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/rs485.png)
+
+Regardless of the chosen method, you'll need to find RS485 port on your ecoMAX controller.
+If you have ecoSTER thermostat, it's easy, as ecoSTERs also use RS485 port and you'll just have to connect your adapter/converter in parallel with it.
+
+If you don't have ecoSTER, look for pins that are labeled as "D+" and "D-" then connect your device as follows:
+```
+Adapter ->  ecoMAX
+[A]     ->  [D+]
+[B]     ->  [D-]
+[GND]   ->  [GND] (optional, less interference)
+```
+
+### ecoNET 300
+While this integration is built on top of PyPlumIO library, which from the start was intended as ecoNET 300 alternative, **Patryk B** is currently developing awesome HASS integration that communicates with ecoMAX controller via ecoNET 300 device.
+
+If you have an ecoNET 300 device, be sure to [check it out](https://github.com/pblxptr/ecoNET-300-Home-Assistant-Integration)!
+
 
 ## Installation
 ### HACS
