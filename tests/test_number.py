@@ -97,8 +97,8 @@ async def test_async_setup_and_update_entry(
             else mock_device.data[ATTR_MIXERS][0]
         )
         await number.async_set_native_value(2.2)
-        target_device.set_value.assert_called_once_with(
-            number.entity_description.key, 2.2, await_confirmation=False
+        target_device.set_value_nowait.assert_called_once_with(
+            number.entity_description.key, 2.2
         )
         assert number.native_value == 2.2
 

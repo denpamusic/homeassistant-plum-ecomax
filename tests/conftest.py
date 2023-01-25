@@ -61,6 +61,7 @@ def fixture_mock_device() -> Generator[Device, None, None]:
             "test_data": "test_value",
         }
         mock_device.set_value = AsyncMock()
+        mock_device.set_value_nowait = AsyncMock()
         mock_device.get_value = AsyncMock()
         mock_device.subscribe = Mock()
         yield mock_device

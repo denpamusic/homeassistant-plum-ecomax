@@ -162,9 +162,7 @@ async def test_set_parameter_service(hass: HomeAssistant, mock_device: Device) -
     ):
         await func(mock_service_call)
 
-    mock_connection.device.set_value.assert_called_once_with(
-        "test_name", 39, await_confirmation=True
-    )
+    mock_connection.device.set_value.assert_called_once_with("test_name", 39)
 
     # Check that error is raised if parameter not found.
     mock_connection.device.set_value.side_effect = ParameterNotFoundError

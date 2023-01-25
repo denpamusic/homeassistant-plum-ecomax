@@ -114,9 +114,7 @@ async def _setup_set_parameter_service(
         devices = extract_referenced_devices(hass, connection, selected)
         for device in devices:
             try:
-                if result := await device.set_value(
-                    name, value, await_confirmation=True
-                ):
+                if result := await device.set_value(name, value):
                     return result
             except ParameterNotFoundError as e:
                 _LOGGER.exception(e)

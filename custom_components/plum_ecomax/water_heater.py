@@ -86,20 +86,17 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
         temperature = kwargs[ATTR_TEMPERATURE]
-        await self.device.set_value(
-            f"{self.entity_description.key}_target_temp",
-            int(temperature),
-            await_confirmation=False,
+        await self.device.set_value_nowait(
+            f"{self.entity_description.key}_target_temp", int(temperature)
         )
         self._attr_target_temperature = temperature
         self.async_write_ha_state()
 
     async def async_set_operation_mode(self, operation_mode):
         """Set new target operation mode."""
-        await self.device.set_value(
+        await self.device.set_value_nowait(
             f"{self.entity_description.key}_work_mode",
             hass_to_ecomax_mode(operation_mode),
-            await_confirmation=False,
         )
         self._attr_current_operation = operation_mode
         self.async_write_ha_state()
