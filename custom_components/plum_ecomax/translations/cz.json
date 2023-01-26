@@ -1,0 +1,49 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Zařízení je již nakonfigurováno"
+    },
+    "error": {
+      "cannot_connect": "Připojení selhalo",
+      "timeout_connect": "Časový limit připojení vypršel",
+      "unknown": "Neočekávaná chyba"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "connection_type": "Cesta k zařízení",
+          "device": "Cesta",
+          "host": "IP adresa/Doména",
+          "port": "Port"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "ecomax_state": {
+        "state": {
+          "off": "Vypnuto",
+          "fanning": "Stabilizace",
+          "kindling": "Roztápění",
+          "heating": "Práce",
+          "paused": "Pozastaveno",
+          "idle": "Nečinný",
+          "standby": "Pohotovost",
+          "burning_off": "Spalování",
+          "alert": "Výstraha",
+          "unknown": "Neznámý"
+        }
+      }
+    },
+    "water_heater": {
+      "ecomax_water_heater": {
+        "state": {
+          "off": "Vypnuto",
+          "priority": "Přednost",
+          "non_priority": "Bez přednosti"
+        }
+      }
+    }
+  }
+}
