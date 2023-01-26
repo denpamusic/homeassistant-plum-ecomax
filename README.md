@@ -27,7 +27,7 @@ It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and sup
 
 ## Connect the ecoMAX
 
-With this integration you have two ways of connecting to you ecoMAX controller. One is directly connecting the PC that runs Home Assistant via **RS485 to USB adapter**.
+With this integration you have two ways of connecting to your ecoMAX controller. One is directly connecting the PC that runs Home Assistant via **RS485 to USB adapter**.
 
 Other way is to use **RS485 to WiFi converter**. This has a benefit of being able to move PC that runs Home Assistant away from the boiler and connect to it wirelessly.
 
