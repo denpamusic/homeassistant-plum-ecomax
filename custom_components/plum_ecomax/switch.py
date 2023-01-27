@@ -127,6 +127,17 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
         self.async_write_ha_state()
 
 
+ECOMAX_I_MIXER_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
+    EcomaxSwitchEntityDescription(
+        key="support",
+        name="Enable circuit",
+    ),
+    EcomaxSwitchEntityDescription(
+        key="summer_work",
+        name="Enable circuit in summer mode",
+    ),
+)
+
 ECOMAX_P_MIXER_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     EcomaxSwitchEntityDescription(
         key="weather_control",
@@ -136,20 +147,15 @@ ECOMAX_P_MIXER_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
         key="off_therm_pump",
         name="Disable pump on thermostat",
     ),
-)
-
-ECOMAX_I_MIXER_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     EcomaxSwitchEntityDescription(
-        key="mixer_regulation",
-        name="Enable mixer",
+        key="summer_work",
+        name="Enable mixer in summer mode",
     ),
 )
 
-ECOMAX_MIXER_SWITCH_TYPES: dict[
-    ProductType, tuple[EcomaxSwitchEntityDescription, ...]
-] = {
-    ProductType.ECOMAX_P: ECOMAX_P_MIXER_SWITCH_TYPES,
+MIXER_SWITCH_TYPES: dict[ProductType, tuple[EcomaxSwitchEntityDescription, ...]] = {
     ProductType.ECOMAX_I: ECOMAX_I_MIXER_SWITCH_TYPES,
+    ProductType.ECOMAX_P: ECOMAX_P_MIXER_SWITCH_TYPES,
 }
 
 
@@ -197,9 +203,7 @@ async def async_setup_mixer_entities(
     for index in mixers.keys():
         entities.extend(
             MixerSwitch(connection, description, index)
-            for description in ECOMAX_MIXER_SWITCH_TYPES.get(
-                connection.product_type, ()
-            )
+            for description in MIXER_SWITCH_TYPES.get(connection.product_type, ())
         )
 
 

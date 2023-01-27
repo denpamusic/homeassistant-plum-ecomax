@@ -12,10 +12,11 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import VALUE_TIMEOUT
 from custom_components.plum_ecomax.sensor import (
+    ECOMAX_I_MIXER_SENSOR_TYPES,
     ECOMAX_I_SENSOR_TYPES,
+    ECOMAX_P_MIXER_SENSOR_TYPES,
     ECOMAX_P_SENSOR_TYPES,
     METER_TYPES,
-    MIXER_SENSOR_TYPES,
     MODULE_LAMBDA_SENSOR_TYPES,
     SENSOR_TYPES,
     EcomaxMeter,
@@ -147,16 +148,27 @@ async def test_model_check(
 ):
     """Test sensor model check."""
     for model_sensor in (
-        (ProductType.ECOMAX_P, "heating_temp", "fuel_burned", ECOMAX_P_SENSOR_TYPES),
+        (
+            ProductType.ECOMAX_P,
+            "heating_temp",
+            "fuel_burned",
+            SENSOR_TYPES
+            + METER_TYPES
+            + MODULE_LAMBDA_SENSOR_TYPES
+            + ECOMAX_P_SENSOR_TYPES
+            + ECOMAX_P_MIXER_SENSOR_TYPES,
+        ),
         (
             ProductType.ECOMAX_I,
             "heating_temp",
             "fireplace_temp",
-            ECOMAX_I_SENSOR_TYPES,
+            SENSOR_TYPES
+            + MODULE_LAMBDA_SENSOR_TYPES
+            + ECOMAX_I_SENSOR_TYPES
+            + ECOMAX_I_MIXER_SENSOR_TYPES,
         ),
     ):
         product_type, first_sensor_key, last_sensor_key, sensor_types = model_sensor
-        sensor_types_length = len(SENSOR_TYPES) + len(MIXER_SENSOR_TYPES)
         with patch(
             "custom_components.plum_ecomax.sensor.async_get_current_platform"
         ), patch(
@@ -170,12 +182,7 @@ async def test_model_check(
             await async_setup_entry(hass, config_entry, mock_async_add_entities)
             args, _ = mock_async_add_entities.call_args
             sensors = args[0]
-            assert len(sensors) == (
-                sensor_types_length
-                + len(sensor_types)
-                + (len(METER_TYPES) if product_type == 0 else 0)
-                + len(MODULE_LAMBDA_SENSOR_TYPES)
-            )
+            assert len(sensors) == len(sensor_types)
             first_sensor = sensors[0]
             last_sensor = sensors[-1]
             assert first_sensor.entity_description.key == first_sensor_key

@@ -69,13 +69,13 @@ async def test_model_check(
             ProductType.ECOMAX_P,
             ATTR_ECOMAX_CONTROL,
             "water_heater_schedule_switch",
-            ECOMAX_P_SWITCH_TYPES + ECOMAX_P_MIXER_SWITCH_TYPES,
+            SWITCH_TYPES + ECOMAX_P_SWITCH_TYPES + ECOMAX_P_MIXER_SWITCH_TYPES,
         ),
         (
             ProductType.ECOMAX_I,
             ATTR_ECOMAX_CONTROL,
-            "mixer_regulation",
-            ECOMAX_I_MIXER_SWITCH_TYPES,
+            "summer_work",
+            SWITCH_TYPES + ECOMAX_I_MIXER_SWITCH_TYPES,
         ),
     ):
         product_type, first_switch_key, last_switch_key, switch_types = model_sensor
@@ -92,7 +92,7 @@ async def test_model_check(
             await async_setup_entry(hass, config_entry, mock_async_add_entities)
             args, _ = mock_async_add_entities.call_args
             switches = args[0]
-            assert len(switches) == (len(SWITCH_TYPES) + len(switch_types))
+            assert len(switches) == len(switch_types)
             first_switch = switches[0]
             last_switch = switches[-1]
             assert first_switch.entity_description.key == first_switch_key

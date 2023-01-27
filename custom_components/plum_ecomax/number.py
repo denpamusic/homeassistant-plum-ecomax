@@ -49,7 +49,7 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = ()
 ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="heating_target_temp",
-        name="Heating Target Temperature",
+        name="Target heating temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         min_value_key="min_heating_target_temp",
@@ -57,19 +57,19 @@ ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     ),
     EcomaxNumberEntityDescription(
         key="min_heating_target_temp",
-        name="Minimum Heating Temperature",
+        name="Minimum heating temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
     ),
     EcomaxNumberEntityDescription(
         key="max_heating_target_temp",
-        name="Maximum Heating Temperature",
+        name="Maximum heating temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
     ),
     EcomaxNumberEntityDescription(
         key="heating_temp_grate",
-        name="Grate Mode Temperature",
+        name="Grate mode temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         min_value_key="min_heating_target_temp",
@@ -77,19 +77,19 @@ ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     ),
     EcomaxNumberEntityDescription(
         key="min_fuzzy_logic_power",
-        name="Fuzzy Logic Minimum Power",
+        name="Fuzzy logic minimum power",
         native_unit_of_measurement=PERCENTAGE,
         native_step=1,
     ),
     EcomaxNumberEntityDescription(
         key="max_fuzzy_logic_power",
-        name="Fuzzy Logic Maximum Power",
+        name="Fuzzy logic maximum power",
         native_unit_of_measurement=PERCENTAGE,
         native_step=1,
     ),
     EcomaxNumberEntityDescription(
         key="fuel_calorific_value_kwh_kg",
-        name="Fuel Calorific Value",
+        name="Fuel calorific value",
         native_unit_of_measurement=CALORIFIC_KWH_KG,
         native_step=0.1,
         mode=NumberMode.BOX,
@@ -172,10 +172,49 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
         self.async_write_ha_state()
 
 
-MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
+ECOMAX_I_MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="mixer_target_temp",
-        name="Mixer target temperature",
+        name="Target circuit temperature",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        native_step=1,
+        min_value_key="min_target_temp",
+        max_value_key="max_target_temp",
+    ),
+    EcomaxNumberEntityDescription(
+        key="min_target_temp",
+        name="Minimum circuit temperature",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        native_step=1,
+    ),
+    EcomaxNumberEntityDescription(
+        key="max_target_temp",
+        name="Maximum circuit temperature",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        native_step=1,
+    ),
+    EcomaxNumberEntityDescription(
+        key="day_target_temp",
+        name="Day target circuit temperature",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        native_step=1,
+        min_value_key="min_target_temp",
+        max_value_key="max_target_temp",
+    ),
+    EcomaxNumberEntityDescription(
+        key="night_target_temp",
+        name="Night target circuit temperature",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        native_step=1,
+        min_value_key="min_target_temp",
+        max_value_key="max_target_temp",
+    ),
+)
+
+ECOMAX_P_MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
+    EcomaxNumberEntityDescription(
+        key="mixer_target_temp",
+        name="Target mixer temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         min_value_key="min_target_temp",
@@ -195,28 +234,10 @@ MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     ),
 )
 
-ECOMAX_I_MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
-    EcomaxNumberEntityDescription(
-        key="day_target_temp",
-        name="Day mixer target temperature",
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        native_step=1,
-        min_value_key="min_target_temp",
-        max_value_key="max_target_temp",
-    ),
-    EcomaxNumberEntityDescription(
-        key="night_target_temp",
-        name="Night mixer target temperature",
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        native_step=1,
-        min_value_key="min_target_temp",
-        max_value_key="max_target_temp",
-    ),
-)
-
-PRODUCT_MIXER_SENSOR_TYPES: tuple[
-    tuple[ProductType, tuple[EcomaxNumberEntityDescription, ...]], ...
-] = ((ProductType.ECOMAX_I, ECOMAX_I_MIXER_NUMBER_TYPES),)
+MIXER_NUMBER_TYPES: dict[ProductType, tuple[EcomaxNumberEntityDescription, ...]] = {
+    ProductType.ECOMAX_I: ECOMAX_I_MIXER_NUMBER_TYPES,
+    ProductType.ECOMAX_P: ECOMAX_P_MIXER_NUMBER_TYPES,
+}
 
 
 class MixerNumber(MixerEntity, EcomaxNumber):
@@ -263,14 +284,8 @@ async def async_setup_mixer_entities(
     for index in mixers.keys():
         entities.extend(
             MixerNumber(connection, description, index)
-            for description in MIXER_NUMBER_TYPES
+            for description in MIXER_NUMBER_TYPES.get(connection.product_type, ())
         )
-
-        if connection.product_type == ProductType.ECOMAX_I:
-            entities.extend(
-                MixerNumber(connection, description, index)
-                for description in ECOMAX_I_MIXER_NUMBER_TYPES
-            )
 
 
 async def async_setup_entry(

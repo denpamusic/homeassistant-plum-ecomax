@@ -13,8 +13,9 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.plum_ecomax.binary_sensor import (
     BINARY_SENSOR_TYPES,
     ECOMAX_I_BINARY_SENSOR_TYPES,
+    ECOMAX_I_MIXER_BINARY_SENSOR_TYPES,
     ECOMAX_P_BINARY_SENSOR_TYPES,
-    MIXER_BINARY_SENSOR_TYPES,
+    ECOMAX_P_MIXER_BINARY_SENSOR_TYPES,
     EcomaxBinarySensor,
     async_setup_entry,
 )
@@ -80,13 +81,17 @@ async def test_model_check(
             ProductType.ECOMAX_P,
             "heating_pump",
             "lighter",
-            ECOMAX_P_BINARY_SENSOR_TYPES,
+            BINARY_SENSOR_TYPES
+            + ECOMAX_P_BINARY_SENSOR_TYPES
+            + ECOMAX_P_MIXER_BINARY_SENSOR_TYPES,
         ),
         (
             ProductType.ECOMAX_I,
             "heating_pump",
             "fireplace_pump",
-            ECOMAX_I_BINARY_SENSOR_TYPES,
+            BINARY_SENSOR_TYPES
+            + ECOMAX_I_BINARY_SENSOR_TYPES
+            + ECOMAX_I_MIXER_BINARY_SENSOR_TYPES,
         ),
     ):
         (
@@ -95,9 +100,6 @@ async def test_model_check(
             last_binary_sensor_key,
             binary_sensor_types,
         ) = model_sensor
-        binary_sensor_types_length = len(BINARY_SENSOR_TYPES) + len(
-            MIXER_BINARY_SENSOR_TYPES
-        )
         with patch(
             "custom_components.plum_ecomax.sensor.async_get_current_platform"
         ), patch(
@@ -111,9 +113,7 @@ async def test_model_check(
             await async_setup_entry(hass, config_entry, mock_async_add_entities)
             args, _ = mock_async_add_entities.call_args
             binary_sensors = args[0]
-            assert len(binary_sensors) == (
-                binary_sensor_types_length + len(binary_sensor_types)
-            )
+            assert len(binary_sensors) == len(binary_sensor_types)
             first_binary_sensor = binary_sensors[0]
             last_binary_sensor = binary_sensors[-1]
             assert first_binary_sensor.entity_description.key == first_binary_sensor_key

@@ -339,7 +339,31 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
         self.async_write_ha_state()
 
 
-MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
+ECOMAX_I_MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
+    EcomaxSensorEntityDescription(
+        key="current_temp",
+        name="Circuit temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        value_fn=lambda x: round(x, 1),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+    EcomaxSensorEntityDescription(
+        key="target_temp",
+        name="Circuit target temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        value_fn=lambda x: round(x, 1),
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+)
+
+
+ECOMAX_P_MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="current_temp",
         name="Mixer temperature",
@@ -361,6 +385,11 @@ MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
 )
+
+MIXER_SENSOR_TYPES: dict[ProductType, tuple[EcomaxSensorEntityDescription, ...]] = {
+    ProductType.ECOMAX_I: ECOMAX_I_MIXER_SENSOR_TYPES,
+    ProductType.ECOMAX_P: ECOMAX_P_MIXER_SENSOR_TYPES,
+}
 
 
 class MixerSensor(MixerEntity, EcomaxSensor):
@@ -487,7 +516,7 @@ async def async_setup_mixer_entities(
         entities.extend(
             [
                 MixerSensor(connection, description, index)
-                for description in MIXER_SENSOR_TYPES
+                for description in MIXER_SENSOR_TYPES.get(connection.product_type, ())
             ]
         )
 

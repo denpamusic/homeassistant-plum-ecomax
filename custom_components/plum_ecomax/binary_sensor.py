@@ -141,7 +141,17 @@ class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
         self.async_write_ha_state()
 
 
-MIXER_BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
+ECOMAX_I_MIXER_BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
+    EcomaxBinarySensorEntityDescription(
+        key="pump",
+        name="Circuit pump",
+        icon="mdi:pump",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=lambda x: x,
+    ),
+)
+
+ECOMAX_P_MIXER_BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     EcomaxBinarySensorEntityDescription(
         key="pump",
         name="Mixer pump",
@@ -150,6 +160,13 @@ MIXER_BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         value_fn=lambda x: x,
     ),
 )
+
+MIXER_BINARY_SENSOR_TYPES: dict[
+    ProductType, tuple[EcomaxBinarySensorEntityDescription, ...]
+] = {
+    ProductType.ECOMAX_I: ECOMAX_I_MIXER_BINARY_SENSOR_TYPES,
+    ProductType.ECOMAX_P: ECOMAX_P_MIXER_BINARY_SENSOR_TYPES,
+}
 
 
 class MixerBinarySensor(MixerEntity, EcomaxBinarySensor):
@@ -202,7 +219,9 @@ async def async_setup_mixer_entities(
         entities.extend(
             [
                 MixerBinarySensor(connection, description, index)
-                for description in MIXER_BINARY_SENSOR_TYPES
+                for description in MIXER_BINARY_SENSOR_TYPES.get(
+                    connection.product_type, ()
+                )
             ]
         )
 

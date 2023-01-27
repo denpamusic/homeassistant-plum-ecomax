@@ -13,8 +13,8 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.plum_ecomax.const import ATTR_MIXERS
 from custom_components.plum_ecomax.number import (
     ECOMAX_I_MIXER_NUMBER_TYPES,
+    ECOMAX_P_MIXER_NUMBER_TYPES,
     ECOMAX_P_NUMBER_TYPES,
-    MIXER_NUMBER_TYPES,
     NUMBER_TYPES,
     EcomaxNumber,
     async_setup_entry,
@@ -169,17 +169,16 @@ async def test_model_check(
             ProductType.ECOMAX_P,
             "mixer_target_temp",
             "fuel_calorific_value_kwh_kg",
-            ECOMAX_P_NUMBER_TYPES,
+            NUMBER_TYPES + ECOMAX_P_NUMBER_TYPES + ECOMAX_P_MIXER_NUMBER_TYPES,
         ),
         (
             ProductType.ECOMAX_I,
             "mixer_target_temp",
             "night_target_temp",
-            ECOMAX_I_MIXER_NUMBER_TYPES,
+            NUMBER_TYPES + ECOMAX_I_MIXER_NUMBER_TYPES,
         ),
     ):
         product_type, first_number_key, last_number_key, number_types = model_sensor
-        number_types_length = len(NUMBER_TYPES) + len(MIXER_NUMBER_TYPES)
         with patch(
             "custom_components.plum_ecomax.sensor.async_get_current_platform"
         ), patch(
@@ -193,7 +192,7 @@ async def test_model_check(
             await async_setup_entry(hass, config_entry, mock_async_add_entities)
             args, _ = mock_async_add_entities.call_args
             numbers = args[0]
-            assert len(numbers) == (number_types_length + len(number_types))
+            assert len(numbers) == len(number_types)
             first_number = numbers[0]
             last_number = numbers[-1]
             assert first_number.entity_description.key == first_number_key

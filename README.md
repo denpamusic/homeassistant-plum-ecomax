@@ -241,6 +241,7 @@ If you connected them after setting up the integration, you can use `Detect sub-
 #### Switches
 | Name                                 | ecoMAX pellet      | ecoMAX installation |
 |--------------------------------------|:------------------:|:-------------------:|
+| Enable mixer in summer mode          | :white_check_mark: | :white_check_mark:  |
 | Enable mixer                         | :x:                | :white_check_mark:  |
 | Weather control                      | :white_check_mark: | :x:                 |
 | Disable pump on thermostat           | :white_check_mark: | :x:                 |
