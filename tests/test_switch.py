@@ -99,27 +99,27 @@ async def test_model_check(
             assert last_switch.entity_description.key == last_switch_key
 
 
-async def test_async_setup_entry_with_device_sensors_timeout(
+async def test_async_setup_entry_with_device_switches_timeout(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
     mock_device: Device,
     caplog,
 ) -> None:
-    """Test setup switch entry with device sensors timeout."""
+    """Test setup switch entry with device switches timeout."""
     mock_device.get_value.side_effect = asyncio.TimeoutError
     assert not await async_setup_entry(hass, config_entry, async_add_entities)
     assert "Couldn't load device switches" in caplog.text
 
 
-async def test_async_setup_entry_with_mixer_sensors_timeout(
+async def test_async_setup_entry_with_mixer_switches_timeout(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
     mock_device: Device,
     caplog,
 ) -> None:
-    """Test setup switch entry with mixer sensors timeout."""
+    """Test setup switch entry with mixer switches timeout."""
     mock_device.get_value.side_effect = (
         None,
         None,

@@ -55,14 +55,15 @@ async def test_async_setup_entry_with_device_sensors_timeout(
     assert "Couldn't load device binary sensors" in caplog.text
 
 
-async def test_async_setup_entry_with_mixer_sensors_timeout(
+async def test_async_setup_entry_with_mixer_binary_sensors_timeout(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
     mock_device: Device,
     caplog,
 ) -> None:
-    """Test setup binary sensor entry with mixer sensors timeout."""
+    """Test setup binary sensor entry with mixer
+    binary sensors timeout."""
     mock_device.get_value.side_effect = (None, asyncio.TimeoutError)
     assert await async_setup_entry(hass, config_entry, async_add_entities)
     assert "Couldn't load mixer binary sensors" in caplog.text

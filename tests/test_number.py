@@ -132,27 +132,27 @@ async def test_async_setup_and_update_entry(
         assert numbers[0].device_info["name"] == "Test Mixer 1"
 
 
-async def test_async_setup_entry_with_device_sensors_timeout(
+async def test_async_setup_entry_with_device_numbers_timeout(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
     mock_device: Device,
     caplog,
 ) -> None:
-    """Test setup number entry with device sensors timeout."""
+    """Test setup number entry with device numbers timeout."""
     mock_device.get_value.side_effect = asyncio.TimeoutError
     assert not await async_setup_entry(hass, config_entry, async_add_entities)
     assert "Couldn't load device numbers" in caplog.text
 
 
-async def test_async_setup_entry_with_mixer_sensors_timeout(
+async def test_async_setup_entry_with_mixer_numbers_timeout(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
     mock_device: Device,
     caplog,
 ) -> None:
-    """Test setup number entry with mixer sensors timeout."""
+    """Test setup number entry with mixer numbers timeout."""
     mock_device.get_value.side_effect = (None, asyncio.TimeoutError)
     assert await async_setup_entry(hass, config_entry, async_add_entities)
     assert "Couldn't load mixer numbers" in caplog.text

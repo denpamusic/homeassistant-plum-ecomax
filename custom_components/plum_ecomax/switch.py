@@ -145,7 +145,7 @@ ECOMAX_I_MIXER_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     ),
 )
 
-ECOMAX_MIXER_SWITCH_TYPE: dict[
+ECOMAX_MIXER_SWITCH_TYPES: dict[
     ProductType, tuple[EcomaxSwitchEntityDescription, ...]
 ] = {
     ProductType.ECOMAX_P: ECOMAX_P_MIXER_SWITCH_TYPES,
@@ -162,7 +162,7 @@ class MixerSwitch(MixerEntity, EcomaxSwitch):
         description: EcomaxSwitchEntityDescription,
         index: int,
     ):
-        """Initialize ecoMAX sensor object."""
+        """Initialize mixer switch object."""
         self.index = index
         super().__init__(connection, description)
 
@@ -197,7 +197,9 @@ async def async_setup_mixer_entities(
     for index in mixers.keys():
         entities.extend(
             MixerSwitch(connection, description, index)
-            for description in ECOMAX_MIXER_SWITCH_TYPE.get(connection.product_type, ())
+            for description in ECOMAX_MIXER_SWITCH_TYPES.get(
+                connection.product_type, ()
+            )
         )
 
 

@@ -372,7 +372,7 @@ class MixerSensor(MixerEntity, EcomaxSensor):
         description: EcomaxSensorEntityDescription,
         index: int,
     ):
-        """Initialize ecoMAX sensor object."""
+        """Initialize mixer sensor object."""
         self.index = index
         super().__init__(connection, description)
 

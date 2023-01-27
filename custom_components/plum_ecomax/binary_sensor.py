@@ -161,7 +161,7 @@ class MixerBinarySensor(MixerEntity, EcomaxBinarySensor):
         description: EcomaxBinarySensorEntityDescription,
         index: int,
     ):
-        """Initialize ecoMAX sensor object."""
+        """Initialize mixer binary sensor object."""
         self.index = index
         super().__init__(connection, description)
 
