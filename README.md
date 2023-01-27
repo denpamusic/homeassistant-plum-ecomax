@@ -248,13 +248,13 @@ If you connected them after setting up the integration, you can use `Detect sub-
 
 #### Numbers
 
-| Name                                 | Unit | Style  | ecoMAX pellet      | ecoMAX installation |
-|--------------------------------------|:----:|:------:|:------------------:|:-------------------:|
-| Mixer temperature                    | °C   | slider | :white_check_mark: | :white_check_mark:  |
-| Minimum mixer temperature            | °C   | slider | :white_check_mark: | :white_check_mark:  |
-| Maximum mixer temperature            | °C   | slider | :white_check_mark: | :white_check_mark:  |
-| Day mixer temperature <sup>1</sup>   | °C   | slider | :x:                | :white_check_mark:  |
-| Night mixer temperature <sup>1</sup> | °C   | slider | :x:                | :white_check_mark:  |
+| Name                                        | Unit | Style  | ecoMAX pellet      | ecoMAX installation |
+|---------------------------------------------|:----:|:------:|:------------------:|:-------------------:|
+| Mixer temperature                           | °C   | slider | :white_check_mark: | :white_check_mark:  |
+| Minimum mixer temperature                   | °C   | slider | :white_check_mark: | :white_check_mark:  |
+| Maximum mixer temperature                   | °C   | slider | :white_check_mark: | :white_check_mark:  |
+| Day target mixer temperature <sup>1</sup>   | °C   | slider | :x:                | :white_check_mark:  |
+| Night target mixer temperature <sup>1</sup> | °C   | slider | :x:                | :white_check_mark:  |
 
 <small><sup>1</sup> Only available on second circuit.</small>
 
