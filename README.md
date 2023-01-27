@@ -229,7 +229,7 @@ If you connected them after setting up the integration, you can use `Detect sub-
 | Name                      | Unit | ecoMAX pellet      | ecoMAX installation |
 |---------------------------|:----:|:------------------:|:-------------------:|
 | Mixer temperature         | °C   | :white_check_mark: | :white_check_mark:  |
-| Mixer target temperature  | °C   | :white_check_mark: | :white_check_mark:  |
+| Target mixer temperature  | °C   | :white_check_mark: | :white_check_mark:  |
 
 
 #### Binary sensors
