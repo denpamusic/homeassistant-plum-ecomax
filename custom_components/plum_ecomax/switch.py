@@ -21,11 +21,13 @@ from .connection import VALUE_TIMEOUT, EcomaxConnection
 from .const import (
     ATTR_ECOMAX_CONTROL,
     ATTR_ECOMAX_PARAMETERS,
+    ATTR_MIXER_PARAMETERS,
+    ATTR_MIXERS,
     DOMAIN,
     STATE_OFF,
     STATE_ON,
 )
-from .entity import EcomaxEntity
+from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -125,6 +127,46 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
         self.async_write_ha_state()
 
 
+ECOMAX_P_MIXER_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
+    EcomaxSwitchEntityDescription(
+        key="weather_control",
+        name="Weather control switch",
+    ),
+    EcomaxSwitchEntityDescription(
+        key="off_therm_pump",
+        name="Disable pump on thermostat",
+    ),
+)
+
+ECOMAX_I_MIXER_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
+    EcomaxSwitchEntityDescription(
+        key="mixer_regulation",
+        name="Enable mixer",
+    ),
+)
+
+ECOMAX_MIXER_SWITCH_TYPE: dict[
+    ProductType, tuple[EcomaxSwitchEntityDescription, ...]
+] = {
+    ProductType.ECOMAX_P: ECOMAX_P_MIXER_SWITCH_TYPES,
+    ProductType.ECOMAX_I: ECOMAX_I_MIXER_SWITCH_TYPES,
+}
+
+
+class MixerSwitch(MixerEntity, EcomaxSwitch):
+    """Represents mixer switch platform."""
+
+    def __init__(
+        self,
+        connection: EcomaxConnection,
+        description: EcomaxSwitchEntityDescription,
+        index: int,
+    ):
+        """Initialize ecoMAX sensor object."""
+        self.index = index
+        super().__init__(connection, description)
+
+
 def setup_ecomax_p(
     connection: EcomaxConnection,
     entities: list[EcomaxEntity],
@@ -144,6 +186,19 @@ def setup_ecomax_i(
 ):
     """Setup number platform for ecoMAX I series controllers."""
     return async_add_entities(entities, False)
+
+
+async def async_setup_mixer_entities(
+    connection: EcomaxConnection, entities: list[EcomaxEntity]
+) -> None:
+    """Setup mixer number entites."""
+    await connection.device.get_value(ATTR_MIXER_PARAMETERS, timeout=VALUE_TIMEOUT)
+    mixers = connection.device.data.get(ATTR_MIXERS, {})
+    for index in mixers.keys():
+        entities.extend(
+            MixerSwitch(connection, description, index)
+            for description in ECOMAX_MIXER_SWITCH_TYPE.get(connection.product_type, ())
+        )
 
 
 async def async_setup_entry(
@@ -168,6 +223,12 @@ async def async_setup_entry(
         _LOGGER.warning(
             "Control parameter not present, you won't be able to turn the device on/off"
         )
+
+    if connection.has_mixers:
+        try:
+            await async_setup_mixer_entities(connection, entities)
+        except asyncio.TimeoutError:
+            _LOGGER.warning("Couldn't load mixer switches")
 
     if connection.product_type == ProductType.ECOMAX_P:
         return setup_ecomax_p(connection, entities, async_add_entities)

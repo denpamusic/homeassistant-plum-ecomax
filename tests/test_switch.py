@@ -12,6 +12,8 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.const import ATTR_ECOMAX_CONTROL
 from custom_components.plum_ecomax.switch import (
+    ECOMAX_I_MIXER_SWITCH_TYPES,
+    ECOMAX_P_MIXER_SWITCH_TYPES,
     ECOMAX_P_SWITCH_TYPES,
     SWITCH_TYPES,
     EcomaxSwitch,
@@ -67,9 +69,14 @@ async def test_model_check(
             ProductType.ECOMAX_P,
             ATTR_ECOMAX_CONTROL,
             "water_heater_schedule_switch",
-            ECOMAX_P_SWITCH_TYPES,
+            ECOMAX_P_SWITCH_TYPES + ECOMAX_P_MIXER_SWITCH_TYPES,
         ),
-        (ProductType.ECOMAX_I, ATTR_ECOMAX_CONTROL, "summer_mode", ()),
+        (
+            ProductType.ECOMAX_I,
+            ATTR_ECOMAX_CONTROL,
+            "mixer_regulation",
+            ECOMAX_I_MIXER_SWITCH_TYPES,
+        ),
     ):
         product_type, first_switch_key, last_switch_key, switch_types = model_sensor
         with patch(
@@ -113,7 +120,24 @@ async def test_async_setup_entry_with_mixer_sensors_timeout(
     caplog,
 ) -> None:
     """Test setup switch entry with mixer sensors timeout."""
-    mock_device.get_value.side_effect = (None, asyncio.TimeoutError)
+    mock_device.get_value.side_effect = (
+        None,
+        None,
+        asyncio.TimeoutError,
+    )
+    assert await async_setup_entry(hass, config_entry, async_add_entities)
+    assert "Couldn't load mixer switches" in caplog.text
+
+
+async def test_async_setup_entry_with_control_parameter_timeout(
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
+    mock_device: Device,
+    caplog,
+) -> None:
+    """Test setup switch entry with control parameter timeout."""
+    mock_device.get_value.side_effect = (None, asyncio.TimeoutError, None)
     assert await async_setup_entry(hass, config_entry, async_add_entities)
     assert "Control parameter not present" in caplog.text
 

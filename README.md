@@ -238,6 +238,13 @@ If you connected them after setting up the integration, you can use `Detect sub-
 |------------|:------------------:|:-------------------:|
 | Mixer pump | :white_check_mark: | :white_check_mark:  |
 
+#### Switches
+| Name                                 | Unit | ecoMAX pellet      | ecoMAX installation |
+|--------------------------------------|:----:|:------------------:|:-------------------:|
+| Enable mixer                         | °C   | :x:                | :white_check_mark:  |
+| Weather control                      | °C   | :white_check_mark: | :x:                 |
+| Disable pump on thermostat           | °C   | :white_check_mark: | :x:                 |
+
 #### Numbers
 
 | Name                                 | Unit | Style  | ecoMAX pellet      | ecoMAX installation |
