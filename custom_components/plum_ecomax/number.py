@@ -266,7 +266,7 @@ async def async_setup_mixer_entities(
             for description in MIXER_NUMBER_TYPES
         )
 
-        if connection.has_mixers and connection.product_type == ProductType.ECOMAX_I:
+        if connection.product_type == ProductType.ECOMAX_I:
             entities.extend(
                 MixerNumber(connection, description, index)
                 for description in ECOMAX_I_MIXER_NUMBER_TYPES
