@@ -35,15 +35,6 @@
           "unknown": "Neznámý"
         }
       }
-    },
-    "water_heater": {
-      "ecomax_water_heater": {
-        "state": {
-          "off": "Vypnuto",
-          "priority": "Přednost",
-          "non_priority": "Bez přednosti"
-        }
-      }
     }
   }
 }

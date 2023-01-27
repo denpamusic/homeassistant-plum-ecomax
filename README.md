@@ -205,6 +205,16 @@ The integration provides full control for the connected indirect water heater us
 
 This includes ability to set target temperature, switch into priority, non-priority mode or turn off.
 
+Please note, that due to the way base water heater entity is implemented,
+custom modes [are not allowed](https://developers.home-assistant.io/docs/core/entity/water-heater/#states).
+Please use the following reference table to convert between water heater operation modes displayed in Home Assistant and ecoMAX.
+
+| HomeAssistant  | ecoMAX            |
+|----------------|-------------------|
+| Off            | On                |
+| Performance    | Priority mode     |
+| Eco            | Non-priority mode |
+
 ### Mixers/Circuits (Sub-devices)
 Following section lists entities that are added to each sub-device.
 

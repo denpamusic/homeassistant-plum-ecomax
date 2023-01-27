@@ -7,7 +7,9 @@ import logging
 from typing import Final
 
 from homeassistant.components.water_heater import (
+    STATE_ECO,
     STATE_OFF,
+    STATE_PERFORMANCE,
     WaterHeaterEntity,
     WaterHeaterEntityEntityDescription,
     WaterHeaterEntityFeature,
@@ -24,10 +26,10 @@ from .connection import VALUE_TIMEOUT, EcomaxConnection
 from .const import ATTR_WATER_HEATER, ATTR_WATER_HEATER_TEMP, DOMAIN
 from .entity import EcomaxEntity
 
-STATE_PRIORITY: Final = "priority"
-STATE_NON_PRIORITY: Final = "non_priority"
+EM_TO_HA_STATE: Final = {0: STATE_OFF, 1: STATE_PERFORMANCE, 2: STATE_ECO}
+HA_TO_EM_STATE: Final = {v: k for k, v in EM_TO_HA_STATE.items()}
 
-WATER_HEATER_MODES: Final = [STATE_OFF, STATE_PRIORITY, STATE_NON_PRIORITY]
+WATER_HEATER_MODES: Final = [STATE_OFF, STATE_PERFORMANCE, STATE_ECO]
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,9 +41,7 @@ class EcomaxWaterHeaterEntityDescription(WaterHeaterEntityEntityDescription):
 
 WATER_HEATER_TYPES: tuple[EcomaxWaterHeaterEntityDescription, ...] = (
     EcomaxWaterHeaterEntityDescription(
-        key=ATTR_WATER_HEATER,
-        name="Indirect water heater",
-        translation_key="ecomax_water_heater",
+        key=ATTR_WATER_HEATER, name="Indirect water heater"
     ),
 )
 
@@ -71,7 +71,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         self._attr_precision = PRECISION_WHOLE
         self._attr_supported_features = (
             WaterHeaterEntityFeature.TARGET_TEMPERATURE
-            + WaterHeaterEntityFeature.OPERATION_MODE
+            | WaterHeaterEntityFeature.OPERATION_MODE
         )
         self._attr_operation_list = WATER_HEATER_MODES
         self._attr_min_temp = None
@@ -95,8 +95,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     async def async_set_operation_mode(self, operation_mode):
         """Set new target operation mode."""
         await self.device.set_value_nowait(
-            f"{self.entity_description.key}_work_mode",
-            hass_to_ecomax_mode(operation_mode),
+            f"{self.entity_description.key}_work_mode", HA_TO_EM_STATE[operation_mode]
         )
         self._attr_current_operation = operation_mode
         self.async_write_ha_state()
@@ -121,7 +120,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
 
     async def async_update_work_mode(self, value: Parameter) -> None:
         """Update current operation."""
-        self._attr_current_operation = ecomax_to_hass_mode(int(value.value))
+        self._attr_current_operation = EM_TO_HA_STATE[int(value.value)]
         self.async_write_ha_state()
 
     async def async_update(self, value) -> None:
@@ -158,16 +157,6 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     def hysteresis(self) -> int:
         """Return temperature hysteresis."""
         return self._attr_hysteresis
-
-
-def ecomax_to_hass_mode(operation_mode: int) -> str:
-    """Convert ecomax operation mode to hass."""
-    return WATER_HEATER_MODES[operation_mode]
-
-
-def hass_to_ecomax_mode(operation_mode) -> int:
-    """Convert hass operation mode to ecomax."""
-    return WATER_HEATER_MODES.index(operation_mode)
 
 
 async def async_setup_entry(

@@ -35,15 +35,6 @@
           "unknown": "Nieznany"
         }
       }
-    },
-    "water_heater": {
-      "ecomax_water_heater": {
-        "state": {
-          "off": "Wyłączony",
-          "priority": "Priorytet",
-          "non_priority": "Bez priorytetu"
-        }
-      }
     }
   }
 }
