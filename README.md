@@ -1,4 +1,4 @@
-# Plum ecoMAX pellet boiler regulator integration for Home Assistant.
+# Plum ecoMAX boiler controller integration for Home Assistant.
 [![ci](https://github.com/denpamusic/homeassistant-plum-ecomax/actions/workflows/ci.yml/badge.svg)](https://github.com/denpamusic/homeassistant-plum-ecomax/actions/workflows/ci.yml)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/bfa869d3c97a62eeb71c/test_coverage)](https://codeclimate.com/github/denpamusic/homeassistant-plum-ecomax/test_coverage)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -56,7 +56,7 @@ URL of the repository:
 ```
 https://github.com/denpamusic/homeassistant-plum-ecomax
 ```
-2. Search for `ecomax` in HACS search window and install `Plum ecoMAX pellet boiler regulator integration`.
+2. Search for `ecomax` in HACS search window and install `Plum ecoMAX boiler controller integration`.
 3. Restart Home Assistant.
 
 ### Manual
