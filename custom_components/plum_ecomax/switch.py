@@ -134,7 +134,7 @@ ECOMAX_I_MIXER_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     ),
     EcomaxSwitchEntityDescription(
         key="summer_work",
-        name="Enable circuit in summer mode",
+        name="Enable in summer mode",
     ),
 )
 
@@ -149,7 +149,7 @@ ECOMAX_P_MIXER_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     ),
     EcomaxSwitchEntityDescription(
         key="summer_work",
-        name="Enable mixer in summer mode",
+        name="Enable in summer mode",
     ),
 )
 
