@@ -7,6 +7,7 @@ import logging
 from typing import Final
 
 from homeassistant.components.water_heater import (
+    ATTR_TEMPERATURE,
     STATE_ECO,
     STATE_OFF,
     STATE_PERFORMANCE,
@@ -14,7 +15,7 @@ from homeassistant.components.water_heater import (
     WaterHeaterEntityEntityDescription,
     WaterHeaterEntityFeature,
 )
-from homeassistant.const import ATTR_TEMPERATURE, PRECISION_WHOLE, UnitOfTemperature
+from homeassistant.const import PRECISION_WHOLE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -53,7 +54,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     entity_description: EntityDescription
     _attr_temperature_unit: str
     _attr_precision: float
-    _attr_supported_features: int
+    _attr_supported_features: WaterHeaterEntityFeature = WaterHeaterEntityFeature(0)
     _attr_operation_list: list[str] | None
     _attr_min_temp: float | None
     _attr_max_temp: float | None
@@ -64,7 +65,11 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     _attr_current_operation: str | None
     _attr_hysteresis: int
 
-    def __init__(self, connection, description: WaterHeaterEntityEntityDescription):
+    def __init__(
+        self,
+        connection: EcomaxConnection,
+        description: WaterHeaterEntityEntityDescription,
+    ):
         self._connection = connection
         self.entity_description = description
         self._attr_temperature_unit = UnitOfTemperature.CELSIUS
