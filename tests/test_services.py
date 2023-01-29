@@ -11,7 +11,13 @@ from pyplumio.helpers.schedule import Schedule, ScheduleDay
 import pytest
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import ATTR_MIXERS, ATTR_VALUE, STATE_ON
+from custom_components.plum_ecomax.const import (
+    ATTR_MIXERS,
+    ATTR_SCHEDULES,
+    ATTR_VALUE,
+    STATE_ON,
+    WEEKDAYS,
+)
 from custom_components.plum_ecomax.services import (
     ATTR_END,
     ATTR_NAME,
@@ -203,7 +209,7 @@ async def test_set_schedule_service(
     assert service == SERVICE_SET_SCHEDULE
     mock_service_call.data = {
         ATTR_NAME: "test_name",
-        ATTR_WEEKDAY: "Monday",
+        ATTR_WEEKDAY: WEEKDAYS[0],
         ATTR_STATE: True,
         ATTR_START: "00:00:00",
         ATTR_END: "10:00:00",
@@ -212,7 +218,7 @@ async def test_set_schedule_service(
     mock_schedule = Mock(spec=Schedule)
     mock_schedule.monday = Mock(spec=ScheduleDay)
     mock_schedule.monday.set_state.side_effect = (True, ValueError)
-    mock_connection.device.data = {"schedules": {"test_name": mock_schedule}}
+    mock_connection.device.data = {ATTR_SCHEDULES: {"test_name": mock_schedule}}
     await func(mock_service_call)
     mock_schedule.monday.set_state.assert_called_once_with(STATE_ON, "00:00", "10:00")
     with pytest.raises(HomeAssistantError):

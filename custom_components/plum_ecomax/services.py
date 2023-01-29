@@ -18,13 +18,26 @@ from pyplumio.exceptions import ParameterNotFoundError
 import voluptuous as vol
 
 from .connection import EcomaxConnection
-from .const import ATTR_MIXERS, ATTR_SCHEDULES, ATTR_VALUE, DOMAIN, STATE_OFF, STATE_ON
+from .const import (
+    ATTR_MIXERS,
+    ATTR_SCHEDULES,
+    ATTR_VALUE,
+    DOMAIN,
+    STATE_OFF,
+    STATE_ON,
+    WEEKDAYS,
+)
 
 ATTR_NAME: Final = "name"
 ATTR_WEEKDAY: Final = "weekday"
 ATTR_STATE: Final = "state"
 ATTR_START: Final = "start"
 ATTR_END: Final = "end"
+
+SCHEDULES: Final = (
+    "Heating",
+    "Water Heater",
+)
 
 SERVICE_SET_PARAMETER = "set_parameter"
 SERVICE_SET_PARAMETER_SCHEMA = make_entity_service_schema(
@@ -37,21 +50,8 @@ SERVICE_SET_PARAMETER_SCHEMA = make_entity_service_schema(
 SERVICE_SET_SCHEDULE = "set_schedule"
 SERVICE_SET_SCHEDULE_SCHEMA = vol.Schema(
     {
-        vol.Required(ATTR_NAME): vol.All(str, vol.In("Heating", "Water Heater")),
-        vol.Required(ATTR_WEEKDAY): vol.All(
-            str,
-            vol.In(
-                (
-                    "Monday",
-                    "Tuesday",
-                    "Wednesday",
-                    "Thursday",
-                    "Friday",
-                    "Saturday",
-                    "Sunday",
-                )
-            ),
-        ),
+        vol.Required(ATTR_NAME): vol.All(str, vol.In(SCHEDULES)),
+        vol.Required(ATTR_WEEKDAY): vol.All(str, vol.In(WEEKDAYS)),
         vol.Required(ATTR_STATE): bool,
         vol.Optional(ATTR_START, default="00:00:00"): vol.Datetime("%H:%M:%S"),
         vol.Optional(ATTR_END, default="00:00:00"): vol.Datetime("%H:%M:%S"),

@@ -46,6 +46,16 @@ ATTR_MODULE_LAMBDA: Final = "module_lambda"
 STATE_ON: Final = "on"
 STATE_OFF: Final = "off"
 
+WEEKDAYS: Final = (
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+)
+
 CONNECTION_TYPE_TCP: Final = "TCP"
 CONNECTION_TYPE_SERIAL: Final = "Serial"
 CONNECTION_TYPES: Final = (CONNECTION_TYPE_TCP, CONNECTION_TYPE_SERIAL)
