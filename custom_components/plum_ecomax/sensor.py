@@ -307,7 +307,7 @@ MODULE_LAMBDA_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         icon="mdi:weather-windy-variant",
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda x: x if x is None else round((x / 10), 1),
+        value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
 )
