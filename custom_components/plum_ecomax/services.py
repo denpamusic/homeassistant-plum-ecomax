@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 from typing import Final
 
+from homeassistant.const import ATTR_NAME, ATTR_STATE, STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry, entity_registry
@@ -19,20 +20,15 @@ import voluptuous as vol
 
 from .connection import EcomaxConnection
 from .const import (
+    ATTR_END,
     ATTR_MIXERS,
     ATTR_SCHEDULES,
+    ATTR_START,
     ATTR_VALUE,
+    ATTR_WEEKDAY,
     DOMAIN,
-    STATE_OFF,
-    STATE_ON,
     WEEKDAYS,
 )
-
-ATTR_NAME: Final = "name"
-ATTR_WEEKDAY: Final = "weekday"
-ATTR_STATE: Final = "state"
-ATTR_START: Final = "start"
-ATTR_END: Final = "end"
 
 SCHEDULES: Final = (
     "Heating",

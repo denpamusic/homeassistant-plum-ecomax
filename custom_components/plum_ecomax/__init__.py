@@ -7,7 +7,12 @@ import re
 from typing import Final
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EVENT_HOMEASSISTANT_STOP, Platform
+from homeassistant.const import (
+    ATTR_CODE,
+    ATTR_DEVICE_ID,
+    EVENT_HOMEASSISTANT_STOP,
+    Platform,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry
@@ -22,8 +27,7 @@ from .connection import (
     async_get_sub_devices,
 )
 from .const import (
-    ATTR_CODE,
-    ATTR_DEVICE_ID,
+    ATTR_ALERTS,
     ATTR_FROM,
     ATTR_PRODUCT,
     ATTR_TO,
@@ -47,8 +51,6 @@ PLATFORMS: list[Platform] = [
 ]
 
 DATE_STR_FORMAT: Final = "%Y-%m-%d %H:%M:%S"
-
-ATTR_ALERTS: Final = "alerts"
 
 _LOGGER = logging.getLogger(__name__)
 

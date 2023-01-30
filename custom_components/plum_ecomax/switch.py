@@ -8,6 +8,7 @@ import logging
 from typing import Any
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
+from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -24,8 +25,6 @@ from .const import (
     ATTR_MIXER_PARAMETERS,
     ATTR_MIXERS,
     DOMAIN,
-    STATE_OFF,
-    STATE_ON,
 )
 from .entity import EcomaxEntity, MixerEntity
 

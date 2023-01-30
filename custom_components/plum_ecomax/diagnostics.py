@@ -8,8 +8,15 @@ from homeassistant.core import HomeAssistant
 from pyplumio import __version__ as pyplumio_version
 from pyplumio.devices import Device
 
-from .const import ATTR_MIXERS, ATTR_THERMOSTATS, CONF_HOST, CONF_UID, DOMAIN
-from .sensor import ATTR_PASSWORD, ATTR_PRODUCT
+from .const import (
+    ATTR_MIXERS,
+    ATTR_PASSWORD,
+    ATTR_PRODUCT,
+    ATTR_THERMOSTATS,
+    CONF_HOST,
+    CONF_UID,
+    DOMAIN,
+)
 
 REDACTED: Final = "**REDACTED**"
 

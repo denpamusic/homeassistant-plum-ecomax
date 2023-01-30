@@ -3,6 +3,7 @@
 from typing import Generator
 from unittest.mock import AsyncMock, Mock, patch
 
+from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio import Connection
@@ -20,8 +21,6 @@ from custom_components.plum_ecomax.const import (
     ATTR_PRODUCT,
     ATTR_THERMOSTATS,
     DOMAIN,
-    STATE_OFF,
-    STATE_ON,
 )
 
 from .const import MOCK_CONFIG

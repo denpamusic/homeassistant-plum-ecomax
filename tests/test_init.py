@@ -4,7 +4,7 @@ import asyncio
 from unittest.mock import AsyncMock, Mock, call, patch
 
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
-from homeassistant.const import EVENT_HOMEASSISTANT_STOP
+from homeassistant.const import ATTR_CODE, ATTR_DEVICE_ID, EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.util import dt as dt_util
@@ -27,8 +27,6 @@ from custom_components.plum_ecomax.connection import (
     EcomaxConnection,
 )
 from custom_components.plum_ecomax.const import (
-    ATTR_CODE,
-    ATTR_DEVICE_ID,
     ATTR_FROM,
     ATTR_PRODUCT,
     ATTR_TO,

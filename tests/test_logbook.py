@@ -7,11 +7,11 @@ from homeassistant.components.logbook.const import (
     LOGBOOK_ENTRY_MESSAGE,
     LOGBOOK_ENTRY_NAME,
 )
+from homeassistant.const import ATTR_CODE
 from homeassistant.core import Event, HomeAssistant
 from pyplumio.const import AlertType
 
 from custom_components.plum_ecomax.const import (
-    ATTR_CODE,
     ATTR_FROM,
     ATTR_TO,
     DOMAIN,

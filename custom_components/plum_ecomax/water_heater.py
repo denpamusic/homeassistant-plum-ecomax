@@ -7,15 +7,18 @@ import logging
 from typing import Final
 
 from homeassistant.components.water_heater import (
-    ATTR_TEMPERATURE,
     STATE_ECO,
-    STATE_OFF,
     STATE_PERFORMANCE,
     WaterHeaterEntity,
     WaterHeaterEntityEntityDescription,
     WaterHeaterEntityFeature,
 )
-from homeassistant.const import PRECISION_WHOLE, UnitOfTemperature
+from homeassistant.const import (
+    ATTR_TEMPERATURE,
+    PRECISION_WHOLE,
+    STATE_OFF,
+    UnitOfTemperature,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback

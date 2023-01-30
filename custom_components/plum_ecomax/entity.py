@@ -7,8 +7,14 @@ from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 from pyplumio.devices import Device
 from pyplumio.helpers.product_info import ProductType
 
-from .connection import MANUFACTURER, EcomaxConnection
-from .const import ATTR_MIXERS, ATTR_WATER_HEATER, ATTR_WATER_HEATER_TEMP, DOMAIN
+from .connection import EcomaxConnection
+from .const import (
+    ATTR_MIXERS,
+    ATTR_WATER_HEATER,
+    ATTR_WATER_HEATER_TEMP,
+    DOMAIN,
+    MANUFACTURER,
+)
 
 
 class EcomaxEntity(ABC):

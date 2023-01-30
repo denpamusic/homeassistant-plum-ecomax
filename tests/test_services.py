@@ -2,7 +2,7 @@
 
 from unittest.mock import AsyncMock, Mock, patch
 
-from homeassistant.const import ATTR_DEVICE_ID
+from homeassistant.const import ATTR_DEVICE_ID, STATE_ON
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError
 from pyplumio.devices import Device
@@ -15,7 +15,6 @@ from custom_components.plum_ecomax.const import (
     ATTR_MIXERS,
     ATTR_SCHEDULES,
     ATTR_VALUE,
-    STATE_ON,
     WEEKDAYS,
 )
 from custom_components.plum_ecomax.services import (

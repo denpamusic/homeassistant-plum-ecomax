@@ -7,6 +7,7 @@ import logging
 from typing import Any
 
 from homeassistant import config_entries
+from homeassistant.const import CONF_BASE
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
@@ -93,12 +94,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         try:
             info = await validate_input(self.hass, user_input)
         except CannotConnect:
-            errors["base"] = "cannot_connect"
+            errors[CONF_BASE] = "cannot_connect"
         except TimeoutConnect:
-            errors["base"] = "timeout_connect"
+            errors[CONF_BASE] = "timeout_connect"
         except Exception:  # pylint: disable=broad-except
             _LOGGER.exception("Unexpected exception")
-            errors["base"] = "unknown"
+            errors[CONF_BASE] = "unknown"
         else:
             for field in (
                 CONF_UID,
