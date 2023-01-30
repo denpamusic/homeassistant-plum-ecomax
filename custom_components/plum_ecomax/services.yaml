@@ -8,7 +8,7 @@ set_parameter:
     name:
       name: Name
       description: Name of the parameter
-      example: "heating_set_temp"
+      example: "heating_target_temp"
       required: true
       selector:
         text:
