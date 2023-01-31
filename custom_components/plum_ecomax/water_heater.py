@@ -43,13 +43,6 @@ class EcomaxWaterHeaterEntityDescription(WaterHeaterEntityEntityDescription):
     """Describes ecoMAX water heater entity."""
 
 
-WATER_HEATER_TYPES: tuple[EcomaxWaterHeaterEntityDescription, ...] = (
-    EcomaxWaterHeaterEntityDescription(
-        key=ATTR_WATER_HEATER, name="Indirect water heater"
-    ),
-)
-
-
 class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     """Represents ecoMAX water heater platform."""
 
@@ -71,10 +64,11 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     def __init__(
         self,
         connection: EcomaxConnection,
-        description: WaterHeaterEntityEntityDescription,
     ):
         self._connection = connection
-        self.entity_description = description
+        self.entity_description = EcomaxWaterHeaterEntityDescription(
+            key=ATTR_WATER_HEATER, name="Indirect water heater"
+        )
         self._attr_temperature_unit = UnitOfTemperature.CELSIUS
         self._attr_precision = PRECISION_WHOLE
         self._attr_supported_features = (
@@ -176,12 +170,7 @@ async def async_setup_entry(
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     try:
         await connection.device.get_value(ATTR_WATER_HEATER_TEMP, timeout=VALUE_TIMEOUT)
-        entities: list[EcomaxEntity] = [
-            EcomaxWaterHeater(connection, description)
-            for description in WATER_HEATER_TYPES
-        ]
+        return async_add_entities([EcomaxWaterHeater(connection)], False)
     except asyncio.TimeoutError:
         _LOGGER.error("Couldn't load indirect water heater parameters")
         return False
-
-    return async_add_entities(entities, False)
