@@ -521,7 +521,7 @@ async def async_setup_mixer_entities(
         )
 
 
-async def async_setup_module_entites(
+async def async_setup_module_entities(
     connection: EcomaxConnection, entities: list[EcomaxEntity]
 ) -> None:
     """Setup module-specific sensors."""
@@ -547,7 +547,7 @@ async def async_setup_entry(
         entities: list[EcomaxEntity] = [
             EcomaxSensor(connection, description) for description in SENSOR_TYPES
         ]
-        await async_setup_module_entites(connection, entities)
+        await async_setup_module_entities(connection, entities)
     except asyncio.TimeoutError:
         _LOGGER.error("Couldn't load device sensors")
         return False

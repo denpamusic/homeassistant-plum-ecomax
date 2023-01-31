@@ -28,7 +28,7 @@ from custom_components.plum_ecomax.sensor import (
 
 @patch("custom_components.plum_ecomax.sensor.on_change")
 @patch("custom_components.plum_ecomax.sensor.throttle")
-@patch("custom_components.plum_ecomax.sensor.async_setup_module_entites")
+@patch("custom_components.plum_ecomax.sensor.async_setup_module_entities")
 async def test_async_setup_and_update_entry(
     mock_async_get_module_entities,
     mock_throttle,
