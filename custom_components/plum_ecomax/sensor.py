@@ -434,10 +434,10 @@ class EcomaxMeterEntityDescription(EcomaxSensorEntityDescription):
 METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
     EcomaxMeterEntityDescription(
         key=ATTR_FUEL_BURNED,
-        name="Total Fuel Burned",
+        name="Total fuel burned",
         icon="mdi:counter",
         native_unit_of_measurement=UnitOfMass.KILOGRAMS,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
         device_class=SensorDeviceClass.WEIGHT,
         native_precision=2,
         value_fn=lambda x: x,
