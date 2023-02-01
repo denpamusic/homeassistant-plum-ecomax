@@ -1,16 +1,16 @@
-"""Test Plum ecoMAX sensor."""
+"""Test the sensor platform."""
 
+import unittest.mock as mock
+from unittest.mock import Mock, call, patch
 
-import asyncio
-from unittest.mock import AsyncMock, Mock, patch
-
+from homeassistant.components.sensor import SensorExtraStoredData, SensorStateClass
+from homeassistant.const import STATE_OFF
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyplumio.devices import Device
-from pyplumio.helpers.product_info import ConnectedModules, ProductType
+from pyplumio.devices import Mixer
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.plum_ecomax.connection import VALUE_TIMEOUT
 from custom_components.plum_ecomax.sensor import (
     ECOMAX_I_MIXER_SENSOR_TYPES,
     ECOMAX_I_SENSOR_TYPES,
@@ -19,64 +19,92 @@ from custom_components.plum_ecomax.sensor import (
     METER_TYPES,
     MODULE_LAMBDA_SENSOR_TYPES,
     SENSOR_TYPES,
+    SERVICE_CALIBRATE_METER,
+    SERVICE_RESET_METER,
     EcomaxMeter,
     EcomaxSensor,
-    SensorStateClass,
+    MixerSensor,
     async_setup_entry,
 )
 
 
-@patch("custom_components.plum_ecomax.sensor.on_change")
-@patch("custom_components.plum_ecomax.sensor.throttle")
-@patch("custom_components.plum_ecomax.sensor.async_setup_module_entities")
-async def test_async_setup_and_update_entry(
-    mock_async_get_module_entities,
-    mock_throttle,
-    mock_on_change,
+@pytest.fixture(autouse=True)
+def bypass_async_get_current_platform():
+    """Mock async get current platform."""
+    with patch("custom_components.plum_ecomax.sensor.async_get_current_platform"):
+        yield
+
+
+@pytest.fixture(autouse=True)
+def set_connection_name():
+    """Set connection name."""
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.name",
+        "test",
+        create=True,
+    ):
+        yield
+
+
+def _lookup_sensor(entities: list[EcomaxSensor], key: str) -> EcomaxSensor:
+    """Lookup sensor in the list."""
+    for entity in entities:
+        if entity.entity_description.key == key:
+            return entity
+
+    raise LookupError(f"Couldn't find '{key}' sensor")
+
+
+@pytest.mark.usefixtures("connected", "ecomax_p", "mixers")
+async def test_async_setup_and_update_entry_with_ecomax_p(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
-    mock_device: Device,
-    bypass_hass_write_ha_state,
-    bypass_model_check,
-    caplog,
 ) -> None:
-    """Test setup and update sensor entry."""
-    with patch("custom_components.plum_ecomax.sensor.async_get_current_platform"):
+    """Test setup and update sensor entry for ecomax p."""
+    with patch(
+        "custom_components.plum_ecomax.sensor.async_get_current_platform"
+    ) as mock_async_get_current_platform:
         assert await async_setup_entry(hass, config_entry, async_add_entities)
-        await hass.async_block_till_done()
-
     async_add_entities.assert_called_once()
-    mock_async_get_module_entities.assert_awaited_once()
-    args, _ = async_add_entities.call_args
-    for sensor in [
-        x
-        for x in args[0]
-        if x.entity_description.key in ("current_temp", "heating_temp")
-    ]:
-        # Check that sensor state is unknown and update it.
-        assert isinstance(sensor, EcomaxSensor)
-        assert sensor.native_value is None
-        await sensor.async_update(65)
-        assert sensor.native_value == 65
+    args = async_add_entities.call_args[0]
+    added_entities = args[0]
+    sensor_types = (
+        SENSOR_TYPES
+        + MODULE_LAMBDA_SENSOR_TYPES
+        + ECOMAX_P_MIXER_SENSOR_TYPES
+        + ECOMAX_P_SENSOR_TYPES
+        + METER_TYPES
+    )
+    assert len(added_entities) == len(sensor_types)
 
-        # Check sensor callbacks.
-        callback = AsyncMock()
-        assert (
-            sensor.entity_description.filter_fn(callback) == mock_throttle.return_value
-        )
-        mock_throttle.assert_called_once_with(
-            mock_on_change.return_value, seconds=VALUE_TIMEOUT
-        )
-        mock_on_change.assert_called_once_with(callback)
-        mock_throttle.reset_mock()
-        mock_on_change.reset_mock()
+    # Check that all sensors are present.
+    for sensor_type in sensor_types:
+        assert _lookup_sensor(added_entities, sensor_type.key)
 
-    # Check meter.
-    meter = [x for x in args[0] if x.entity_description.key == "fuel_burned"][0]
-    mock_last_sensor_data = Mock()
-    mock_last_sensor_data.native_value = 2
-    mock_last_sensor_data.native_unit_of_measurement = "kg"
+    # Test ecomax sensor.
+    entity = _lookup_sensor(added_entities, "heating_temp")
+    assert isinstance(entity, EcomaxSensor)
+    await entity.async_added_to_hass()
+    assert entity.entity_registry_enabled_default
+    assert entity.available
+    assert entity.native_value == 0
+    await entity.async_update(65)
+    assert entity.native_value == 65
+
+    # Test unavailable sensor.
+    entity = _lookup_sensor(added_entities, "optical_temp")
+    await entity.async_added_to_hass()
+    assert not entity.entity_registry_enabled_default
+    assert not entity.available
+
+    # Test meter sensor.
+    entity = _lookup_sensor(added_entities, "fuel_burned")
+    assert isinstance(entity, EcomaxMeter)
+    mock_last_sensor_data = Mock(spec=SensorExtraStoredData)
+    mock_last_sensor_data.configure_mock(
+        native_value=2, native_unit_of_measurement="kg"
+    )
     with patch(
         "custom_components.plum_ecomax.sensor.EcomaxSensor.async_added_to_hass"
     ) as mock_added_to_hass, patch(
@@ -84,123 +112,149 @@ async def test_async_setup_and_update_entry(
         side_effect=(None, mock_last_sensor_data),
         return_value=None,
     ) as mock_get_last_sensor_data:
-        await meter.async_added_to_hass()
-        assert meter.native_value == 0
-        await meter.async_added_to_hass()
-        assert meter.native_value == 2
-        assert meter.unit_of_measurement == "kg"
+        await entity.async_added_to_hass()
+        assert entity.native_value == 0
+        await entity.async_added_to_hass()
+        assert entity.native_value == 2
 
+    assert entity.unit_of_measurement == "kg"
     assert mock_added_to_hass.await_count == 2
     assert mock_get_last_sensor_data.await_count == 2
 
     # Check meter calibration and reset.
-    await meter.async_calibrate_meter(5)
-    assert meter.native_value == 5
+    await entity.async_calibrate_meter(5)
+    assert entity.native_value == 5
     with patch.object(EcomaxMeter, "state_class", SensorStateClass.TOTAL), patch(
         "homeassistant.util.dt.utcnow"
     ) as mock_utcnow:
-        await meter.async_reset_meter()
+        await entity.async_reset_meter()
 
     mock_utcnow.assert_called_once()
-    assert meter.native_value == 0
-    await meter.async_update(3)
-    assert meter.native_value == 3
+    assert entity.native_value == 0
+    await entity.async_update(3)
+    assert entity.native_value == 3
+
+    # Test ecomax p state sensor.
+    entity = _lookup_sensor(added_entities, "state")
+    assert isinstance(entity, EcomaxSensor)
+    await entity.async_added_to_hass()
+    assert entity.native_value == STATE_OFF
+
+    # Test ecomax p software version sensor.
+    entity = _lookup_sensor(added_entities, "modules")
+    assert isinstance(entity, EcomaxSensor)
+    await entity.async_added_to_hass()
+    assert entity.native_value == "6.10.32.K1"
+
+    # Test ecomax p uid sensor.
+    entity = _lookup_sensor(added_entities, "product")
+    assert isinstance(entity, EcomaxSensor)
+    await entity.async_added_to_hass()
+    assert entity.native_value == "TEST"
+
+    # Test ecomax p mixer temperature sensor.
+    entity = _lookup_sensor(added_entities, "current_temp")
+    assert isinstance(entity, MixerSensor)
+    assert isinstance(entity.device, Mixer)
+    assert entity.unique_id == "TEST-mixer-0-current_temp"
+    assert entity.index == 0
+    assert "Mixer temperature" in entity.name
+
+    # Test ecomax p mixer target temperature sensor.
+    entity = _lookup_sensor(added_entities, "target_temp")
+    assert isinstance(entity, MixerSensor)
+    assert entity.index == 0
+    assert "Mixer target temperature" in entity.name
+
+    # Test entity services.
+    platform = mock_async_get_current_platform.return_value
+    platform.async_register_entity_service.assert_has_calls(
+        [
+            call(SERVICE_RESET_METER, mock.ANY, "async_reset_meter"),
+            call(SERVICE_CALIBRATE_METER, mock.ANY, "async_calibrate_meter"),
+        ]
+    )
 
 
-async def test_async_setup_entry_with_device_sensors_timeout(
+@pytest.mark.usefixtures("ecomax_i", "mixers")
+async def test_async_setup_and_update_entry_with_ecomax_i(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
-    mock_device: Device,
+) -> None:
+    """Test setup and update sensor entry for ecomax i."""
+    assert await async_setup_entry(hass, config_entry, async_add_entities)
+    async_add_entities.assert_called_once()
+    args = async_add_entities.call_args[0]
+    added_entities = args[0]
+    assert len(added_entities) == len(
+        SENSOR_TYPES
+        + MODULE_LAMBDA_SENSOR_TYPES
+        + ECOMAX_I_MIXER_SENSOR_TYPES
+        + ECOMAX_I_SENSOR_TYPES
+    )
+
+    # Check first and last entity.
+    assert added_entities[0].entity_description.key == SENSOR_TYPES[0].key
+    assert added_entities[-1].entity_description.key == ECOMAX_I_SENSOR_TYPES[-1].key
+
+    # Test ecomax i circuit temperature sensor.
+    entity = _lookup_sensor(added_entities, "current_temp")
+    assert isinstance(entity, MixerSensor)
+    assert entity.index == 0
+    assert "Circuit temperature" in entity.name
+
+    # Test ecomax i circuit target temperature sensor.
+    entity = _lookup_sensor(added_entities, "target_temp")
+    assert isinstance(entity, MixerSensor)
+    assert entity.index == 0
+    assert "Circuit target temperature" in entity.name
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_async_setup_and_update_entry_without_mixers(
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
     caplog,
 ) -> None:
-    """Test setup sensor entry with device sensors timeout."""
-    mock_device.get_value.side_effect = asyncio.TimeoutError
-    with patch("custom_components.plum_ecomax.sensor.async_get_current_platform"):
-        assert not await async_setup_entry(hass, config_entry, async_add_entities)
+    """Test setup and update sensor entry for ecomax p
+    without mixers.
+    """
+    assert await async_setup_entry(hass, config_entry, async_add_entities)
+    async_add_entities.assert_called_once()
+    args = async_add_entities.call_args[0]
+    added_entities = args[0]
+    assert "Couldn't load mixer sensors" in caplog.text
 
+    # Check that mixer sensor is not added.
+    with pytest.raises(LookupError):
+        _lookup_sensor(added_entities, "current_temp")
+
+
+@pytest.mark.usefixtures("ecomax_base")
+async def test_async_setup_and_update_entry_with_no_sensor_data(
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
+    caplog,
+) -> None:
+    """Test setup and update sensor entry for ecomax p
+    without the sensor data.
+    """
+    assert not await async_setup_entry(hass, config_entry, async_add_entities)
+    async_add_entities.assert_not_called()
     assert "Couldn't load device sensors" in caplog.text
 
 
-async def test_async_setup_entry_with_mixer_sensors_timeout(
+@pytest.mark.usefixtures("ecomax_unknown")
+async def test_async_setup_and_update_entry_with_unknown_ecomax_model(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
-    mock_device: Device,
     caplog,
 ) -> None:
-    """Test setup sensor entry with mixer sensors timeout."""
-    mock_device.get_value.side_effect = (
-        None,
-        Mock(spec=ConnectedModules),
-        asyncio.TimeoutError,
-    )
-    with patch("custom_components.plum_ecomax.sensor.async_get_current_platform"):
-        assert await async_setup_entry(hass, config_entry, async_add_entities)
-
-    assert "Couldn't load mixer sensors" in caplog.text
-
-
-async def test_model_check(
-    hass: HomeAssistant,
-    config_entry: MockConfigEntry,
-    mock_device: Device,
-):
-    """Test sensor model check."""
-    for model_sensor in (
-        (
-            ProductType.ECOMAX_P,
-            "heating_temp",
-            "fuel_burned",
-            SENSOR_TYPES
-            + METER_TYPES
-            + MODULE_LAMBDA_SENSOR_TYPES
-            + ECOMAX_P_SENSOR_TYPES
-            + ECOMAX_P_MIXER_SENSOR_TYPES,
-        ),
-        (
-            ProductType.ECOMAX_I,
-            "heating_temp",
-            "fireplace_temp",
-            SENSOR_TYPES
-            + MODULE_LAMBDA_SENSOR_TYPES
-            + ECOMAX_I_SENSOR_TYPES
-            + ECOMAX_I_MIXER_SENSOR_TYPES,
-        ),
-    ):
-        product_type, first_sensor_key, last_sensor_key, sensor_types = model_sensor
-        with patch(
-            "custom_components.plum_ecomax.sensor.async_get_current_platform"
-        ), patch(
-            "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
-            product_type,
-        ), patch(
-            "custom_components.plum_ecomax.connection.EcomaxConnection.has_mixers", True
-        ), patch(
-            "homeassistant.helpers.entity_platform.AddEntitiesCallback"
-        ) as mock_async_add_entities:
-            await async_setup_entry(hass, config_entry, mock_async_add_entities)
-            args, _ = mock_async_add_entities.call_args
-            sensors = args[0]
-            assert len(sensors) == len(sensor_types)
-            first_sensor = sensors[0]
-            last_sensor = sensors[-1]
-            assert first_sensor.entity_description.key == first_sensor_key
-            assert last_sensor.entity_description.key == last_sensor_key
-
-
-async def test_model_check_with_unknown_model(
-    hass: HomeAssistant,
-    config_entry: MockConfigEntry,
-    mock_device: Device,
-    caplog,
-):
-    """Test model check with the unknown model."""
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.product_type", 2
-    ), patch(
-        "homeassistant.helpers.entity_platform.AddEntitiesCallback"
-    ) as mock_async_add_entities:
-        assert not await async_setup_entry(hass, config_entry, mock_async_add_entities)
-
-    assert "Couldn't setup platform" in caplog.text
+    """Test setup and update sensor entry for unknown ecomax model."""
+    assert not await async_setup_entry(hass, config_entry, async_add_entities)
+    async_add_entities.assert_not_called()
+    assert "Couldn't setup platform due to unknown controller model" in caplog.text

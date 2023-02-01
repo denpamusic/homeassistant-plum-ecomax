@@ -1,29 +1,50 @@
-"""Fixtures for Plum ecoMAX test suite."""
+"""Fixtures for the test suite."""
 
-from typing import Generator
+import asyncio
+from typing import Final
 from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio import Connection
-from pyplumio.devices import Device, Mixer, Thermostat
-from pyplumio.helpers.parameter import Parameter
-from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
+from pyplumio.const import DeviceState
+from pyplumio.devices import Mixer
+from pyplumio.devices.ecomax import EcoMAX
+from pyplumio.helpers.network_info import NetworkInfo
+from pyplumio.helpers.product_info import ConnectedModules, ProductInfo, ProductType
+from pyplumio.structures.ecomax_parameters import (
+    EcomaxBinaryParameter,
+    EcomaxParameter,
+    EcomaxParameterDescription,
+)
+from pyplumio.structures.mixer_parameters import (
+    MixerParameter,
+    MixerParameterDescription,
+)
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.plum_ecomax.connection import ATTR_MODULES, EcomaxConnection
+from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
-    ATTR_LAMBDA_LEVEL,
+    ATTR_ECOMAX_CONTROL,
     ATTR_MIXERS,
-    ATTR_PASSWORD,
-    ATTR_PRODUCT,
-    ATTR_THERMOSTATS,
+    CONF_CONNECTION_TYPE,
+    CONF_DEVICE,
+    CONF_HOST,
+    CONF_MODEL,
+    CONF_PORT,
+    CONF_PRODUCT_TYPE,
+    CONF_SOFTWARE,
+    CONF_SUB_DEVICES,
+    CONF_UID,
+    CONNECTION_TYPE_TCP,
     DOMAIN,
 )
 
-from .const import MOCK_CONFIG
+UNKNOWN_ECOMAX_TYPE: Final = 99
+DEVICE: Final = "/dev/ttyUSB0"
+HOST: Final = "localhost"
+PORT: Final = 8899
 
 
 @pytest.fixture(autouse=True)
@@ -32,42 +53,38 @@ def auto_enable_custom_integrations(enable_custom_integrations):
     yield
 
 
-@pytest.fixture(name="mock_device")
-def fixture_mock_device() -> Generator[Device, None, None]:
-    """Mock device instance."""
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.name", "Test"
-    ), patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.device"
-    ) as mock_device:
-        mock_thermostat = AsyncMock(spec=Thermostat)
-        mock_thermostat.index = 0
-        mock_thermostat.data = {
-            "test_thermostat_data": "test_thermostat_value",
-        }
-        mock_mixer = AsyncMock(spec=Mixer)
-        mock_mixer.index = 0
-        mock_mixer.data = {
-            "test_mixer_data": "test_mixer_value",
-        }
-        mock_device.data = {
-            ATTR_PRODUCT: Mock(spec=ProductInfo),
-            ATTR_MODULES: Mock(spec=ConnectedModules),
-            ATTR_PASSWORD: "0000",
-            ATTR_MIXERS: {0: mock_mixer},
-            ATTR_THERMOSTATS: {0: mock_thermostat},
-            ATTR_LAMBDA_LEVEL: 166,
-            "test_data": "test_value",
-        }
-        mock_device.set_value = AsyncMock()
-        mock_device.set_value_nowait = AsyncMock()
-        mock_device.get_value = AsyncMock()
-        mock_device.subscribe = Mock()
-        yield mock_device
+@pytest.fixture(name="config_data")
+def fixture_config_data():
+    """Get config data."""
+    yield {
+        CONF_CONNECTION_TYPE: CONNECTION_TYPE_TCP,
+        CONF_DEVICE: DEVICE,
+        CONF_HOST: HOST,
+        CONF_PORT: PORT,
+    }
 
 
-@pytest.fixture(name="async_add_entities")
-def fixture_async_add_entities() -> Generator[AddEntitiesCallback, None, None]:
+@pytest.fixture(name="device_data")
+def fixture_device_data():
+    """Get the device data for config flow."""
+    return {
+        CONF_UID: "TEST",
+        CONF_MODEL: "ecoMAX 850P2-C",
+        CONF_PRODUCT_TYPE: ProductType.ECOMAX_P,
+        CONF_SOFTWARE: "6.10.32.K1",
+        CONF_SUB_DEVICES: [ATTR_MIXERS],
+    }
+
+
+@pytest.fixture(autouse=True)
+def bypass_async_ha_write_state():
+    """Bypass writing state to hass."""
+    with patch("homeassistant.helpers.entity.Entity.async_write_ha_state"):
+        yield
+
+
+@pytest.fixture
+def async_add_entities():
     """Mock add entities callback."""
     with patch(
         "homeassistant.helpers.entity_platform.AddEntitiesCallback"
@@ -75,56 +92,234 @@ def fixture_async_add_entities() -> Generator[AddEntitiesCallback, None, None]:
         yield mock_async_add_entities
 
 
-@pytest.fixture(name="bypass_hass_write_ha_state")
-def fixture_bypass_hass_write_ha_state() -> Generator[None, None, None]:
-    """Bypass writing state to hass."""
-    with patch("homeassistant.helpers.entity.Entity.async_write_ha_state"):
-        yield
-
-
-@pytest.fixture(name="bypass_model_check")
-def fixture_bypass_model_check() -> Generator[None, None, None]:
-    """Bypass controller model check."""
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.product_type", 0
-    ):
-        yield
-
-
-@pytest.fixture(name="connection")
-def fixture_connection() -> Connection:
-    """Create mock pyplumio connection."""
-    return AsyncMock(spec=Connection)
-
-
 @pytest.fixture(name="config_entry")
 def fixture_config_entry(
-    hass: HomeAssistant, connection: Connection
+    hass: HomeAssistant, config_data: dict[str, str], device_data: dict[str, str]
 ) -> MockConfigEntry:
     """Create mock config entry and add it to hass."""
-    config_entry = MockConfigEntry(domain=DOMAIN, data=MOCK_CONFIG, entry_id="test")
+    config_data |= device_data
+    config_entry = MockConfigEntry(domain=DOMAIN, data=config_data, entry_id="test")
     hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = EcomaxConnection(
-        hass, config_entry, connection
+        hass, config_entry, AsyncMock(spec=Connection)
     )
     config_entry.add_to_hass(hass)
     return config_entry
 
 
-@pytest.fixture(name="binary_parameter")
-def fixture_binary_parameter() -> Parameter:
-    """Create mock binary parameter."""
-    parameter = AsyncMock(spec=Parameter)
-    parameter.value = STATE_ON
-    parameter.min_value = STATE_OFF
-    parameter.max_value = STATE_ON
-    return parameter
+@pytest.fixture(autouse=True)
+def bypass_pyplumio_events():
+    """Bypass pyplumio event system."""
+    with patch(
+        "pyplumio.helpers.task_manager.TaskManager.create_event",
+        side_effect=asyncio.TimeoutError,
+    ):
+        yield
 
 
-@pytest.fixture(name="numeric_parameter")
-def fixture_numeric_parameter() -> Parameter:
-    """Create mock numeric parameter."""
-    parameter = AsyncMock(spec=Parameter)
-    parameter.value = 1
-    parameter.min_value = 0
-    parameter.max_value = 2
-    return parameter
+@pytest.fixture
+def connected():
+    """Integration is connected."""
+    event = AsyncMock(spec=asyncio.Event)
+    event.is_set = Mock(return_value=True)
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.connected",
+        event,
+        create=True,
+    ):
+        yield
+
+
+@pytest.fixture(name="ecomax_base")
+def fixture_ecomax_base() -> EcoMAX:
+    """Basic ecoMAX device with no data."""
+    ecomax = EcoMAX(queue=Mock(), network=NetworkInfo())
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.device", ecomax
+    ), patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.get_device",
+        return_value=ecomax,
+        new_callable=AsyncMock,
+        create=True,
+    ):
+        yield ecomax
+
+
+@pytest.fixture(name="ecomax_common")
+def fixture_ecomax_common(ecomax_base: EcoMAX):
+    """Inject common ecomax data."""
+    ecomax_base.data.update(
+        {
+            "sensors": True,
+            "ecomax_parameters": True,
+            "heating_pump": False,
+            "water_heater_pump": False,
+            "ciculation_pump": False,
+            "pending_alerts": False,
+            "heating_temp": 0.0,
+            "water_heater_temp": 0.0,
+            "outside_temp": 0.0,
+            "heating_target": 0,
+            "water_heater_target": 0,
+            "state": DeviceState.OFF,
+            "password": "0000",
+        }
+    )
+    yield ecomax_base
+
+
+@pytest.fixture
+def ecomax_control(ecomax_common: EcoMAX):
+    """Inject ecomax control parameter"""
+    ecomax_common.data.update(
+        {
+            ATTR_ECOMAX_CONTROL: EcomaxBinaryParameter(
+                device=ecomax_common,
+                value=STATE_ON,
+                min_value=STATE_OFF,
+                max_value=STATE_ON,
+                description=EcomaxParameterDescription(
+                    ATTR_ECOMAX_CONTROL, cls=EcomaxBinaryParameter
+                ),
+            )
+        }
+    )
+    yield ecomax_common
+
+
+@pytest.fixture
+def ecomax_p(ecomax_common: EcoMAX):
+    """Inject ecomax p data."""
+    ecomax_common.data.update(
+        {
+            "product": ProductInfo(
+                type=ProductType.ECOMAX_P,
+                product=4,
+                uid="TEST",
+                logo=1024,
+                image=2816,
+                model="ecoMAX850P2-C",
+            ),
+            "modules": ConnectedModules(
+                module_a="6.10.32.K1",
+                module_lambda="0.8.0",
+                module_panel="6.30.36",
+            ),
+            "fan": False,
+            "fan2_exhaust": False,
+            "feeder": False,
+            "lighter": False,
+            "power": 0.0,
+            "fuel_level": 0,
+            "fuel_consumption": 0.0,
+            "load": 0,
+            "fan_power": 0.0,
+            "feeder_temp": 0.0,
+            "exhaust_temp": 0.0,
+            "lower_buffer_temp": 0.0,
+            "upper_buffer_temp": 0.0,
+            "lambda_level": 0.0,
+            "heating_target_temp": EcomaxParameter(
+                device=ecomax_common,
+                value=0,
+                min_value=0,
+                max_value=1,
+                description=EcomaxParameterDescription("heating_target_temp"),
+            ),
+        }
+    )
+
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
+        ProductType.ECOMAX_P,
+    ):
+        yield ecomax_common
+
+
+@pytest.fixture
+def ecomax_i(ecomax_common: EcoMAX):
+    """Inject ecomax i data."""
+    ecomax_common.data.update(
+        {
+            "product": ProductInfo(
+                type=ProductType.ECOMAX_I,
+                product=0,
+                uid="TEST",
+                logo=1,
+                image=2816,
+                model="ecoMAX 850i",
+            ),
+            "modules": ConnectedModules(
+                module_a="109.10.129.P1",
+                module_lambda="0.8.0",
+                module_panel="109.14.79",
+            ),
+            "solar_pump": False,
+            "fireplace_pump": False,
+            "lower_solar_temp": 0.0,
+            "upper_solar_temp": 0.0,
+            "fireplace_temp": 0.0,
+            "lambda_level": 0.0,
+        }
+    )
+
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
+        ProductType.ECOMAX_I,
+    ):
+        yield ecomax_common
+
+
+@pytest.fixture
+def ecomax_unknown(ecomax_common: EcoMAX):
+    """Inject unknown ecomax data."""
+    ecomax_common.data.update(
+        {
+            "product": ProductInfo(
+                type=UNKNOWN_ECOMAX_TYPE,
+                product=0,
+                uid="TEST",
+                logo=1,
+                image=2816,
+                model="Unknown model",
+            ),
+            "modules": ConnectedModules(),
+        }
+    )
+
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
+        UNKNOWN_ECOMAX_TYPE,
+    ):
+        yield ecomax_common
+
+
+@pytest.fixture
+def mixers(ecomax_common: EcoMAX):
+    """Inject mixer data."""
+    mixer = Mixer(queue=Mock(), parent=Mock(spec=EcoMAX))
+    mixer.data = {
+        "pump": False,
+        "current_temp": 0.0,
+        "target_temp": 0,
+        "mixer_target_temp": MixerParameter(
+            device=ecomax_common,
+            value=1,
+            min_value=0,
+            max_value=1,
+            description=MixerParameterDescription("mixer_target_temp"),
+        ),
+    }
+
+    ecomax_common.data.update(
+        {
+            "mixer_sensors": True,
+            "mixer_parameters": True,
+            "mixer_count": 1,
+            "mixers": {0: mixer},
+        }
+    )
+
+    with patch(
+        "custom_components.plum_ecomax.connection.has_mixers", True, create=True
+    ):
+        yield ecomax_common

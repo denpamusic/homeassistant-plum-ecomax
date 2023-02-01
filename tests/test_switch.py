@@ -1,13 +1,12 @@
-"""Test Plum ecoMAX switch platform."""
+"""Test the switch platform."""
 
-import asyncio
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
+from homeassistant.const import STATE_ON
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyplumio.devices import Device
 from pyplumio.helpers.parameter import Parameter
-from pyplumio.helpers.product_info import ProductType
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.const import ATTR_ECOMAX_CONTROL
@@ -21,139 +20,154 @@ from custom_components.plum_ecomax.switch import (
 )
 
 
-async def test_async_setup_and_update_entry(
+@pytest.fixture(autouse=True)
+def set_connection_name():
+    """Set connection name."""
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.name",
+        "test",
+        create=True,
+    ):
+        yield
+
+
+def _lookup_switch(entities: list[EcomaxSwitch], key: str) -> EcomaxSwitch:
+    """Lookup switch in the list."""
+    for entity in entities:
+        if entity.entity_description.key == key:
+            return entity
+
+    raise LookupError(f"Couldn't find '{key}' switch")
+
+
+@pytest.mark.usefixtures("connected", "ecomax_p", "ecomax_control", "mixers")
+async def test_async_setup_and_update_entry_with_ecomax_p(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
-    binary_parameter: Parameter,
-    mock_device: Device,
-    bypass_hass_write_ha_state,
 ) -> None:
-    """Test setup and update switch entry."""
+    """Test setup and update switch entry for ecomax p."""
     assert await async_setup_entry(hass, config_entry, async_add_entities)
     await hass.async_block_till_done()
     async_add_entities.assert_called_once()
-    args, _ = async_add_entities.call_args
-    switch = [x for x in args[0] if x.entity_description.key == ATTR_ECOMAX_CONTROL][0]
+    args = async_add_entities.call_args[0]
+    added_entities = args[0]
+    sensor_types = SWITCH_TYPES + ECOMAX_P_SWITCH_TYPES + ECOMAX_P_MIXER_SWITCH_TYPES
+    assert len(added_entities) == len(sensor_types)
+
+    # Check that all sensors are present.
+    for sensor_type in sensor_types:
+        assert _lookup_switch(added_entities, sensor_type.key)
 
     # Check that switch state is unknown and update it.
-    assert isinstance(switch, EcomaxSwitch)
-    assert switch.is_on is None
-    await switch.async_update(binary_parameter)
-    assert switch.is_on
+    entity = _lookup_switch(added_entities, ATTR_ECOMAX_CONTROL)
+    assert isinstance(entity, EcomaxSwitch)
+    mock_parameter = Mock(spec=Parameter)
+    mock_parameter.configure_mock(value=STATE_ON)
+    assert entity.is_on is None
+    await entity.async_added_to_hass()
+    assert entity.entity_registry_enabled_default
+    assert entity.available
+    await entity.async_update(mock_parameter)
+    assert entity.is_on
 
     # Turn the switch off.
-    await switch.async_turn_off()
-    mock_device.set_value_nowait.assert_called_once_with(
-        switch.entity_description.key, switch.entity_description.state_off
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.device.set_value_nowait"
+    ) as mock_set_value_nowait:
+        await entity.async_turn_off()
+
+    mock_set_value_nowait.assert_called_once_with(
+        entity.entity_description.key, entity.entity_description.state_off
     )
-    assert not switch.is_on
-    mock_device.reset_mock()
+    assert not entity.is_on
 
     # Turn the switch back on.
-    await switch.async_turn_on()
-    mock_device.set_value_nowait.assert_called_once_with(
-        switch.entity_description.key, switch.entity_description.state_on
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.device.set_value_nowait"
+    ) as mock_set_value_nowait:
+        await entity.async_turn_on()
+
+    mock_set_value_nowait.assert_called_once_with(
+        entity.entity_description.key, entity.entity_description.state_on
     )
-    assert switch.is_on
+    assert entity.is_on
 
 
-async def test_model_check(
-    hass: HomeAssistant,
-    config_entry: MockConfigEntry,
-    mock_device: Device,
-):
-    """Test sensor model check."""
-    for model_sensor in (
-        (
-            ProductType.ECOMAX_P,
-            ATTR_ECOMAX_CONTROL,
-            "water_heater_schedule_switch",
-            SWITCH_TYPES + ECOMAX_P_SWITCH_TYPES + ECOMAX_P_MIXER_SWITCH_TYPES,
-        ),
-        (
-            ProductType.ECOMAX_I,
-            ATTR_ECOMAX_CONTROL,
-            "summer_work",
-            SWITCH_TYPES + ECOMAX_I_MIXER_SWITCH_TYPES,
-        ),
-    ):
-        product_type, first_switch_key, last_switch_key, switch_types = model_sensor
-        with patch(
-            "custom_components.plum_ecomax.sensor.async_get_current_platform"
-        ), patch(
-            "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
-            product_type,
-        ), patch(
-            "custom_components.plum_ecomax.connection.EcomaxConnection.has_mixers", True
-        ), patch(
-            "homeassistant.helpers.entity_platform.AddEntitiesCallback"
-        ) as mock_async_add_entities:
-            await async_setup_entry(hass, config_entry, mock_async_add_entities)
-            args, _ = mock_async_add_entities.call_args
-            switches = args[0]
-            assert len(switches) == len(switch_types)
-            first_switch = switches[0]
-            last_switch = switches[-1]
-            assert first_switch.entity_description.key == first_switch_key
-            assert last_switch.entity_description.key == last_switch_key
-
-
-async def test_async_setup_entry_with_device_switches_timeout(
+@pytest.mark.usefixtures("ecomax_i", "ecomax_control", "mixers")
+async def test_async_setup_and_update_entry_with_ecomax_i(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
-    mock_device: Device,
+) -> None:
+    """Test setup and update switch entry for ecomax p."""
+    assert await async_setup_entry(hass, config_entry, async_add_entities)
+    await hass.async_block_till_done()
+    async_add_entities.assert_called_once()
+    args = async_add_entities.call_args[0]
+    added_entities = args[0]
+    sensor_types = SWITCH_TYPES + ECOMAX_I_MIXER_SWITCH_TYPES
+    assert len(added_entities) == len(sensor_types)
+
+    # Check that all sensors are present.
+    for sensor_type in sensor_types:
+        assert _lookup_switch(added_entities, sensor_type.key)
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_async_setup_and_update_entry_without_mixers(
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
     caplog,
 ) -> None:
-    """Test setup switch entry with device switches timeout."""
-    mock_device.get_value.side_effect = asyncio.TimeoutError
+    """Test setup and update switch entry for ecomax p without mixers."""
+    assert await async_setup_entry(hass, config_entry, async_add_entities)
+    async_add_entities.assert_called_once()
+    args = async_add_entities.call_args[0]
+    added_entities = args[0]
+    assert "Couldn't load mixer switch" in caplog.text
+
+    # Check that mixer sensor is not added.
+    with pytest.raises(LookupError):
+        _lookup_switch(added_entities, "weather_control")
+
+
+@pytest.mark.usefixtures("ecomax_base")
+async def test_async_setup_and_update_entry_with_no_sensor_data(
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
+    caplog,
+) -> None:
+    """Test setup and update switch entry for ecomax p without the
+    sensor data.
+    """
     assert not await async_setup_entry(hass, config_entry, async_add_entities)
+    async_add_entities.assert_not_called()
     assert "Couldn't load device switches" in caplog.text
 
 
-async def test_async_setup_entry_with_mixer_switches_timeout(
-    hass: HomeAssistant,
-    async_add_entities: AddEntitiesCallback,
-    config_entry: MockConfigEntry,
-    mock_device: Device,
-    caplog,
-) -> None:
-    """Test setup switch entry with mixer switches timeout."""
-    mock_device.get_value.side_effect = (
-        None,
-        None,
-        asyncio.TimeoutError,
-    )
-    assert await async_setup_entry(hass, config_entry, async_add_entities)
-    assert "Couldn't load mixer switches" in caplog.text
-
-
+@pytest.mark.usefixtures("ecomax_p")
 async def test_async_setup_entry_with_control_parameter_timeout(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
-    mock_device: Device,
     caplog,
 ) -> None:
     """Test setup switch entry with control parameter timeout."""
-    mock_device.get_value.side_effect = (None, asyncio.TimeoutError, None)
     assert await async_setup_entry(hass, config_entry, async_add_entities)
     assert "Control parameter not present" in caplog.text
 
 
-async def test_model_check_with_unknown_model(
+@pytest.mark.usefixtures("ecomax_unknown")
+async def test_async_setup_and_update_entry_with_unknown_ecomax_model(
     hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
-    mock_device: Device,
     caplog,
-):
-    """Test model check with the unknown model."""
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.product_type", 2
-    ), patch(
-        "homeassistant.helpers.entity_platform.AddEntitiesCallback"
-    ) as mock_async_add_entities:
-        assert not await async_setup_entry(hass, config_entry, mock_async_add_entities)
-
-    assert "Couldn't setup platform" in caplog.text
+) -> None:
+    """Test setup and update switch entry for unknown ecomax model."""
+    assert not await async_setup_entry(hass, config_entry, async_add_entities)
+    async_add_entities.assert_not_called()
+    assert "Couldn't setup platform due to unknown controller model" in caplog.text

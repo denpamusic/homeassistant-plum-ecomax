@@ -1,16 +1,13 @@
-"""Test Plum ecoMAX number platform."""
+"""Test the number platform."""
 
-import asyncio
 from unittest.mock import Mock, call, patch
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyplumio.devices import Device
 from pyplumio.helpers.parameter import Parameter
-from pyplumio.helpers.product_info import ProductType
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.plum_ecomax.const import ATTR_MIXERS
 from custom_components.plum_ecomax.number import (
     ECOMAX_I_MIXER_NUMBER_TYPES,
     ECOMAX_P_MIXER_NUMBER_TYPES,
@@ -21,196 +18,202 @@ from custom_components.plum_ecomax.number import (
 )
 
 
+@pytest.fixture(autouse=True)
+def bypass_async_get_current_platform():
+    """Mock async get current platform."""
+    with patch("custom_components.plum_ecomax.sensor.async_get_current_platform"):
+        yield
+
+
+@pytest.fixture(autouse=True)
+def set_connection_name():
+    """Set connection name."""
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.name",
+        "test",
+        create=True,
+    ):
+        yield
+
+
+def _lookup_number(entities: list[EcomaxNumber], key: str) -> EcomaxNumber:
+    """Lookup number in the list."""
+    for entity in entities:
+        if entity.entity_description.key == key:
+            return entity
+
+    raise LookupError(f"Couldn't find '{key}' number")
+
+
+@pytest.mark.usefixtures("ecomax_p")
 async def test_async_added_removed_to_hass(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
-    mock_device: Device,
-    bypass_hass_write_ha_state,
 ) -> None:
     """Test adding and removing entity to/from hass."""
     assert await async_setup_entry(hass, config_entry, async_add_entities)
     await hass.async_block_till_done()
     async_add_entities.assert_called_once()
-    args, _ = async_add_entities.call_args
-    heating_target_temp = [
-        x for x in args[0] if x.entity_description.key == "heating_target_temp"
-    ][0]
-    subscribe_calls = [
-        call("min_heating_target_temp", heating_target_temp.async_set_min_value),
-        call("max_heating_target_temp", heating_target_temp.async_set_max_value),
-    ]
-    await heating_target_temp.async_added_to_hass()
-    assert mock_device.subscribe.call_count == 3
-    mock_device.subscribe.assert_has_calls(subscribe_calls)
+    args = async_add_entities.call_args[0]
+    added_entites = args[0]
+    entity = _lookup_number(added_entites, "heating_target_temp")
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.device.subscribe"
+    ) as mock_subscribe:
+        await entity.async_added_to_hass()
 
-    mock_device.unsubscribe = Mock()
-    unsubscribe_calls = [
-        call("min_heating_target_temp", heating_target_temp.async_set_min_value),
-        call("max_heating_target_temp", heating_target_temp.async_set_max_value),
-    ]
-    await heating_target_temp.async_will_remove_from_hass()
-    assert mock_device.unsubscribe.call_count == 3
-    mock_device.unsubscribe.assert_has_calls(unsubscribe_calls)
+    assert mock_subscribe.call_count == 4
+    mock_subscribe.assert_has_calls(
+        [
+            call("min_heating_target_temp", entity.async_set_min_value),
+            call("max_heating_target_temp", entity.async_set_max_value),
+        ]
+    )
+
+    # Test removing the entity from hass.
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.device.unsubscribe"
+    ) as mock_unsubscribe:
+        await entity.async_will_remove_from_hass()
+
+    assert mock_unsubscribe.call_count == 3
+    mock_unsubscribe.assert_has_calls(
+        [
+            call("min_heating_target_temp", entity.async_set_min_value),
+            call("max_heating_target_temp", entity.async_set_max_value),
+        ]
+    )
 
 
-async def test_async_setup_and_update_entry(
+@pytest.mark.usefixtures("connected", "ecomax_p", "mixers")
+async def test_async_setup_and_update_entry_with_ecomax_p(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
-    numeric_parameter: Parameter,
-    mock_device: Device,
-    bypass_hass_write_ha_state,
 ) -> None:
-    """Test setup and update number entry."""
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.has_mixers", True
-    ):
-        assert await async_setup_entry(hass, config_entry, async_add_entities)
-        await hass.async_block_till_done()
-
+    """Test setup and update number entry for ecomax p."""
+    assert await async_setup_entry(hass, config_entry, async_add_entities)
+    await hass.async_block_till_done()
     async_add_entities.assert_called_once()
-    args, _ = async_add_entities.call_args
-    numbers: list[EcomaxNumber] = []
-    for number in args[0]:
-        if number.entity_description.key in (
-            "mixer_target_temp",
-            "heating_target_temp",
-        ):
-            numbers.append(number)
+    args = async_add_entities.call_args[0]
+    added_entities = args[0]
+    sensor_types = NUMBER_TYPES + ECOMAX_P_NUMBER_TYPES + ECOMAX_P_MIXER_NUMBER_TYPES
+    assert len(added_entities) == len(sensor_types)
 
-    for number in numbers:
-        # Check that number values is unknown and update them.
-        assert isinstance(number, EcomaxNumber)
-        assert number.native_value is None
-        assert number.native_min_value is None
-        assert number.native_max_value is None
-        await number.async_update(numeric_parameter)
-        assert number.native_value == 1
-        assert number.native_min_value == 0
-        assert number.native_max_value == 2
+    # Check that all sensors are present.
+    for sensor_type in sensor_types:
+        assert _lookup_number(added_entities, sensor_type.key)
 
-        # Change number value.
-        target_device = (
-            mock_device
-            if number.entity_description.key == "heating_target_temp"
-            else mock_device.data[ATTR_MIXERS][0]
-        )
-        await number.async_set_native_value(2.2)
-        target_device.set_value_nowait.assert_called_once_with(
-            number.entity_description.key, 2.2
-        )
-        assert number.native_value == 2.2
+    entity = _lookup_number(added_entities, "heating_target_temp")
+    assert isinstance(entity, EcomaxNumber)
+    mock_parameter = Mock(spec=Parameter)
+    mock_parameter.configure_mock(value=1, min_value=0, max_value=2)
 
-        # Change min value.
-        numeric_parameter.value = 4
-        assert number.native_min_value == 0
-        await number.async_set_min_value(numeric_parameter)
-        assert number.native_min_value == 4
+    # Check that number values is unknown and update them.
+    assert entity.native_value is None
+    assert entity.native_min_value is None
+    assert entity.native_max_value is None
+    await entity.async_added_to_hass()
+    assert entity.entity_registry_enabled_default
+    assert entity.available
+    await entity.async_update(mock_parameter)
+    assert entity.native_value == 1
+    assert entity.native_min_value == 0
+    assert entity.native_max_value == 2
 
-        # Change max value.
-        numeric_parameter.value = 5
-        assert number.native_max_value == 2
-        await number.async_set_max_value(numeric_parameter)
-        assert number.native_max_value == 5
-
-        # Reset values.
-        numeric_parameter.value = 1
-        numeric_parameter.min_value = 0
-        numeric_parameter.max_value = 2
-
+    # Test changing number value.
     with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
-        ProductType.ECOMAX_I,
-    ):
-        assert numbers[0].device_info["name"] == "Test Circuit 1"
+        "custom_components.plum_ecomax.connection.EcomaxConnection.device.set_value_nowait"
+    ) as mock_set_value_nowait:
+        await entity.async_set_native_value(2.2)
 
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
-        ProductType.ECOMAX_P,
-    ):
-        assert numbers[0].device_info["name"] == "Test Mixer 1"
+    mock_set_value_nowait.assert_called_once_with(entity.entity_description.key, 2.2)
+    assert entity.native_value == 2.2
+
+    # Test changing minimal number value.
+    assert entity.native_min_value == 0
+    mock_parameter.value = 4
+    await entity.async_set_min_value(mock_parameter)
+    assert entity.native_min_value == 4
+
+    # Test changing maximum number value.
+    assert entity.native_max_value == 2
+    mock_parameter.value = 5
+    await entity.async_set_max_value(mock_parameter)
+    assert entity.native_max_value == 5
+
+    # Check mixer number name.
+    entity = _lookup_number(added_entities, "mixer_target_temp")
+    assert entity.device_info["name"] == "test Mixer 1"
 
 
-async def test_async_setup_entry_with_device_numbers_timeout(
+@pytest.mark.usefixtures("ecomax_i", "mixers")
+async def test_async_setup_and_update_entry_with_ecomax_i(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
-    mock_device: Device,
+) -> None:
+    """Test setup and update number entry for ecomax i."""
+    assert await async_setup_entry(hass, config_entry, async_add_entities)
+    await hass.async_block_till_done()
+    async_add_entities.assert_called_once()
+    args = async_add_entities.call_args[0]
+    added_entities = args[0]
+    sensor_types = NUMBER_TYPES + ECOMAX_I_MIXER_NUMBER_TYPES
+    assert len(added_entities) == len(sensor_types)
+
+    # Check that all sensors are present.
+    for sensor_type in sensor_types:
+        assert _lookup_number(added_entities, sensor_type.key)
+
+    # Check mixer number name.
+    entity = _lookup_number(added_entities, "mixer_target_temp")
+    assert entity.device_info["name"] == "test Circuit 1"
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_async_setup_and_update_entry_without_mixers(
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
     caplog,
 ) -> None:
-    """Test setup number entry with device numbers timeout."""
-    mock_device.get_value.side_effect = asyncio.TimeoutError
+    """Test setup and update number entry for ecomax p without mixers."""
+    assert await async_setup_entry(hass, config_entry, async_add_entities)
+    async_add_entities.assert_called_once()
+    args = async_add_entities.call_args[0]
+    added_entities = args[0]
+    assert "Couldn't load mixer numbers" in caplog.text
+
+    # Check that mixer sensor is not added.
+    with pytest.raises(LookupError):
+        _lookup_number(added_entities, "mixer_target_temp")
+
+
+@pytest.mark.usefixtures("ecomax_base")
+async def test_async_setup_and_update_entry_with_no_sensor_data(
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
+    caplog,
+) -> None:
+    """Test setup and update number entry for ecomax p without the
+    sensor data.
+    """
     assert not await async_setup_entry(hass, config_entry, async_add_entities)
+    async_add_entities.assert_not_called()
     assert "Couldn't load device numbers" in caplog.text
 
 
-async def test_async_setup_entry_with_mixer_numbers_timeout(
+@pytest.mark.usefixtures("ecomax_unknown")
+async def test_async_setup_and_update_entry_with_unknown_ecomax_model(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
-    mock_device: Device,
     caplog,
 ) -> None:
-    """Test setup number entry with mixer numbers timeout."""
-    mock_device.get_value.side_effect = (None, asyncio.TimeoutError)
-    assert await async_setup_entry(hass, config_entry, async_add_entities)
-    assert "Couldn't load mixer numbers" in caplog.text
-
-
-async def test_model_check(
-    hass: HomeAssistant,
-    config_entry: MockConfigEntry,
-    mock_device: Device,
-) -> None:
-    """Test sensor model check."""
-    for model_sensor in (
-        (
-            ProductType.ECOMAX_P,
-            "mixer_target_temp",
-            "fuel_calorific_value_kwh_kg",
-            NUMBER_TYPES + ECOMAX_P_NUMBER_TYPES + ECOMAX_P_MIXER_NUMBER_TYPES,
-        ),
-        (
-            ProductType.ECOMAX_I,
-            "mixer_target_temp",
-            "night_target_temp",
-            NUMBER_TYPES + ECOMAX_I_MIXER_NUMBER_TYPES,
-        ),
-    ):
-        product_type, first_number_key, last_number_key, number_types = model_sensor
-        with patch(
-            "custom_components.plum_ecomax.sensor.async_get_current_platform"
-        ), patch(
-            "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
-            product_type,
-        ), patch(
-            "custom_components.plum_ecomax.connection.EcomaxConnection.has_mixers", True
-        ), patch(
-            "homeassistant.helpers.entity_platform.AddEntitiesCallback"
-        ) as mock_async_add_entities:
-            await async_setup_entry(hass, config_entry, mock_async_add_entities)
-            args, _ = mock_async_add_entities.call_args
-            numbers = args[0]
-            assert len(numbers) == len(number_types)
-            first_number = numbers[0]
-            last_number = numbers[-1]
-            assert first_number.entity_description.key == first_number_key
-            assert last_number.entity_description.key == last_number_key
-
-
-async def test_model_check_with_unknown_model(
-    hass: HomeAssistant,
-    config_entry: MockConfigEntry,
-    mock_device: Device,
-    caplog,
-) -> None:
-    """Test model check with the unknown model."""
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.product_type", 2
-    ), patch(
-        "homeassistant.helpers.entity_platform.AddEntitiesCallback"
-    ) as mock_async_add_entities:
-        assert not await async_setup_entry(hass, config_entry, mock_async_add_entities)
-
-    assert "Couldn't setup platform" in caplog.text
+    """Test setup and update number entry for unknown ecomax model."""
+    assert not await async_setup_entry(hass, config_entry, async_add_entities)
+    async_add_entities.assert_not_called()
+    assert "Couldn't setup platform due to unknown controller model" in caplog.text

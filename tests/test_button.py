@@ -1,16 +1,29 @@
-"""Test Plum ecoMAX button."""
+"""Test the button platform."""
 
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.plum_ecomax.button import EcomaxButton, async_setup_entry
-from custom_components.plum_ecomax.const import DOMAIN
+from custom_components.plum_ecomax.button import (
+    BUTTON_TYPES,
+    EcomaxButton,
+    async_setup_entry,
+)
 
 
+def _lookup_button(entities: list[EcomaxButton], key: str) -> EcomaxButton:
+    """Lookup entity in the list."""
+    for entity in entities:
+        if entity.entity_description.key == key:
+            return entity
+
+    raise LookupError(f"Couldn't find '{key}' button")
+
+
+@pytest.mark.usefixtures("connected")
 async def test_async_setup_and_update_entry(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
@@ -20,33 +33,45 @@ async def test_async_setup_and_update_entry(
     assert await async_setup_entry(hass, config_entry, async_add_entities)
     await hass.async_block_till_done()
     async_add_entities.assert_called_once()
-    args, _ = async_add_entities.call_args
-    buttons = args[0]
-    button = buttons.pop(0)
+    args = async_add_entities.call_args[0]
+    added_entities = args[0]
+    assert len(added_entities) == len(BUTTON_TYPES)
 
-    assert isinstance(button, EcomaxButton)
+    # Check that all buttons are present.
+    for sensor_type in BUTTON_TYPES:
+        assert _lookup_button(added_entities, sensor_type.key)
 
+    # Test update sub-devices button.
+    entity = _lookup_button(added_entities, "detect_sub_devices")
+    assert isinstance(entity, EcomaxButton)
+    assert entity.entity_registry_enabled_default
+    assert entity.available
     with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection"
-        + ".async_update_sub_devices"
-    ) as mock_async_update_device_capabilities:
-        await button.async_press()
+        "custom_components.plum_ecomax.connection.EcomaxConnection.async_update_sub_devices"
+    ) as async_update_sub_devices:
+        await entity.async_press()
 
-    mock_async_update_device_capabilities.assert_awaited_once()
-    assert button.entity_registry_enabled_default
+    async_update_sub_devices.assert_awaited_once()
 
+    # Check than async update on button raises not implemented error.
     with pytest.raises(NotImplementedError):
-        await button.async_update(1)
+        await entity.async_update(1)
 
+    # Check that async press on button return not implemented error
+    # if press_fn doesn't exist in EcomaxConnection class.
     with pytest.raises(NotImplementedError), patch.object(
-        button.entity_description, "press_fn", "nonexistent"
+        entity.entity_description, "press_fn", "nonexistent"
     ):
-        await button.async_press()
+        await entity.async_press()
 
-    connection = hass.data[DOMAIN][config_entry.entry_id]
-    with patch.object(button.entity_description, "press_fn", "test_fn"), patch.object(
-        connection, "test_fn", Mock(), create=True
-    ) as mock_func:
-        await button.async_press()
+    # Check that press_fn is getting called.
+    with patch.object(entity.entity_description, "press_fn", "test_fn"), patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.test_fn", create=True
+    ) as mock_test_fn:
+        await entity.async_press()
 
-    mock_func.assert_called_once()
+    mock_test_fn.assert_called_once()
+
+    # Check with nonexistent button.
+    with pytest.raises(LookupError):
+        _lookup_button(added_entities, "nonexistent")

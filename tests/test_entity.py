@@ -1,55 +1,64 @@
 """Test Plum ecoMAX base entity."""
 
 import asyncio
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, Mock, call, patch
 
 from homeassistant.helpers.entity import EntityDescription
-from pyplumio.devices import Device
+from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.helpers.filters import Filter
 
 from custom_components.plum_ecomax.entity import EcomaxEntity
 
 
-class TestEntity(EcomaxEntity):
+class _TestEntity(EcomaxEntity):
     """Test entity class."""
 
     async def async_update(self, value) -> None:
         """Retrieve latest state."""
 
 
-@patch.object(TestEntity, "async_update")
-@patch(
-    "custom_components.plum_ecomax.entity.EcomaxEntity.connection",
-    new_callable=AsyncMock,
-)
+@patch("custom_components.plum_ecomax.entity.EcomaxEntity.connection")
+@patch.object(_TestEntity, "async_update")
 async def test_base_entity(
-    mock_connection, mock_async_update, mock_device: Device
+    mock_async_update, mock_connection, ecomax_p: EcoMAX
 ) -> None:
     """Test base entity."""
-    entity = TestEntity()
-    entity.entity_description = EntityDescription("test_data", name="Test Data")
+    entity = _TestEntity()
+    entity.entity_description = EntityDescription(
+        "heating_temp", name="Heating temperature"
+    )
     mock_filter = AsyncMock(spec=Filter)
     entity.entity_description.filter_fn = Mock(return_value=mock_filter)
-    mock_connection.device = mock_device
-    mock_connection.connected = Mock(spec=asyncio.Event)
+    mock_connection.device = ecomax_p
 
-    # Test added/removed to/from hass.
-    await entity.async_added_to_hass()
+    # Test adding entity to hass.
+    with patch(
+        "custom_components.plum_ecomax.entity.EcomaxEntity.connection.device.subscribe"
+    ) as mock_subscribe:
+        await entity.async_added_to_hass()
+
     entity.entity_description.filter_fn.assert_called_once()
-    entity.device.subscribe.assert_called_once_with(
-        "test_data", entity.entity_description.filter_fn.return_value
+    mock_subscribe.assert_has_calls(
+        [call("heating_temp", entity.entity_description.filter_fn.return_value)]
     )
-    entity.device.subscribe_once.assert_called_once()
     mock_filter.assert_awaited_once()
-    await entity.async_will_remove_from_hass()
-    entity.device.unsubscribe.assert_called_once_with("test_data", mock_async_update)
+
+    # Test removing entity from the hass.
+    with patch(
+        "custom_components.plum_ecomax.entity.EcomaxEntity.connection.device.unsubscribe"
+    ) as mock_unsubscribe:
+        await entity.async_will_remove_from_hass()
+
+    mock_unsubscribe.assert_called_once_with("heating_temp", mock_async_update)
 
     # Test device property.
     assert entity.device == mock_connection.device
 
     # Test available property.
+    mock_connection.connected = Mock(spec=asyncio.Event)
+    mock_connection.connected.is_set.return_value = True
     assert entity.available
-    mock_connection.connected.is_set = Mock(return_value=False)
+    mock_connection.connected.is_set.return_value = False
     assert not entity.available
     mock_connection.reset_mock()
 
@@ -58,11 +67,11 @@ async def test_base_entity(
 
     # Test unique id property.
     mock_connection.uid = "test_uid"
-    assert entity.unique_id == "test_uid-test_data"
+    assert entity.unique_id == "test_uid-heating_temp"
 
     # Test name property.
-    mock_connection.name = "Test Connection"
-    assert entity.name == "Test Connection Test Data"
+    mock_connection.name = "Test connection"
+    assert entity.name == "Test connection Heating temperature"
 
     # Test should poll property.
     assert not entity.should_poll

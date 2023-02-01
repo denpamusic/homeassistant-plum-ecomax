@@ -4,15 +4,15 @@ from unittest.mock import AsyncMock
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from pyplumio.devices import Device
+from pyplumio import __version__
+from pyplumio.devices.ecomax import EcoMAX
+import pytest
 
-from custom_components.plum_ecomax.connection import ATTR_MODULES, EcomaxConnection
+from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
-    ATTR_LAMBDA_LEVEL,
     ATTR_MIXERS,
     ATTR_PASSWORD,
     ATTR_PRODUCT,
-    ATTR_THERMOSTATS,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
@@ -22,6 +22,7 @@ from custom_components.plum_ecomax.const import (
     CONF_SOFTWARE,
     CONF_SUB_DEVICES,
     CONF_UID,
+    CONNECTION_TYPE_TCP,
     DOMAIN,
 )
 from custom_components.plum_ecomax.diagnostics import (
@@ -30,37 +31,36 @@ from custom_components.plum_ecomax.diagnostics import (
 )
 
 
+@pytest.mark.usefixtures("mixers")
 async def test_diagnostics(
-    hass: HomeAssistant, config_entry: ConfigEntry, mock_device: Device
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    ecomax_p: EcoMAX,
+    config_data: dict[str, str],
+    device_data: dict[str, str],
 ) -> None:
     """Test config entry diagnostics."""
     mock_connection = AsyncMock(spec=EcomaxConnection)
-    mock_connection.device = mock_device
-
-    hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = mock_connection
+    mock_connection.device = ecomax_p
+    hass.data[DOMAIN][config_entry.entry_id] = mock_connection
     result = await async_get_config_entry_diagnostics(hass, config_entry)
-    assert "pyplumio" in result
+    assert result["pyplumio"]["version"] == __version__
     assert result["entry"] == {
         "title": "Mock Title",
         "data": {
-            CONF_CONNECTION_TYPE: "TCP",
-            CONF_DEVICE: "/dev/ttyUSB0",
+            CONF_CONNECTION_TYPE: CONNECTION_TYPE_TCP,
+            CONF_DEVICE: config_data.get(CONF_DEVICE),
             CONF_HOST: REDACTED,
-            CONF_PORT: 8899,
+            CONF_PORT: config_data.get(CONF_PORT),
             CONF_UID: REDACTED,
-            CONF_PRODUCT_TYPE: 0,
-            CONF_MODEL: "ecoMAX 123A",
-            CONF_SOFTWARE: "1.13.5.A1",
-            CONF_SUB_DEVICES: [ATTR_MIXERS],
+            CONF_PRODUCT_TYPE: device_data.get(CONF_PRODUCT_TYPE),
+            CONF_MODEL: device_data.get(CONF_MODEL),
+            CONF_SOFTWARE: device_data.get(CONF_SOFTWARE),
+            CONF_SUB_DEVICES: device_data.get(CONF_SUB_DEVICES),
         },
     }
-    assert result["data"] == {
-        ATTR_PRODUCT: mock_connection.device.data[ATTR_PRODUCT],
-        ATTR_PASSWORD: REDACTED,
-        ATTR_MIXERS: {0: {"test_mixer_data": "test_mixer_value"}},
-        ATTR_THERMOSTATS: {0: {"test_thermostat_data": "test_thermostat_value"}},
-        ATTR_MODULES: mock_connection.device.data[ATTR_MODULES],
-        ATTR_LAMBDA_LEVEL: 166,
-        "test_data": "test_value",
-    }
-    assert mock_connection.device.data[ATTR_PRODUCT].uid == REDACTED
+    ecomax_data = dict(ecomax_p.data)
+    ecomax_data[ATTR_PASSWORD] = REDACTED
+    ecomax_data[ATTR_MIXERS] = {x: y.data for x, y in ecomax_data[ATTR_MIXERS].items()}
+    assert result["data"][ATTR_PRODUCT].uid == REDACTED
+    assert result["data"] == ecomax_data
