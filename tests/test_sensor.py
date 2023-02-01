@@ -89,6 +89,7 @@ async def test_async_setup_and_update_entry_with_ecomax_p(
     assert entity.entity_registry_enabled_default
     assert entity.available
     assert entity.native_value == 0
+    assert entity.native_precision == 1
     await entity.async_update(65)
     assert entity.native_value == 65
 

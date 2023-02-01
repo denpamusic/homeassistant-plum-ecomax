@@ -104,7 +104,8 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
+        native_precision=1,
+        value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
@@ -114,7 +115,8 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
+        native_precision=1,
+        value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
@@ -124,7 +126,8 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
+        native_precision=1,
+        value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
@@ -134,7 +137,8 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
+        native_precision=1,
+        value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="water_heater_target",
@@ -143,7 +147,8 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
+        native_precision=1,
+        value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="state",
@@ -181,7 +186,8 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfPower.KILO_WATT,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.POWER,
-        value_fn=lambda x: round(x, 2),
+        native_precision=2,
+        value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="fuel_level",
@@ -197,7 +203,8 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         icon="mdi:fire",
         native_unit_of_measurement=FLOW_KGH,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda x: round(x, 2),
+        native_precision=2,
+        value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
@@ -214,7 +221,8 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         icon="mdi:fan",
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda x: round(x, 1),
+        native_precision=1,
+        value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="optical_temp",
@@ -222,7 +230,8 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         icon="mdi:fire",
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda x: round(x, 1),
+        native_precision=1,
+        value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
@@ -232,7 +241,8 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
+        native_precision=1,
+        value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
@@ -242,7 +252,8 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
+        native_precision=1,
+        value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
@@ -252,7 +263,8 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
+        native_precision=1,
+        value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
@@ -262,7 +274,8 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
+        native_precision=1,
+        value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
 )
@@ -275,7 +288,8 @@ ECOMAX_I_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
+        native_precision=1,
+        value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
@@ -285,7 +299,8 @@ ECOMAX_I_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
+        native_precision=1,
+        value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
@@ -295,7 +310,8 @@ ECOMAX_I_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
+        native_precision=1,
+        value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
 )
@@ -347,7 +363,8 @@ ECOMAX_I_MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
+        native_precision=1,
+        value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
@@ -357,7 +374,8 @@ ECOMAX_I_MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
+        native_precision=1,
+        value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
 )
@@ -371,7 +389,8 @@ ECOMAX_P_MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
+        native_precision=1,
+        value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
@@ -381,7 +400,8 @@ ECOMAX_P_MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        value_fn=lambda x: round(x, 1),
+        native_precision=1,
+        value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
 )
@@ -419,7 +439,8 @@ METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfMass.KILOGRAMS,
         state_class=SensorStateClass.TOTAL_INCREASING,
         device_class=SensorDeviceClass.WEIGHT,
-        value_fn=lambda x: round(x, 2),
+        native_precision=2,
+        value_fn=lambda x: x,
         filter_fn=lambda x: aggregate(x, seconds=30),
     ),
 )
