@@ -22,10 +22,9 @@ from custom_components.plum_ecomax import (
     async_unload_entry,
     format_model_name,
 )
-from custom_components.plum_ecomax.connection import VALUE_TIMEOUT, EcomaxConnection
+from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
     ATTR_FROM,
-    ATTR_PRODUCT,
     ATTR_TO,
     CONF_CAPABILITIES,
     CONF_MODEL,
@@ -116,33 +115,31 @@ async def test_setup_events(
         to_dt=dt_util.parse_datetime(DATE_TO),
     )
     mock_device_entry = Mock(spec=DeviceEntry)
+
     with patch(
         "homeassistant.helpers.device_registry.DeviceRegistry.async_get_device",
         return_value=mock_device_entry,
-    ), patch("homeassistant.core.EventBus.async_fire") as mock_async_fire, patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.device.get_value"
-    ) as mock_get_value:
+    ), patch("homeassistant.core.EventBus.async_fire") as mock_async_fire:
         await callback([alert])
-        mock_get_value.assert_called_once_with(ATTR_PRODUCT, timeout=VALUE_TIMEOUT)
-        mock_async_fire.assert_called_once_with(
-            EVENT_PLUM_ECOMAX_ALERT,
-            {
-                ATTR_DEVICE_ID: mock_device_entry.id,
-                ATTR_CODE: AlertType.POWER_LOSS,
-                ATTR_FROM: DATE_FROM,
-                ATTR_TO: DATE_TO,
-            },
-        )
 
-    # Test with timeout error while getting product info.
+    mock_async_fire.assert_called_once_with(
+        EVENT_PLUM_ECOMAX_ALERT,
+        {
+            ATTR_DEVICE_ID: mock_device_entry.id,
+            ATTR_CODE: AlertType.POWER_LOSS,
+            ATTR_FROM: DATE_FROM,
+            ATTR_TO: DATE_TO,
+        },
+    )
+
+    # Check when device is not found.
     with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.device.get_value",
-        side_effect=asyncio.TimeoutError,
+        "homeassistant.helpers.device_registry.DeviceRegistry.async_get_device",
+        return_value=None,
     ):
         await callback([alert])
 
-    await async_setup_events(hass, connection)
-    assert "Event dispatch failed" in caplog.text
+    assert "Device not found." in caplog.text
 
 
 @pytest.mark.usefixtures("ecomax_p")

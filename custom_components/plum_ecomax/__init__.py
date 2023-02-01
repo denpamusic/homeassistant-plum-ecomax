@@ -98,15 +98,10 @@ async def async_setup_events(hass: HomeAssistant, connection: EcomaxConnection) 
 
     async def _displatch_alert_events(alerts: list[Alert]) -> None:
         """Handle ecoMAX alert events."""
-        try:
-            product_info = await connection.device.get_value(
-                ATTR_PRODUCT, timeout=VALUE_TIMEOUT
-            )
-        except asyncio.TimeoutError:
-            _LOGGER.error("Event dispatch failed. Couldn't get the device UID in time")
+        if (device := dr.async_get_device({(DOMAIN, connection.uid)})) is None:
+            _LOGGER.error("Device not found. uid: %s", connection.uid)
             return
 
-        device = dr.async_get_device({(DOMAIN, product_info.uid)})
         for alert in alerts:
             event_data = {
                 ATTR_DEVICE_ID: device.id,
