@@ -111,8 +111,8 @@ class EcomaxConnection:
 
     async def async_setup(self) -> None:
         """Setup connection and add hass stop handler."""
-        await self.connection.connect()
-        self._device = await self.connection.get_device(ECOMAX, timeout=DEVICE_TIMEOUT)
+        await self.connect()
+        self._device = await self.get_device(ECOMAX, timeout=DEVICE_TIMEOUT)
 
     async def async_update_sub_devices(self) -> None:
         """Update sub-devices."""
