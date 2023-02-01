@@ -169,4 +169,4 @@ async def test_async_setup_entry_with_device_sensors_timeout(
 ) -> None:
     """Test setup thermostat entry with device sensors timeout."""
     assert not await async_setup_entry(hass, config_entry, async_add_entities)
-    assert "Can't find thermostats" in caplog.text
+    assert "Couldn't find thermostats" in caplog.text

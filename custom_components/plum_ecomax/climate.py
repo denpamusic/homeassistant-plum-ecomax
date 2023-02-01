@@ -244,7 +244,7 @@ async def async_setup_entry(
             ATTR_THERMOSTATS, timeout=VALUE_TIMEOUT
         )
     except asyncio.TimeoutError:
-        _LOGGER.warning("Can't find thermostats, skipping climate platform setup...")
+        _LOGGER.warning("Couldn't find thermostats, skipping climate platform setup...")
         return False
 
     entities: list[EcomaxEntity] = [

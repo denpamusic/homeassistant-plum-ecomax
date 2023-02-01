@@ -170,7 +170,10 @@ async def async_setup_entry(
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     try:
         await connection.device.get_value(ATTR_WATER_HEATER_TEMP, timeout=VALUE_TIMEOUT)
-        return async_add_entities([EcomaxWaterHeater(connection)], False)
     except asyncio.TimeoutError:
-        _LOGGER.error("Couldn't load indirect water heater parameters")
+        _LOGGER.warning(
+            "Couldn't find water heater, skipping water_heater platform setup..."
+        )
         return False
+
+    return async_add_entities([EcomaxWaterHeater(connection)], False)

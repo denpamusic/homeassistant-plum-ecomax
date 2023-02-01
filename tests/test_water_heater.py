@@ -142,4 +142,4 @@ async def test_async_setup_entry_with_device_sensors_timeout(
 ) -> None:
     """Test setup water heater entry with device sensors timeout."""
     assert not await async_setup_entry(hass, config_entry, async_add_entities)
-    assert "Couldn't load indirect water heater parameters" in caplog.text
+    assert "Couldn't find water heater" in caplog.text
