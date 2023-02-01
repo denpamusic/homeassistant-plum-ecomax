@@ -152,9 +152,8 @@ async def _setup_set_schedule_service(
                 raise HomeAssistantError(
                     f"Error while trying to parse time interval for {name} schedule"
                 ) from e
-            else:
-                schedule.commit()
 
+            schedule.commit()
             return
 
         raise HomeAssistantError(
