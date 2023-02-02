@@ -35,6 +35,21 @@
           "unknown": "Unknown"
         }
       }
+    },
+    "climate": {
+      "ecomax_climate": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "schedule": "Programme",
+              "airing": "Aération",
+              "party": "Party",
+              "holidays": "Vacances",
+              "antifreeze": "Antigel"
+            }
+          }
+        }
+      }
     }
   }
 }

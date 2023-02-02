@@ -8,7 +8,7 @@ from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
 from pyplumio import Connection
 from pyplumio.const import DeviceState
-from pyplumio.devices import Mixer
+from pyplumio.devices import Mixer, Thermostat
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.helpers.network_info import NetworkInfo
 from pyplumio.helpers.product_info import ConnectedModules, ProductInfo, ProductType
@@ -20,6 +20,10 @@ from pyplumio.structures.ecomax_parameters import (
 from pyplumio.structures.mixer_parameters import (
     MixerParameter,
     MixerParameterDescription,
+)
+from pyplumio.structures.thermostat_parameters import (
+    ThermostatParameter,
+    ThermostatParameterDescription,
 )
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -355,3 +359,63 @@ def mixers(ecomax_common: EcoMAX):
         "custom_components.plum_ecomax.connection.has_mixers", True, create=True
     ):
         yield ecomax_common
+
+
+@pytest.fixture
+def thermostats(ecomax_common: EcoMAX):
+    """Inject thermostats data."""
+    thermostat = Thermostat(queue=Mock(spec=asyncio.Queue), parent=ecomax_common)
+    thermostat.data = {
+        "state": 0,
+        "current_temp": 0.0,
+        "target_temp": 16.0,
+        "contacts": False,
+        "schedule": False,
+        "mode": ThermostatParameter(
+            offset=0,
+            device=ecomax_common,
+            value=0,
+            min_value=0,
+            max_value=7,
+            description=ThermostatParameterDescription("mode"),
+        ),
+        "hysteresis": ThermostatParameter(
+            offset=0,
+            device=ecomax_common,
+            value=5,
+            min_value=0,
+            max_value=50,
+            description=ThermostatParameterDescription("hysteresis", multiplier=10),
+        ),
+        "day_target_temp": ThermostatParameter(
+            offset=0,
+            device=ecomax_common,
+            value=160,
+            min_value=100,
+            max_value=350,
+            description=ThermostatParameterDescription(
+                "day_target_temp", multiplier=10, size=2
+            ),
+        ),
+        "night_target_temp": ThermostatParameter(
+            offset=0,
+            device=ecomax_common,
+            value=160,
+            min_value=100,
+            max_value=350,
+            description=ThermostatParameterDescription(
+                "night_target_temp", multiplier=10, size=2
+            ),
+        ),
+    }
+
+    ecomax_common.data.update(
+        {
+            "thermostat_sensors": True,
+            "thermostat_parameters": True,
+            "thermostat_count": 1,
+            "thermostats": {0: thermostat},
+        }
+    )
+
+    yield ecomax_common

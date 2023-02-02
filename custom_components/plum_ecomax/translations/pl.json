@@ -35,6 +35,21 @@
           "unknown": "Nieznany"
         }
       }
+    },
+    "climate": {
+      "ecomax_climate": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "schedule": "Harmonogram",
+              "airing": "Wietrzenie",
+              "party": "Party",
+              "holidays": "Wakacje",
+              "antifreeze": "Przeciwzamarzanie"
+            }
+          }
+        }
+      }
     }
   }
 }

@@ -35,6 +35,21 @@
           "unknown": "Неизвестно"
         }
       }
+    },
+    "climate": {
+      "ecomax_climate": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "schedule": "Расписание",
+              "airing": "Проветривание",
+              "party": "Party",
+              "holidays": "Отпуск",
+              "antifreeze": "Антизамерзание"
+            }
+          }
+        }
+      }
     }
   }
 }

@@ -35,6 +35,21 @@
           "unknown": "Neznámý"
         }
       }
+    },
+    "climate": {
+      "ecomax_climate": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "schedule": "Harmonogram",
+              "airing": "Větrání",
+              "party": "Párty",
+              "holidays": "Prázdniny",
+              "antifreeze": "Protizámrz"
+            }
+          }
+        }
+      }
     }
   }
 }

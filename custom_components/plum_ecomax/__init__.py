@@ -48,6 +48,7 @@ PLATFORMS: list[Platform] = [
     Platform.BUTTON,
     Platform.NUMBER,
     Platform.WATER_HEATER,
+    Platform.CLIMATE,
 ]
 
 DATE_STR_FORMAT: Final = "%Y-%m-%d %H:%M:%S"
