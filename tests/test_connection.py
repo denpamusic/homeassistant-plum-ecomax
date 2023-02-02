@@ -17,8 +17,7 @@ import pytest
 
 from custom_components.plum_ecomax.connection import (
     ATTR_MODULES,
-    DEVICE_TIMEOUT,
-    VALUE_TIMEOUT,
+    DEFAULT_TIMEOUT,
     EcomaxConnection,
     async_check_connection,
     async_get_connection_handler,
@@ -87,8 +86,8 @@ async def test_async_check_connection(config_data: dict[str, str]) -> None:
     result = await async_check_connection(mock_connection)
     mock_ecomax.get_value.assert_has_calls(
         [
-            call(ATTR_PRODUCT, timeout=VALUE_TIMEOUT),
-            call(ATTR_MODULES, timeout=VALUE_TIMEOUT),
+            call(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT),
+            call(ATTR_MODULES, timeout=DEFAULT_TIMEOUT),
         ]
     )
     mock_connection.close.assert_awaited_once()
@@ -136,7 +135,7 @@ async def test_async_setup(
 
     await connection.async_setup()
     mock_connection.connect.assert_awaited_once()
-    mock_connection.get_device.assert_awaited_once_with(ECOMAX, timeout=DEVICE_TIMEOUT)
+    mock_connection.get_device.assert_awaited_once_with(ECOMAX, timeout=DEFAULT_TIMEOUT)
 
     # Check connection class properties for tcp connection.
     assert not hasattr(connection, "nonexistent")

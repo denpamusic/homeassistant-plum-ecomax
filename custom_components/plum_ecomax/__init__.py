@@ -20,8 +20,7 @@ from pyplumio.helpers.filters import delta
 from pyplumio.structures.alerts import Alert
 
 from .connection import (
-    DEVICE_TIMEOUT,
-    VALUE_TIMEOUT,
+    DEFAULT_TIMEOUT,
     EcomaxConnection,
     async_get_connection_handler,
     async_get_sub_devices,
@@ -143,8 +142,8 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                 await async_get_connection_handler(hass, config_entry.data),
             )
             await connection.connect()
-            device = await connection.get_device(ECOMAX, timeout=DEVICE_TIMEOUT)
-            product = await device.get_value(ATTR_PRODUCT, timeout=VALUE_TIMEOUT)
+            device = await connection.get_device(ECOMAX, timeout=DEFAULT_TIMEOUT)
+            product = await device.get_value(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
             data[CONF_PRODUCT_TYPE] = product.type
             await connection.close()
             config_entry.version = 3
@@ -169,7 +168,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                 await async_get_connection_handler(hass, config_entry.data),
             )
             await connection.connect()
-            device = await connection.get_device(ECOMAX, timeout=DEVICE_TIMEOUT)
+            device = await connection.get_device(ECOMAX, timeout=DEFAULT_TIMEOUT)
             data[CONF_SUB_DEVICES] = await async_get_sub_devices(device)
             await connection.close()
             config_entry.version = 5

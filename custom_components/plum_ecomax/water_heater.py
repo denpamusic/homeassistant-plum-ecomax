@@ -26,7 +26,7 @@ from homeassistant.helpers.typing import ConfigType
 from pyplumio.helpers.filters import on_change, throttle
 from pyplumio.helpers.parameter import Parameter
 
-from .connection import VALUE_TIMEOUT, EcomaxConnection
+from .connection import DEFAULT_TIMEOUT, EcomaxConnection
 from .const import ATTR_WATER_HEATER, ATTR_WATER_HEATER_TEMP, DOMAIN
 from .entity import EcomaxEntity
 
@@ -169,7 +169,9 @@ async def async_setup_entry(
     """Set up the sensor platform."""
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     try:
-        await connection.device.get_value(ATTR_WATER_HEATER_TEMP, timeout=VALUE_TIMEOUT)
+        await connection.device.get_value(
+            ATTR_WATER_HEATER_TEMP, timeout=DEFAULT_TIMEOUT
+        )
     except asyncio.TimeoutError:
         _LOGGER.warning(
             "Couldn't find water heater, skipping water_heater platform setup..."

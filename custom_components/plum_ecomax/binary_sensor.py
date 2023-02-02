@@ -19,7 +19,7 @@ from homeassistant.helpers.typing import ConfigType
 from pyplumio.helpers.filters import on_change
 from pyplumio.helpers.product_info import ProductType
 
-from .connection import VALUE_TIMEOUT, EcomaxConnection
+from .connection import DEFAULT_TIMEOUT, EcomaxConnection
 from .const import ATTR_MIXER_SENSORS, ATTR_MIXERS, ATTR_SENSORS, DOMAIN
 from .entity import EcomaxEntity, MixerEntity
 
@@ -213,7 +213,7 @@ async def async_setup_mixer_entities(
     connection: EcomaxConnection, entities: list[EcomaxEntity]
 ) -> None:
     """Setup mixers binary sensor platform."""
-    await connection.device.get_value(ATTR_MIXER_SENSORS, timeout=VALUE_TIMEOUT)
+    await connection.device.get_value(ATTR_MIXER_SENSORS, timeout=DEFAULT_TIMEOUT)
     mixers = connection.device.data.get(ATTR_MIXERS, {})
     for index in mixers.keys():
         entities.extend(
@@ -234,7 +234,7 @@ async def async_setup_entry(
     """Set up the sensor platform."""
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     try:
-        await connection.device.get_value(ATTR_SENSORS, timeout=VALUE_TIMEOUT)
+        await connection.device.get_value(ATTR_SENSORS, timeout=DEFAULT_TIMEOUT)
         entities: list[EcomaxEntity] = [
             EcomaxBinarySensor(connection, description)
             for description in BINARY_SENSOR_TYPES

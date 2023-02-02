@@ -38,7 +38,7 @@ from pyplumio.helpers.filters import aggregate, on_change, throttle
 from pyplumio.helpers.product_info import ConnectedModules, ProductType
 import voluptuous as vol
 
-from .connection import VALUE_TIMEOUT, EcomaxConnection
+from .connection import DEFAULT_TIMEOUT, EcomaxConnection
 from .const import (
     ATTR_FUEL_BURNED,
     ATTR_LAMBDA_LEVEL,
@@ -531,7 +531,7 @@ async def async_setup_mixer_entities(
     connection: EcomaxConnection, entities: list[EcomaxEntity]
 ) -> None:
     """Setup mixer sensors."""
-    await connection.device.get_value(ATTR_MIXER_SENSORS, timeout=VALUE_TIMEOUT)
+    await connection.device.get_value(ATTR_MIXER_SENSORS, timeout=DEFAULT_TIMEOUT)
     mixers = connection.device.data.get(ATTR_MIXERS, {})
     for index in mixers.keys():
         entities.extend(
@@ -547,7 +547,7 @@ async def async_setup_module_entities(
 ) -> None:
     """Setup module-specific sensors."""
     modules: ConnectedModules = await connection.device.get_value(
-        ATTR_MODULES, timeout=VALUE_TIMEOUT
+        ATTR_MODULES, timeout=DEFAULT_TIMEOUT
     )
     for module, sensor_types in MODULE_SENSOR_TYPES:
         if getattr(modules, module) is not None:
@@ -564,7 +564,7 @@ async def async_setup_entry(
     """Set up the sensor platform."""
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     try:
-        await connection.device.get_value(ATTR_SENSORS, timeout=VALUE_TIMEOUT)
+        await connection.device.get_value(ATTR_SENSORS, timeout=DEFAULT_TIMEOUT)
         entities: list[EcomaxEntity] = [
             EcomaxSensor(connection, description) for description in SENSOR_TYPES
         ]

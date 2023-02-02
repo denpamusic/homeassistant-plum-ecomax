@@ -36,8 +36,7 @@ from .const import (
     MANUFACTURER,
 )
 
-DEVICE_TIMEOUT: Final = 10
-VALUE_TIMEOUT: Final = 10
+DEFAULT_TIMEOUT: Final = 10
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -66,9 +65,9 @@ async def async_check_connection(
         else connection.device
     )
     await connection.connect()
-    device = await connection.get_device(ECOMAX, timeout=DEVICE_TIMEOUT)
-    product = await device.get_value(ATTR_PRODUCT, timeout=VALUE_TIMEOUT)
-    modules = await device.get_value(ATTR_MODULES, timeout=VALUE_TIMEOUT)
+    device = await connection.get_device(ECOMAX, timeout=DEFAULT_TIMEOUT)
+    product = await device.get_value(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
+    modules = await device.get_value(ATTR_MODULES, timeout=DEFAULT_TIMEOUT)
     sub_devices = await async_get_sub_devices(device)
     await connection.close()
 
@@ -79,7 +78,7 @@ async def async_get_sub_devices(device: Device) -> list[str]:
     """Return device subdevices."""
     sub_devices: list[str] = []
     try:
-        await device.get_value(ATTR_MIXERS, timeout=VALUE_TIMEOUT)
+        await device.get_value(ATTR_MIXERS, timeout=DEFAULT_TIMEOUT)
         sub_devices.append(ATTR_MIXERS)
     except asyncio.TimeoutError:
         pass
@@ -112,7 +111,7 @@ class EcomaxConnection:
     async def async_setup(self) -> None:
         """Setup connection and add hass stop handler."""
         await self.connect()
-        self._device = await self.get_device(ECOMAX, timeout=DEVICE_TIMEOUT)
+        self._device = await self.get_device(ECOMAX, timeout=DEFAULT_TIMEOUT)
 
     async def async_update_sub_devices(self) -> None:
         """Update sub-devices."""

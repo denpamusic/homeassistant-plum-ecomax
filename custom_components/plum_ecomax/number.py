@@ -21,7 +21,7 @@ from pyplumio.helpers.filters import on_change
 from pyplumio.helpers.parameter import Parameter
 from pyplumio.helpers.product_info import ProductType
 
-from .connection import VALUE_TIMEOUT, EcomaxConnection
+from .connection import DEFAULT_TIMEOUT, EcomaxConnection
 from .const import (
     ATTR_ECOMAX_PARAMETERS,
     ATTR_MIXER_PARAMETERS,
@@ -279,7 +279,7 @@ async def async_setup_mixer_entities(
     connection: EcomaxConnection, entities: list[EcomaxEntity]
 ) -> None:
     """Setup mixer number entites."""
-    await connection.device.get_value(ATTR_MIXER_PARAMETERS, timeout=VALUE_TIMEOUT)
+    await connection.device.get_value(ATTR_MIXER_PARAMETERS, timeout=DEFAULT_TIMEOUT)
     mixers = connection.device.data.get(ATTR_MIXERS, {})
     for index in mixers.keys():
         entities.extend(
@@ -296,7 +296,9 @@ async def async_setup_entry(
     """Set up the number platform."""
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     try:
-        await connection.device.get_value(ATTR_ECOMAX_PARAMETERS, timeout=VALUE_TIMEOUT)
+        await connection.device.get_value(
+            ATTR_ECOMAX_PARAMETERS, timeout=DEFAULT_TIMEOUT
+        )
         entities: list[EcomaxEntity] = [
             EcomaxNumber(connection, description) for description in NUMBER_TYPES
         ]

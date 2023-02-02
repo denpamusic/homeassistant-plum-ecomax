@@ -29,7 +29,7 @@ from homeassistant.helpers.typing import ConfigType
 from pyplumio.devices import Thermostat
 from pyplumio.helpers.filters import on_change, throttle
 
-from .connection import VALUE_TIMEOUT, EcomaxConnection
+from .connection import DEFAULT_TIMEOUT, EcomaxConnection
 from .const import DOMAIN
 from .entity import EcomaxEntity
 
@@ -241,7 +241,7 @@ async def async_setup_entry(
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     try:
         thermostats: dict[int, Thermostat] = await connection.device.get_value(
-            ATTR_THERMOSTATS, timeout=VALUE_TIMEOUT
+            ATTR_THERMOSTATS, timeout=DEFAULT_TIMEOUT
         )
     except asyncio.TimeoutError:
         _LOGGER.warning("Couldn't find thermostats, skipping climate platform setup...")
