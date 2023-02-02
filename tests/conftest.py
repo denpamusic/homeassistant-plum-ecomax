@@ -152,14 +152,11 @@ def fixture_ecomax_common(ecomax_base: EcoMAX):
             "sensors": True,
             "ecomax_parameters": True,
             "heating_pump": False,
-            "water_heater_pump": False,
             "ciculation_pump": False,
             "pending_alerts": False,
             "heating_temp": 0.0,
-            "water_heater_temp": 0.0,
             "outside_temp": 0.0,
             "heating_target": 0,
-            "water_heater_target": 0,
             "state": DeviceState.OFF,
             "password": "0000",
         }
@@ -294,9 +291,44 @@ def ecomax_unknown(ecomax_common: EcoMAX):
 
 
 @pytest.fixture
+def water_heater(ecomax_common: EcoMAX):
+    """Inject water heater data."""
+    ecomax_common.data.update(
+        {
+            "water_heater_pump": False,
+            "water_heater_temp": 0.0,
+            "water_heater_target": 0,
+            "water_heater_target_temp": EcomaxParameter(
+                device=ecomax_common,
+                value=50,
+                min_value=10,
+                max_value=80,
+                description=EcomaxParameterDescription("water_heater_target_temp"),
+            ),
+            "water_heater_work_mode": EcomaxParameter(
+                device=ecomax_common,
+                value=0,
+                min_value=0,
+                max_value=2,
+                description=EcomaxParameterDescription("water_heater_work_mode"),
+            ),
+            "water_heater_hysteresis": EcomaxParameter(
+                device=ecomax_common,
+                value=5,
+                min_value=0,
+                max_value=10,
+                description=EcomaxParameterDescription("water_heater_hysteresis"),
+            ),
+        }
+    )
+
+    yield ecomax_common
+
+
+@pytest.fixture
 def mixers(ecomax_common: EcoMAX):
     """Inject mixer data."""
-    mixer = Mixer(queue=Mock(), parent=Mock(spec=EcoMAX))
+    mixer = Mixer(queue=Mock(spec=asyncio.Queue), parent=ecomax_common)
     mixer.data = {
         "pump": False,
         "current_temp": 0.0,

@@ -59,7 +59,7 @@ async def test_async_added_removed_to_hass(
     added_entites = args[0]
     entity = _lookup_number(added_entites, "heating_target_temp")
     with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.device.subscribe"
+        "custom_components.plum_ecomax.entity.Device.subscribe"
     ) as mock_subscribe:
         await entity.async_added_to_hass()
 
@@ -73,7 +73,7 @@ async def test_async_added_removed_to_hass(
 
     # Test removing the entity from hass.
     with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.device.unsubscribe"
+        "custom_components.plum_ecomax.entity.Device.unsubscribe"
     ) as mock_unsubscribe:
         await entity.async_will_remove_from_hass()
 
@@ -124,7 +124,7 @@ async def test_async_setup_and_update_entry_with_ecomax_p(
 
     # Test changing number value.
     with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.device.set_value_nowait"
+        "custom_components.plum_ecomax.entity.Device.set_value_nowait"
     ) as mock_set_value_nowait:
         await entity.async_set_native_value(2.2)
 
