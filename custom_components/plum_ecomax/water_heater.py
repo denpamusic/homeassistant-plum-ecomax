@@ -168,6 +168,9 @@ async def async_setup_entry(
 ) -> bool:
     """Set up the sensor platform."""
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
+    if not connection.has_water_heater:
+        return False
+
     try:
         await connection.device.get_value(
             ATTR_WATER_HEATER_TEMP, timeout=DEFAULT_TIMEOUT

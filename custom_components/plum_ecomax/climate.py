@@ -239,6 +239,9 @@ async def async_setup_entry(
 ) -> bool:
     """Set up the climate platform."""
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
+    if not connection.has_thermostats:
+        return False
+
     try:
         thermostats: dict[int, Thermostat] = await connection.device.get_value(
             ATTR_THERMOSTATS, timeout=DEFAULT_TIMEOUT

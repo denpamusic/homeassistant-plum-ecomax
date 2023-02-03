@@ -1,5 +1,6 @@
 """Test the climate platform."""
 
+import asyncio
 from unittest.mock import AsyncMock, Mock, call, patch
 
 from homeassistant.components.climate import HVACAction
@@ -20,7 +21,7 @@ from custom_components.plum_ecomax.climate import (
 )
 
 
-@pytest.mark.usefixtures("connected", "ecomax_p", "thermostats")
+@pytest.mark.usefixtures("connected", "thermostats")
 async def test_async_setup_and_update_entry_for_ecomax_p(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
@@ -105,7 +106,7 @@ async def test_async_setup_and_update_entry_for_ecomax_p(
     assert entity.target_temperature_name == "night_target_temp"
 
 
-@pytest.mark.usefixtures("ecomax_p", "thermostats")
+@pytest.mark.usefixtures("thermostats")
 async def test_async_added_removed_to_hass(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
@@ -160,7 +161,7 @@ async def test_async_added_removed_to_hass(
     )
 
 
-@pytest.mark.usefixtures("ecomax_base")
+@pytest.mark.usefixtures("thermostats")
 async def test_async_setup_entry_with_device_sensors_timeout(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
@@ -168,5 +169,20 @@ async def test_async_setup_entry_with_device_sensors_timeout(
     caplog,
 ) -> None:
     """Test setup thermostat entry with device sensors timeout."""
-    assert not await async_setup_entry(hass, config_entry, async_add_entities)
+    with patch(
+        "custom_components.plum_ecomax.entity.Device.get_value",
+        side_effect=asyncio.TimeoutError,
+    ):
+        assert not await async_setup_entry(hass, config_entry, async_add_entities)
+
     assert "Couldn't find thermostats" in caplog.text
+
+
+@pytest.mark.usefixtures("ecomax_common")
+async def test_async_setup_entry_with_no_thermostats(
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
+):
+    """Test setup climate entry without connected thermostats."""
+    assert not await async_setup_entry(hass, config_entry, async_add_entities)

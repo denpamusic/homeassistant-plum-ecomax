@@ -1,7 +1,6 @@
 """Contains the Plum ecoMAX connection."""
 from __future__ import annotations
 
-import asyncio
 from collections.abc import Mapping
 import logging
 from typing import Any, Final
@@ -21,6 +20,10 @@ from .const import (
     ATTR_MIXERS,
     ATTR_MODULES,
     ATTR_PRODUCT,
+    ATTR_SENSORS,
+    ATTR_THERMOSTATS,
+    ATTR_WATER_HEATER,
+    ATTR_WATER_HEATER_TEMP,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
@@ -36,7 +39,7 @@ from .const import (
     MANUFACTURER,
 )
 
-DEFAULT_TIMEOUT: Final = 10
+DEFAULT_TIMEOUT: Final = 5
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -77,11 +80,16 @@ async def async_check_connection(
 async def async_get_sub_devices(device: Device) -> list[str]:
     """Return device subdevices."""
     sub_devices: list[str] = []
-    try:
-        await device.get_value(ATTR_MIXERS, timeout=DEFAULT_TIMEOUT)
+    await device.get_value(ATTR_SENSORS)
+
+    if ATTR_MIXERS in device.data:
         sub_devices.append(ATTR_MIXERS)
-    except asyncio.TimeoutError:
-        pass
+
+    if ATTR_THERMOSTATS in device.data:
+        sub_devices.append(ATTR_THERMOSTATS)
+
+    if ATTR_WATER_HEATER_TEMP in device.data:
+        sub_devices.append(ATTR_WATER_HEATER)
 
     return sub_devices
 
@@ -122,9 +130,19 @@ class EcomaxConnection:
         await self._hass.config_entries.async_reload(self.entry.entry_id)
 
     @property
+    def has_water_heater(self) -> bool:
+        """Does device has attached water heater."""
+        return ATTR_WATER_HEATER in self.entry.data.get(CONF_SUB_DEVICES, [])
+
+    @property
+    def has_thermostats(self) -> bool:
+        """Does device has attached thermostats."""
+        return ATTR_THERMOSTATS in self.entry.data.get(CONF_SUB_DEVICES, [])
+
+    @property
     def has_mixers(self) -> bool:
         """Does device has attached mixers."""
-        return ATTR_MIXERS in self.entry.data[CONF_SUB_DEVICES]
+        return ATTR_MIXERS in self.entry.data.get(CONF_SUB_DEVICES, [])
 
     @property
     def device(self) -> Device:

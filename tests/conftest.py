@@ -326,7 +326,10 @@ def water_heater(ecomax_common: EcoMAX):
         }
     )
 
-    yield ecomax_common
+    with patch(
+        "custom_components.plum_ecomax.entity.EcomaxConnection.has_water_heater", True
+    ):
+        yield ecomax_common
 
 
 @pytest.fixture
@@ -356,7 +359,7 @@ def mixers(ecomax_common: EcoMAX):
     )
 
     with patch(
-        "custom_components.plum_ecomax.connection.has_mixers", True, create=True
+        "custom_components.plum_ecomax.connection.EcomaxConnection.has_mixers", True
     ):
         yield ecomax_common
 
@@ -418,4 +421,7 @@ def thermostats(ecomax_common: EcoMAX):
         }
     )
 
-    yield ecomax_common
+    with patch(
+        "custom_components.plum_ecomax.entity.EcomaxConnection.has_thermostats", True
+    ):
+        yield ecomax_common

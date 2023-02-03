@@ -1,5 +1,6 @@
 """Test the water heater platform."""
 
+import asyncio
 from unittest.mock import AsyncMock, Mock, call, patch
 
 from homeassistant.const import STATE_OFF
@@ -17,7 +18,7 @@ from custom_components.plum_ecomax.water_heater import (
 )
 
 
-@pytest.mark.usefixtures("connected", "ecomax_p", "water_heater")
+@pytest.mark.usefixtures("connected", "water_heater")
 async def test_async_setup_and_update_entry_for_ecomax_p(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
@@ -80,7 +81,7 @@ async def test_async_setup_and_update_entry_for_ecomax_p(
     assert entity.current_operation == STATE_OFF
 
 
-@pytest.mark.usefixtures("ecomax_p", "water_heater")
+@pytest.mark.usefixtures("water_heater")
 async def test_async_added_removed_to_hass(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
@@ -135,7 +136,7 @@ async def test_async_added_removed_to_hass(
     )
 
 
-@pytest.mark.usefixtures("ecomax_common")
+@pytest.mark.usefixtures("water_heater")
 async def test_async_setup_entry_with_device_sensors_timeout(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
@@ -143,5 +144,22 @@ async def test_async_setup_entry_with_device_sensors_timeout(
     caplog,
 ) -> None:
     """Test setup water heater entry with device sensors timeout."""
-    assert not await async_setup_entry(hass, config_entry, async_add_entities)
+    with patch(
+        "custom_components.plum_ecomax.entity.Device.get_value",
+        side_effect=asyncio.TimeoutError,
+    ):
+        assert not await async_setup_entry(hass, config_entry, async_add_entities)
+
     assert "Couldn't find water heater" in caplog.text
+
+
+@pytest.mark.usefixtures("ecomax_common")
+async def test_async_setup_entry_with_no_water_heater(
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
+):
+    """Test setup water heater entry without the connected
+    water heater.
+    """
+    assert not await async_setup_entry(hass, config_entry, async_add_entities)

@@ -10,11 +10,11 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.entity import DeviceInfo
 from pyplumio import Connection, SerialConnection, TcpConnection
-from pyplumio.devices import Mixer
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
 import pytest
 
+from custom_components.plum_ecomax.climate import ATTR_THERMOSTATS
 from custom_components.plum_ecomax.connection import (
     ATTR_MODULES,
     DEFAULT_TIMEOUT,
@@ -26,6 +26,7 @@ from custom_components.plum_ecomax.connection import (
 from custom_components.plum_ecomax.const import (
     ATTR_MIXERS,
     ATTR_PRODUCT,
+    ATTR_WATER_HEATER,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
@@ -70,16 +71,16 @@ async def test_async_get_connection_handler(
     assert isinstance(connection, SerialConnection)
 
 
-async def test_async_check_connection(config_data: dict[str, str]) -> None:
+@pytest.mark.usefixtures("mixers")
+async def test_async_check_connection(
+    config_data: dict[str, str], ecomax_p: EcoMAX
+) -> None:
     """Test helper function to check the connection."""
     mock_product = Mock(spec=ProductInfo)
     mock_modules = Mock(spec=ConnectedModules)
     mock_ecomax = Mock(spec=EcoMAX)
-    mock_ecomax.get_value.side_effect = (
-        mock_product,
-        mock_modules,
-        True,
-    )
+    mock_ecomax.get_value = AsyncMock(side_effect=(mock_product, mock_modules, True))
+    mock_ecomax.data = ecomax_p.data
     mock_connection = AsyncMock(spec=TcpConnection)
     mock_connection.configure_mock(host=config_data.get(CONF_HOST))
     mock_connection.get_device = AsyncMock(return_value=mock_ecomax)
@@ -99,17 +100,14 @@ async def test_async_check_connection(config_data: dict[str, str]) -> None:
     )
 
 
-async def test_async_get_sub_devices() -> None:
+@pytest.mark.usefixtures("mixers", "thermostats", "water_heater")
+async def test_async_get_sub_devices(ecomax_p: EcoMAX) -> None:
     """Test helper function to check get connected sub-devices."""
-    mock_ecomax = Mock(spec=EcoMAX)
-    mock_ecomax.get_value = AsyncMock(
-        return_value={0: Mock(spec=Mixer)}, side_effect=(None, asyncio.TimeoutError)
-    )
-    sub_devices = await async_get_sub_devices(mock_ecomax)
-    assert ATTR_MIXERS in sub_devices
-
-    # Test with timeout while trying to get mixers.
-    assert not await async_get_sub_devices(mock_ecomax)
+    assert await async_get_sub_devices(ecomax_p) == [
+        ATTR_MIXERS,
+        ATTR_THERMOSTATS,
+        ATTR_WATER_HEATER,
+    ]
 
 
 async def test_async_setup(
