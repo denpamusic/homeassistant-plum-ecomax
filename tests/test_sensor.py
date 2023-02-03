@@ -1,5 +1,6 @@
 """Test the sensor platform."""
 
+from typing import Final
 import unittest.mock as mock
 from unittest.mock import Mock, call, patch
 
@@ -21,11 +22,15 @@ from custom_components.plum_ecomax.sensor import (
     SENSOR_TYPES,
     SERVICE_CALIBRATE_METER,
     SERVICE_RESET_METER,
+    STATE_FANNING,
+    STATE_UNKNOWN,
     EcomaxMeter,
     EcomaxSensor,
     MixerSensor,
     async_setup_entry,
 )
+
+UNKNOWN_STATE: Final = 99
 
 
 @pytest.fixture(autouse=True)
@@ -140,6 +145,10 @@ async def test_async_setup_and_update_entry_with_ecomax_p(
     assert isinstance(entity, EcomaxSensor)
     await entity.async_added_to_hass()
     assert entity.native_value == STATE_OFF
+    await entity.async_update(23)
+    assert entity.native_value == STATE_FANNING
+    await entity.async_update(UNKNOWN_STATE)
+    assert entity.native_value == STATE_UNKNOWN
 
     # Test ecomax p software version sensor.
     entity = _lookup_sensor(added_entities, "modules")

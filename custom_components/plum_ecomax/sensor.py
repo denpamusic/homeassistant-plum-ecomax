@@ -65,17 +65,18 @@ STATE_BURNING_OFF: Final = "burning_off"
 STATE_ALERT: Final = "alert"
 STATE_UNKNOWN: Final = "unknown"
 
-STATES: tuple[str, ...] = (
-    STATE_OFF,
-    STATE_FANNING,
-    STATE_KINDLING,
-    STATE_HEATING,
-    STATE_PAUSED,
-    STATE_IDLE,
-    STATE_STANDBY,
-    STATE_BURNING_OFF,
-    STATE_ALERT,
-)
+EM_TO_HA_STATE: dict[int, str] = {
+    0: STATE_OFF,
+    1: STATE_FANNING,
+    2: STATE_KINDLING,
+    3: STATE_HEATING,
+    4: STATE_PAUSED,
+    5: STATE_IDLE,
+    6: STATE_STANDBY,
+    7: STATE_BURNING_OFF,
+    8: STATE_ALERT,
+    23: STATE_FANNING,
+}
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -154,7 +155,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         key="state",
         name="State",
         icon="mdi:eye",
-        value_fn=lambda x: STATES[x] if x < len(STATES) else STATE_UNKNOWN,
+        value_fn=lambda x: EM_TO_HA_STATE[x] if x in EM_TO_HA_STATE else STATE_UNKNOWN,
         translation_key="ecomax_state",
     ),
     EcomaxSensorEntityDescription(
