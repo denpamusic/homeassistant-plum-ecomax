@@ -85,7 +85,7 @@ async def test_async_setup_and_update_entry_for_ecomax_p(
     # Test set target temperature.
     with patch(
         "custom_components.plum_ecomax.climate.Thermostat.set_value_nowait",
-        new_callable=Mock(),
+        new_callable=Mock,
     ) as mock_set_value_nowait:
         await entity.async_set_temperature(temperature=15.1)
 
@@ -95,7 +95,7 @@ async def test_async_setup_and_update_entry_for_ecomax_p(
     # Test set preset mode.
     with patch(
         "custom_components.plum_ecomax.climate.Thermostat.set_value_nowait",
-        new_callable=Mock(),
+        new_callable=Mock,
     ), patch(
         "custom_components.plum_ecomax.climate.Thermostat.get_value", return_value=True
     ):

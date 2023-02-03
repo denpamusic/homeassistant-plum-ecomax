@@ -61,7 +61,8 @@ async def test_async_setup_and_update_entry_for_ecomax_p(
 
     # Set target temperature.
     with patch(
-        "custom_components.plum_ecomax.entity.Device.set_value_nowait"
+        "custom_components.plum_ecomax.entity.Device.set_value_nowait",
+        new_callable=Mock,
     ) as mock_set_value_nowait:
         await entity.async_set_temperature(temperature=0)
 
@@ -70,7 +71,8 @@ async def test_async_setup_and_update_entry_for_ecomax_p(
 
     # Set current operation.
     with patch(
-        "custom_components.plum_ecomax.entity.Device.set_value_nowait"
+        "custom_components.plum_ecomax.entity.Device.set_value_nowait",
+        new_callable=Mock,
     ) as mock_set_value_nowait:
         await entity.async_set_operation_mode(STATE_OFF)
 

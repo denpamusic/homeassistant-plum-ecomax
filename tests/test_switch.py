@@ -73,7 +73,8 @@ async def test_async_setup_and_update_entry_with_ecomax_p(
 
     # Turn the switch off.
     with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.device.set_value_nowait"
+        "custom_components.plum_ecomax.connection.EcomaxConnection.device.set_value_nowait",
+        new_callable=Mock,
     ) as mock_set_value_nowait:
         await entity.async_turn_off()
 
@@ -84,7 +85,8 @@ async def test_async_setup_and_update_entry_with_ecomax_p(
 
     # Turn the switch back on.
     with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.device.set_value_nowait"
+        "custom_components.plum_ecomax.connection.EcomaxConnection.device.set_value_nowait",
+        new_callable=Mock,
     ) as mock_set_value_nowait:
         await entity.async_turn_on()
 
