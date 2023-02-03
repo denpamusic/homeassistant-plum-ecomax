@@ -257,6 +257,17 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
     EcomaxSensorEntityDescription(
+        key="return_temp",
+        name="Return temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_precision=1,
+        value_fn=lambda x: x,
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+    EcomaxSensorEntityDescription(
         key="lower_buffer_temp",
         name="Lower buffer temperature",
         icon="mdi:thermometer",
