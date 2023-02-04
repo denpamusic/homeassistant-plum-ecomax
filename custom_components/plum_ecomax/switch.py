@@ -172,27 +172,6 @@ class MixerSwitch(MixerEntity, EcomaxSwitch):
         super().__init__(connection, description)
 
 
-def setup_ecomax_p(
-    connection: EcomaxConnection,
-    entities: list[EcomaxEntity],
-    async_add_entities: AddEntitiesCallback,
-):
-    """Setup number platform for ecoMAX P series controllers."""
-    entities.extend(
-        EcomaxSwitch(connection, description) for description in ECOMAX_P_SWITCH_TYPES
-    )
-    return async_add_entities(entities, False)
-
-
-def setup_ecomax_i(
-    connection: EcomaxConnection,
-    entities: list[EcomaxEntity],
-    async_add_entities: AddEntitiesCallback,
-):
-    """Setup number platform for ecoMAX I series controllers."""
-    return async_add_entities(entities, False)
-
-
 async def async_setup_mixer_entities(
     connection: EcomaxConnection, entities: list[EcomaxEntity]
 ) -> None:
@@ -201,7 +180,7 @@ async def async_setup_mixer_entities(
     for index in mixers.keys():
         entities.extend(
             MixerSwitch(connection, description, index)
-            for description in MIXER_SWITCH_TYPES.get(connection.product_type, ())
+            for description in MIXER_SWITCH_TYPES[connection.product_type]
         )
 
 

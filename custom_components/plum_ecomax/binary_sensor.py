@@ -224,10 +224,7 @@ async def async_setup_entry(
 
         # Add mixer/circuit binary sensors.
         if connection.has_mixers and await connection.setup_mixers():
-            try:
-                await async_setup_mixer_entities(connection, entities)
-            except asyncio.TimeoutError:
-                _LOGGER.warning("Couldn't load mixer binary sensors")
+            await async_setup_mixer_entities(connection, entities)
 
         return entities
 
