@@ -10,6 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.entity import DeviceInfo
 from pyplumio import Connection, SerialConnection, TcpConnection
+from pyplumio.const import FrameType
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
 import pytest
@@ -24,8 +25,10 @@ from custom_components.plum_ecomax.connection import (
     async_get_sub_devices,
 )
 from custom_components.plum_ecomax.const import (
+    ATTR_MIXER_PARAMETERS,
     ATTR_MIXERS,
     ATTR_PRODUCT,
+    ATTR_THERMOSTAT_PARAMETERS,
     ATTR_WATER_HEATER,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
@@ -164,6 +167,42 @@ async def test_async_setup(
     mock_connection.device = config_data.get(CONF_DEVICE)
     connection = EcomaxConnection(hass, config_entry, mock_connection)
     assert connection.name == config_data.get(CONF_DEVICE)
+
+
+async def test_setup_thermostats(hass: HomeAssistant, config_entry: ConfigEntry):
+    """Test setup thermostats."""
+    connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=TcpConnection))
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.device"
+    ) as mock_device:
+        mock_device.make_request = AsyncMock(side_effect=(True, asyncio.TimeoutError))
+        assert await connection.setup_thermostats()
+        assert not await connection.setup_thermostats()
+
+    mock_device.make_request.assert_any_await(
+        ATTR_THERMOSTAT_PARAMETERS,
+        FrameType.REQUEST_THERMOSTAT_PARAMETERS,
+        retries=5,
+        timeout=DEFAULT_TIMEOUT,
+    )
+
+
+async def test_setup_mixers(hass: HomeAssistant, config_entry: ConfigEntry):
+    """Test setup mixers."""
+    connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=TcpConnection))
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.device"
+    ) as mock_device:
+        mock_device.make_request = AsyncMock(side_effect=(True, asyncio.TimeoutError))
+        assert await connection.setup_mixers()
+        assert not await connection.setup_mixers()
+
+    mock_device.make_request.assert_any_await(
+        ATTR_MIXER_PARAMETERS,
+        FrameType.REQUEST_MIXER_PARAMETERS,
+        retries=5,
+        timeout=DEFAULT_TIMEOUT,
+    )
 
 
 async def test_async_update_sub_device(
