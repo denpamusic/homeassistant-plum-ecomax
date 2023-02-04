@@ -8,13 +8,7 @@ from pyplumio.devices import Device
 from pyplumio.helpers.product_info import ProductType
 
 from .connection import EcomaxConnection
-from .const import (
-    ATTR_MIXERS,
-    ATTR_WATER_HEATER,
-    ATTR_WATER_HEATER_TEMP,
-    DOMAIN,
-    MANUFACTURER,
-)
+from .const import ATTR_MIXERS, DOMAIN, MANUFACTURER
 
 
 class EcomaxEntity(ABC):
@@ -23,6 +17,7 @@ class EcomaxEntity(ABC):
     _connection: EcomaxConnection
     entity_description: EntityDescription
     _attr_available: bool
+    _attr_entity_registry_enabled_default: bool
 
     async def async_added_to_hass(self):
         """Called when an entity has their entity_id assigned."""
@@ -61,12 +56,10 @@ class EcomaxEntity(ABC):
     @property
     def entity_registry_enabled_default(self) -> bool:
         """Indicate if the entity should be enabled when first added."""
-        key = (
-            ATTR_WATER_HEATER_TEMP
-            if self.entity_description.key == ATTR_WATER_HEATER
-            else self.entity_description.key
-        )
-        return key in self.device.data
+        if hasattr(self, "_attr_entity_registry_enabled_default"):
+            return self._attr_entity_registry_enabled_default
+
+        return self.entity_description.key in self.device.data
 
     @property
     def unique_id(self) -> str:

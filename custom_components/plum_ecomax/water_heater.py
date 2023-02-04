@@ -59,6 +59,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     _attr_current_temperature: float | None
     _attr_current_operation: str | None
     _attr_hysteresis: int
+    _attr_entity_registry_enabled_default: bool
 
     def __init__(
         self,
@@ -83,6 +84,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         self._attr_current_temperature = None
         self._attr_current_operation = None
         self._attr_hysteresis = 0
+        self._attr_entity_registry_enabled_default = True
 
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""

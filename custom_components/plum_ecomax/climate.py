@@ -110,6 +110,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
     _attr_target_temperature_low: float | None
     _attr_target_temperature_step: float | None
     _attr_temperature_unit: str
+    _attr_entity_registry_enabled_default: bool
 
     def __init__(self, connection: EcomaxConnection, thermostat: Thermostat):
         self._connection = connection
@@ -135,6 +136,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         self._attr_target_temperature_low = None
         self._attr_target_temperature_name = None
         self._attr_target_temperature_step = TEMPERATURE_STEP
+        self._attr_entity_registry_enabled_default = True
 
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
