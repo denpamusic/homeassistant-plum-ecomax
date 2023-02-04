@@ -271,30 +271,6 @@ def ecomax_i(ecomax_common: EcoMAX):
 
 
 @pytest.fixture
-def ecomax_unknown(ecomax_common: EcoMAX):
-    """Inject unknown ecomax data."""
-    ecomax_common.data.update(
-        {
-            "product": ProductInfo(
-                type=UNKNOWN_ECOMAX_TYPE,
-                product=0,
-                uid="TEST",
-                logo=1,
-                image=2816,
-                model="Unknown model",
-            ),
-            "modules": ConnectedModules(),
-        }
-    )
-
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
-        UNKNOWN_ECOMAX_TYPE,
-    ):
-        yield ecomax_common
-
-
-@pytest.fixture
 def water_heater(ecomax_common: EcoMAX):
     """Inject water heater data."""
     ecomax_common.data.update(
