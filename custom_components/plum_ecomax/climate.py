@@ -171,8 +171,8 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         try:
             preset_mode = EM_TO_HA_MODE[value]
         except KeyError:
-            # Ignore unknown preset and warn about them in the log.
-            _LOGGER.error("Unknown climate preset %i", value)
+            # Ignore unknown preset and warn about it in the log.
+            _LOGGER.error("Unknown climate preset %d.", value)
             return
 
         self._attr_preset_mode = preset_mode

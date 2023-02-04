@@ -1,6 +1,7 @@
 """Test Plum ecoMAX connection."""
 
 import asyncio
+import logging
 from typing import Final
 from unittest.mock import AsyncMock, Mock, call, patch
 
@@ -104,13 +105,19 @@ async def test_async_check_connection(
 
 
 @pytest.mark.usefixtures("mixers", "thermostats", "water_heater")
-async def test_async_get_sub_devices(ecomax_p: EcoMAX) -> None:
+async def test_async_get_sub_devices(ecomax_p: EcoMAX, caplog) -> None:
     """Test helper function to check get connected sub-devices."""
+    caplog.set_level(logging.INFO)
+
     assert await async_get_sub_devices(ecomax_p) == [
         ATTR_MIXERS,
         ATTR_THERMOSTATS,
         ATTR_WATER_HEATER,
     ]
+
+    assert "Detected 1 mixer" in caplog.text
+    assert "Detected 1 thermostat" in caplog.text
+    assert "Detected indirect water heater" in caplog.text
 
 
 async def test_async_setup(
@@ -169,7 +176,9 @@ async def test_async_setup(
     assert connection.name == config_data.get(CONF_DEVICE)
 
 
-async def test_setup_thermostats(hass: HomeAssistant, config_entry: ConfigEntry):
+async def test_setup_thermostats(
+    hass: HomeAssistant, config_entry: ConfigEntry, caplog
+) -> None:
     """Test setup thermostats."""
     connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=TcpConnection))
     with patch(
@@ -179,6 +188,7 @@ async def test_setup_thermostats(hass: HomeAssistant, config_entry: ConfigEntry)
         assert await connection.setup_thermostats()
         assert not await connection.setup_thermostats()
 
+    assert "Timed out while trying to setup thermostats" in caplog.text
     mock_device.make_request.assert_any_await(
         ATTR_THERMOSTAT_PARAMETERS,
         FrameType.REQUEST_THERMOSTAT_PARAMETERS,
@@ -187,7 +197,9 @@ async def test_setup_thermostats(hass: HomeAssistant, config_entry: ConfigEntry)
     )
 
 
-async def test_setup_mixers(hass: HomeAssistant, config_entry: ConfigEntry):
+async def test_setup_mixers(
+    hass: HomeAssistant, config_entry: ConfigEntry, caplog
+) -> None:
     """Test setup mixers."""
     connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=TcpConnection))
     with patch(
@@ -197,6 +209,7 @@ async def test_setup_mixers(hass: HomeAssistant, config_entry: ConfigEntry):
         assert await connection.setup_mixers()
         assert not await connection.setup_mixers()
 
+    assert "Timed out while trying to setup mixers" in caplog.text
     mock_device.make_request.assert_any_await(
         ATTR_MIXER_PARAMETERS,
         FrameType.REQUEST_MIXER_PARAMETERS,

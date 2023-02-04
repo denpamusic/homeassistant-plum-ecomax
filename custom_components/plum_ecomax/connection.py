@@ -69,6 +69,8 @@ async def async_check_connection(
     connection: Connection,
 ) -> tuple[str, ProductInfo, ConnectedModules, list[str]]:
     """Perform connection check."""
+    _LOGGER.debug("Starting device identification...")
+
     title = (
         connection.host
         if isinstance(connection, pyplumio.TcpConnection)
@@ -86,20 +88,33 @@ async def async_check_connection(
 
 async def async_get_sub_devices(device: Device) -> list[str]:
     """Return device subdevices."""
+    _LOGGER.debug("Checking connected sub-devices...")
+
     sub_devices: list[str] = []
 
     # Wait until sensors become available.
     await device.get_value(ATTR_SENSORS)
 
     if ATTR_MIXERS in device.data:
+        mixer_count = len(device.data[ATTR_MIXERS])
+        _LOGGER.info(
+            "Detected %d mixer%s.", mixer_count, "s" if mixer_count > 1 else ""
+        )
         sub_devices.append(ATTR_MIXERS)
 
     if ATTR_THERMOSTATS in device.data:
+        thermostat_count = len(device.data[ATTR_THERMOSTATS])
+        _LOGGER.info(
+            "Detected %d thermostat%s.",
+            thermostat_count,
+            "s" if thermostat_count > 1 else "",
+        )
         sub_devices.append(ATTR_THERMOSTATS)
 
     if ATTR_WATER_HEATER_TEMP in device.data and not math.isnan(
         device.data[ATTR_WATER_HEATER_TEMP]
     ):
+        _LOGGER.info("Detected indirect water heater.")
         sub_devices.append(ATTR_WATER_HEATER)
 
     return sub_devices
@@ -146,6 +161,7 @@ class EcomaxConnection:
                 timeout=DEFAULT_TIMEOUT,
             )
         except asyncio.TimeoutError:
+            _LOGGER.error("Timed out while trying to setup thermostats.")
             return False
 
     async def setup_mixers(self) -> bool:
@@ -158,6 +174,7 @@ class EcomaxConnection:
                 timeout=DEFAULT_TIMEOUT,
             )
         except asyncio.TimeoutError:
+            _LOGGER.error("Timed out while trying to setup mixers.")
             return False
 
     async def async_update_sub_devices(self) -> None:
@@ -187,7 +204,7 @@ class EcomaxConnection:
     def device(self) -> Device:
         """Return connection state."""
         if self._device is None:
-            raise ConfigEntryNotReady("Device not found")
+            raise ConfigEntryNotReady("Device not ready")
 
         return self._device
 
