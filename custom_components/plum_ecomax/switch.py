@@ -1,7 +1,6 @@
 """Platform for switch integration."""
 from __future__ import annotations
 
-import asyncio
 from collections.abc import Callable
 from dataclasses import dataclass
 import logging
@@ -13,19 +12,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
+from pyplumio.devices import Mixer
 from pyplumio.helpers.filters import on_change
 from pyplumio.helpers.parameter import Parameter
 from pyplumio.helpers.product_info import ProductType
 from pyplumio.helpers.typing import ParameterValueType
 
-from .connection import DEFAULT_TIMEOUT, EcomaxConnection
-from .const import (
-    ATTR_ECOMAX_CONTROL,
-    ATTR_ECOMAX_PARAMETERS,
-    ATTR_MIXER_PARAMETERS,
-    ATTR_MIXERS,
-    DOMAIN,
-)
+from .connection import EcomaxConnection
+from .const import ATTR_ECOMAX_CONTROL, ATTR_MIXERS, DOMAIN
 from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -40,7 +34,7 @@ class EcomaxSwitchEntityDescription(SwitchEntityDescription):
     filter_fn: Callable[[Any], Any] = on_change
 
 
-SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
+COMMON_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     EcomaxSwitchEntityDescription(
         key=ATTR_ECOMAX_CONTROL,
         name="Controller switch",
@@ -63,6 +57,7 @@ SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     ),
 )
 
+ECOMAX_I_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = ()
 
 ECOMAX_P_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     EcomaxSwitchEntityDescription(
@@ -82,6 +77,11 @@ ECOMAX_P_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
         name="Water heater schedule switch",
     ),
 )
+
+SWITCH_TYPES: dict[ProductType, tuple[EcomaxSwitchEntityDescription, ...]] = {
+    ProductType.ECOMAX_I: COMMON_SWITCH_TYPES + ECOMAX_I_SWITCH_TYPES,
+    ProductType.ECOMAX_P: COMMON_SWITCH_TYPES + ECOMAX_P_SWITCH_TYPES,
+}
 
 
 class EcomaxSwitch(EcomaxEntity, SwitchEntity):
@@ -197,8 +197,7 @@ async def async_setup_mixer_entities(
     connection: EcomaxConnection, entities: list[EcomaxEntity]
 ) -> None:
     """Setup mixer number entites."""
-    await connection.device.get_value(ATTR_MIXER_PARAMETERS, timeout=DEFAULT_TIMEOUT)
-    mixers = connection.device.data.get(ATTR_MIXERS, {})
+    mixers: dict[int, Mixer] = connection.device.data[ATTR_MIXERS]
     for index in mixers.keys():
         entities.extend(
             MixerSwitch(connection, description, index)
@@ -213,37 +212,22 @@ async def async_setup_entry(
 ) -> bool:
     """Set up the sensor platform."""
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
-    try:
-        await connection.device.get_value(
-            ATTR_ECOMAX_PARAMETERS, timeout=DEFAULT_TIMEOUT
-        )
-        entities: list[EcomaxEntity] = [
-            EcomaxSwitch(connection, description) for description in SWITCH_TYPES
-        ]
-    except asyncio.TimeoutError:
-        _LOGGER.error("Couldn't load device switches")
-        return False
+    _LOGGER.debug("Starting setup of switch platform...")
 
-    try:
-        await connection.device.get_value(ATTR_ECOMAX_CONTROL, timeout=DEFAULT_TIMEOUT)
-    except asyncio.TimeoutError:
-        _LOGGER.warning(
-            "Control parameter not present, you won't be able to turn the device on/off"
+    async def _async_setup_entities(product_type: ProductType) -> list[EcomaxEntity]:
+        """Add switch entites."""
+        entities: list[EcomaxEntity] = []
+
+        # Add ecoMAX switches.
+        entities.extend(
+            EcomaxSwitch(connection, description)
+            for description in SWITCH_TYPES[product_type]
         )
 
-    if connection.has_mixers:
-        try:
+        # Add mixer/circuit switches.
+        if connection.has_mixers and await connection.setup_mixers():
             await async_setup_mixer_entities(connection, entities)
-        except asyncio.TimeoutError:
-            _LOGGER.warning("Couldn't load mixer switches")
 
-    if connection.product_type == ProductType.ECOMAX_P:
-        return setup_ecomax_p(connection, entities, async_add_entities)
+        return entities
 
-    if connection.product_type == ProductType.ECOMAX_I:
-        return setup_ecomax_i(connection, entities, async_add_entities)
-
-    _LOGGER.error(
-        "Couldn't setup platform due to unknown controller model '%s'", connection.model
-    )
-    return False
+    return async_add_entities(await _async_setup_entities(connection.product_type))

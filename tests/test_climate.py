@@ -1,6 +1,5 @@
 """Test the climate platform."""
 
-import asyncio
 from unittest.mock import AsyncMock, Mock, call, patch
 
 from homeassistant.components.climate import HVACAction
@@ -33,7 +32,7 @@ async def test_async_setup_and_update_entry_for_ecomax_p(
     await hass.async_block_till_done()
     async_add_entities.assert_called_once()
     args = async_add_entities.call_args[0]
-    added_entities = args[0]
+    added_entities = list(args[0])
     assert len(added_entities) == 1
     entity = added_entities[0]
     assert isinstance(entity, EcomaxClimate)
@@ -117,7 +116,7 @@ async def test_async_added_removed_to_hass(
     await hass.async_block_till_done()
     async_add_entities.assert_called_once()
     args = async_add_entities.call_args[0]
-    added_entities = args[0]
+    added_entities = list(args[0])
     entity = added_entities[0]
 
     # Test adding entity to hass.
@@ -161,28 +160,30 @@ async def test_async_added_removed_to_hass(
     )
 
 
-@pytest.mark.usefixtures("thermostats")
-async def test_async_setup_entry_with_device_sensors_timeout(
-    hass: HomeAssistant,
-    async_add_entities: AddEntitiesCallback,
-    config_entry: MockConfigEntry,
-    caplog,
-) -> None:
-    """Test setup thermostat entry with device sensors timeout."""
-    with patch(
-        "custom_components.plum_ecomax.entity.Device.get_value",
-        side_effect=asyncio.TimeoutError,
-    ):
-        assert not await async_setup_entry(hass, config_entry, async_add_entities)
-
-    assert "Couldn't find thermostats" in caplog.text
-
-
 @pytest.mark.usefixtures("ecomax_common")
-async def test_async_setup_entry_with_no_thermostats(
+async def test_async_setup_entry_without_thermostats(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
 ):
     """Test setup climate entry without connected thermostats."""
-    assert not await async_setup_entry(hass, config_entry, async_add_entities)
+    with patch(
+        "custom_components.plum_ecomax.entity.EcomaxConnection.has_thermostats", False
+    ):
+        assert not await async_setup_entry(hass, config_entry, async_add_entities)
+
+
+@pytest.mark.usefixtures("ecomax_p", "thermostats")
+async def test_async_setup_entry_with_setup_thermostats_error(
+    hass: HomeAssistant,
+    async_add_entities: AddEntitiesCallback,
+    config_entry: MockConfigEntry,
+):
+    """Test setup climate entry with error during thermostat setup."""
+    with patch(
+        "custom_components.plum_ecomax.entity.EcomaxConnection.has_thermostats", True
+    ), patch(
+        "custom_components.plum_ecomax.entity.EcomaxConnection.setup_thermostats",
+        return_value=False,
+    ):
+        assert not await async_setup_entry(hass, config_entry, async_add_entities)

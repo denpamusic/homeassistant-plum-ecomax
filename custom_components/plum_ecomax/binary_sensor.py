@@ -16,11 +16,12 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
+from pyplumio.devices import Mixer
 from pyplumio.helpers.filters import on_change
 from pyplumio.helpers.product_info import ProductType
 
-from .connection import DEFAULT_TIMEOUT, EcomaxConnection
-from .const import ATTR_MIXER_SENSORS, ATTR_MIXERS, ATTR_SENSORS, DOMAIN
+from .connection import EcomaxConnection
+from .const import ATTR_MIXERS, DOMAIN
 from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -42,7 +43,7 @@ class EcomaxBinarySensorEntityDescription(
     filter_fn: Callable[[Any], Any] = on_change
 
 
-BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
+COMMON_BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     EcomaxBinarySensorEntityDescription(
         key="heating_pump",
         name="Heating pump",
@@ -121,6 +122,13 @@ ECOMAX_I_BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = 
     ),
 )
 
+BINARY_SENSOR_TYPES: dict[
+    ProductType, tuple[EcomaxBinarySensorEntityDescription, ...]
+] = {
+    ProductType.ECOMAX_I: COMMON_BINARY_SENSOR_TYPES + ECOMAX_I_BINARY_SENSOR_TYPES,
+    ProductType.ECOMAX_P: COMMON_BINARY_SENSOR_TYPES + ECOMAX_P_BINARY_SENSOR_TYPES,
+}
+
 
 class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
     """Representation of ecoMAX binary sensor."""
@@ -183,46 +191,15 @@ class MixerBinarySensor(MixerEntity, EcomaxBinarySensor):
         super().__init__(connection, description)
 
 
-def setup_ecomax_p(
-    connection: EcomaxConnection,
-    entities: list[EcomaxEntity],
-    async_add_entities: AddEntitiesCallback,
-):
-    """Setup binary sensor platform for ecoMAX P series controllers."""
-    entities.extend(
-        EcomaxBinarySensor(connection, description)
-        for description in ECOMAX_P_BINARY_SENSOR_TYPES
-    )
-    return async_add_entities(entities, False)
-
-
-def setup_ecomax_i(
-    connection: EcomaxConnection,
-    entities: list[EcomaxEntity],
-    async_add_entities: AddEntitiesCallback,
-):
-    """Setup binary sensor platform for ecoMAX I series controllers."""
-    entities.extend(
-        EcomaxBinarySensor(connection, description)
-        for description in ECOMAX_I_BINARY_SENSOR_TYPES
-    )
-    return async_add_entities(entities, False)
-
-
 async def async_setup_mixer_entities(
     connection: EcomaxConnection, entities: list[EcomaxEntity]
 ) -> None:
     """Setup mixers binary sensor platform."""
-    await connection.device.get_value(ATTR_MIXER_SENSORS, timeout=DEFAULT_TIMEOUT)
-    mixers = connection.device.data.get(ATTR_MIXERS, {})
+    mixers: dict[int, Mixer] = connection.device.data[ATTR_MIXERS]
     for index in mixers.keys():
         entities.extend(
-            [
-                MixerBinarySensor(connection, description, index)
-                for description in MIXER_BINARY_SENSOR_TYPES.get(
-                    connection.product_type, ()
-                )
-            ]
+            MixerBinarySensor(connection, description, index)
+            for description in MIXER_BINARY_SENSOR_TYPES[connection.product_type]
         )
 
 
@@ -231,31 +208,27 @@ async def async_setup_entry(
     config_entry: ConfigType,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
-    """Set up the sensor platform."""
+    """Set up the binary sensor platform."""
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
-    try:
-        await connection.device.get_value(ATTR_SENSORS, timeout=DEFAULT_TIMEOUT)
-        entities: list[EcomaxEntity] = [
+    _LOGGER.debug("Starting setup of binary sensor platform...")
+
+    async def _async_setup_entities(product_type: ProductType) -> list[EcomaxEntity]:
+        """Add binary sensor entities."""
+        entities: list[EcomaxEntity] = []
+
+        # Add ecoMAX binary sensors.
+        entities.extend(
             EcomaxBinarySensor(connection, description)
-            for description in BINARY_SENSOR_TYPES
-        ]
-    except asyncio.TimeoutError:
-        _LOGGER.error("Couldn't load device binary sensors")
-        return False
+            for description in BINARY_SENSOR_TYPES[product_type]
+        )
 
-    if connection.has_mixers:
-        try:
-            await async_setup_mixer_entities(connection, entities)
-        except asyncio.TimeoutError:
-            _LOGGER.warning("Couldn't load mixer binary sensors")
+        # Add mixer/circuit binary sensors.
+        if connection.has_mixers and await connection.setup_mixers():
+            try:
+                await async_setup_mixer_entities(connection, entities)
+            except asyncio.TimeoutError:
+                _LOGGER.warning("Couldn't load mixer binary sensors")
 
-    if connection.product_type == ProductType.ECOMAX_P:
-        return setup_ecomax_p(connection, entities, async_add_entities)
+        return entities
 
-    if connection.product_type == ProductType.ECOMAX_I:
-        return setup_ecomax_i(connection, entities, async_add_entities)
-
-    _LOGGER.error(
-        "Couldn't setup platform due to unknown controller model '%s'", connection.model
-    )
-    return False
+    return async_add_entities(await _async_setup_entities(connection.product_type))

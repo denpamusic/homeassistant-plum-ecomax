@@ -1,7 +1,6 @@
 """Platform for climate integration."""
 from __future__ import annotations
 
-import asyncio
 from dataclasses import dataclass
 import logging
 from typing import Final
@@ -29,7 +28,7 @@ from homeassistant.helpers.typing import ConfigType
 from pyplumio.devices import Thermostat
 from pyplumio.helpers.filters import on_change, throttle
 
-from .connection import DEFAULT_TIMEOUT, EcomaxConnection
+from .connection import EcomaxConnection
 from .const import DOMAIN
 from .entity import EcomaxEntity
 
@@ -239,18 +238,12 @@ async def async_setup_entry(
 ) -> bool:
     """Set up the climate platform."""
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
-    if not connection.has_thermostats:
-        return False
+    _LOGGER.debug("Starting setup of climate platform...")
 
-    try:
-        thermostats: dict[int, Thermostat] = await connection.device.get_value(
-            ATTR_THERMOSTATS, timeout=DEFAULT_TIMEOUT
+    if connection.has_thermostats and await connection.setup_thermostats():
+        thermostats: dict[int, Thermostat] = connection.device.data[ATTR_THERMOSTATS]
+        return async_add_entities(
+            EcomaxClimate(connection, thermostat) for thermostat in thermostats.values()
         )
-    except asyncio.TimeoutError:
-        _LOGGER.warning("Couldn't find thermostats, skipping climate platform setup...")
-        return False
 
-    entities: list[EcomaxEntity] = [
-        EcomaxClimate(connection, thermostat) for thermostat in thermostats.values()
-    ]
-    return async_add_entities(entities, False)
+    return False

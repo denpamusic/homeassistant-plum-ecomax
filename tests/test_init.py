@@ -59,19 +59,21 @@ def bypass_connect_and_close():
         yield
 
 
-@pytest.mark.usefixtures("ecomax_p")
+@pytest.mark.usefixtures("connected", "ecomax_p")
 async def test_setup_and_unload_entry(
     hass: HomeAssistant, config_entry: ConfigEntry
 ) -> None:
     """Test setup and unload of config entry."""
-    assert await async_setup_entry(hass, config_entry)
+    with patch("custom_components.plum_ecomax.connection.EcomaxConnection.async_setup"):
+        assert await async_setup_entry(hass, config_entry)
+
     assert DOMAIN in hass.data and config_entry.entry_id in hass.data[DOMAIN]
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     assert isinstance(connection, EcomaxConnection)
 
     # Test with exception.
     with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.get_device",
+        "custom_components.plum_ecomax.connection.EcomaxConnection.async_setup",
         side_effect=asyncio.TimeoutError,
     ), pytest.raises(ConfigEntryNotReady):
         await async_setup_entry(hass, config_entry)

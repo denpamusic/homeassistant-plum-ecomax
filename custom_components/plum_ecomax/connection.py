@@ -1,8 +1,10 @@
 """Contains the Plum ecoMAX connection."""
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Mapping
 import logging
+import math
 from typing import Any, Final
 
 from homeassistant.components.network import async_get_source_ip
@@ -13,14 +15,19 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.entity import DeviceInfo
 import pyplumio
 from pyplumio.connection import Connection
+from pyplumio.const import FrameType
 from pyplumio.devices import Device
 from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
 
 from .const import (
+    ATTR_ECOMAX_PARAMETERS,
+    ATTR_LOADED,
+    ATTR_MIXER_PARAMETERS,
     ATTR_MIXERS,
     ATTR_MODULES,
     ATTR_PRODUCT,
     ATTR_SENSORS,
+    ATTR_THERMOSTAT_PARAMETERS,
     ATTR_THERMOSTATS,
     ATTR_WATER_HEATER,
     ATTR_WATER_HEATER_TEMP,
@@ -80,6 +87,8 @@ async def async_check_connection(
 async def async_get_sub_devices(device: Device) -> list[str]:
     """Return device subdevices."""
     sub_devices: list[str] = []
+
+    # Wait until sensors become available.
     await device.get_value(ATTR_SENSORS)
 
     if ATTR_MIXERS in device.data:
@@ -88,7 +97,9 @@ async def async_get_sub_devices(device: Device) -> list[str]:
     if ATTR_THERMOSTATS in device.data:
         sub_devices.append(ATTR_THERMOSTATS)
 
-    if ATTR_WATER_HEATER_TEMP in device.data:
+    if ATTR_WATER_HEATER_TEMP in device.data and not math.isnan(
+        device.data[ATTR_WATER_HEATER_TEMP]
+    ):
         sub_devices.append(ATTR_WATER_HEATER)
 
     return sub_devices
@@ -119,7 +130,35 @@ class EcomaxConnection:
     async def async_setup(self) -> None:
         """Setup connection and add hass stop handler."""
         await self.connect()
-        self._device = await self.get_device(ECOMAX, timeout=DEFAULT_TIMEOUT)
+        device: Device = await self.get_device(ECOMAX, timeout=DEFAULT_TIMEOUT)
+        await device.get_value(ATTR_LOADED, timeout=DEFAULT_TIMEOUT)
+        await device.get_value(ATTR_SENSORS, timeout=DEFAULT_TIMEOUT)
+        await device.get_value(ATTR_ECOMAX_PARAMETERS, timeout=DEFAULT_TIMEOUT)
+        self._device = device
+
+    async def setup_thermostats(self) -> bool:
+        """Setup thermostats."""
+        try:
+            return await self.device.make_request(
+                ATTR_THERMOSTAT_PARAMETERS,
+                FrameType.REQUEST_THERMOSTAT_PARAMETERS,
+                retries=5,
+                timeout=DEFAULT_TIMEOUT,
+            )
+        except asyncio.TimeoutError:
+            return False
+
+    async def setup_mixers(self) -> bool:
+        """Setup mixers."""
+        try:
+            return await self.device.make_request(
+                ATTR_MIXER_PARAMETERS,
+                FrameType.REQUEST_MIXER_PARAMETERS,
+                retries=5,
+                timeout=DEFAULT_TIMEOUT,
+            )
+        except asyncio.TimeoutError:
+            return False
 
     async def async_update_sub_devices(self) -> None:
         """Update sub-devices."""

@@ -360,6 +360,9 @@ def mixers(ecomax_common: EcoMAX):
 
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.has_mixers", True
+    ), patch(
+        "custom_components.plum_ecomax.entity.EcomaxConnection.setup_mixers",
+        return_value=True,
     ):
         yield ecomax_common
 
@@ -423,5 +426,8 @@ def thermostats(ecomax_common: EcoMAX):
 
     with patch(
         "custom_components.plum_ecomax.entity.EcomaxConnection.has_thermostats", True
+    ), patch(
+        "custom_components.plum_ecomax.entity.EcomaxConnection.setup_thermostats",
+        return_value=True,
     ):
         yield ecomax_common

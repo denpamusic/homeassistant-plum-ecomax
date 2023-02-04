@@ -115,11 +115,12 @@ async def test_async_setup(
     config_entry: ConfigEntry,
     device_data: dict[str, str],
     config_data: dict[str, str],
-    caplog,
 ) -> None:
     """Test connection setup."""
     mock_ecomax = Mock(spec=EcoMAX)
-    mock_ecomax.get_value = AsyncMock(side_effect=asyncio.TimeoutError)
+    mock_ecomax.get_value = AsyncMock(
+        side_effect=(True, True, True, asyncio.TimeoutError)
+    )
     mock_connection = Mock(spec=TcpConnection)
     mock_connection.configure_mock(host=config_data.get(CONF_HOST))
     mock_connection.get_device = AsyncMock(

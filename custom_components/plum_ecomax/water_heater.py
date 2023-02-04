@@ -1,7 +1,6 @@
 """Platform for sensor integration."""
 from __future__ import annotations
 
-import asyncio
 from dataclasses import dataclass
 import logging
 from typing import Final
@@ -26,8 +25,8 @@ from homeassistant.helpers.typing import ConfigType
 from pyplumio.helpers.filters import on_change, throttle
 from pyplumio.helpers.parameter import Parameter
 
-from .connection import DEFAULT_TIMEOUT, EcomaxConnection
-from .const import ATTR_WATER_HEATER, ATTR_WATER_HEATER_TEMP, DOMAIN
+from .connection import EcomaxConnection
+from .const import ATTR_WATER_HEATER, DOMAIN
 from .entity import EcomaxEntity
 
 EM_TO_HA_STATE: Final = {0: STATE_OFF, 1: STATE_PERFORMANCE, 2: STATE_ECO}
@@ -166,19 +165,11 @@ async def async_setup_entry(
     config_entry: ConfigType,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
-    """Set up the sensor platform."""
+    """Set up the water heater platform."""
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
-    if not connection.has_water_heater:
-        return False
+    _LOGGER.debug("Starting setup of water heater platform...")
 
-    try:
-        await connection.device.get_value(
-            ATTR_WATER_HEATER_TEMP, timeout=DEFAULT_TIMEOUT
-        )
-    except asyncio.TimeoutError:
-        _LOGGER.warning(
-            "Couldn't find water heater, skipping water_heater platform setup..."
-        )
-        return False
+    if connection.has_water_heater:
+        return async_add_entities([EcomaxWaterHeater(connection)])
 
-    return async_add_entities([EcomaxWaterHeater(connection)], False)
+    return False

@@ -82,7 +82,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     try:
         await connection.async_setup()
     except asyncio.TimeoutError as e:
-        raise ConfigEntryNotReady("Device not found") from e
+        raise ConfigEntryNotReady(
+            f"Timed out while connecting to {connection.name}"
+        ) from e
 
     await async_setup_services(hass, connection)
     await async_setup_events(hass, connection)

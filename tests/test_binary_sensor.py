@@ -4,15 +4,13 @@ from unittest.mock import patch
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from pyplumio.helpers.product_info import ProductType
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.binary_sensor import (
     BINARY_SENSOR_TYPES,
-    ECOMAX_I_BINARY_SENSOR_TYPES,
-    ECOMAX_I_MIXER_BINARY_SENSOR_TYPES,
-    ECOMAX_P_BINARY_SENSOR_TYPES,
-    ECOMAX_P_MIXER_BINARY_SENSOR_TYPES,
+    MIXER_BINARY_SENSOR_TYPES,
     EcomaxBinarySensor,
     MixerBinarySensor,
     async_setup_entry,
@@ -48,14 +46,19 @@ async def test_async_setup_and_update_entry_with_ecomax_p(
     config_entry: MockConfigEntry,
 ) -> None:
     """Test setup and update binary sensor entry for ecomax p."""
-    assert await async_setup_entry(hass, config_entry, async_add_entities)
+    with patch(
+        "custom_components.plum_ecomax.entity.EcomaxConnection.setup_mixers"
+    ) as mock_setup_mixers:
+        assert await async_setup_entry(hass, config_entry, async_add_entities)
+
+    await hass.async_block_till_done()
+    mock_setup_mixers.assert_called_once()
     async_add_entities.assert_called_once()
     args = async_add_entities.call_args[0]
     added_entities = args[0]
     binary_sensor_types = (
-        BINARY_SENSOR_TYPES
-        + ECOMAX_P_BINARY_SENSOR_TYPES
-        + ECOMAX_P_MIXER_BINARY_SENSOR_TYPES
+        BINARY_SENSOR_TYPES[ProductType.ECOMAX_P]
+        + MIXER_BINARY_SENSOR_TYPES[ProductType.ECOMAX_P]
     )
     assert len(added_entities) == len(binary_sensor_types)
 
@@ -86,15 +89,19 @@ async def test_async_setup_and_update_entry_with_ecomax_i(
     config_entry: MockConfigEntry,
 ) -> None:
     """Test setup and update binary sensor entry for ecomax i."""
-    assert await async_setup_entry(hass, config_entry, async_add_entities)
+    with patch(
+        "custom_components.plum_ecomax.entity.EcomaxConnection.setup_mixers"
+    ) as mock_setup_mixers:
+        assert await async_setup_entry(hass, config_entry, async_add_entities)
+
     await hass.async_block_till_done()
+    mock_setup_mixers.assert_called_once()
     async_add_entities.assert_called_once()
     args = async_add_entities.call_args[0]
     added_entities = args[0]
     binary_sensor_types = (
-        BINARY_SENSOR_TYPES
-        + ECOMAX_I_BINARY_SENSOR_TYPES
-        + ECOMAX_I_MIXER_BINARY_SENSOR_TYPES
+        BINARY_SENSOR_TYPES[ProductType.ECOMAX_I]
+        + MIXER_BINARY_SENSOR_TYPES[ProductType.ECOMAX_I]
     )
     assert len(added_entities) == len(binary_sensor_types)
 
@@ -114,47 +121,42 @@ async def test_async_setup_and_update_entry_without_mixers(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
-    caplog,
 ) -> None:
     """Test setup and update binary sensor entry for ecomax p
     without mixers.
     """
-    assert await async_setup_entry(hass, config_entry, async_add_entities)
+    with patch(
+        "custom_components.plum_ecomax.entity.EcomaxConnection.has_mixers", False
+    ):
+        assert await async_setup_entry(hass, config_entry, async_add_entities)
+
     async_add_entities.assert_called_once()
     args = async_add_entities.call_args[0]
     added_entities = args[0]
-    assert "Couldn't load mixer binary sensors" in caplog.text
 
     # Check that mixer sensor is not added.
     with pytest.raises(LookupError):
         _lookup_binary_sensor(added_entities, "pump")
 
 
-@pytest.mark.usefixtures("ecomax_base")
-async def test_async_setup_and_update_entry_with_no_sensor_data(
+@pytest.mark.usefixtures("ecomax_p", "mixers")
+async def test_async_setup_and_update_entry_with_setup_mixers_error(
     hass: HomeAssistant,
     async_add_entities: AddEntitiesCallback,
     config_entry: MockConfigEntry,
-    caplog,
 ) -> None:
     """Test setup and update binary sensor entry for ecomax p
-    without the sensor data.
-    """
-    assert not await async_setup_entry(hass, config_entry, async_add_entities)
-    async_add_entities.assert_not_called()
-    assert "Couldn't load device binary sensors" in caplog.text
+    with error during mixer setup."""
+    with patch(
+        "custom_components.plum_ecomax.entity.EcomaxConnection.setup_mixers",
+        return_value=False,
+    ):
+        assert await async_setup_entry(hass, config_entry, async_add_entities)
 
+    async_add_entities.assert_called_once()
+    args = async_add_entities.call_args[0]
+    added_entities = args[0]
 
-@pytest.mark.usefixtures("ecomax_unknown")
-async def test_async_setup_and_update_entry_with_unknown_ecomax_model(
-    hass: HomeAssistant,
-    async_add_entities: AddEntitiesCallback,
-    config_entry: MockConfigEntry,
-    caplog,
-) -> None:
-    """Test setup and update binary sensor entry for unknown ecomax
-    model.
-    """
-    assert not await async_setup_entry(hass, config_entry, async_add_entities)
-    async_add_entities.assert_not_called()
-    assert "Couldn't setup platform due to unknown controller model" in caplog.text
+    # Check that mixer sensor is not added.
+    with pytest.raises(LookupError):
+        _lookup_binary_sensor(added_entities, "pump")

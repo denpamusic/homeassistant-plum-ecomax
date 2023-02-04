@@ -1,6 +1,5 @@
 """Test the water heater platform."""
 
-import asyncio
 from unittest.mock import AsyncMock, Mock, call, patch
 
 from homeassistant.const import STATE_OFF
@@ -136,23 +135,6 @@ async def test_async_added_removed_to_hass(
     )
 
 
-@pytest.mark.usefixtures("water_heater")
-async def test_async_setup_entry_with_device_sensors_timeout(
-    hass: HomeAssistant,
-    async_add_entities: AddEntitiesCallback,
-    config_entry: MockConfigEntry,
-    caplog,
-) -> None:
-    """Test setup water heater entry with device sensors timeout."""
-    with patch(
-        "custom_components.plum_ecomax.entity.Device.get_value",
-        side_effect=asyncio.TimeoutError,
-    ):
-        assert not await async_setup_entry(hass, config_entry, async_add_entities)
-
-    assert "Couldn't find water heater" in caplog.text
-
-
 @pytest.mark.usefixtures("ecomax_common")
 async def test_async_setup_entry_with_no_water_heater(
     hass: HomeAssistant,
@@ -162,4 +144,7 @@ async def test_async_setup_entry_with_no_water_heater(
     """Test setup water heater entry without the connected
     water heater.
     """
-    assert not await async_setup_entry(hass, config_entry, async_add_entities)
+    with patch(
+        "custom_components.plum_ecomax.entity.EcomaxConnection.has_water_heater", False
+    ):
+        assert not await async_setup_entry(hass, config_entry, async_add_entities)

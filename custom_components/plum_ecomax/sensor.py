@@ -1,8 +1,8 @@
 """Platform for sensor integration."""
 from __future__ import annotations
 
-import asyncio
 from collections.abc import Callable
+import dataclasses
 from dataclasses import dataclass
 from datetime import date, datetime
 import logging
@@ -34,21 +34,20 @@ from homeassistant.helpers.entity_platform import (
 )
 from homeassistant.helpers.typing import ConfigType, StateType
 import homeassistant.util.dt as dt_util
+from pyplumio.devices import Mixer
 from pyplumio.helpers.filters import aggregate, on_change, throttle
 from pyplumio.helpers.product_info import ConnectedModules, ProductType
 import voluptuous as vol
 
-from .connection import DEFAULT_TIMEOUT, EcomaxConnection
+from .connection import EcomaxConnection
 from .const import (
     ATTR_FUEL_BURNED,
     ATTR_LAMBDA_LEVEL,
-    ATTR_MIXER_SENSORS,
     ATTR_MIXERS,
     ATTR_MODULE_LAMBDA,
     ATTR_MODULES,
     ATTR_PASSWORD,
     ATTR_PRODUCT,
-    ATTR_SENSORS,
     ATTR_VALUE,
     DOMAIN,
     FLOW_KGH,
@@ -97,7 +96,7 @@ class EcomaxSensorEntityDescription(
     filter_fn: Callable[[Any], Any] = on_change
 
 
-SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
+COMMON_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="heating_temp",
         name="Heating temperature",
@@ -176,6 +175,42 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         name="UID",
         value_fn=lambda x: x.uid,
         entity_category=EntityCategory.DIAGNOSTIC,
+    ),
+)
+
+ECOMAX_I_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
+    EcomaxSensorEntityDescription(
+        key="lower_solar_temp",
+        name="Lower solar temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_precision=1,
+        value_fn=lambda x: x,
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+    EcomaxSensorEntityDescription(
+        key="upper_solar_temp",
+        name="Upper solar temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_precision=1,
+        value_fn=lambda x: x,
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+    EcomaxSensorEntityDescription(
+        key="fireplace_temp",
+        name="Fireplace temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_precision=1,
+        value_fn=lambda x: x,
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
     ),
 )
 
@@ -292,41 +327,10 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
 )
 
-ECOMAX_I_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
-    EcomaxSensorEntityDescription(
-        key="lower_solar_temp",
-        name="Lower solar temperature",
-        icon="mdi:thermometer",
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_precision=1,
-        value_fn=lambda x: x,
-        filter_fn=lambda x: throttle(on_change(x), seconds=10),
-    ),
-    EcomaxSensorEntityDescription(
-        key="upper_solar_temp",
-        name="Upper solar temperature",
-        icon="mdi:thermometer",
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_precision=1,
-        value_fn=lambda x: x,
-        filter_fn=lambda x: throttle(on_change(x), seconds=10),
-    ),
-    EcomaxSensorEntityDescription(
-        key="fireplace_temp",
-        name="Fireplace temperature",
-        icon="mdi:thermometer",
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_precision=1,
-        value_fn=lambda x: x,
-        filter_fn=lambda x: throttle(on_change(x), seconds=10),
-    ),
-)
+SENSOR_TYPES: dict[int, tuple[EcomaxMeterEntityDescription, ...]] = {
+    ProductType.ECOMAX_I: COMMON_SENSOR_TYPES + ECOMAX_I_SENSOR_TYPES,
+    ProductType.ECOMAX_P: COMMON_SENSOR_TYPES + ECOMAX_P_SENSOR_TYPES,
+}
 
 MODULE_LAMBDA_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
@@ -340,9 +344,9 @@ MODULE_LAMBDA_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
 )
 
-MODULE_SENSOR_TYPES: tuple[tuple[str, tuple[EcomaxSensorEntityDescription, ...]]] = (
-    (ATTR_MODULE_LAMBDA, MODULE_LAMBDA_SENSOR_TYPES),
-)
+MODULE_SENSOR_TYPES: dict[str, tuple[EcomaxSensorEntityDescription, ...]] = {
+    ATTR_MODULE_LAMBDA: MODULE_LAMBDA_SENSOR_TYPES
+}
 
 
 class EcomaxSensor(EcomaxEntity, SensorEntity):
@@ -502,69 +506,28 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
         return self.entity_description.value_fn(self._attr_native_value)
 
 
-def setup_ecomax_i(
-    connection: EcomaxConnection,
-    entities: list[EcomaxEntity],
-    async_add_entities: AddEntitiesCallback,
-):
-    """Setup sensor platform for ecoMAX I series controllers."""
-    entities.extend(
-        EcomaxSensor(connection, description) for description in ECOMAX_I_SENSOR_TYPES
-    )
-    return async_add_entities(entities, False)
-
-
-def setup_ecomax_p(
-    connection: EcomaxConnection,
-    entities: list[EcomaxEntity],
-    async_add_entities: AddEntitiesCallback,
-):
-    """Setup sensor platform for ecoMAX P series controllers."""
-    platform = async_get_current_platform()
-    platform.async_register_entity_service(
-        SERVICE_RESET_METER,
-        {},
-        "async_reset_meter",
-    )
-    platform.async_register_entity_service(
-        SERVICE_CALIBRATE_METER,
-        {vol.Required(ATTR_VALUE): cv.positive_float},
-        "async_calibrate_meter",
-    )
-    entities.extend(
-        EcomaxSensor(connection, description) for description in ECOMAX_P_SENSOR_TYPES
-    )
-    entities.extend(EcomaxMeter(connection, description) for description in METER_TYPES)
-
-    return async_add_entities(entities, False)
-
-
-async def async_setup_mixer_entities(
+def setup_mixer_entities(
     connection: EcomaxConnection, entities: list[EcomaxEntity]
 ) -> None:
     """Setup mixer sensors."""
-    await connection.device.get_value(ATTR_MIXER_SENSORS, timeout=DEFAULT_TIMEOUT)
-    mixers = connection.device.data.get(ATTR_MIXERS, {})
+    mixers: dict[int, Mixer] = connection.device.data[ATTR_MIXERS]
     for index in mixers.keys():
         entities.extend(
-            [
-                MixerSensor(connection, description, index)
-                for description in MIXER_SENSOR_TYPES.get(connection.product_type, ())
-            ]
+            MixerSensor(connection, description, index)
+            for description in MIXER_SENSOR_TYPES[connection.product_type]
         )
 
 
-async def async_setup_module_entities(
+def setup_module_entities(
     connection: EcomaxConnection, entities: list[EcomaxEntity]
 ) -> None:
-    """Setup module-specific sensors."""
-    modules: ConnectedModules = await connection.device.get_value(
-        ATTR_MODULES, timeout=DEFAULT_TIMEOUT
-    )
-    for module, sensor_types in MODULE_SENSOR_TYPES:
-        if getattr(modules, module) is not None:
+    """Setup module-dependent sensors."""
+    modules: ConnectedModules = connection.device.data[ATTR_MODULES]
+    for module, version in dataclasses.asdict(modules).items():
+        if version is not None and module in MODULE_SENSOR_TYPES:
             entities.extend(
-                [EcomaxSensor(connection, description) for description in sensor_types]
+                EcomaxSensor(connection, description)
+                for description in MODULE_SENSOR_TYPES[module]
             )
 
 
@@ -575,29 +538,42 @@ async def async_setup_entry(
 ) -> bool:
     """Set up the sensor platform."""
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
-    try:
-        await connection.device.get_value(ATTR_SENSORS, timeout=DEFAULT_TIMEOUT)
-        entities: list[EcomaxEntity] = [
-            EcomaxSensor(connection, description) for description in SENSOR_TYPES
-        ]
-        await async_setup_module_entities(connection, entities)
-    except asyncio.TimeoutError:
-        _LOGGER.error("Couldn't load device sensors")
-        return False
+    _LOGGER.debug("Starting setup of sensor platform...")
 
-    if connection.has_mixers:
-        try:
-            await async_setup_mixer_entities(connection, entities)
-        except asyncio.TimeoutError:
-            _LOGGER.warning("Couldn't load mixer sensors")
+    async def _async_setup_entities(product_type: ProductType) -> list[EcomaxEntity]:
+        """Add sensor entites."""
+        entities: list[EcomaxEntity] = []
 
-    if connection.product_type == ProductType.ECOMAX_P:
-        return setup_ecomax_p(connection, entities, async_add_entities)
+        # Add ecoMAX sensors.
+        entities.extend(
+            EcomaxSensor(connection, description)
+            for description in SENSOR_TYPES[product_type]
+        )
 
-    if connection.product_type == ProductType.ECOMAX_I:
-        return setup_ecomax_i(connection, entities, async_add_entities)
+        # Add module-dependent sensors.
+        setup_module_entities(connection, entities)
 
-    _LOGGER.error(
-        "Couldn't setup platform due to unknown controller model '%s'", connection.model
-    )
-    return False
+        # Add mixer/circuit sensors.
+        if connection.has_mixers and await connection.setup_mixers():
+            setup_mixer_entities(connection, entities)
+
+        # Add meter sensors.
+        if product_type == ProductType.ECOMAX_P:
+            entities.extend(
+                EcomaxMeter(connection, description) for description in METER_TYPES
+            )
+
+            # Setup services.
+            platform = async_get_current_platform()
+            platform.async_register_entity_service(
+                SERVICE_RESET_METER, {}, "async_reset_meter"
+            )
+            platform.async_register_entity_service(
+                SERVICE_CALIBRATE_METER,
+                {vol.Required(ATTR_VALUE): cv.positive_float},
+                "async_calibrate_meter",
+            )
+
+        return entities
+
+    return async_add_entities(await _async_setup_entities(connection.product_type))

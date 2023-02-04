@@ -1,7 +1,6 @@
 """Platform for number integration."""
 from __future__ import annotations
 
-import asyncio
 from collections.abc import Callable
 from dataclasses import dataclass
 import logging
@@ -17,18 +16,13 @@ from homeassistant.const import PERCENTAGE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
+from pyplumio.devices import Mixer
 from pyplumio.helpers.filters import on_change
 from pyplumio.helpers.parameter import Parameter
 from pyplumio.helpers.product_info import ProductType
 
-from .connection import DEFAULT_TIMEOUT, EcomaxConnection
-from .const import (
-    ATTR_ECOMAX_PARAMETERS,
-    ATTR_MIXER_PARAMETERS,
-    ATTR_MIXERS,
-    CALORIFIC_KWH_KG,
-    DOMAIN,
-)
+from .connection import EcomaxConnection
+from .const import ATTR_MIXERS, CALORIFIC_KWH_KG, DOMAIN
 from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -44,7 +38,9 @@ class EcomaxNumberEntityDescription(NumberEntityDescription):
     max_value_key: Optional[str] = None
 
 
-NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = ()
+COMMON_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = ()
+
+ECOMAX_I_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = ()
 
 ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
@@ -95,6 +91,11 @@ ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         mode=NumberMode.BOX,
     ),
 )
+
+NUMBER_TYPES: dict[ProductType, tuple[EcomaxNumberEntityDescription, ...]] = {
+    ProductType.ECOMAX_I: COMMON_NUMBER_TYPES + ECOMAX_I_NUMBER_TYPES,
+    ProductType.ECOMAX_P: COMMON_NUMBER_TYPES + ECOMAX_P_NUMBER_TYPES,
+}
 
 
 class EcomaxNumber(EcomaxEntity, NumberEntity):
@@ -254,37 +255,15 @@ class MixerNumber(MixerEntity, EcomaxNumber):
         super().__init__(connection, description)
 
 
-def setup_ecomax_p(
-    connection: EcomaxConnection,
-    entities: list[EcomaxEntity],
-    async_add_entities: AddEntitiesCallback,
-) -> bool:
-    """Setup number platform for ecoMAX P series controllers."""
-    entities.extend(
-        EcomaxNumber(connection, description) for description in ECOMAX_P_NUMBER_TYPES
-    )
-    return async_add_entities(entities, False)
-
-
-def setup_ecomax_i(
-    connection: EcomaxConnection,
-    entities: list[EcomaxEntity],
-    async_add_entities: AddEntitiesCallback,
-) -> bool:
-    """Setup number platform for ecoMAX I series controllers."""
-    return async_add_entities(entities, False)
-
-
 async def async_setup_mixer_entities(
     connection: EcomaxConnection, entities: list[EcomaxEntity]
 ) -> None:
     """Setup mixer number entites."""
-    await connection.device.get_value(ATTR_MIXER_PARAMETERS, timeout=DEFAULT_TIMEOUT)
-    mixers = connection.device.data.get(ATTR_MIXERS, {})
+    mixers: dict[int, Mixer] = connection.device.data[ATTR_MIXERS]
     for index in mixers.keys():
         entities.extend(
             MixerNumber(connection, description, index)
-            for description in MIXER_NUMBER_TYPES.get(connection.product_type, ())
+            for description in MIXER_NUMBER_TYPES[connection.product_type]
         )
 
 
@@ -295,30 +274,22 @@ async def async_setup_entry(
 ) -> bool:
     """Set up the number platform."""
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
-    try:
-        await connection.device.get_value(
-            ATTR_ECOMAX_PARAMETERS, timeout=DEFAULT_TIMEOUT
+    _LOGGER.debug("Starting setup of number platform...")
+
+    async def _async_setup_entities(product_type: ProductType) -> list[EcomaxEntity]:
+        """Add number entities."""
+        entities: list[EcomaxEntity] = []
+
+        # Add ecoMAX numbers.
+        entities.extend(
+            EcomaxNumber(connection, description)
+            for description in NUMBER_TYPES[product_type]
         )
-        entities: list[EcomaxEntity] = [
-            EcomaxNumber(connection, description) for description in NUMBER_TYPES
-        ]
-    except asyncio.TimeoutError:
-        _LOGGER.error("Couldn't load device numbers")
-        return False
 
-    if connection.has_mixers:
-        try:
+        # Add mixer/circuit numbers.
+        if connection.has_mixers and await connection.setup_mixers():
             await async_setup_mixer_entities(connection, entities)
-        except asyncio.TimeoutError:
-            _LOGGER.warning("Couldn't load mixer numbers")
 
-    if connection.product_type == ProductType.ECOMAX_P:
-        return setup_ecomax_p(connection, entities, async_add_entities)
+        return entities
 
-    if connection.product_type == ProductType.ECOMAX_I:
-        return setup_ecomax_i(connection, entities, async_add_entities)
-
-    _LOGGER.error(
-        "Couldn't setup platform due to unknown controller model '%s'", connection.model
-    )
-    return False
+    return async_add_entities(await _async_setup_entities(connection.product_type))
