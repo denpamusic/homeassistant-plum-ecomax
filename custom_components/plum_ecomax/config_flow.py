@@ -13,6 +13,7 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 import homeassistant.helpers.config_validation as cv
 from pyplumio.exceptions import ConnectionFailedError
+from pyplumio.helpers.product_info import ProductType
 import voluptuous as vol
 
 from . import format_model_name
@@ -65,11 +66,16 @@ async def validate_input(
     except asyncio.TimeoutError as connection_timeout:
         raise TimeoutConnect from connection_timeout
 
+    try:
+        product_type = ProductType(product.type)
+    except ValueError as validation_failure:
+        raise UnsupportedProduct from validation_failure
+
     return {
         CONF_TITLE: title,
         CONF_UID: product.uid,
         CONF_MODEL: format_model_name(product.model),
-        CONF_PRODUCT_TYPE: product.type,
+        CONF_PRODUCT_TYPE: product_type,
         CONF_SOFTWARE: modules.module_a,
         CONF_SUB_DEVICES: sub_devices,
     }
@@ -97,6 +103,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors[CONF_BASE] = "cannot_connect"
         except TimeoutConnect:
             errors[CONF_BASE] = "timeout_connect"
+        except UnsupportedProduct:
+            errors[CONF_BASE] = "unsupported_product"
         except Exception:  # pylint: disable=broad-except
             _LOGGER.exception("Unexpected exception")
             errors[CONF_BASE] = "unknown"
@@ -123,6 +131,10 @@ class CannotConnect(HomeAssistantError):
 
 
 class TimeoutConnect(HomeAssistantError):
-    """Error to indicate that we estableshed connection but
+    """Error to indicate that we established connection but
     failed to see expected response in time.
     """
+
+
+class UnsupportedProduct(HomeAssistantError):
+    """Error to indicate that product is not supported."""

@@ -6,6 +6,7 @@
     "error": {
       "cannot_connect": "Připojení selhalo",
       "timeout_connect": "Časový limit připojení vypršel",
+      "unsupported_product": "Nepodporovaný produkt",
       "unknown": "Neočekávaná chyba"
     },
     "step": {

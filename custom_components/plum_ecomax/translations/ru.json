@@ -6,6 +6,7 @@
     "error": {
       "cannot_connect": "Ошибка подключения",
       "timeout_connect": "Время ожидания подключения истекло",
+      "unsupported_product": "Контроллер не поддерживается",
       "unknown": "Неопознанная ошибка"
     },
     "step": {

@@ -3,6 +3,7 @@ import asyncio
 from unittest.mock import Mock, patch
 
 from homeassistant import config_entries
+from homeassistant.const import CONF_BASE
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import RESULT_TYPE_CREATE_ENTRY, RESULT_TYPE_FORM
 from pyplumio.exceptions import ConnectionFailedError
@@ -117,7 +118,7 @@ async def test_form_serial(
 async def test_form_cannot_connect(
     hass: HomeAssistant, config_data: dict[str, str]
 ) -> None:
-    """Test we handle cannot connect error."""
+    """Test that we handle cannot connect error."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
@@ -131,13 +132,13 @@ async def test_form_cannot_connect(
         )
 
     assert result2["type"] == RESULT_TYPE_FORM
-    assert result2["errors"] == {"base": "cannot_connect"}
+    assert result2["errors"] == {CONF_BASE: "cannot_connect"}
 
 
 async def test_form_timeout_connect(
     hass: HomeAssistant, config_data: dict[str, str]
 ) -> None:
-    """Test we handle unsupported device error."""
+    """Test that we handle timeout error."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
@@ -151,13 +152,36 @@ async def test_form_timeout_connect(
         )
 
     assert result2["type"] == RESULT_TYPE_FORM
-    assert result2["errors"] == {"base": "timeout_connect"}
+    assert result2["errors"] == {CONF_BASE: "timeout_connect"}
+
+
+async def test_form_unsupported_product(
+    hass: HomeAssistant, config_data: dict[str, str]
+) -> None:
+    """Test that we handle unsupported device error."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+
+    with patch(
+        "custom_components.plum_ecomax.config_flow.async_check_connection",
+        return_value=(None, Mock(autospec=ProductInfo), None, None),
+    ), patch(
+        "custom_components.plum_ecomax.config_flow.ProductType",
+        side_effect=ValueError,
+    ):
+        result2 = await hass.config_entries.flow.async_configure(
+            result["flow_id"], config_data
+        )
+
+    assert result2["type"] == RESULT_TYPE_FORM
+    assert result2["errors"] == {CONF_BASE: "unsupported_product"}
 
 
 async def test_form_unknown_error(
     hass: HomeAssistant, config_data: dict[str, str]
 ) -> None:
-    """Test we handle unknown error error."""
+    """Test that we handle unknown error error."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
@@ -171,4 +195,4 @@ async def test_form_unknown_error(
         )
 
     assert result2["type"] == RESULT_TYPE_FORM
-    assert result2["errors"] == {"base": "unknown"}
+    assert result2["errors"] == {CONF_BASE: "unknown"}

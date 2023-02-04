@@ -6,6 +6,7 @@
     "error": {
       "cannot_connect": "Nie udało się połączyć",
       "timeout_connect": "Limit czasu nawiązania połączenia",
+      "unsupported_product": "Nieobsługiwany produkt",
       "unknown": "Niespodziewany błąd"
     },
     "step": {

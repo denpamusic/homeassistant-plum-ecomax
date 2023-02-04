@@ -6,6 +6,7 @@
     "error": {
       "cannot_connect": "Failed to connect",
       "timeout_connect": "Timeout establishing connection",
+      "unsupported_product": "Unsupported product",
       "unknown": "Unexpected error"
     },
     "step": {

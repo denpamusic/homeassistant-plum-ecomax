@@ -6,6 +6,7 @@
     "error": {
       "cannot_connect": "Connexion échouée",
       "timeout_connect": "Delai de connexion dépassé",
+      "unsupported_product": "Produit non compatible",
       "unknown": "Erreur inattendue"
     },
     "step": {
