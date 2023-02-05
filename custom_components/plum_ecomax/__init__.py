@@ -157,7 +157,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             config_entry.version = 4
             hass.config_entries.async_update_entry(config_entry, data=data)
 
-        if config_entry.version == 4:
+        if config_entry.version in (4, 5):
             data = {**config_entry.data}
             try:
                 del data[CONF_CAPABILITIES]
@@ -173,7 +173,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             device = await connection.get_device(ECOMAX, timeout=DEFAULT_TIMEOUT)
             data[CONF_SUB_DEVICES] = await async_get_sub_devices(device)
             await connection.close()
-            config_entry.version = 5
+            config_entry.version = 6
             hass.config_entries.async_update_entry(config_entry, data=data)
 
         _LOGGER.info("Migration to version %s successful", config_entry.version)

@@ -145,10 +145,10 @@ async def test_setup_events(
 
 
 @pytest.mark.usefixtures("ecomax_p")
-async def test_migrate_entry_v1_2_to_v5(
+async def test_migrate_entry_v1_2_to_v6(
     hass: HomeAssistant, config_entry: ConfigEntry, caplog
 ) -> None:
-    """Test migrating entry from version 1 or 2 to version 5."""
+    """Test migrating entry from version 1 or 2 to version 6."""
     config_entry.version = 1
     data = dict(config_entry.data)
     data.update({CONF_MODEL: "ecoMAX850P2-C", CONF_CAPABILITIES: {"test_capability"}})
@@ -158,15 +158,15 @@ async def test_migrate_entry_v1_2_to_v5(
     assert data[CONF_MODEL] == "ecoMAX 850P2-C"
     assert CONF_CAPABILITIES not in data
     assert CONF_SUB_DEVICES in data
-    assert config_entry.version == 5
-    assert "Migration to version 5 successful" in caplog.text
+    assert config_entry.version == 6
+    assert "Migration to version 6 successful" in caplog.text
 
 
 @pytest.mark.usefixtures("ecomax_p")
-async def test_migrate_entry_v3_to_v5(
+async def test_migrate_entry_v3_to_v6(
     hass: HomeAssistant, config_entry: ConfigEntry, caplog
 ) -> None:
-    """Test migrating entry from version 3 to version 5."""
+    """Test migrating entry from version 3 to version 6."""
     config_entry.version = 3
     data = dict(config_entry.data)
     data[CONF_MODEL] = "ecoMAX850P2-C"
@@ -174,15 +174,15 @@ async def test_migrate_entry_v3_to_v5(
     assert await async_migrate_entry(hass, config_entry)
     data = dict(config_entry.data)
     assert data[CONF_MODEL] == "ecoMAX 850P2-C"
-    assert config_entry.version == 5
-    assert "Migration to version 5 successful" in caplog.text
+    assert config_entry.version == 6
+    assert "Migration to version 6 successful" in caplog.text
 
 
 @pytest.mark.usefixtures("ecomax_p")
-async def test_migrate_entry_v4_to_v5(
+async def test_migrate_entry_v4_5_to_v6(
     hass: HomeAssistant, config_entry: ConfigEntry, caplog
 ) -> None:
-    """Test migrating entry from version 4 to version 5."""
+    """Test migrating entry from version 4 or 5 to version 6."""
     config_entry.version = 4
     data = dict(config_entry.data)
     del data[CONF_SUB_DEVICES]
@@ -191,8 +191,8 @@ async def test_migrate_entry_v4_to_v5(
     data = dict(config_entry.data)
     assert CONF_CAPABILITIES not in data
     assert CONF_SUB_DEVICES in data
-    assert config_entry.version == 5
-    assert "Migration to version 5 successful" in caplog.text
+    assert config_entry.version == 6
+    assert "Migration to version 6 successful" in caplog.text
 
 
 async def test_migrate_entry_with_timeout(
