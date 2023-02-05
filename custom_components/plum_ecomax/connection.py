@@ -16,7 +16,7 @@ from homeassistant.helpers.entity import DeviceInfo
 import pyplumio
 from pyplumio.connection import Connection
 from pyplumio.const import FrameType
-from pyplumio.devices import Device
+from pyplumio.devices import Addressable
 from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
 
 from .const import (
@@ -86,7 +86,7 @@ async def async_check_connection(
     return title, product, modules, sub_devices
 
 
-async def async_get_sub_devices(device: Device) -> list[str]:
+async def async_get_sub_devices(device: Addressable) -> list[str]:
     """Return device subdevices."""
     _LOGGER.debug("Checking connected sub-devices...")
 
@@ -126,7 +126,7 @@ class EcomaxConnection:
     entry: ConfigEntry
     _hass: HomeAssistant
     _connection: Connection
-    _device: Device | None
+    _device: Addressable | None
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, connection: Connection):
         """Initialize new ecoMAX connection object."""
@@ -145,10 +145,10 @@ class EcomaxConnection:
     async def async_setup(self) -> None:
         """Setup connection and add hass stop handler."""
         await self.connect()
-        device: Device = await self.get_device(ECOMAX, timeout=DEFAULT_TIMEOUT)
         await device.get_value(ATTR_LOADED, timeout=DEFAULT_TIMEOUT)
         await device.get_value(ATTR_SENSORS, timeout=DEFAULT_TIMEOUT)
         await device.get_value(ATTR_ECOMAX_PARAMETERS, timeout=DEFAULT_TIMEOUT)
+        device: Addressable = await self.get_device(ECOMAX, timeout=DEFAULT_TIMEOUT)
         self._device = device
 
     async def setup_thermostats(self) -> bool:
@@ -201,7 +201,7 @@ class EcomaxConnection:
         return ATTR_MIXERS in self.entry.data.get(CONF_SUB_DEVICES, [])
 
     @property
-    def device(self) -> Device:
+    def device(self) -> Addressable:
         """Return connection state."""
         if self._device is None:
             raise ConfigEntryNotReady("Device not ready")
