@@ -15,9 +15,9 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
+from pyplumio.const import ProductType
 from pyplumio.devices import Mixer
 from pyplumio.helpers.filters import on_change
-from pyplumio.helpers.product_info import ProductType
 
 from .connection import EcomaxConnection
 from .const import ATTR_MIXERS, DOMAIN

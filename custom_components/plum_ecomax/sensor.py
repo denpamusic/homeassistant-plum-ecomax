@@ -34,9 +34,10 @@ from homeassistant.helpers.entity_platform import (
 )
 from homeassistant.helpers.typing import ConfigType, StateType
 import homeassistant.util.dt as dt_util
+from pyplumio.const import ProductType
 from pyplumio.devices import Mixer
 from pyplumio.helpers.filters import aggregate, on_change, throttle
-from pyplumio.helpers.product_info import ConnectedModules, ProductType
+from pyplumio.helpers.product_info import ConnectedModules
 import voluptuous as vol
 
 from .connection import EcomaxConnection

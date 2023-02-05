@@ -12,8 +12,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 import homeassistant.helpers.config_validation as cv
+from pyplumio.const import ProductType
 from pyplumio.exceptions import ConnectionFailedError
-from pyplumio.helpers.product_info import ProductType
 import voluptuous as vol
 
 from . import format_model_name

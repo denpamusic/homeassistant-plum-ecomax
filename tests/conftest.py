@@ -7,11 +7,11 @@ from unittest.mock import AsyncMock, Mock, patch
 from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
 from pyplumio import Connection
-from pyplumio.const import DeviceState
+from pyplumio.const import DeviceState, ProductType
 from pyplumio.devices import Mixer, Thermostat
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.helpers.network_info import NetworkInfo
-from pyplumio.helpers.product_info import ConnectedModules, ProductInfo, ProductType
+from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
 from pyplumio.structures.ecomax_parameters import (
     EcomaxBinaryParameter,
     EcomaxParameter,

@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyplumio.helpers.product_info import ProductType
+from pyplumio.const import ProductType
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 

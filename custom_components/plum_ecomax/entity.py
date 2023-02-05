@@ -4,8 +4,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 from homeassistant.helpers.entity import DeviceInfo, EntityDescription
+from pyplumio.const import ProductType
 from pyplumio.devices import Device
-from pyplumio.helpers.product_info import ProductType
 
 from .connection import EcomaxConnection
 from .const import ATTR_MIXERS, DOMAIN, MANUFACTURER

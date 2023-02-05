@@ -12,10 +12,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
+from pyplumio.const import ProductType
 from pyplumio.devices import Mixer
 from pyplumio.helpers.filters import on_change
 from pyplumio.helpers.parameter import Parameter
-from pyplumio.helpers.product_info import ProductType
 from pyplumio.helpers.typing import ParameterValueType
 
 from .connection import EcomaxConnection

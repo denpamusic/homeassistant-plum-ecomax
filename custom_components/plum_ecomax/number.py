@@ -16,10 +16,10 @@ from homeassistant.const import PERCENTAGE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
+from pyplumio.const import ProductType
 from pyplumio.devices import Mixer
 from pyplumio.helpers.filters import on_change
 from pyplumio.helpers.parameter import Parameter
-from pyplumio.helpers.product_info import ProductType
 
 from .connection import EcomaxConnection
 from .const import ATTR_MIXERS, CALORIFIC_KWH_KG, DOMAIN
