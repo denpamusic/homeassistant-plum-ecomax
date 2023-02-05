@@ -128,7 +128,7 @@ async def test_async_setup(
 ) -> None:
     """Test connection setup."""
     mock_ecomax = Mock(spec=EcoMAX)
-    mock_ecomax.get_value = AsyncMock(
+    mock_ecomax.wait_for = AsyncMock(
         side_effect=(True, True, True, asyncio.TimeoutError)
     )
     mock_connection = Mock(spec=TcpConnection)

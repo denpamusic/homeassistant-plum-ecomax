@@ -93,7 +93,7 @@ async def async_get_sub_devices(device: Addressable) -> list[str]:
     sub_devices: list[str] = []
 
     # Wait until sensors become available.
-    await device.get_value(ATTR_SENSORS)
+    await device.wait_for(ATTR_SENSORS)
 
     if ATTR_MIXERS in device.data:
         mixer_count = len(device.data[ATTR_MIXERS])
@@ -145,10 +145,10 @@ class EcomaxConnection:
     async def async_setup(self) -> None:
         """Setup connection and add hass stop handler."""
         await self.connect()
-        await device.get_value(ATTR_LOADED, timeout=DEFAULT_TIMEOUT)
-        await device.get_value(ATTR_SENSORS, timeout=DEFAULT_TIMEOUT)
-        await device.get_value(ATTR_ECOMAX_PARAMETERS, timeout=DEFAULT_TIMEOUT)
         device: Addressable = await self.get_device(ECOMAX, timeout=DEFAULT_TIMEOUT)
+        await device.wait_for(ATTR_LOADED, timeout=DEFAULT_TIMEOUT)
+        await device.wait_for(ATTR_SENSORS, timeout=DEFAULT_TIMEOUT)
+        await device.wait_for(ATTR_ECOMAX_PARAMETERS, timeout=DEFAULT_TIMEOUT)
         self._device = device
 
     async def setup_thermostats(self) -> bool:
