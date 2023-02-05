@@ -179,42 +179,6 @@ COMMON_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
 )
 
-ECOMAX_I_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
-    EcomaxSensorEntityDescription(
-        key="lower_solar_temp",
-        name="Lower solar temperature",
-        icon="mdi:thermometer",
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_precision=1,
-        value_fn=lambda x: x,
-        filter_fn=lambda x: throttle(on_change(x), seconds=10),
-    ),
-    EcomaxSensorEntityDescription(
-        key="upper_solar_temp",
-        name="Upper solar temperature",
-        icon="mdi:thermometer",
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_precision=1,
-        value_fn=lambda x: x,
-        filter_fn=lambda x: throttle(on_change(x), seconds=10),
-    ),
-    EcomaxSensorEntityDescription(
-        key="fireplace_temp",
-        name="Fireplace temperature",
-        icon="mdi:thermometer",
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_precision=1,
-        value_fn=lambda x: x,
-        filter_fn=lambda x: throttle(on_change(x), seconds=10),
-    ),
-)
-
 ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="power",
@@ -328,9 +292,45 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
 )
 
+ECOMAX_I_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
+    EcomaxSensorEntityDescription(
+        key="lower_solar_temp",
+        name="Lower solar temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_precision=1,
+        value_fn=lambda x: x,
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+    EcomaxSensorEntityDescription(
+        key="upper_solar_temp",
+        name="Upper solar temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_precision=1,
+        value_fn=lambda x: x,
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+    EcomaxSensorEntityDescription(
+        key="fireplace_temp",
+        name="Fireplace temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_precision=1,
+        value_fn=lambda x: x,
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+)
+
 SENSOR_TYPES: dict[int, tuple[EcomaxMeterEntityDescription, ...]] = {
-    ProductType.ECOMAX_I: COMMON_SENSOR_TYPES + ECOMAX_I_SENSOR_TYPES,
     ProductType.ECOMAX_P: COMMON_SENSOR_TYPES + ECOMAX_P_SENSOR_TYPES,
+    ProductType.ECOMAX_I: COMMON_SENSOR_TYPES + ECOMAX_I_SENSOR_TYPES,
 }
 
 MODULE_LAMBDA_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
@@ -372,32 +372,6 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
         self.async_write_ha_state()
 
 
-ECOMAX_I_MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
-    EcomaxSensorEntityDescription(
-        key="current_temp",
-        name="Circuit temperature",
-        icon="mdi:thermometer",
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_precision=1,
-        value_fn=lambda x: x,
-        filter_fn=lambda x: throttle(on_change(x), seconds=10),
-    ),
-    EcomaxSensorEntityDescription(
-        key="target_temp",
-        name="Circuit target temperature",
-        icon="mdi:thermometer",
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-        device_class=SensorDeviceClass.TEMPERATURE,
-        native_precision=1,
-        value_fn=lambda x: x,
-        filter_fn=lambda x: throttle(on_change(x), seconds=10),
-    ),
-)
-
-
 ECOMAX_P_MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="current_temp",
@@ -423,9 +397,34 @@ ECOMAX_P_MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
 )
 
+ECOMAX_I_MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
+    EcomaxSensorEntityDescription(
+        key="current_temp",
+        name="Circuit temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_precision=1,
+        value_fn=lambda x: x,
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+    EcomaxSensorEntityDescription(
+        key="target_temp",
+        name="Circuit target temperature",
+        icon="mdi:thermometer",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_precision=1,
+        value_fn=lambda x: x,
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+    ),
+)
+
 MIXER_SENSOR_TYPES: dict[ProductType, tuple[EcomaxSensorEntityDescription, ...]] = {
-    ProductType.ECOMAX_I: ECOMAX_I_MIXER_SENSOR_TYPES,
     ProductType.ECOMAX_P: ECOMAX_P_MIXER_SENSOR_TYPES,
+    ProductType.ECOMAX_I: ECOMAX_I_MIXER_SENSOR_TYPES,
 }
 
 

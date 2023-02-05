@@ -40,8 +40,6 @@ class EcomaxNumberEntityDescription(NumberEntityDescription):
 
 COMMON_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = ()
 
-ECOMAX_I_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = ()
-
 ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="heating_target_temp",
@@ -92,9 +90,11 @@ ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     ),
 )
 
+ECOMAX_I_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = ()
+
 NUMBER_TYPES: dict[ProductType, tuple[EcomaxNumberEntityDescription, ...]] = {
-    ProductType.ECOMAX_I: COMMON_NUMBER_TYPES + ECOMAX_I_NUMBER_TYPES,
     ProductType.ECOMAX_P: COMMON_NUMBER_TYPES + ECOMAX_P_NUMBER_TYPES,
+    ProductType.ECOMAX_I: COMMON_NUMBER_TYPES + ECOMAX_I_NUMBER_TYPES,
 }
 
 
@@ -173,6 +173,29 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
         self.async_write_ha_state()
 
 
+ECOMAX_P_MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
+    EcomaxNumberEntityDescription(
+        key="mixer_target_temp",
+        name="Target mixer temperature",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        native_step=1,
+        min_value_key="min_target_temp",
+        max_value_key="max_target_temp",
+    ),
+    EcomaxNumberEntityDescription(
+        key="min_target_temp",
+        name="Minimum mixer temperature",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        native_step=1,
+    ),
+    EcomaxNumberEntityDescription(
+        key="max_target_temp",
+        name="Maximum mixer temperature",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        native_step=1,
+    ),
+)
+
 ECOMAX_I_MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="mixer_target_temp",
@@ -212,32 +235,9 @@ ECOMAX_I_MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     ),
 )
 
-ECOMAX_P_MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
-    EcomaxNumberEntityDescription(
-        key="mixer_target_temp",
-        name="Target mixer temperature",
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        native_step=1,
-        min_value_key="min_target_temp",
-        max_value_key="max_target_temp",
-    ),
-    EcomaxNumberEntityDescription(
-        key="min_target_temp",
-        name="Minimum mixer temperature",
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        native_step=1,
-    ),
-    EcomaxNumberEntityDescription(
-        key="max_target_temp",
-        name="Maximum mixer temperature",
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        native_step=1,
-    ),
-)
-
 MIXER_NUMBER_TYPES: dict[ProductType, tuple[EcomaxNumberEntityDescription, ...]] = {
-    ProductType.ECOMAX_I: ECOMAX_I_MIXER_NUMBER_TYPES,
     ProductType.ECOMAX_P: ECOMAX_P_MIXER_NUMBER_TYPES,
+    ProductType.ECOMAX_I: ECOMAX_I_MIXER_NUMBER_TYPES,
 }
 
 
