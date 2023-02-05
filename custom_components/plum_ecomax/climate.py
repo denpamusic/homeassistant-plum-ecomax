@@ -153,12 +153,12 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         await self._async_update_target_temperature_name()
         self.async_write_ha_state()
 
-    async def async_update(self, value) -> None:
+    async def async_update(self, value: float) -> None:
         """Update entity state."""
         self._attr_current_temperature = value
         self.async_write_ha_state()
 
-    async def async_update_target_temp(self, value) -> None:
+    async def async_update_target_temp(self, value: float) -> None:
         """Update target temperature."""
         target_temp = await self.device.get_parameter(self.target_temperature_name)
         self._attr_max_temp = target_temp.max_value
@@ -179,7 +179,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         await self._async_update_target_temperature_name()
         self.async_write_ha_state()
 
-    async def async_update_hvac_action(self, value) -> None:
+    async def async_update_hvac_action(self, value: bool) -> None:
         """Update HVAC action."""
         self._attr_hvac_action = HVACAction.HEATING if value else HVACAction.IDLE
         self.async_write_ha_state()
