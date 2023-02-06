@@ -196,6 +196,7 @@ Diagnostics are random entities that provide you with service and debug informat
 | Name               | Type          | ecoMAX pellet      | ecoMAX installation |
 |--------------------|:-------------:|:------------------:|:-------------------:|
 | Alert              | Binary sensor | :white_check_mark: | :white_check_mark:  |
+| Connection status  | Binary sensor | :white_check_mark: | :white_check_mark:  |
 | Service password   | Text sensor   | :white_check_mark: | :white_check_mark:  |
 | UID                | Text sensor   | :white_check_mark: | :white_check_mark:  |
 | Software version   | Text sensor   | :white_check_mark: | :white_check_mark:  |
