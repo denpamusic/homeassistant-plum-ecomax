@@ -76,7 +76,7 @@ async def test_async_setup_and_update_entry_for_ecomax_p(
         # Since target temperature parameter is dynamic and based
         # on preset mode, we mock get_parameter call instead of using
         # value passed to the callback.
-        await entity.async_update_target_temp(value=None)
+        await entity.async_update_target_temperature(value=None)
 
     assert entity.target_temperature == 18.0
     assert entity.max_temp == 35.0
@@ -155,7 +155,7 @@ async def test_async_added_removed_to_hass(
             call("state", entity.async_update_preset_mode),
             call("contacts", entity.async_update_hvac_action),
             call("current_temp", entity.async_update),
-            call("target_temp", entity.async_update_target_temp),
+            call("target_temp", entity.async_update_target_temperature),
         ]
     )
 

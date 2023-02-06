@@ -158,12 +158,9 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         self._attr_current_temperature = value
         self.async_write_ha_state()
 
-    async def async_update_target_temp(self, value: float) -> None:
+    async def async_update_target_temperature(self, value: float) -> None:
         """Update target temperature."""
-        target_temp = await self.device.get_parameter(self.target_temperature_name)
-        self._attr_max_temp = target_temp.max_value
-        self._attr_min_temp = target_temp.min_value
-        self._attr_target_temperature = target_temp.value
+        await self._async_update_target_temperature()
         self.async_write_ha_state()
 
     async def async_update_preset_mode(self, value: int) -> None:
@@ -177,6 +174,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
 
         self._attr_preset_mode = preset_mode
         await self._async_update_target_temperature_name()
+        await self._async_update_target_temperature()
         self.async_write_ha_state()
 
     async def async_update_hvac_action(self, value: bool) -> None:
@@ -190,7 +188,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
             "state": on_change(self.async_update_preset_mode),
             "contacts": on_change(self.async_update_hvac_action),
             "current_temp": throttle(self.async_update, seconds=10),
-            "target_temp": on_change(self.async_update_target_temp),
+            "target_temp": on_change(self.async_update_target_temperature),
         }
 
         for name, func in callbacks.items():
@@ -205,7 +203,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         self.device.unsubscribe("state", self.async_update_preset_mode)
         self.device.unsubscribe("contacts", self.async_update_hvac_action)
         self.device.unsubscribe("current_temp", self.async_update)
-        self.device.unsubscribe("target_temp", self.async_update_target_temp)
+        self.device.unsubscribe("target_temp", self.async_update_target_temperature)
 
     async def _async_update_target_temperature_name(self) -> None:
         """Get target temperature name."""
@@ -219,6 +217,14 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
             preset_mode = PRESET_ECO if schedule else PRESET_COMFORT
 
         self._attr_target_temperature_name = HA_PRESET_TO_EM_TEMP[preset_mode]
+
+    async def _async_update_target_temperature(self) -> None:
+        """Update target temperature from the parameter related to the
+        current state."""
+        target_temp = await self.device.get_parameter(self.target_temperature_name)
+        self._attr_max_temp = target_temp.max_value
+        self._attr_min_temp = target_temp.min_value
+        self._attr_target_temperature = target_temp.value
 
     @property
     def device(self) -> Thermostat:
