@@ -133,6 +133,7 @@ Temperature changes that are less than 0.1°C are ignored.
 | Fireplace temperature                  | °C   | :x:                | :white_check_mark:  |
 | Exhaust temperature                    | °C   | :white_check_mark: | :x:                 |
 | Feeder temperature                     | °C   | :white_check_mark: | :x:                 |
+| Return temperature                     | °C   | :white_check_mark: | :x:                 |
 | Heating load                           | %    | :white_check_mark: | :x:                 |
 | Fan power                              | %    | :white_check_mark: | :x:                 |
 | Fuel level                             | %    | :white_check_mark: | :x:                 |
