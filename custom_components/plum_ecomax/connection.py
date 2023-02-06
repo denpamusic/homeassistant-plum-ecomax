@@ -46,7 +46,7 @@ from .const import (
     MANUFACTURER,
 )
 
-DEFAULT_TIMEOUT: Final = 10
+DEFAULT_TIMEOUT: Final = 15
 
 _LOGGER = logging.getLogger(__name__)
 
