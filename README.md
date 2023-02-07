@@ -232,7 +232,7 @@ Please note, that for ecoMAX installation ("**i**") controllers mixers are renam
 
 Mixers/Circuits are added as sub-devices for the ecoMAX controller.<br>
 Sub-devices detected only once, when integration is added to HomeAssistant.<br>
-If you connected them after setting up the integration, you can use `Detect sub-devices` button in Diagnostics section and then reload integration to force detection of new sub-devices.
+If you connected them after setting up the integration, you can use `Detect sub-devices` button in Diagnostics section to force detection of new sub-devices.
 
 ### Sensors
 
