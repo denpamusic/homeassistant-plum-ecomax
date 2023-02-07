@@ -21,6 +21,7 @@ It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and sup
 - [Entities](#entities)
   - [Controller](#controller-hub)
   - [Water Heater](#water-heater)
+  - [Thermostats](#thermostats)
   - [Mixers/Circuits](#mixerscircuits-sub-devices)
 - [Services](#services)
 - [License](#license)
@@ -203,7 +204,7 @@ Diagnostics are random entities that provide you with service and debug informat
 | Detect sub-devices | Button        | :white_check_mark: | :white_check_mark:  |
 
 ### Water heater
-The integration provides full control for the connected indirect water heater using Home Assistant's [internal water heater integration](https://www.home-assistant.io/integrations/water_heater/).
+The integration provides full control for the connected indirect water heater using Home Assistant's [internal water heater platform](https://www.home-assistant.io/integrations/water_heater/).
 
 This includes ability to set target temperature, switch into priority, non-priority mode or turn off.
 
@@ -216,6 +217,13 @@ Please use the following reference table to convert between water heater operati
 | Off            | On                |
 | Performance    | Priority mode     |
 | Eco            | Non-priority mode |
+
+### Thermostats
+This integration provides Home Assistant's [climate platform](https://www.home-assistant.io/integrations/climate/) entity for each ecoSTER thermostat connected to the ecoMAX controller.
+
+This allows to check current room temperature, set target room temperature and change between ecoSTER operation modes.
+
+![Climate card](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/climate-card.png)
 
 ### Mixers/Circuits (Sub-devices)
 Following section lists entities that are added to each sub-device.
