@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+from functools import lru_cache
 import logging
 import re
 from typing import Final
@@ -13,7 +14,7 @@ from homeassistant.const import (
     EVENT_HOMEASSISTANT_STOP,
     Platform,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry
 from pyplumio.helpers.filters import delta
@@ -55,6 +56,7 @@ DATE_STR_FORMAT: Final = "%Y-%m-%d %H:%M:%S"
 _LOGGER = logging.getLogger(__name__)
 
 
+@lru_cache(maxsize=10)
 def format_model_name(model_name: str) -> str:
     """Format the device model."""
     if m := re.match(r"^([A-Z]+)\s{0,}([0-9]{3,})(.+)$", model_name, re.IGNORECASE):
@@ -86,19 +88,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             f"Timed out while connecting to {connection.name}"
         ) from e
 
-    await async_setup_services(hass, connection)
-    await async_setup_events(hass, connection)
+    async_setup_services(hass, connection)
+    async_setup_events(hass, connection)
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = connection
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
 
-async def async_setup_events(hass: HomeAssistant, connection: EcomaxConnection) -> None:
+@callback
+def async_setup_events(hass: HomeAssistant, connection: EcomaxConnection) -> bool:
     """Setup ecoMAX events."""
 
     dr = device_registry.async_get(hass)
 
-    async def _displatch_alert_events(alerts: list[Alert]) -> None:
+    @callback
+    async def async_dispatch_alert_events(alerts: list[Alert]) -> None:
         """Handle ecoMAX alert events."""
         if (device := dr.async_get_device({(DOMAIN, connection.uid)})) is None:
             _LOGGER.error("Device not found. uid: %s", connection.uid)
@@ -115,7 +119,8 @@ async def async_setup_events(hass: HomeAssistant, connection: EcomaxConnection) 
 
             hass.bus.async_fire(EVENT_PLUM_ECOMAX_ALERT, event_data)
 
-    connection.device.subscribe(ATTR_ALERTS, delta(_displatch_alert_events))
+    connection.device.subscribe(ATTR_ALERTS, delta(async_dispatch_alert_events))
+    return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

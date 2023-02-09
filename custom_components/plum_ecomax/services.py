@@ -5,7 +5,7 @@ import logging
 from typing import Final
 
 from homeassistant.const import ATTR_NAME, ATTR_STATE, STATE_OFF, STATE_ON
-from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry, entity_registry
 import homeassistant.helpers.config_validation as cv
@@ -57,7 +57,8 @@ SERVICE_SET_SCHEDULE_SCHEMA = vol.Schema(
 _LOGGER = logging.getLogger(__name__)
 
 
-def extract_target_device(
+@callback
+def async_extract_target_device(
     device_id: str, hass: HomeAssistant, connection: EcomaxConnection
 ) -> Device:
     """Get target device by device id."""
@@ -80,7 +81,8 @@ def extract_target_device(
     return connection.device
 
 
-def extract_referenced_devices(
+@callback
+def async_extract_referenced_devices(
     hass: HomeAssistant, connection: EcomaxConnection, selected: SelectedEntities
 ) -> set[Device]:
     """Extract referenced devices from the selected entities."""
@@ -91,23 +93,24 @@ def extract_referenced_devices(
     for entity_id in referenced:
         entity = ent_reg.async_get(entity_id)
         if entity.device_id not in extracted:
-            devices.add(extract_target_device(entity.device_id, hass, connection))
+            devices.add(async_extract_target_device(entity.device_id, hass, connection))
             extracted.add(entity.device_id)
 
     return devices
 
 
-async def _setup_set_parameter_service(
+@callback
+def async_setup_set_parameter_service(
     hass: HomeAssistant, connection: EcomaxConnection
 ) -> None:
     """Setup service to set a parameter."""
 
-    async def set_parameter_service(service_call: ServiceCall) -> None:
+    async def async_set_parameter_service(service_call: ServiceCall) -> None:
         """Service to set a parameter."""
         name = service_call.data[ATTR_NAME]
         value = service_call.data[ATTR_VALUE]
         selected = async_extract_referenced_entity_ids(hass, service_call)
-        devices = extract_referenced_devices(hass, connection, selected)
+        devices = async_extract_referenced_devices(hass, connection, selected)
         for device in devices:
             try:
                 if result := await device.set_value(name, value):
@@ -122,17 +125,18 @@ async def _setup_set_parameter_service(
     hass.services.async_register(
         DOMAIN,
         SERVICE_SET_PARAMETER,
-        set_parameter_service,
+        async_set_parameter_service,
         SERVICE_SET_PARAMETER_SCHEMA,
     )
 
 
-async def _setup_set_schedule_service(
+@callback
+def async_setup_set_schedule_service(
     hass: HomeAssistant, connection: EcomaxConnection
 ) -> None:
     """Setup service to set a schedule."""
 
-    async def set_schedule_service(service_call: ServiceCall) -> None:
+    async def async_set_schedule_service(service_call: ServiceCall) -> None:
         """Service to set a schedule."""
         name = service_call.data[ATTR_NAME]
         weekday = service_call.data[ATTR_WEEKDAY]
@@ -163,15 +167,14 @@ async def _setup_set_schedule_service(
     hass.services.async_register(
         DOMAIN,
         SERVICE_SET_SCHEDULE,
-        set_schedule_service,
+        async_set_schedule_service,
         SERVICE_SET_SCHEDULE_SCHEMA,
     )
 
 
-async def async_setup_services(
-    hass: HomeAssistant, connection: EcomaxConnection
-) -> bool:
+@callback
+def async_setup_services(hass: HomeAssistant, connection: EcomaxConnection) -> bool:
     """Setup ecoMAX services."""
-    await _setup_set_parameter_service(hass, connection)
-    await _setup_set_schedule_service(hass, connection)
+    async_setup_set_parameter_service(hass, connection)
+    async_setup_set_schedule_service(hass, connection)
     return True

@@ -104,7 +104,7 @@ async def test_setup_events(
     with patch("custom_components.plum_ecomax.delta") as mock_delta, patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.device.subscribe"
     ) as mock_subscribe:
-        await async_setup_events(hass, connection)
+        assert async_setup_events(hass, connection)
 
     mock_subscribe.assert_called_once_with(ATTR_ALERTS, mock_delta.return_value)
     args = mock_delta.call_args[0]

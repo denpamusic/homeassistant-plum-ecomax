@@ -92,7 +92,6 @@ async def async_setup_entry(
 ) -> bool:
     """Set up the sensor platform."""
     connection = hass.data[DOMAIN][config_entry.entry_id]
-    entities: list[EcomaxEntity] = [
-        EcomaxButton(connection, description) for description in BUTTON_TYPES
-    ]
-    return async_add_entities(entities, False)
+    return async_add_entities(
+        [EcomaxButton(connection, description) for description in BUTTON_TYPES]
+    )

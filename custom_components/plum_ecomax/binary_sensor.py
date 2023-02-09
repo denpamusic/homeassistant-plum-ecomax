@@ -198,7 +198,7 @@ class MixerBinarySensor(MixerEntity, EcomaxBinarySensor):
         super().__init__(connection, description)
 
 
-async def async_setup_mixer_entities(
+def async_setup_mixer_entities(
     connection: EcomaxConnection, entities: list[EcomaxEntity]
 ) -> None:
     """Setup mixers binary sensor platform."""
@@ -231,7 +231,7 @@ async def async_setup_entry(
 
         # Add mixer/circuit binary sensors.
         if connection.has_mixers and await connection.setup_mixers():
-            await async_setup_mixer_entities(connection, entities)
+            async_setup_mixer_entities(connection, entities)
 
         return entities
 

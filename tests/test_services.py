@@ -30,9 +30,9 @@ from custom_components.plum_ecomax.services import (
     SERVICE_SET_PARAMETER,
     SERVICE_SET_PARAMETER_SCHEMA,
     SERVICE_SET_SCHEDULE,
+    async_extract_referenced_devices,
+    async_extract_target_device,
     async_setup_services,
-    extract_referenced_devices,
-    extract_target_device,
 )
 
 DEVICE_ID: Final = "test-device"
@@ -43,7 +43,7 @@ async def test_setup_services(hass: HomeAssistant) -> None:
     with patch(
         "homeassistant.core.ServiceRegistry.async_register"
     ) as mock_async_register:
-        assert await async_setup_services(hass, AsyncMock(spec=EcomaxConnection))
+        assert async_setup_services(hass, AsyncMock(spec=EcomaxConnection))
 
     assert mock_async_register.call_count == 2
 
@@ -58,7 +58,7 @@ async def test_extract_target_device(hass: HomeAssistant) -> None:
         "homeassistant.helpers.device_registry.DeviceRegistry.async_get",
         return_value=mock_device_entry,
     ):
-        device = extract_target_device(DEVICE_ID, hass, mock_connection)
+        device = async_extract_target_device(DEVICE_ID, hass, mock_connection)
 
     assert device == mock_connection.device
 
@@ -77,7 +77,7 @@ async def test_extract_target_mixer_device(
         "homeassistant.helpers.device_registry.DeviceRegistry.async_get",
         return_value=mock_device_entry,
     ):
-        device = extract_target_device("test-mixer-0", hass, mock_connection)
+        device = async_extract_target_device("test-mixer-0", hass, mock_connection)
 
     assert device == mock_connection.device.data[ATTR_MIXERS][0]
 
@@ -95,7 +95,7 @@ async def test_extract_target_missing_mixer_device(
         "homeassistant.helpers.device_registry.DeviceRegistry.async_get",
         return_value=mock_device_entry,
     ):
-        device = extract_target_device("test-mixer-1", hass, mock_connection)
+        device = async_extract_target_device("test-mixer-1", hass, mock_connection)
 
     assert device == mock_connection.device
 
@@ -107,7 +107,7 @@ async def test_extract_missing_target_device(hass: HomeAssistant) -> None:
         "homeassistant.helpers.device_registry.DeviceRegistry.async_get",
         return_value=False,
     ), pytest.raises(HomeAssistantError):
-        extract_target_device(DEVICE_ID, hass, mock_connection)
+        async_extract_target_device(DEVICE_ID, hass, mock_connection)
 
 
 async def test_extract_referenced_devices(hass: HomeAssistant) -> None:
@@ -125,10 +125,10 @@ async def test_extract_referenced_devices(hass: HomeAssistant) -> None:
         "homeassistant.helpers.entity_registry.EntityRegistry.async_get",
         return_value=mock_entity,
     ), patch(
-        "custom_components.plum_ecomax.services.extract_target_device",
+        "custom_components.plum_ecomax.services.async_extract_target_device",
         return_value=mock_connection.device,
     ):
-        devices = extract_referenced_devices(
+        devices = async_extract_referenced_devices(
             hass, mock_connection, mock_selected_entities
         )
 
@@ -143,7 +143,7 @@ async def test_set_parameter_service(hass: HomeAssistant) -> None:
     with patch(
         "homeassistant.core.ServiceRegistry.async_register"
     ) as mock_async_register:
-        await async_setup_services(hass, mock_connection)
+        async_setup_services(hass, mock_connection)
 
     set_parameter_service_call = mock_async_register.call_args_list[0]
     _, service, func, schema = set_parameter_service_call[0]
@@ -159,7 +159,7 @@ async def test_set_parameter_service(hass: HomeAssistant) -> None:
     with patch(
         "homeassistant.helpers.service.async_extract_referenced_entity_ids",
     ), patch(
-        "custom_components.plum_ecomax.services.extract_referenced_devices",
+        "custom_components.plum_ecomax.services.async_extract_referenced_devices",
         return_value={mock_connection.device},
     ):
         await func(mock_service_call)
@@ -171,7 +171,7 @@ async def test_set_parameter_service(hass: HomeAssistant) -> None:
     with patch(
         "homeassistant.helpers.service.async_extract_referenced_entity_ids",
     ), patch(
-        "custom_components.plum_ecomax.services.extract_referenced_devices",
+        "custom_components.plum_ecomax.services.async_extract_referenced_devices",
         return_value={mock_connection.device},
     ), pytest.raises(
         HomeAssistantError
@@ -180,7 +180,7 @@ async def test_set_parameter_service(hass: HomeAssistant) -> None:
 
     # Check for error when devices not found.
     with patch(
-        "custom_components.plum_ecomax.services.extract_referenced_devices",
+        "custom_components.plum_ecomax.services.async_extract_referenced_devices",
         return_value=set(),
     ), pytest.raises(HomeAssistantError):
         await func(mock_service_call)
@@ -198,7 +198,7 @@ async def test_set_schedule_service(hass: HomeAssistant) -> None:
     with patch(
         "homeassistant.core.ServiceRegistry.async_register"
     ) as mock_async_register:
-        await async_setup_services(hass, mock_connection)
+        async_setup_services(hass, mock_connection)
 
     set_schedule_service_call = mock_async_register.call_args_list[1]
     _, service, func, _ = set_schedule_service_call[0]

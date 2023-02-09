@@ -173,7 +173,7 @@ class MixerSwitch(MixerEntity, EcomaxSwitch):
         super().__init__(connection, description)
 
 
-async def async_setup_mixer_entities(
+def async_setup_mixer_entities(
     connection: EcomaxConnection, entities: list[EcomaxEntity]
 ) -> None:
     """Setup mixer number entites."""
@@ -206,7 +206,7 @@ async def async_setup_entry(
 
         # Add mixer/circuit switches.
         if connection.has_mixers and await connection.setup_mixers():
-            await async_setup_mixer_entities(connection, entities)
+            async_setup_mixer_entities(connection, entities)
 
         return entities
 

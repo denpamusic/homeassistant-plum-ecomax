@@ -506,7 +506,7 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
         return self.entity_description.value_fn(self._attr_native_value)
 
 
-def setup_mixer_entities(
+def async_setup_mixer_entities(
     connection: EcomaxConnection, entities: list[EcomaxEntity]
 ) -> None:
     """Setup mixer sensors."""
@@ -518,7 +518,7 @@ def setup_mixer_entities(
         )
 
 
-def setup_module_entities(
+def async_setup_module_entities(
     connection: EcomaxConnection, entities: list[EcomaxEntity]
 ) -> None:
     """Setup module-dependent sensors."""
@@ -551,11 +551,11 @@ async def async_setup_entry(
         )
 
         # Add module-dependent sensors.
-        setup_module_entities(connection, entities)
+        async_setup_module_entities(connection, entities)
 
         # Add mixer/circuit sensors.
         if connection.has_mixers and await connection.setup_mixers():
-            setup_mixer_entities(connection, entities)
+            async_setup_mixer_entities(connection, entities)
 
         # Add meter sensors.
         if product_type == ProductType.ECOMAX_P:
