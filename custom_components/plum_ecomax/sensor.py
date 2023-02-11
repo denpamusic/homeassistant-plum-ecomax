@@ -339,6 +339,7 @@ MODULE_LAMBDA_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         name="Oxygen level",
         icon="mdi:weather-windy-variant",
         native_unit_of_measurement=PERCENTAGE,
+        native_precision=1,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
