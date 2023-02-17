@@ -60,6 +60,8 @@ async def test_base_entity(
     assert entity.available
     mock_connection.connected.is_set.return_value = False
     assert not entity.available
+    entity.entity_description.always_available = True
+    assert entity.available
     mock_connection.reset_mock()
 
     # Test device info property.

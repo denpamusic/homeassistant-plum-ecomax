@@ -51,6 +51,9 @@ class EcomaxEntity(ABC):
     @property
     def available(self) -> bool:
         """Indicates whether the entity is available."""
+        if getattr(self.entity_description, "always_available", False):
+            return True
+
         return self.connection.connected.is_set() and self._attr_available
 
     @property

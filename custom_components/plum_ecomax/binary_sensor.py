@@ -40,6 +40,7 @@ class EcomaxBinarySensorEntityDescription(
     """Describes ecoMAX binary sensor entity."""
 
     filter_fn: Callable[[Any], Any] = on_change
+    always_available: bool = False
 
 
 COMMON_BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
@@ -77,6 +78,7 @@ COMMON_BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         device_class=BinarySensorDeviceClass.CONNECTIVITY,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda x: x,
+        always_available=True,
     ),
 )
 
