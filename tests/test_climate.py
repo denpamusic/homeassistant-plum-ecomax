@@ -130,6 +130,7 @@ async def test_thermostat(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(thermostat_entity_id)
     assert entry
+    assert entry.translation_key == "ecomax_climate"
 
     # Get initial value.
     state = hass.states.get(thermostat_entity_id)
@@ -220,8 +221,6 @@ async def test_thermostat(
 
     # Test without thermostat.
     await hass.config_entries.async_remove(config_entry.entry_id)
-    await hass.async_block_till_done()
-    config_entry.add_to_hass(hass)
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.has_thermostats",
         False,

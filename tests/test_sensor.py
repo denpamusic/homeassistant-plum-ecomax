@@ -172,6 +172,14 @@ async def test_heating_temperature_sensor(
     state = hass.states.get(heating_temperature_entity_id)
     assert state.state == "65.0"
 
+    # Check that entity is disabled if unavailable on setup.
+    del connection.device.data[ATTR_HEATING_TEMP]
+    await hass.config_entries.async_remove(config_entry.entry_id)
+    await setup_integration(hass, config_entry)
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(heating_temperature_entity_id)
+    assert entry.disabled_by == er.RegistryEntryDisabler.INTEGRATION
+
 
 @pytest.mark.usefixtures("ecomax_p", "water_heater")
 async def test_water_heater_temperature_sensor(
@@ -207,8 +215,6 @@ async def test_water_heater_temperature_sensor(
     # Test without water heater.
     del connection.device.data["water_heater_temp"]
     await hass.config_entries.async_remove(config_entry.entry_id)
-    await hass.async_block_till_done()
-    config_entry.add_to_hass(hass)
     await setup_integration(hass, config_entry)
     state = hass.states.get(water_heater_temperature_entity_id)
     assert state is None
@@ -464,8 +470,6 @@ async def test_oxygen_level_sensor(
     # Test without ecoLAMBDA.
     await connection.device.dispatch(ATTR_MODULES, ConnectedModules(ecolambda=None))
     await hass.config_entries.async_remove(config_entry.entry_id)
-    await hass.async_block_till_done()
-    config_entry.add_to_hass(hass)
     await setup_integration(hass, config_entry)
     assert hass.states.get(oxygen_level_entity_id) is None
 
