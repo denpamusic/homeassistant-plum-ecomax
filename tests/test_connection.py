@@ -38,6 +38,7 @@ from custom_components.plum_ecomax.const import (
     CONF_DEVICE,
     CONF_HOST,
     CONF_MODEL,
+    CONF_PRODUCT_ID,
     CONF_PRODUCT_TYPE,
     CONF_SOFTWARE,
     CONF_SUB_DEVICES,
@@ -166,6 +167,7 @@ async def test_async_setup(
     assert connection.device == mock_ecomax
     assert connection.connection == mock_connection
     assert connection.product_type == device_data.get(CONF_PRODUCT_TYPE)
+    assert connection.product_id == device_data.get(CONF_PRODUCT_ID)
     assert connection.device_info == DeviceInfo(
         name=connection.name,
         identifiers={(DOMAIN, connection.uid)},
