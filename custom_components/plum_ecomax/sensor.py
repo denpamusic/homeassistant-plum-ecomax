@@ -36,6 +36,7 @@ import homeassistant.util.dt as dt_util
 from pyplumio.const import ProductType
 from pyplumio.filters import aggregate, on_change, throttle
 from pyplumio.structures.modules import ConnectedModules
+from pyplumio.structures.regulator_data import RegulatorData
 import voluptuous as vol
 
 from .connection import EcomaxConnection
@@ -519,6 +520,42 @@ def has_meters(entities: Iterable[EcomaxEntity]) -> bool:
     return any(entity for entity in entities if isinstance(entity, EcomaxMeter))
 
 
+@dataclass
+class RegdataSensorEntityAdditionalKeys:
+    """Additional keys for RegData sensor entity description."""
+
+    key: int
+    product_ids: set[int]
+
+
+@dataclass
+class RegdataSensorEntityDescription(
+    EcomaxSensorEntityDescription, RegdataSensorEntityAdditionalKeys
+):
+    """Describes RegData sensor entity."""
+
+
+REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = ()
+
+
+class RegdataSensor(EcomaxSensor):
+    """Represents RegData sensor platform."""
+
+    @property
+    def device(self) -> RegulatorData:
+        """Return device object."""
+        return self.connection.device.regdata
+
+
+def get_by_product_id(
+    product_id: int, descriptions: Iterable[RegdataSensorEntityDescription]
+) -> Generator[RegdataSensorEntityDescription, None, None]:
+    """Get descriptions by product id."""
+    for description in descriptions:
+        if product_id in description.product_ids:
+            yield description
+
+
 def get_by_product_type(
     product_type: ProductType, descriptions: Iterable[EcomaxSensorEntityDescription]
 ) -> Generator[EcomaxSensorEntityDescription, None, None]:
@@ -564,6 +601,22 @@ def async_setup_ecomax_meters(
     )
 
 
+def async_setup_regdata_sensors(
+    connection: EcomaxConnection, entities: list[EcomaxEntity]
+) -> None:
+    """Setup RegData sensors."""
+    entities.extend(
+        RegdataSensor(connection, description)
+        for description in get_by_modules(
+            connection.device.modules,
+            get_by_product_type(
+                connection.product_type,
+                get_by_product_id(connection.product_id, REGDATA_SENSOR_TYPES),
+            ),
+        )
+    )
+
+
 def async_setup_mixer_sensors(
     connection: EcomaxConnection, entities: list[EcomaxEntity]
 ) -> None:
@@ -592,6 +645,10 @@ async def async_setup_entry(
     # Add ecoMAX sensors and meters.
     async_setup_ecomax_sensors(connection, entities)
     async_setup_ecomax_meters(connection, entities)
+
+    # Add device-specific sensors.
+    if connection.has_regdata and await connection.async_setup_regdata():
+        async_setup_regdata_sensors(connection, entities)
 
     # Add mixer/circuit sensors.
     if connection.has_mixers and await connection.async_setup_mixers():

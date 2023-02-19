@@ -13,6 +13,7 @@ from custom_components.plum_ecomax.const import (
     ATTR_MIXERS,
     ATTR_PASSWORD,
     ATTR_PRODUCT,
+    ATTR_REGDATA,
     CONF_CAPABILITIES,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
@@ -33,7 +34,7 @@ from custom_components.plum_ecomax.diagnostics import (
 )
 
 
-@pytest.mark.usefixtures("mixers", "connection")
+@pytest.mark.usefixtures("ecomax_p_51", "mixers", "connection")
 async def test_diagnostics(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
@@ -66,5 +67,6 @@ async def test_diagnostics(
     ecomax_data = dict(ecomax_p.data)
     ecomax_data[ATTR_PASSWORD] = REDACTED
     ecomax_data[ATTR_MIXERS] = {x: y.data for x, y in ecomax_data[ATTR_MIXERS].items()}
+    ecomax_data[ATTR_REGDATA] = ecomax_data[ATTR_REGDATA].data
     assert result["data"][ATTR_PRODUCT].uid == REDACTED
     assert result["data"] == ecomax_data

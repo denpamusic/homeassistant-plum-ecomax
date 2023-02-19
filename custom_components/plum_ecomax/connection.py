@@ -27,6 +27,7 @@ from .const import (
     ATTR_MIXERS,
     ATTR_MODULES,
     ATTR_PRODUCT,
+    ATTR_REGDATA,
     ATTR_SENSORS,
     ATTR_THERMOSTAT_PARAMETERS,
     ATTR_THERMOSTATS,
@@ -197,6 +198,15 @@ class EcomaxConnection:
             _LOGGER.error("Timed out while trying to setup mixers.")
             return False
 
+    async def async_setup_regdata(self) -> bool:
+        """Setup regdata."""
+        try:
+            await self.device.wait_for(ATTR_REGDATA, timeout=DEFAULT_TIMEOUT)
+            return True
+        except asyncio.TimeoutError:
+            _LOGGER.error("Timed out while trying to setup regulator data.")
+            return False
+
     async def async_update_sub_devices(self) -> None:
         """Update sub-devices."""
         data = {**self.entry.data}
@@ -219,6 +229,11 @@ class EcomaxConnection:
     def has_mixers(self) -> bool:
         """Does device has attached mixers."""
         return ATTR_MIXERS in self.entry.data.get(CONF_SUB_DEVICES, [])
+
+    @property
+    def has_regdata(self) -> bool:
+        """Does device has regulator data."""
+        return ATTR_REGDATA in self.entry.data.get(CONF_CAPABILITIES, [])
 
     @property
     def device(self) -> Addressable:

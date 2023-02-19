@@ -23,6 +23,7 @@ from pyplumio.structures.mixer_parameters import (
 from pyplumio.structures.modules import ConnectedModules
 from pyplumio.structures.network_info import NetworkInfo
 from pyplumio.structures.product_info import ProductInfo
+from pyplumio.structures.regulator_data import RegulatorData
 from pyplumio.structures.thermostat_parameters import (
     ThermostatParameter,
     ThermostatParameterDescription,
@@ -34,6 +35,7 @@ from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
     ATTR_ECOMAX_CONTROL,
     ATTR_MIXERS,
+    ATTR_REGDATA,
     CONF_CAPABILITIES,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
@@ -216,8 +218,8 @@ def ecomax_control(ecomax_common: EcoMAX):
     yield ecomax_common
 
 
-@pytest.fixture
-def ecomax_p(ecomax_common: EcoMAX):
+@pytest.fixture(name="ecomax_p")
+def fixture_ecomax_p(ecomax_common: EcoMAX):
     """Inject ecomax p data."""
     ecomax_common.data.update(
         {
@@ -336,8 +338,8 @@ def ecomax_p(ecomax_common: EcoMAX):
         yield ecomax_common
 
 
-@pytest.fixture
-def ecomax_i(ecomax_common: EcoMAX):
+@pytest.fixture(name="ecomax_i")
+def fixture_ecomax_i(ecomax_common: EcoMAX):
     """Inject ecomax i data."""
     ecomax_common.data.update(
         {

@@ -12,6 +12,7 @@ from .const import (
     ATTR_MIXERS,
     ATTR_PASSWORD,
     ATTR_PRODUCT,
+    ATTR_REGDATA,
     ATTR_THERMOSTATS,
     CONF_HOST,
     CONF_UID,
@@ -28,6 +29,14 @@ def _sub_devices_as_dict(device_data: dict[str, Any]) -> dict[str, Any]:
             device_data[sub_device] = {
                 x: y.data for x, y in device_data[sub_device].items()
             }
+
+    return device_data
+
+
+def _regdata_as_dict(device_data: dict[str, Any]) -> dict[str, Any]:
+    """Represent regulator data as dictionary."""
+    if ATTR_REGDATA in device_data:
+        device_data[ATTR_REGDATA] = device_data[ATTR_REGDATA].data
 
     return device_data
 
@@ -65,5 +74,7 @@ async def async_get_config_entry_diagnostics(
         "pyplumio": {
             "version": pyplumio_version,
         },
-        "data": _redact_device_data(_sub_devices_as_dict(dict(device.data))),
+        "data": _redact_device_data(
+            _regdata_as_dict(_sub_devices_as_dict(dict(device.data)))
+        ),
     }

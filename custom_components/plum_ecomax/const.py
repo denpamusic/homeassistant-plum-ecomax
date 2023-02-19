@@ -28,6 +28,7 @@ ATTR_WATER_HEATER: Final = "water_heater"
 ATTR_WATER_HEATER_TEMP: Final = "water_heater_temp"
 ATTR_WEEKDAY: Final = "weekday"
 ATTR_FIRMWARE: Final = "firmware"
+ATTR_REGDATA: Final = "regdata"
 
 # Devices.
 ECOMAX: Final = "ecomax"

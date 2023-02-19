@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import final
 
 from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 from pyplumio.const import ProductType
-from pyplumio.devices import Device
+from pyplumio.devices import Mixer
+from pyplumio.helpers.event_manager import EventManager
 
 from .connection import EcomaxConnection
 from .const import ATTR_MIXERS, DOMAIN, MANUFACTURER
@@ -38,7 +40,7 @@ class EcomaxEntity(ABC):
         self.device.unsubscribe(self.entity_description.key, self.async_update)
 
     @property
-    def device(self) -> Device:
+    def device(self) -> EventManager:
         """Return device object."""
         return self.connection.device
 
@@ -130,7 +132,8 @@ class MixerEntity(EcomaxEntity):
             via_device=(DOMAIN, self.connection.uid),
         )
 
+    @final
     @property
-    def device(self) -> Device:
+    def device(self) -> Mixer:
         """Return mixer object."""
         return self.connection.device.data[ATTR_MIXERS][self.index]

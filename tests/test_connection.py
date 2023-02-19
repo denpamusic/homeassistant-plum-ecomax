@@ -31,6 +31,7 @@ from custom_components.plum_ecomax.const import (
     ATTR_MIXER_PARAMETERS,
     ATTR_MIXERS,
     ATTR_PRODUCT,
+    ATTR_REGDATA,
     ATTR_THERMOSTAT_PARAMETERS,
     ATTR_WATER_HEATER,
     CONF_CONNECTION_TYPE,
@@ -103,6 +104,7 @@ async def test_async_check_connection(
         mock_product,
         mock_modules,
         [ATTR_MIXERS],
+        [ATTR_REGDATA],
     )
 
 
@@ -224,6 +226,22 @@ async def test_async_setup_mixers(
         retries=5,
         timeout=DEFAULT_TIMEOUT,
     )
+
+
+async def test_async_setup_regdata(
+    hass: HomeAssistant, config_entry: ConfigEntry, caplog
+) -> None:
+    """Test setup regulator data."""
+    connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=TcpConnection))
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.device"
+    ) as mock_device:
+        mock_device.wait_for = AsyncMock(side_effect=(True, asyncio.TimeoutError))
+        assert await connection.async_setup_regdata()
+        assert not await connection.async_setup_regdata()
+
+    assert "Timed out while trying to setup regulator data" in caplog.text
+    mock_device.wait_for.assert_any_await(ATTR_REGDATA, timeout=DEFAULT_TIMEOUT)
 
 
 async def test_async_update_sub_device(
