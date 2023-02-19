@@ -539,7 +539,7 @@ REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
     RegdataSensorEntityDescription(
         key=227,
         name="Ash pan full",
-        icon="mdi:tray",
+        icon="mdi:tray-alert",
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_precision=0,
