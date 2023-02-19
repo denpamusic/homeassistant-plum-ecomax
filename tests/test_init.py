@@ -28,6 +28,7 @@ from custom_components.plum_ecomax.const import (
     ATTR_TO,
     CONF_CAPABILITIES,
     CONF_MODEL,
+    CONF_PRODUCT_ID,
     CONF_SUB_DEVICES,
     DOMAIN,
     EVENT_PLUM_ECOMAX_ALERT,
@@ -145,7 +146,7 @@ async def test_setup_events(
 
 
 @pytest.mark.usefixtures("ecomax_p")
-async def test_migrate_entry_v1_2_to_v6(
+async def test_migrate_entry_v1_2_to_v7(
     hass: HomeAssistant, config_entry: ConfigEntry, caplog
 ) -> None:
     """Test migrating entry from version 1 or 2 to version 6."""
@@ -158,15 +159,15 @@ async def test_migrate_entry_v1_2_to_v6(
     assert data[CONF_MODEL] == "ecoMAX 850P2-C"
     assert CONF_CAPABILITIES not in data
     assert CONF_SUB_DEVICES in data
-    assert config_entry.version == 6
-    assert "Migration to version 6 successful" in caplog.text
+    assert config_entry.version == 7
+    assert "Migration to version 7 successful" in caplog.text
 
 
 @pytest.mark.usefixtures("ecomax_p")
-async def test_migrate_entry_v3_to_v6(
+async def test_migrate_entry_v3_to_v7(
     hass: HomeAssistant, config_entry: ConfigEntry, caplog
 ) -> None:
-    """Test migrating entry from version 3 to version 6."""
+    """Test migrating entry from version 3 to version 7."""
     config_entry.version = 3
     data = dict(config_entry.data)
     data[CONF_MODEL] = "ecoMAX850P2-C"
@@ -174,15 +175,15 @@ async def test_migrate_entry_v3_to_v6(
     assert await async_migrate_entry(hass, config_entry)
     data = dict(config_entry.data)
     assert data[CONF_MODEL] == "ecoMAX 850P2-C"
-    assert config_entry.version == 6
-    assert "Migration to version 6 successful" in caplog.text
+    assert config_entry.version == 7
+    assert "Migration to version 7 successful" in caplog.text
 
 
 @pytest.mark.usefixtures("ecomax_p")
 async def test_migrate_entry_v4_5_to_v6(
     hass: HomeAssistant, config_entry: ConfigEntry, caplog
 ) -> None:
-    """Test migrating entry from version 4 or 5 to version 6."""
+    """Test migrating entry from version 4 or 5 to version 7."""
     config_entry.version = 4
     data = dict(config_entry.data)
     del data[CONF_SUB_DEVICES]
@@ -191,8 +192,22 @@ async def test_migrate_entry_v4_5_to_v6(
     data = dict(config_entry.data)
     assert CONF_CAPABILITIES not in data
     assert CONF_SUB_DEVICES in data
-    assert config_entry.version == 6
-    assert "Migration to version 6 successful" in caplog.text
+    assert config_entry.version == 7
+    assert "Migration to version 7 successful" in caplog.text
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_migrate_entry_v6_to_v7(
+    hass: HomeAssistant, config_entry: ConfigEntry, caplog
+) -> None:
+    """Test migrating entry from version 6 to version 7."""
+    config_entry.version = 6
+    assert await async_migrate_entry(hass, config_entry)
+    data = dict(config_entry.data)
+    assert CONF_PRODUCT_ID in data
+    assert data[CONF_PRODUCT_ID] == 4
+    assert config_entry.version == 7
+    assert "Migration to version 7 successful" in caplog.text
 
 
 async def test_migrate_entry_with_timeout(

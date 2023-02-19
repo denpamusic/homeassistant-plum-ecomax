@@ -24,6 +24,7 @@ from .const import (
     CONF_HOST,
     CONF_MODEL,
     CONF_PORT,
+    CONF_PRODUCT_ID,
     CONF_PRODUCT_TYPE,
     CONF_SOFTWARE,
     CONF_SUB_DEVICES,
@@ -76,6 +77,7 @@ async def validate_input(
         CONF_UID: product.uid,
         CONF_MODEL: format_model_name(product.model),
         CONF_PRODUCT_TYPE: product_type,
+        CONF_PRODUCT_ID: product.id,
         CONF_SOFTWARE: modules.module_a,
         CONF_SUB_DEVICES: sub_devices,
     }
@@ -84,7 +86,7 @@ async def validate_input(
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Plum ecoMAX integration."""
 
-    VERSION = 6
+    VERSION = 7
 
     async def async_step_user(
         self, user_input: MutableMapping[str, Any] | None = None
@@ -113,6 +115,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_UID,
                 CONF_MODEL,
                 CONF_PRODUCT_TYPE,
+                CONF_PRODUCT_ID,
                 CONF_SOFTWARE,
                 CONF_SUB_DEVICES,
             ):

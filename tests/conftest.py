@@ -39,6 +39,7 @@ from custom_components.plum_ecomax.const import (
     CONF_HOST,
     CONF_MODEL,
     CONF_PORT,
+    CONF_PRODUCT_ID,
     CONF_PRODUCT_TYPE,
     CONF_SOFTWARE,
     CONF_SUB_DEVICES,
@@ -77,6 +78,7 @@ def fixture_device_data():
         CONF_UID: "TEST",
         CONF_MODEL: "ecoMAX 850P2-C",
         CONF_PRODUCT_TYPE: ProductType.ECOMAX_P,
+        CONF_PRODUCT_ID: 4,
         CONF_SOFTWARE: "6.10.32.K1",
         CONF_SUB_DEVICES: [ATTR_MIXERS],
     }

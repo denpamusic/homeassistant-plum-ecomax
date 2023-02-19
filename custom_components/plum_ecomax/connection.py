@@ -15,7 +15,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.entity import DeviceInfo
 import pyplumio
 from pyplumio.connection import Connection
-from pyplumio.const import FrameType
+from pyplumio.const import FrameType, ProductType
 from pyplumio.devices import Addressable
 from pyplumio.structures.modules import ConnectedModules
 from pyplumio.structures.product_info import ProductInfo
@@ -37,6 +37,7 @@ from .const import (
     CONF_HOST,
     CONF_MODEL,
     CONF_PORT,
+    CONF_PRODUCT_ID,
     CONF_PRODUCT_TYPE,
     CONF_SOFTWARE,
     CONF_SUB_DEVICES,
@@ -215,9 +216,14 @@ class EcomaxConnection:
         return self.entry.data[CONF_MODEL]
 
     @property
-    def product_type(self) -> int:
+    def product_type(self) -> ProductType:
         """Return the product type."""
         return self.entry.data[CONF_PRODUCT_TYPE]
+
+    @property
+    def product_id(self) -> int:
+        """Return the product id."""
+        return self.entry.data[CONF_PRODUCT_ID]
 
     @property
     def uid(self) -> str:

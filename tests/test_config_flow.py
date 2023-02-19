@@ -16,6 +16,7 @@ from custom_components.plum_ecomax.const import (
     CONF_DEVICE,
     CONF_HOST,
     CONF_MODEL,
+    CONF_PRODUCT_ID,
     CONF_PRODUCT_TYPE,
     CONF_SOFTWARE,
     CONF_SUB_DEVICES,
@@ -50,6 +51,7 @@ async def test_form_tcp(
 
     product = Mock(spec=ProductInfo)
     product.configure_mock(
+        id=device_data.get(CONF_PRODUCT_ID),
         type=device_data.get(CONF_PRODUCT_TYPE),
         model=device_data.get(CONF_MODEL),
         uid=device_data.get(CONF_UID),
@@ -91,6 +93,7 @@ async def test_form_serial(
 
     product = Mock(spec=ProductInfo)
     product.configure_mock(
+        id=device_data.get(CONF_PRODUCT_ID),
         type=device_data.get(CONF_PRODUCT_TYPE),
         model=device_data.get(CONF_MODEL),
         uid=device_data.get(CONF_UID),
