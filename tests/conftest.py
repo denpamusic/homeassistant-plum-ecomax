@@ -375,6 +375,32 @@ def fixture_ecomax_i(ecomax_common: EcoMAX):
         yield ecomax_common
 
 
+@pytest.fixture()
+def ecomax_p_51(ecomax_p: EcoMAX):
+    """Inject data for ecoMAX 860P3-O (product_id: 51)"""
+    regulator_data = RegulatorData()
+    regulator_data.data = {227: 0}
+
+    ecomax_p.data.update(
+        {
+            "product": ProductInfo(
+                type=ProductType.ECOMAX_P,
+                id=51,
+                uid="TEST",
+                logo=13056,
+                image=2816,
+                model="ecoMAX860P3-O",
+            ),
+            "regdata": regulator_data,
+        }
+    )
+
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.product_id", 51
+    ):
+        yield ecomax_p
+
+
 @pytest.fixture
 def water_heater(ecomax_common: EcoMAX):
     """Inject water heater data."""

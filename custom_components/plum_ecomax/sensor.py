@@ -535,7 +535,19 @@ class RegdataSensorEntityDescription(
     """Describes RegData sensor entity."""
 
 
-REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = ()
+REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
+    RegdataSensorEntityDescription(
+        key=227,
+        name="Ash pan full",
+        icon="mdi:tray",
+        native_unit_of_measurement=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_precision=0,
+        value_fn=lambda x: x,
+        product_types={ProductType.ECOMAX_P},
+        product_ids={51},
+    ),
+)
 
 
 class RegdataSensor(EcomaxSensor):

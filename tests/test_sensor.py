@@ -1047,3 +1047,35 @@ async def test_total_fuel_burned_sensor(
     # Test that meter can be reset.
     state = await reset_meter(hass, fuel_burned_entity_id)
     assert state.state == "0.00"
+
+
+@pytest.mark.usefixtures("ecomax_p_51")
+async def test_ash_pan_full_sensor(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    frozen_time,
+) -> None:
+    """Test fireplace temperature sensor."""
+    await setup_integration(hass, config_entry)
+    ash_pan_full_entity_id = "sensor.test_ash_pan_full"
+    ash_pan_full_key = 227
+
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(ash_pan_full_entity_id)
+    assert entry
+
+    # Get initial value.
+    state = hass.states.get(ash_pan_full_entity_id)
+    assert state.state == "0"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Ash pan full"
+    assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
+    assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
+
+    # Dispatch new value.
+    frozen_time.move_to("12:00:10")
+    await connection.device.regdata.dispatch(ash_pan_full_key, 55)
+    state = hass.states.get(ash_pan_full_entity_id)
+    assert state.state == "55"
