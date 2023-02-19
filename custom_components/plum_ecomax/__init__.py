@@ -166,11 +166,6 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
 
         if config_entry.version in (4, 5):
             data = {**config_entry.data}
-            try:
-                del data[CONF_CAPABILITIES]
-            except KeyError:
-                pass
-
             connection = EcomaxConnection(
                 hass,
                 config_entry,
