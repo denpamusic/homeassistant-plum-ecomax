@@ -15,12 +15,7 @@ from pyplumio.helpers.schedule import Schedule, ScheduleDay
 import pytest
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import (
-    ATTR_MIXERS,
-    ATTR_SCHEDULES,
-    ATTR_VALUE,
-    WEEKDAYS,
-)
+from custom_components.plum_ecomax.const import ATTR_MIXERS, ATTR_VALUE, WEEKDAYS
 from custom_components.plum_ecomax.services import (
     ATTR_END,
     ATTR_NAME,
@@ -164,10 +159,10 @@ async def test_set_parameter_service(hass: HomeAssistant) -> None:
     ):
         await func(mock_service_call)
 
-    mock_connection.device.set_value.assert_called_once_with("test_name", 39)
+    mock_connection.device.set.assert_called_once_with("test_name", 39)
 
     # Check that error is raised if parameter not found.
-    mock_connection.device.set_value.side_effect = ParameterNotFoundError
+    mock_connection.device.set.side_effect = ParameterNotFoundError
     with patch(
         "homeassistant.helpers.service.async_extract_referenced_entity_ids",
     ), patch(
@@ -193,7 +188,7 @@ async def test_set_schedule_service(hass: HomeAssistant) -> None:
     mock_schedule.monday.set_state.side_effect = (True, ValueError)
     mock_connection = AsyncMock(spec=EcomaxConnection)
     mock_connection.device = AsyncMock(spec=EcoMAX)
-    mock_connection.device.data = {ATTR_SCHEDULES: {"test_name": mock_schedule}}
+    mock_connection.device.get_nowait = Mock(return_value={"test_name": mock_schedule})
     mock_service_call = AsyncMock(spec=ServiceCall)
     with patch(
         "homeassistant.core.ServiceRegistry.async_register"
@@ -219,6 +214,6 @@ async def test_set_schedule_service(hass: HomeAssistant) -> None:
         await func(mock_service_call)
 
     # Check that hass error is raised when ecomax data is empty.
-    mock_connection.device.data = {}
+    mock_connection.device.get_nowait.return_value = {}
     with pytest.raises(HomeAssistantError):
         await func(mock_service_call)

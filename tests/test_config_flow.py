@@ -7,7 +7,8 @@ from homeassistant.const import CONF_BASE
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import RESULT_TYPE_CREATE_ENTRY, RESULT_TYPE_FORM
 from pyplumio.exceptions import ConnectionFailedError
-from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
+from pyplumio.structures.modules import ConnectedModules
+from pyplumio.structures.product_info import ProductInfo
 import pytest
 
 from custom_components.plum_ecomax.const import (

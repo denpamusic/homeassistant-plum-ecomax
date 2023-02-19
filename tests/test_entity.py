@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, Mock, call, patch
 
 from homeassistant.helpers.entity import EntityDescription
 from pyplumio.devices.ecomax import EcoMAX
-from pyplumio.helpers.filters import Filter
+from pyplumio.filters import Filter
 
 from custom_components.plum_ecomax.entity import EcomaxEntity
 
@@ -13,7 +13,11 @@ from custom_components.plum_ecomax.entity import EcomaxEntity
 class _TestEntity(EcomaxEntity):
     """Test entity class."""
 
-    async def async_update(self, value) -> None:
+    def __init__(self, *args, **kwargs):
+        self._attr_available = True
+        super().__init__(*args, **kwargs)
+
+    async def async_update(self, value=None) -> None:
         """Retrieve latest state."""
 
 
@@ -41,7 +45,6 @@ async def test_base_entity(
     mock_subscribe.assert_has_calls(
         [call("heating_temp", entity.entity_description.filter_fn.return_value)]
     )
-    mock_filter.assert_awaited_once()
 
     # Test removing entity from the hass.
     with patch(

@@ -13,7 +13,8 @@ from homeassistant.helpers.entity import DeviceInfo
 from pyplumio import Connection, SerialConnection, TcpConnection
 from pyplumio.const import FrameType
 from pyplumio.devices.ecomax import EcoMAX
-from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
+from pyplumio.structures.modules import ConnectedModules
+from pyplumio.structures.product_info import ProductInfo
 import pytest
 
 from custom_components.plum_ecomax.climate import ATTR_THERMOSTATS
@@ -83,13 +84,13 @@ async def test_async_check_connection(
     mock_product = Mock(spec=ProductInfo)
     mock_modules = Mock(spec=ConnectedModules)
     mock_ecomax = Mock(spec=EcoMAX)
-    mock_ecomax.get_value = AsyncMock(side_effect=(mock_product, mock_modules, True))
+    mock_ecomax.get = AsyncMock(side_effect=(mock_product, mock_modules, True))
     mock_ecomax.data = ecomax_p.data
     mock_connection = AsyncMock(spec=TcpConnection)
     mock_connection.configure_mock(host=config_data.get(CONF_HOST))
-    mock_connection.get_device = AsyncMock(return_value=mock_ecomax)
+    mock_connection.get = AsyncMock(return_value=mock_ecomax)
     result = await async_check_connection(mock_connection)
-    mock_ecomax.get_value.assert_has_calls(
+    mock_ecomax.get.assert_has_calls(
         [
             call(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT),
             call(ATTR_MODULES, timeout=DEFAULT_TIMEOUT),
@@ -133,9 +134,7 @@ async def test_async_setup(
     )
     mock_connection = Mock(spec=TcpConnection)
     mock_connection.configure_mock(host=config_data.get(CONF_HOST))
-    mock_connection.get_device = AsyncMock(
-        side_effect=(mock_ecomax, asyncio.TimeoutError)
-    )
+    mock_connection.get = AsyncMock(side_effect=(mock_ecomax, asyncio.TimeoutError))
     connection = EcomaxConnection(hass, config_entry, mock_connection)
 
     # Test config not ready when device property is not set.
@@ -144,7 +143,7 @@ async def test_async_setup(
 
     await connection.async_setup()
     mock_connection.connect.assert_awaited_once()
-    mock_connection.get_device.assert_awaited_once_with(ECOMAX, timeout=DEFAULT_TIMEOUT)
+    mock_connection.get.assert_awaited_once_with(ECOMAX, timeout=DEFAULT_TIMEOUT)
 
     # Check connection class properties for tcp connection.
     assert not hasattr(connection, "nonexistent")
@@ -184,12 +183,12 @@ async def test_setup_thermostats(
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.device"
     ) as mock_device:
-        mock_device.make_request = AsyncMock(side_effect=(True, asyncio.TimeoutError))
+        mock_device.request = AsyncMock(side_effect=(True, asyncio.TimeoutError))
         assert await connection.setup_thermostats()
         assert not await connection.setup_thermostats()
 
     assert "Timed out while trying to setup thermostats" in caplog.text
-    mock_device.make_request.assert_any_await(
+    mock_device.request.assert_any_await(
         ATTR_THERMOSTAT_PARAMETERS,
         FrameType.REQUEST_THERMOSTAT_PARAMETERS,
         retries=5,
@@ -205,12 +204,12 @@ async def test_setup_mixers(
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.device"
     ) as mock_device:
-        mock_device.make_request = AsyncMock(side_effect=(True, asyncio.TimeoutError))
+        mock_device.request = AsyncMock(side_effect=(True, asyncio.TimeoutError))
         assert await connection.setup_mixers()
         assert not await connection.setup_mixers()
 
     assert "Timed out while trying to setup mixers" in caplog.text
-    mock_device.make_request.assert_any_await(
+    mock_device.request.assert_any_await(
         ATTR_MIXER_PARAMETERS,
         FrameType.REQUEST_MIXER_PARAMETERS,
         retries=5,

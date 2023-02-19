@@ -2,161 +2,416 @@
 
 from unittest.mock import patch
 
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+from homeassistant.const import (
+    ATTR_DEVICE_CLASS,
+    ATTR_FRIENDLY_NAME,
+    STATE_OFF,
+    STATE_ON,
+)
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyplumio.const import ProductType
+from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.entity import EntityCategory
+from pyplumio.const import ATTR_CONNECTED
+from pyplumio.structures.mixer_sensors import ATTR_PUMP
+from pyplumio.structures.outputs import (
+    ATTR_CIRCULATION_PUMP,
+    ATTR_FAN,
+    ATTR_FAN2_EXHAUST,
+    ATTR_FEEDER,
+    ATTR_FIREPLACE_PUMP,
+    ATTR_HEATING_PUMP,
+    ATTR_LIGHTER,
+    ATTR_SOLAR_PUMP,
+    ATTR_WATER_HEATER_PUMP,
+)
+from pyplumio.structures.pending_alerts import ATTR_PENDING_ALERTS
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.plum_ecomax.binary_sensor import (
-    BINARY_SENSOR_TYPES,
-    MIXER_BINARY_SENSOR_TYPES,
-    EcomaxBinarySensor,
-    MixerBinarySensor,
-    async_setup_entry,
-)
-
-
-def _lookup_binary_sensor(
-    entities: list[EcomaxBinarySensor], key: str
-) -> EcomaxBinarySensor:
-    """Lookup entity in the list."""
-    for entity in entities:
-        if entity.entity_description.key == key:
-            return entity
-
-    raise LookupError(f"Couldn't find '{key}' binary sensor")
+from custom_components.plum_ecomax.connection import EcomaxConnection
 
 
 @pytest.fixture(autouse=True)
-def set_connection_name():
-    """Set connection name."""
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.name",
-        "test",
-        create=True,
-    ):
+def bypass_connection_setup():
+    """Mock async get current platform."""
+    with patch("custom_components.plum_ecomax.connection.EcomaxConnection.async_setup"):
         yield
 
 
-@pytest.mark.usefixtures("connected", "ecomax_p", "mixers")
-async def test_async_setup_and_update_entry_with_ecomax_p(
-    hass: HomeAssistant,
-    async_add_entities: AddEntitiesCallback,
-    config_entry: MockConfigEntry,
-) -> None:
-    """Test setup and update binary sensor entry for ecomax p."""
-    with patch(
-        "custom_components.plum_ecomax.entity.EcomaxConnection.setup_mixers"
-    ) as mock_setup_mixers:
-        assert await async_setup_entry(hass, config_entry, async_add_entities)
-
-    await hass.async_block_till_done()
-    mock_setup_mixers.assert_called_once()
-    async_add_entities.assert_called_once()
-    args = async_add_entities.call_args[0]
-    added_entities = args[0]
-    binary_sensor_types = (
-        BINARY_SENSOR_TYPES[ProductType.ECOMAX_P]
-        + MIXER_BINARY_SENSOR_TYPES[ProductType.ECOMAX_P]
-    )
-    assert len(added_entities) == len(binary_sensor_types)
-
-    # Check that all binary sensors are present.
-    for sensor_type in binary_sensor_types:
-        assert _lookup_binary_sensor(added_entities, sensor_type.key)
-
-    # Test ecomax p binary sensors.
-    entity = _lookup_binary_sensor(added_entities, "heating_pump")
-    assert isinstance(entity, EcomaxBinarySensor)
-    await entity.async_added_to_hass()
-    assert entity.entity_registry_enabled_default
-    assert entity.available
-    assert not entity.is_on
-    await entity.async_update(True)
-    assert entity.is_on
-
-    # Test mixer binary sensors.
-    mixer_entity = _lookup_binary_sensor(added_entities, "pump")
-    assert isinstance(mixer_entity, MixerBinarySensor)
-    assert "Mixer pump" in mixer_entity.name
+@pytest.fixture(autouse=True)
+def bypass_async_migrate_entry():
+    """Bypass async migrate entry."""
+    with patch("custom_components.plum_ecomax.async_migrate_entry", return_value=True):
+        yield
 
 
-@pytest.mark.usefixtures("ecomax_i", "mixers")
-async def test_async_setup_and_update_entry_with_ecomax_i(
-    hass: HomeAssistant,
-    async_add_entities: AddEntitiesCallback,
-    config_entry: MockConfigEntry,
-) -> None:
-    """Test setup and update binary sensor entry for ecomax i."""
-    with patch(
-        "custom_components.plum_ecomax.entity.EcomaxConnection.setup_mixers"
-    ) as mock_setup_mixers:
-        assert await async_setup_entry(hass, config_entry, async_add_entities)
-
-    await hass.async_block_till_done()
-    mock_setup_mixers.assert_called_once()
-    async_add_entities.assert_called_once()
-    args = async_add_entities.call_args[0]
-    added_entities = args[0]
-    binary_sensor_types = (
-        BINARY_SENSOR_TYPES[ProductType.ECOMAX_I]
-        + MIXER_BINARY_SENSOR_TYPES[ProductType.ECOMAX_I]
-    )
-    assert len(added_entities) == len(binary_sensor_types)
-
-    # Check that all binary sensors are present.
-    for sensor_type in binary_sensor_types:
-        assert _lookup_binary_sensor(added_entities, sensor_type.key)
-
-    # Test mixer binary sensors. With ecomax i, mixers should
-    # be always refered as circuits.
-    mixer_entity = _lookup_binary_sensor(added_entities, "pump")
-    assert isinstance(mixer_entity, MixerBinarySensor)
-    assert "Circuit pump" in mixer_entity.name
+@pytest.fixture(autouse=True)
+def set_connected(connected):
+    """Assume connected."""
 
 
 @pytest.mark.usefixtures("ecomax_p")
-async def test_async_setup_and_update_entry_without_mixers(
+async def test_heating_pump_binary_sensor(
     hass: HomeAssistant,
-    async_add_entities: AddEntitiesCallback,
+    connection: EcomaxConnection,
     config_entry: MockConfigEntry,
+    setup_integration,
 ) -> None:
-    """Test setup and update binary sensor entry for ecomax p
-    without mixers.
-    """
-    with patch(
-        "custom_components.plum_ecomax.entity.EcomaxConnection.has_mixers", False
-    ):
-        assert await async_setup_entry(hass, config_entry, async_add_entities)
+    """Test heating pump binary sensor."""
+    await setup_integration(hass, config_entry)
+    heating_pump_entity_id = "binary_sensor.test_heating_pump"
 
-    async_add_entities.assert_called_once()
-    args = async_add_entities.call_args[0]
-    added_entities = args[0]
+    # Get initial value.
+    state = hass.states.get(heating_pump_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Heating pump"
+    assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
 
-    # Check that mixer sensor is not added.
-    with pytest.raises(LookupError):
-        _lookup_binary_sensor(added_entities, "pump")
+    # Dispatch new value.
+    await connection.device.dispatch(ATTR_HEATING_PUMP, True)
+    state = hass.states.get(heating_pump_entity_id)
+    assert state.state == STATE_ON
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(heating_pump_entity_id)
+    assert entry
+
+
+@pytest.mark.usefixtures("ecomax_p", "water_heater")
+async def test_water_heater_pump_binary_sensor(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test water heater pump binary sensor."""
+    await setup_integration(hass, config_entry)
+    water_heater_pump_entity_id = "binary_sensor.test_water_heater_pump"
+
+    # Get initial value.
+    state = hass.states.get(water_heater_pump_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Water heater pump"
+    assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+
+    # Dispatch new value.
+    await connection.device.dispatch(ATTR_WATER_HEATER_PUMP, True)
+    state = hass.states.get(water_heater_pump_entity_id)
+    assert state.state == STATE_ON
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(water_heater_pump_entity_id)
+    assert entry
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_circulation_pump_binary_sensor(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test circulation pump binary sensor."""
+    await setup_integration(hass, config_entry)
+    circulation_pump_entity_id = "binary_sensor.test_circulation_pump"
+
+    # Get initial value.
+    state = hass.states.get(circulation_pump_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Circulation pump"
+    assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+
+    # Dispatch new value.
+    await connection.device.dispatch(ATTR_CIRCULATION_PUMP, True)
+    state = hass.states.get(circulation_pump_entity_id)
+    assert state.state == STATE_ON
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(circulation_pump_entity_id)
+    assert entry
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_alert_binary_sensor(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test alert binary sensor."""
+    await setup_integration(hass, config_entry)
+    alert_entity_id = "binary_sensor.test_alert"
+
+    # Get initial value.
+    state = hass.states.get(alert_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Alert"
+    assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.PROBLEM
+
+    # Dispatch new value.
+    await connection.device.dispatch(ATTR_PENDING_ALERTS, 2)
+    state = hass.states.get(alert_entity_id)
+    assert state.state == STATE_ON
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(alert_entity_id)
+    assert entry
+    assert entry.entity_category == EntityCategory.DIAGNOSTIC
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_connection_status_binary_sensor(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test connection status binary sensor."""
+    await setup_integration(hass, config_entry)
+    connection_status_entity_id = "binary_sensor.test_connection_status"
+
+    # Get initial value.
+    state = hass.states.get(connection_status_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Connection status"
+    assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.CONNECTIVITY
+
+    # Dispatch new value.
+    await connection.device.dispatch(ATTR_CONNECTED, True)
+    state = hass.states.get(connection_status_entity_id)
+    assert state.state == STATE_ON
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(connection_status_entity_id)
+    assert entry
+    assert entry.entity_category == EntityCategory.DIAGNOSTIC
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_fan_binary_sensor(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test fan binary sensor."""
+    await setup_integration(hass, config_entry)
+    fan_entity_id = "binary_sensor.test_fan"
+
+    # Get initial value.
+    state = hass.states.get(fan_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Fan"
+    assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+
+    # Dispatch new value.
+    await connection.device.dispatch(ATTR_FAN, True)
+    state = hass.states.get(fan_entity_id)
+    assert state.state == STATE_ON
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(fan_entity_id)
+    assert entry
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_exhaust_fan_binary_sensor(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test exhaust fan binary sensor."""
+    await setup_integration(hass, config_entry)
+    exhaust_fan_entity_id = "binary_sensor.test_exhaust_fan"
+
+    # Get initial value.
+    state = hass.states.get(exhaust_fan_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Exhaust fan"
+    assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+
+    # Dispatch new value.
+    await connection.device.dispatch(ATTR_FAN2_EXHAUST, True)
+    state = hass.states.get(exhaust_fan_entity_id)
+    assert state.state == STATE_ON
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(exhaust_fan_entity_id)
+    assert entry
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_feeder_binary_sensor(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test feeder binary sensor."""
+    await setup_integration(hass, config_entry)
+    feeder_entity_id = "binary_sensor.test_feeder"
+
+    # Get initial value.
+    state = hass.states.get(feeder_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Feeder"
+    assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+
+    # Dispatch new value.
+    await connection.device.dispatch(ATTR_FEEDER, True)
+    state = hass.states.get(feeder_entity_id)
+    assert state.state == STATE_ON
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(feeder_entity_id)
+    assert entry
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_lighter_binary_sensor(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test lighter binary sensor."""
+    await setup_integration(hass, config_entry)
+    lighter_entity_id = "binary_sensor.test_lighter"
+
+    # Get initial value.
+    state = hass.states.get(lighter_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Lighter"
+    assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+
+    # Dispatch new value.
+    await connection.device.dispatch(ATTR_LIGHTER, True)
+    state = hass.states.get(lighter_entity_id)
+    assert state.state == STATE_ON
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(lighter_entity_id)
+    assert entry
+
+
+@pytest.mark.usefixtures("ecomax_i")
+async def test_solar_pump_binary_sensor(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test solar pump binary sensor."""
+    await setup_integration(hass, config_entry)
+    solar_pump_entity_id = "binary_sensor.test_solar_pump"
+
+    # Get initial value.
+    state = hass.states.get(solar_pump_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Solar pump"
+    assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+
+    # Dispatch new value.
+    await connection.device.dispatch(ATTR_SOLAR_PUMP, True)
+    state = hass.states.get(solar_pump_entity_id)
+    assert state.state == STATE_ON
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(solar_pump_entity_id)
+    assert entry
+
+
+@pytest.mark.usefixtures("ecomax_i")
+async def test_fireplace_pump_binary_sensor(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test fireplace pump binary sensor."""
+    await setup_integration(hass, config_entry)
+    fireplace_pump_entity_id = "binary_sensor.test_fireplace_pump"
+
+    # Get initial value.
+    state = hass.states.get(fireplace_pump_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Fireplace pump"
+    assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+
+    # Dispatch new value.
+    await connection.device.dispatch(ATTR_FIREPLACE_PUMP, True)
+    state = hass.states.get(fireplace_pump_entity_id)
+    assert state.state == STATE_ON
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(fireplace_pump_entity_id)
+    assert entry
 
 
 @pytest.mark.usefixtures("ecomax_p", "mixers")
-async def test_async_setup_and_update_entry_with_setup_mixers_error(
+async def test_mixer_pump_binary_sensor(
     hass: HomeAssistant,
-    async_add_entities: AddEntitiesCallback,
+    connection: EcomaxConnection,
     config_entry: MockConfigEntry,
+    setup_integration,
 ) -> None:
-    """Test setup and update binary sensor entry for ecomax p
-    with error during mixer setup."""
-    with patch(
-        "custom_components.plum_ecomax.entity.EcomaxConnection.setup_mixers",
-        return_value=False,
-    ):
-        assert await async_setup_entry(hass, config_entry, async_add_entities)
+    """Test mixer pump binary sensor."""
+    await setup_integration(hass, config_entry)
+    mixer_pump_entity_id = "binary_sensor.test_mixer_1_mixer_pump"
 
-    async_add_entities.assert_called_once()
-    args = async_add_entities.call_args[0]
-    added_entities = args[0]
+    # Get initial value.
+    state = hass.states.get(mixer_pump_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Mixer 1 Mixer pump"
+    assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
 
-    # Check that mixer sensor is not added.
-    with pytest.raises(LookupError):
-        _lookup_binary_sensor(added_entities, "pump")
+    # Dispatch new value.
+    await connection.device.mixers[0].dispatch(ATTR_PUMP, True)
+    state = hass.states.get(mixer_pump_entity_id)
+    assert state.state == STATE_ON
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(mixer_pump_entity_id)
+    assert entry
+
+
+@pytest.mark.usefixtures("ecomax_i", "mixers")
+async def test_circuit_pump_binary_sensor(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test mixer pump binary sensor."""
+    await setup_integration(hass, config_entry)
+    circuit_pump_entity_id = "binary_sensor.test_circuit_1_circuit_pump"
+
+    # Get initial value.
+    state = hass.states.get(circuit_pump_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Circuit 1 Circuit pump"
+    assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+
+    # Dispatch new value.
+    await connection.device.mixers[0].dispatch(ATTR_PUMP, True)
+    state = hass.states.get(circuit_pump_entity_id)
+    assert state.state == STATE_ON
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(circuit_pump_entity_id)
+    assert entry

@@ -95,7 +95,7 @@ async def test_setup_and_unload_entry(
     connection.close.assert_not_awaited()
 
 
-@pytest.mark.usefixtures("ecomax_p")
+@pytest.mark.usefixtures("ecomax_p", "connection")
 async def test_setup_events(
     hass: HomeAssistant, config_entry: ConfigEntry, caplog
 ) -> None:

@@ -1,150 +1,223 @@
 """Test the water heater platform."""
 
-from unittest.mock import AsyncMock, Mock, call, patch
+from unittest.mock import patch
 
-from homeassistant.const import STATE_OFF
+from freezegun import freeze_time
+from homeassistant.components.water_heater import (
+    ATTR_CURRENT_TEMPERATURE,
+    ATTR_MAX_TEMP,
+    ATTR_MIN_TEMP,
+    ATTR_OPERATION_LIST,
+    ATTR_OPERATION_MODE,
+    ATTR_TARGET_TEMP_HIGH,
+    ATTR_TARGET_TEMP_LOW,
+    ATTR_TEMPERATURE,
+    DOMAIN as WATER_HEATER,
+    SERVICE_SET_OPERATION_MODE,
+    SERVICE_SET_TEMPERATURE,
+    STATE_ECO,
+    STATE_PERFORMANCE,
+    WaterHeaterEntityFeature,
+)
+from homeassistant.const import ATTR_ENTITY_ID, ATTR_FRIENDLY_NAME, STATE_OFF
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyplumio.helpers.filters import Filter
-from pyplumio.helpers.parameter import Parameter
+from homeassistant.helpers import entity_registry as er
+from pyplumio.structures.ecomax_parameters import (
+    EcomaxParameter,
+    EcomaxParameterDescription,
+)
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.water_heater import (
-    STATE_PERFORMANCE,
-    EcomaxWaterHeater,
-    async_setup_entry,
+    HA_TO_EM_STATE,
+    WATER_HEATER_MODES,
 )
 
 
-@pytest.mark.usefixtures("connected", "water_heater")
-async def test_async_setup_and_update_entry_for_ecomax_p(
-    hass: HomeAssistant,
-    async_add_entities: AddEntitiesCallback,
-    config_entry: MockConfigEntry,
-) -> None:
-    """Test setup and update water_heater entry for ecomax_p."""
-    assert await async_setup_entry(hass, config_entry, async_add_entities)
-    await hass.async_block_till_done()
-    async_add_entities.assert_called_once()
-    args = async_add_entities.call_args[0]
-    added_entities = args[0]
-    assert len(added_entities) == 1
-    entity = added_entities[0]
-    assert isinstance(entity, EcomaxWaterHeater)
-    assert entity.hysteresis == 0
-    assert entity.entity_registry_enabled_default
-    assert entity.available
-
-    # Update current operation.
-    mock_parameter = Mock(spec=Parameter)
-    mock_parameter.configure_mock(value=1, min_value=0, max_value=2)
-    await entity.async_update_work_mode(mock_parameter)
-    assert entity.current_operation == STATE_PERFORMANCE
-
-    # Update target temperature.
-    await entity.async_update_target_temp(mock_parameter)
-    assert entity.min_temp == 0
-    assert entity.max_temp == 2
-    assert entity.target_temperature == 1
-    assert entity.target_temperature_high == 1
-    assert entity.target_temperature_low == 1
-
-    # Update hysteresis.
-    await entity.async_update_hysteresis(mock_parameter)
-    assert entity.hysteresis == 1
-    assert entity.target_temperature_low == 0
-
-    # Update current temperature.
-    await entity.async_update(50)
-    assert entity.current_temperature == 50
-
-    # Set target temperature.
-    with patch(
-        "custom_components.plum_ecomax.entity.Device.set_value_nowait",
-        new_callable=Mock,
-    ) as mock_set_value_nowait:
-        await entity.async_set_temperature(temperature=0)
-
-    mock_set_value_nowait.assert_called_once_with("water_heater_target_temp", 0)
-    assert entity.target_temperature == 0
-
-    # Set current operation.
-    with patch(
-        "custom_components.plum_ecomax.entity.Device.set_value_nowait",
-        new_callable=Mock,
-    ) as mock_set_value_nowait:
-        await entity.async_set_operation_mode(STATE_OFF)
-
-    mock_set_value_nowait.assert_called_once_with("water_heater_work_mode", 0)
-    assert entity.current_operation == STATE_OFF
+@pytest.fixture(autouse=True)
+def bypass_connection_setup():
+    """Mock async get current platform."""
+    with patch("custom_components.plum_ecomax.connection.EcomaxConnection.async_setup"):
+        yield
 
 
-@pytest.mark.usefixtures("water_heater")
-async def test_async_added_removed_to_hass(
-    hass: HomeAssistant,
-    async_add_entities: AddEntitiesCallback,
-    config_entry: MockConfigEntry,
-) -> None:
-    """Test adding and removing entity to/from hass."""
-    assert await async_setup_entry(hass, config_entry, async_add_entities)
-    await hass.async_block_till_done()
-    async_add_entities.assert_called_once()
-    args = async_add_entities.call_args[0]
-    added_entities = args[0]
-    entity = added_entities[0]
-
-    # Test adding entity to hass.
-    mock_throttle = AsyncMock(spec=Filter)
-    mock_on_change = AsyncMock(spec=Filter)
-    with patch(
-        "custom_components.plum_ecomax.water_heater.throttle",
-        return_value=mock_throttle,
-    ), patch(
-        "custom_components.plum_ecomax.water_heater.on_change",
-        return_value=mock_on_change,
-    ), patch(
-        "custom_components.plum_ecomax.entity.Device.subscribe"
-    ) as mock_subscribe:
-        await entity.async_added_to_hass()
-
-    # Test removing entity from hass.
-    mock_subscribe.assert_has_calls(
-        [
-            call("water_heater_temp", mock_throttle),
-            call("water_heater_target_temp", mock_on_change),
-            call("water_heater_work_mode", mock_on_change),
-            call("water_heater_hysteresis", mock_on_change),
-        ]
-    )
-    assert mock_throttle.await_count == 1
-    assert mock_on_change.await_count == 3
-
-    with patch(
-        "custom_components.plum_ecomax.entity.Device.unsubscribe"
-    ) as mock_unsubscribe:
-        await entity.async_will_remove_from_hass()
-
-    mock_unsubscribe.assert_has_calls(
-        [
-            call("water_heater_temp", entity.async_update),
-            call("water_heater_target_temp", entity.async_update_target_temp),
-            call("water_heater_work_mode", entity.async_update_work_mode),
-            call("water_heater_hysteresis", entity.async_update_hysteresis),
-        ]
-    )
+@pytest.fixture(autouse=True)
+def bypass_async_migrate_entry():
+    """Bypass async migrate entry."""
+    with patch("custom_components.plum_ecomax.async_migrate_entry", return_value=True):
+        yield
 
 
-@pytest.mark.usefixtures("ecomax_common")
-async def test_async_setup_entry_with_no_water_heater(
-    hass: HomeAssistant,
-    async_add_entities: AddEntitiesCallback,
-    config_entry: MockConfigEntry,
-):
-    """Test setup water heater entry without the connected
-    water heater.
-    """
-    with patch(
-        "custom_components.plum_ecomax.entity.EcomaxConnection.has_water_heater", False
+@pytest.fixture(autouse=True)
+def set_connected(connected):
+    """Assume connected."""
+
+
+@pytest.fixture(name="frozen_time")
+def fixture_frozen_time():
+    """Get frozen time."""
+    with freeze_time("2012-12-12 12:00:00") as frozen_time:
+        yield frozen_time
+
+
+@pytest.fixture(name="async_set_operation_mode")
+async def fixture_async_set_operation_mode():
+    """Sets the water heater operation mode."""
+
+    async def async_set_operation_mode(
+        hass: HomeAssistant, entity_id: str, operation_mode: str
     ):
-        assert not await async_setup_entry(hass, config_entry, async_add_entities)
+        await hass.services.async_call(
+            WATER_HEATER,
+            SERVICE_SET_OPERATION_MODE,
+            {ATTR_ENTITY_ID: entity_id, ATTR_OPERATION_MODE: operation_mode},
+            blocking=True,
+        )
+        return hass.states.get(entity_id)
+
+    return async_set_operation_mode
+
+
+@pytest.fixture(name="async_set_temperature")
+async def fixture_async_set_temperature():
+    """Sets the water heater temperature."""
+
+    async def async_set_temperature(
+        hass: HomeAssistant, entity_id: str, temperature: float
+    ):
+        await hass.services.async_call(
+            WATER_HEATER,
+            SERVICE_SET_TEMPERATURE,
+            {ATTR_ENTITY_ID: entity_id, ATTR_TEMPERATURE: temperature},
+            blocking=True,
+        )
+        return hass.states.get(entity_id)
+
+    return async_set_temperature
+
+
+@pytest.mark.usefixtures("ecomax_p", "water_heater")
+async def test_indirect_water_heater(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    async_set_operation_mode,
+    async_set_temperature,
+    frozen_time,
+) -> None:
+    """Test indirect water heater."""
+    await setup_integration(hass, config_entry)
+    indirect_water_heater_entity_id = "water_heater.test_indirect_water_heater"
+    water_heater_target_temperature_key = "water_heater_target_temp"
+    water_heater_current_temperature_key = "water_heater_temp"
+    water_heater_operation_mode_key = "water_heater_work_mode"
+    water_heater_hysteresis_key = "water_heater_hysteresis"
+
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(indirect_water_heater_entity_id)
+    assert entry
+
+    # Get initial value.
+    state = hass.states.get(indirect_water_heater_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Indirect water heater"
+    assert state.attributes[ATTR_MIN_TEMP] == 10
+    assert state.attributes[ATTR_MAX_TEMP] == 80
+    assert state.attributes[ATTR_OPERATION_LIST] == WATER_HEATER_MODES
+    assert state.attributes[ATTR_CURRENT_TEMPERATURE] == 0
+    assert state.attributes[ATTR_TEMPERATURE] == 50
+    assert state.attributes[ATTR_TARGET_TEMP_HIGH] == 50
+    assert state.attributes[ATTR_TARGET_TEMP_LOW] == 45
+    assert state.attributes[ATTR_OPERATION_MODE] == STATE_OFF
+    assert (
+        state.attributes["supported_features"]
+        == WaterHeaterEntityFeature.TARGET_TEMPERATURE
+        | WaterHeaterEntityFeature.OPERATION_MODE
+    )
+
+    # Dispatch new water heater temperature.
+    frozen_time.move_to("12:00:10")
+    await connection.device.dispatch(water_heater_current_temperature_key, 51)
+    state = hass.states.get(indirect_water_heater_entity_id)
+    assert state.attributes[ATTR_CURRENT_TEMPERATURE] == 51
+
+    # Dispatch new water heater target temperature.
+    frozen_time.move_to("12:00:10")
+    await connection.device.dispatch(
+        water_heater_target_temperature_key,
+        EcomaxParameter(
+            device=connection.device,
+            value=55,
+            min_value=10,
+            max_value=80,
+            description=EcomaxParameterDescription(water_heater_target_temperature_key),
+        ),
+    )
+    state = hass.states.get(indirect_water_heater_entity_id)
+    assert state.attributes[ATTR_TARGET_TEMP_HIGH] == 55
+    assert state.attributes[ATTR_TARGET_TEMP_LOW] == 50
+
+    # Dispatch new operation mode.
+    await connection.device.dispatch(
+        water_heater_operation_mode_key,
+        EcomaxParameter(
+            device=connection.device,
+            value=1,
+            min_value=0,
+            max_value=2,
+            description=EcomaxParameterDescription(water_heater_operation_mode_key),
+        ),
+    )
+    state = hass.states.get(indirect_water_heater_entity_id)
+    assert state.state == STATE_PERFORMANCE
+    assert state.attributes[ATTR_OPERATION_MODE] == STATE_PERFORMANCE
+
+    # Dispatch new hysteresis value.
+    await connection.device.dispatch(
+        water_heater_hysteresis_key,
+        EcomaxParameter(
+            device=connection.device,
+            value=10,
+            min_value=0,
+            max_value=15,
+            description=EcomaxParameterDescription(water_heater_hysteresis_key),
+        ),
+    )
+    state = hass.states.get(indirect_water_heater_entity_id)
+    assert state.attributes[ATTR_TARGET_TEMP_LOW] == 45
+
+    # Test that water heater operation mode can be set.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_set_operation_mode(
+            hass, indirect_water_heater_entity_id, STATE_ECO
+        )
+
+    mock_set_nowait.assert_called_once_with(
+        water_heater_operation_mode_key, HA_TO_EM_STATE[STATE_ECO]
+    )
+    assert state.state == STATE_ECO
+
+    # Test that water heater temperature can be set.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_set_temperature(hass, indirect_water_heater_entity_id, 60)
+
+    mock_set_nowait.assert_called_once_with(water_heater_target_temperature_key, 60)
+    assert state.state == STATE_ECO
+
+    # Test without water heater.
+    await hass.config_entries.async_remove(config_entry.entry_id)
+    await hass.async_block_till_done()
+    config_entry.add_to_hass(hass)
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.has_water_heater",
+        False,
+    ):
+        await setup_integration(hass, config_entry)
+
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(indirect_water_heater_entity_id)
+    assert not entry

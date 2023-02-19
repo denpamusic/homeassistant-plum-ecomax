@@ -1,173 +1,788 @@
 """Test the switch platform."""
 
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
-from homeassistant.const import STATE_ON
+from homeassistant.components.switch import (
+    DOMAIN as SWITCH,
+    SERVICE_TURN_OFF,
+    SERVICE_TURN_ON,
+)
+from homeassistant.const import ATTR_ENTITY_ID, ATTR_FRIENDLY_NAME, STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyplumio.const import ProductType
-from pyplumio.helpers.parameter import Parameter
+from homeassistant.helpers import entity_registry as er
+from pyplumio.structures.ecomax_parameters import (
+    ATTR_ECOMAX_CONTROL,
+    EcomaxBinaryParameter,
+    EcomaxParameter,
+    EcomaxParameterDescription,
+)
+from pyplumio.structures.mixer_parameters import (
+    MixerBinaryParameter,
+    MixerParameterDescription,
+)
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.plum_ecomax.const import ATTR_ECOMAX_CONTROL
-from custom_components.plum_ecomax.switch import (
-    MIXER_SWITCH_TYPES,
-    SWITCH_TYPES,
-    EcomaxSwitch,
-    async_setup_entry,
-)
+from custom_components.plum_ecomax.connection import EcomaxConnection
 
 
 @pytest.fixture(autouse=True)
-def set_connection_name():
-    """Set connection name."""
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.name",
-        "test",
-        create=True,
-    ):
+def bypass_connection_setup():
+    """Mock async get current platform."""
+    with patch("custom_components.plum_ecomax.connection.EcomaxConnection.async_setup"):
         yield
 
 
-def _lookup_switch(entities: list[EcomaxSwitch], key: str) -> EcomaxSwitch:
-    """Lookup switch in the list."""
-    for entity in entities:
-        if entity.entity_description.key == key:
-            return entity
-
-    raise LookupError(f"Couldn't find '{key}' switch")
+@pytest.fixture(autouse=True)
+def bypass_async_migrate_entry():
+    """Bypass async migrate entry."""
+    with patch("custom_components.plum_ecomax.async_migrate_entry", return_value=True):
+        yield
 
 
-@pytest.mark.usefixtures("connected", "ecomax_p", "ecomax_control", "mixers")
-async def test_async_setup_and_update_entry_with_ecomax_p(
+@pytest.fixture(autouse=True)
+def set_connected(connected):
+    """Assume connected."""
+
+
+@pytest.fixture(name="async_turn_on")
+async def fixture_async_turn_on():
+    """Turns switch on."""
+
+    async def async_turn_on(hass: HomeAssistant, entity_id: str):
+        await hass.services.async_call(
+            SWITCH,
+            SERVICE_TURN_ON,
+            {ATTR_ENTITY_ID: entity_id},
+            blocking=True,
+        )
+        return hass.states.get(entity_id)
+
+    return async_turn_on
+
+
+@pytest.fixture(name="async_turn_off")
+async def fixture_async_turn_off():
+    """Turns switch off."""
+
+    async def async_turn_off(hass: HomeAssistant, entity_id: str):
+        await hass.services.async_call(
+            SWITCH,
+            SERVICE_TURN_OFF,
+            {ATTR_ENTITY_ID: entity_id},
+            blocking=True,
+        )
+        return hass.states.get(entity_id)
+
+    return async_turn_off
+
+
+@pytest.mark.usefixtures("ecomax_p", "ecomax_control")
+async def test_ecomax_control_switch(
     hass: HomeAssistant,
-    async_add_entities: AddEntitiesCallback,
+    connection: EcomaxConnection,
     config_entry: MockConfigEntry,
+    setup_integration,
+    async_turn_off,
+    async_turn_on,
 ) -> None:
-    """Test setup and update switch entry for ecomax p."""
-    with patch(
-        "custom_components.plum_ecomax.entity.EcomaxConnection.setup_mixers"
-    ) as mock_setup_mixers:
-        assert await async_setup_entry(hass, config_entry, async_add_entities)
+    """Test ecoMAX control switch."""
+    await setup_integration(hass, config_entry)
+    controller_switch_entity_id = "switch.test_controller_switch"
 
-    await hass.async_block_till_done()
-    mock_setup_mixers.assert_called_once()
-    async_add_entities.assert_called_once()
-    args = async_add_entities.call_args[0]
-    added_entities = args[0]
-    sensor_types = (
-        SWITCH_TYPES[ProductType.ECOMAX_P] + MIXER_SWITCH_TYPES[ProductType.ECOMAX_P]
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(controller_switch_entity_id)
+    assert entry
+
+    # Get initial value.
+    state = hass.states.get(controller_switch_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Controller switch"
+
+    # Dispatch new value.
+    await connection.device.dispatch(
+        ATTR_ECOMAX_CONTROL,
+        EcomaxBinaryParameter(
+            device=connection.device,
+            value=STATE_ON,
+            min_value=STATE_OFF,
+            max_value=STATE_ON,
+            description=EcomaxParameterDescription(ATTR_ECOMAX_CONTROL),
+        ),
     )
-    assert len(added_entities) == len(sensor_types)
+    state = hass.states.get(controller_switch_entity_id)
+    assert state.state == STATE_ON
 
-    # Check that all sensors are present.
-    for sensor_type in sensor_types:
-        assert _lookup_switch(added_entities, sensor_type.key)
+    # Turn off.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_off(hass, controller_switch_entity_id)
 
-    # Check that switch state is unknown and update it.
-    entity = _lookup_switch(added_entities, ATTR_ECOMAX_CONTROL)
-    assert isinstance(entity, EcomaxSwitch)
-    mock_parameter = Mock(spec=Parameter)
-    mock_parameter.configure_mock(value=STATE_ON)
-    assert entity.is_on is None
-    await entity.async_added_to_hass()
-    assert entity.entity_registry_enabled_default
-    assert entity.available
-    await entity.async_update(mock_parameter)
-    assert entity.is_on
+    mock_set_nowait.assert_called_once_with(ATTR_ECOMAX_CONTROL, STATE_OFF)
+    assert state.state == STATE_OFF
 
-    # Turn the switch off.
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.device.set_value_nowait",
-        new_callable=Mock,
-    ) as mock_set_value_nowait:
-        await entity.async_turn_off()
+    # Turn on.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_on(hass, controller_switch_entity_id)
 
-    mock_set_value_nowait.assert_called_once_with(
-        entity.entity_description.key, entity.entity_description.state_off
-    )
-    assert not entity.is_on
-
-    # Turn the switch back on.
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.device.set_value_nowait",
-        new_callable=Mock,
-    ) as mock_set_value_nowait:
-        await entity.async_turn_on()
-
-    mock_set_value_nowait.assert_called_once_with(
-        entity.entity_description.key, entity.entity_description.state_on
-    )
-    assert entity.is_on
+    mock_set_nowait.assert_called_once_with(ATTR_ECOMAX_CONTROL, STATE_ON)
+    assert state.state == STATE_ON
 
 
-@pytest.mark.usefixtures("ecomax_i", "ecomax_control", "mixers")
-async def test_async_setup_and_update_entry_with_ecomax_i(
+@pytest.mark.usefixtures("ecomax_p", "water_heater")
+async def test_water_heater_disinfection_switch(
     hass: HomeAssistant,
-    async_add_entities: AddEntitiesCallback,
+    connection: EcomaxConnection,
     config_entry: MockConfigEntry,
+    setup_integration,
+    async_turn_off,
+    async_turn_on,
 ) -> None:
-    """Test setup and update switch entry for ecomax p."""
-    with patch(
-        "custom_components.plum_ecomax.entity.EcomaxConnection.setup_mixers"
-    ) as mock_setup_mixers:
-        assert await async_setup_entry(hass, config_entry, async_add_entities)
-
-    await hass.async_block_till_done()
-    mock_setup_mixers.assert_called_once()
-    async_add_entities.assert_called_once()
-    args = async_add_entities.call_args[0]
-    added_entities = args[0]
-    sensor_types = (
-        SWITCH_TYPES[ProductType.ECOMAX_I] + MIXER_SWITCH_TYPES[ProductType.ECOMAX_I]
+    """Test water heater disinfection switch."""
+    await setup_integration(hass, config_entry)
+    water_heater_disinfection_switch_entity_id = (
+        "switch.test_water_heater_disinfection_switch"
     )
-    assert len(added_entities) == len(sensor_types)
+    water_heater_disinfection_switch_key = "water_heater_disinfection"
 
-    # Check that all sensors are present.
-    for sensor_type in sensor_types:
-        assert _lookup_switch(added_entities, sensor_type.key)
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(water_heater_disinfection_switch_entity_id)
+    assert entry
+
+    # Get initial value.
+    state = hass.states.get(water_heater_disinfection_switch_entity_id)
+    assert state.state == STATE_OFF
+    assert (
+        state.attributes[ATTR_FRIENDLY_NAME] == "test Water heater disinfection switch"
+    )
+
+    # Dispatch new value.
+    await connection.device.dispatch(
+        water_heater_disinfection_switch_key,
+        EcomaxBinaryParameter(
+            device=connection.device,
+            value=1,
+            min_value=0,
+            max_value=1,
+            description=EcomaxParameterDescription(
+                water_heater_disinfection_switch_key, cls=EcomaxBinaryParameter
+            ),
+        ),
+    )
+    state = hass.states.get(water_heater_disinfection_switch_entity_id)
+    assert state.state == STATE_ON
+
+    # Turn off.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_off(hass, water_heater_disinfection_switch_entity_id)
+
+    mock_set_nowait.assert_called_once_with(
+        water_heater_disinfection_switch_key, STATE_OFF
+    )
+    assert state.state == STATE_OFF
+
+    # Turn on.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_on(hass, water_heater_disinfection_switch_entity_id)
+
+    mock_set_nowait.assert_called_once_with(
+        water_heater_disinfection_switch_key, STATE_ON
+    )
+    assert state.state == STATE_ON
+
+
+@pytest.mark.usefixtures("ecomax_p", "water_heater")
+async def test_water_heater_pump_switch(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    async_turn_off,
+    async_turn_on,
+) -> None:
+    """Test water heater pump switch."""
+    await setup_integration(hass, config_entry)
+    water_heater_pump_switch_entity_id = "switch.test_water_heater_pump_switch"
+    water_heater_pump_switch_key = "water_heater_work_mode"
+
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(water_heater_pump_switch_entity_id)
+    assert entry
+
+    # Get initial value.
+    state = hass.states.get(water_heater_pump_switch_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Water heater pump switch"
+
+    # Dispatch new value.
+    await connection.device.dispatch(
+        water_heater_pump_switch_key,
+        EcomaxParameter(
+            device=connection.device,
+            value=2,
+            min_value=0,
+            max_value=2,
+            description=EcomaxParameterDescription(water_heater_pump_switch_key),
+        ),
+    )
+    state = hass.states.get(water_heater_pump_switch_entity_id)
+    assert state.state == STATE_ON
+
+    # Turn off.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_off(hass, water_heater_pump_switch_entity_id)
+
+    mock_set_nowait.assert_called_once_with(water_heater_pump_switch_key, 0)
+    assert state.state == STATE_OFF
+
+    # Turn on.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_on(hass, water_heater_pump_switch_entity_id)
+
+    mock_set_nowait.assert_called_once_with(water_heater_pump_switch_key, 2)
+    assert state.state == STATE_ON
 
 
 @pytest.mark.usefixtures("ecomax_p")
-async def test_async_setup_and_update_entry_without_mixers(
+async def test_summer_mode_switch(
     hass: HomeAssistant,
-    async_add_entities: AddEntitiesCallback,
+    connection: EcomaxConnection,
     config_entry: MockConfigEntry,
+    setup_integration,
+    async_turn_off,
+    async_turn_on,
 ) -> None:
-    """Test setup and update switch entry for ecomax p without mixers."""
-    with patch(
-        "custom_components.plum_ecomax.entity.EcomaxConnection.has_mixers", False
-    ):
-        assert await async_setup_entry(hass, config_entry, async_add_entities)
+    """Test summer mode switch."""
+    await setup_integration(hass, config_entry)
+    summer_mode_switch_entity_id = "switch.test_summer_mode_switch"
+    summer_mode_switch_key = "summer_mode"
 
-    async_add_entities.assert_called_once()
-    args = async_add_entities.call_args[0]
-    added_entities = args[0]
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(summer_mode_switch_entity_id)
+    assert entry
 
-    # Check that mixer sensor is not added.
-    with pytest.raises(LookupError):
-        _lookup_switch(added_entities, "weather_control")
+    # Get initial value.
+    state = hass.states.get(summer_mode_switch_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Summer mode switch"
+
+    # Dispatch new value.
+    await connection.device.dispatch(
+        summer_mode_switch_key,
+        EcomaxParameter(
+            device=connection.device,
+            value=1,
+            min_value=0,
+            max_value=2,
+            description=EcomaxParameterDescription(summer_mode_switch_key),
+        ),
+    )
+    state = hass.states.get(summer_mode_switch_entity_id)
+    assert state.state == STATE_ON
+
+    # Turn off.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_off(hass, summer_mode_switch_entity_id)
+
+    mock_set_nowait.assert_called_once_with(summer_mode_switch_key, 0)
+    assert state.state == STATE_OFF
+
+    # Turn on.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_on(hass, summer_mode_switch_entity_id)
+
+    mock_set_nowait.assert_called_once_with(summer_mode_switch_key, 1)
+    assert state.state == STATE_ON
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_weather_control_switch(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    async_turn_off,
+    async_turn_on,
+) -> None:
+    """Test weather control switch."""
+    await setup_integration(hass, config_entry)
+    weather_control_switch_entity_id = "switch.test_weather_control_switch"
+    weather_control_switch_key = "heating_weather_control"
+
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(weather_control_switch_entity_id)
+    assert entry
+
+    # Get initial value.
+    state = hass.states.get(weather_control_switch_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Weather control switch"
+
+    # Dispatch new value.
+    await connection.device.dispatch(
+        weather_control_switch_key,
+        EcomaxBinaryParameter(
+            device=connection.device,
+            value=1,
+            min_value=0,
+            max_value=1,
+            description=EcomaxParameterDescription(weather_control_switch_key),
+        ),
+    )
+    state = hass.states.get(weather_control_switch_entity_id)
+    assert state.state == STATE_ON
+
+    # Turn off.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_off(hass, weather_control_switch_entity_id)
+
+    mock_set_nowait.assert_called_once_with(weather_control_switch_key, STATE_OFF)
+    assert state.state == STATE_OFF
+
+    # Turn on.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_on(hass, weather_control_switch_entity_id)
+
+    mock_set_nowait.assert_called_once_with(weather_control_switch_key, STATE_ON)
+    assert state.state == STATE_ON
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_fuzzy_logic_switch(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    async_turn_off,
+    async_turn_on,
+) -> None:
+    """Test fuzzy logic switch."""
+    await setup_integration(hass, config_entry)
+    fuzzy_logic_switch_entity_id = "switch.test_fuzzy_logic_switch"
+    fuzzy_logic_switch_key = "fuzzy_logic"
+
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(fuzzy_logic_switch_entity_id)
+    assert entry
+
+    # Get initial value.
+    state = hass.states.get(fuzzy_logic_switch_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Fuzzy logic switch"
+
+    # Dispatch new value.
+    await connection.device.dispatch(
+        fuzzy_logic_switch_key,
+        EcomaxBinaryParameter(
+            device=connection.device,
+            value=1,
+            min_value=0,
+            max_value=1,
+            description=EcomaxParameterDescription(fuzzy_logic_switch_key),
+        ),
+    )
+    state = hass.states.get(fuzzy_logic_switch_entity_id)
+    assert state.state == STATE_ON
+
+    # Turn off.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_off(hass, fuzzy_logic_switch_entity_id)
+
+    mock_set_nowait.assert_called_once_with(fuzzy_logic_switch_key, STATE_OFF)
+    assert state.state == STATE_OFF
+
+    # Turn on.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_on(hass, fuzzy_logic_switch_entity_id)
+
+    mock_set_nowait.assert_called_once_with(fuzzy_logic_switch_key, STATE_ON)
+    assert state.state == STATE_ON
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_heating_schedule_switch(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    async_turn_off,
+    async_turn_on,
+) -> None:
+    """Test heating schedule switch."""
+    await setup_integration(hass, config_entry)
+    heating_schedule_switch_entity_id = "switch.test_heating_schedule_switch"
+    heating_schedule_switch_key = "heating_schedule_switch"
+
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(heating_schedule_switch_entity_id)
+    assert entry
+
+    # Get initial value.
+    state = hass.states.get(heating_schedule_switch_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Heating schedule switch"
+
+    # Dispatch new value.
+    await connection.device.dispatch(
+        heating_schedule_switch_key,
+        EcomaxBinaryParameter(
+            device=connection.device,
+            value=1,
+            min_value=0,
+            max_value=1,
+            description=EcomaxParameterDescription(heating_schedule_switch_key),
+        ),
+    )
+    state = hass.states.get(heating_schedule_switch_entity_id)
+    assert state.state == STATE_ON
+
+    # Turn off.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_off(hass, heating_schedule_switch_entity_id)
+
+    mock_set_nowait.assert_called_once_with(heating_schedule_switch_key, STATE_OFF)
+    assert state.state == STATE_OFF
+
+    # Turn on.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_on(hass, heating_schedule_switch_entity_id)
+
+    mock_set_nowait.assert_called_once_with(heating_schedule_switch_key, STATE_ON)
+    assert state.state == STATE_ON
+
+
+@pytest.mark.usefixtures("ecomax_p", "water_heater")
+async def test_water_heater_schedule_switch(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    async_turn_off,
+    async_turn_on,
+) -> None:
+    """Test water heater schedule switch."""
+    await setup_integration(hass, config_entry)
+    water_heater_schedule_switch_entity_id = "switch.test_water_heater_schedule_switch"
+    water_heater_schedule_switch_key = "water_heater_schedule_switch"
+
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(water_heater_schedule_switch_entity_id)
+    assert entry
+
+    # Get initial value.
+    state = hass.states.get(water_heater_schedule_switch_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Water heater schedule switch"
+
+    # Dispatch new value.
+    await connection.device.dispatch(
+        water_heater_schedule_switch_key,
+        EcomaxBinaryParameter(
+            device=connection.device,
+            value=1,
+            min_value=0,
+            max_value=1,
+            description=EcomaxParameterDescription(water_heater_schedule_switch_key),
+        ),
+    )
+    state = hass.states.get(water_heater_schedule_switch_entity_id)
+    assert state.state == STATE_ON
+
+    # Turn off.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_off(hass, water_heater_schedule_switch_entity_id)
+
+    mock_set_nowait.assert_called_once_with(water_heater_schedule_switch_key, STATE_OFF)
+    assert state.state == STATE_OFF
+
+    # Turn on.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_on(hass, water_heater_schedule_switch_entity_id)
+
+    mock_set_nowait.assert_called_once_with(water_heater_schedule_switch_key, STATE_ON)
+    assert state.state == STATE_ON
 
 
 @pytest.mark.usefixtures("ecomax_p", "mixers")
-async def test_async_setup_and_update_entry_with_setup_mixers_error(
+async def test_mixer_enable_in_summer_mode_switch(
     hass: HomeAssistant,
-    async_add_entities: AddEntitiesCallback,
+    connection: EcomaxConnection,
     config_entry: MockConfigEntry,
+    setup_integration,
+    async_turn_off,
+    async_turn_on,
 ) -> None:
-    """Test setup and update switch entry for ecomax p
-    with error during mixer setup."""
-    with patch(
-        "custom_components.plum_ecomax.entity.EcomaxConnection.setup_mixers",
-        return_value=False,
-    ):
-        assert await async_setup_entry(hass, config_entry, async_add_entities)
+    """Test enable in summer mode switch."""
+    await setup_integration(hass, config_entry)
+    enable_in_summer_mode_entity_id = "switch.test_mixer_1_enable_in_summer_mode"
+    enable_in_summer_mode_key = "summer_work"
 
-    async_add_entities.assert_called_once()
-    args = async_add_entities.call_args[0]
-    added_entities = args[0]
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(enable_in_summer_mode_entity_id)
+    assert entry
 
-    # Check that mixer sensor is not added.
-    with pytest.raises(LookupError):
-        _lookup_switch(added_entities, "weather_control")
+    # Get initial value.
+    state = hass.states.get(enable_in_summer_mode_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Mixer 1 Enable in summer mode"
+
+    # Dispatch new value.
+    await connection.device.mixers[0].dispatch(
+        enable_in_summer_mode_key,
+        MixerBinaryParameter(
+            device=connection.device,
+            value=1,
+            min_value=0,
+            max_value=1,
+            description=MixerParameterDescription(enable_in_summer_mode_key),
+        ),
+    )
+
+    state = hass.states.get(enable_in_summer_mode_entity_id)
+    assert state.state == STATE_ON
+
+    # Turn off.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_off(hass, enable_in_summer_mode_entity_id)
+
+    mock_set_nowait.assert_called_once_with(enable_in_summer_mode_key, STATE_OFF)
+    assert state.state == STATE_OFF
+
+    # Turn on.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_on(hass, enable_in_summer_mode_entity_id)
+
+    mock_set_nowait.assert_called_once_with(enable_in_summer_mode_key, STATE_ON)
+    assert state.state == STATE_ON
+
+
+@pytest.mark.usefixtures("ecomax_i", "mixers")
+async def test_circuit_enable_in_summer_mode_switch(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    async_turn_off,
+    async_turn_on,
+) -> None:
+    """Test enable in summer mode switch."""
+    await setup_integration(hass, config_entry)
+    enable_in_summer_mode_entity_id = "switch.test_circuit_1_enable_in_summer_mode"
+    enable_in_summer_mode_key = "summer_work"
+
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(enable_in_summer_mode_entity_id)
+    assert entry
+
+    # Get initial value.
+    state = hass.states.get(enable_in_summer_mode_entity_id)
+    assert state.state == STATE_OFF
+    assert (
+        state.attributes[ATTR_FRIENDLY_NAME] == "test Circuit 1 Enable in summer mode"
+    )
+
+    # Dispatch new value.
+    await connection.device.mixers[0].dispatch(
+        enable_in_summer_mode_key,
+        MixerBinaryParameter(
+            device=connection.device,
+            value=1,
+            min_value=0,
+            max_value=1,
+            description=MixerParameterDescription(enable_in_summer_mode_key),
+        ),
+    )
+
+    state = hass.states.get(enable_in_summer_mode_entity_id)
+    assert state.state == STATE_ON
+
+    # Turn off.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_off(hass, enable_in_summer_mode_entity_id)
+
+    mock_set_nowait.assert_called_once_with(enable_in_summer_mode_key, STATE_OFF)
+    assert state.state == STATE_OFF
+
+    # Turn on.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_on(hass, enable_in_summer_mode_entity_id)
+
+    mock_set_nowait.assert_called_once_with(enable_in_summer_mode_key, STATE_ON)
+    assert state.state == STATE_ON
+
+
+@pytest.mark.usefixtures("ecomax_p", "mixers")
+async def test_mixer_weather_control_switch(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    async_turn_off,
+    async_turn_on,
+) -> None:
+    """Test mixer weather control switch."""
+    await setup_integration(hass, config_entry)
+    mixer_weather_control_switch_entity_id = (
+        "switch.test_mixer_1_weather_control_switch"
+    )
+    mixer_weather_control_switch_key = "weather_control"
+
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(mixer_weather_control_switch_entity_id)
+    assert entry
+
+    # Get initial value.
+    state = hass.states.get(mixer_weather_control_switch_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Mixer 1 Weather control switch"
+
+    # Dispatch new value.
+    await connection.device.mixers[0].dispatch(
+        mixer_weather_control_switch_key,
+        MixerBinaryParameter(
+            device=connection.device,
+            value=1,
+            min_value=0,
+            max_value=1,
+            description=MixerParameterDescription(mixer_weather_control_switch_key),
+        ),
+    )
+    state = hass.states.get(mixer_weather_control_switch_entity_id)
+    assert state.state == STATE_ON
+
+    # Turn off.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_off(hass, mixer_weather_control_switch_entity_id)
+
+    mock_set_nowait.assert_called_once_with(mixer_weather_control_switch_key, STATE_OFF)
+    assert state.state == STATE_OFF
+
+    # Turn on.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_on(hass, mixer_weather_control_switch_entity_id)
+
+    mock_set_nowait.assert_called_once_with(mixer_weather_control_switch_key, STATE_ON)
+    assert state.state == STATE_ON
+
+
+@pytest.mark.usefixtures("ecomax_p", "mixers")
+async def test_mixer_disable_pump_on_thermostat_switch(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    async_turn_off,
+    async_turn_on,
+) -> None:
+    """Test disable pump on thermostat switch."""
+    await setup_integration(hass, config_entry)
+    disable_pump_on_thermostat_entity_id = (
+        "switch.test_mixer_1_disable_pump_on_thermostat"
+    )
+    disable_pump_on_thermostat_key = "off_therm_pump"
+
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(disable_pump_on_thermostat_entity_id)
+    assert entry
+
+    # Get initial value.
+    state = hass.states.get(disable_pump_on_thermostat_entity_id)
+    assert state.state == STATE_OFF
+    assert (
+        state.attributes[ATTR_FRIENDLY_NAME]
+        == "test Mixer 1 Disable pump on thermostat"
+    )
+
+    # Dispatch new value.
+    await connection.device.mixers[0].dispatch(
+        disable_pump_on_thermostat_key,
+        MixerBinaryParameter(
+            device=connection.device,
+            value=1,
+            min_value=0,
+            max_value=1,
+            description=MixerParameterDescription(disable_pump_on_thermostat_key),
+        ),
+    )
+
+    state = hass.states.get(disable_pump_on_thermostat_entity_id)
+    assert state.state == STATE_ON
+
+    # Turn off.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_off(hass, disable_pump_on_thermostat_entity_id)
+
+    mock_set_nowait.assert_called_once_with(disable_pump_on_thermostat_key, STATE_OFF)
+    assert state.state == STATE_OFF
+
+    # Turn on.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_on(hass, disable_pump_on_thermostat_entity_id)
+
+    mock_set_nowait.assert_called_once_with(disable_pump_on_thermostat_key, STATE_ON)
+    assert state.state == STATE_ON
+
+
+@pytest.mark.usefixtures("ecomax_i", "mixers")
+async def test_circuit_enable_circuit_switch(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    async_turn_off,
+    async_turn_on,
+) -> None:
+    """Test enable circuit switch."""
+    await setup_integration(hass, config_entry)
+    enable_circuit_entity_id = "switch.test_circuit_1_enable_circuit"
+    enable_circuit_key = "support"
+
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(enable_circuit_entity_id)
+    assert entry
+
+    # Get initial value.
+    state = hass.states.get(enable_circuit_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Circuit 1 Enable circuit"
+
+    # Dispatch new value.
+    await connection.device.mixers[0].dispatch(
+        enable_circuit_key,
+        MixerBinaryParameter(
+            device=connection.device,
+            value=1,
+            min_value=0,
+            max_value=1,
+            description=MixerParameterDescription(enable_circuit_key),
+        ),
+    )
+
+    state = hass.states.get(enable_circuit_entity_id)
+    assert state.state == STATE_ON
+
+    # Turn off.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_off(hass, enable_circuit_entity_id)
+
+    mock_set_nowait.assert_called_once_with(enable_circuit_key, STATE_OFF)
+    assert state.state == STATE_OFF
+
+    # Turn on.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_on(hass, enable_circuit_entity_id)
+
+    mock_set_nowait.assert_called_once_with(enable_circuit_key, STATE_ON)
+    assert state.state == STATE_ON

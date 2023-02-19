@@ -1,189 +1,233 @@
 """Test the climate platform."""
 
-from unittest.mock import AsyncMock, Mock, call, patch
+from unittest.mock import patch
 
-from homeassistant.components.climate import HVACAction
+from freezegun import freeze_time
+from homeassistant.components.climate import (
+    ATTR_CURRENT_TEMPERATURE,
+    ATTR_HVAC_ACTION,
+    ATTR_HVAC_MODES,
+    ATTR_MAX_TEMP,
+    ATTR_MIN_TEMP,
+    ATTR_PRESET_MODE,
+    ATTR_PRESET_MODES,
+    ATTR_TARGET_TEMP_STEP,
+    ATTR_TEMPERATURE,
+    DOMAIN as CLIMATE,
+    PRESET_COMFORT,
+    PRESET_ECO,
+    SERVICE_SET_PRESET_MODE,
+    SERVICE_SET_TEMPERATURE,
+    ClimateEntityFeature,
+    HVACAction,
+    HVACMode,
+)
+from homeassistant.const import ATTR_ENTITY_ID, ATTR_FRIENDLY_NAME
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyplumio.helpers.filters import Filter
-from pyplumio.helpers.parameter import Parameter
+from homeassistant.helpers import entity_registry as er
+from pyplumio.structures.thermostat_parameters import (
+    ThermostatParameter,
+    ThermostatParameterDescription,
+)
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.climate import (
+    CLIMATE_MODES,
+    HA_PRESET_TO_EM_TEMP,
     HA_TO_EM_MODE,
     PRESET_AIRING,
-    PRESET_ECO,
     PRESET_SCHEDULE,
-    EcomaxClimate,
-    async_setup_entry,
 )
+from custom_components.plum_ecomax.connection import EcomaxConnection
 
 
-@pytest.mark.usefixtures("connected", "thermostats")
-async def test_async_setup_and_update_entry_for_ecomax_p(
-    hass: HomeAssistant,
-    async_add_entities: AddEntitiesCallback,
-    config_entry: MockConfigEntry,
-    caplog,
-) -> None:
-    """Test setup and update climate entry for ecomax_p."""
-    assert await async_setup_entry(hass, config_entry, async_add_entities)
-    await hass.async_block_till_done()
-    async_add_entities.assert_called_once()
-    args = async_add_entities.call_args[0]
-    added_entities = list(args[0])
-    assert len(added_entities) == 1
-    entity = added_entities[0]
-    assert isinstance(entity, EcomaxClimate)
-    assert entity.entity_description.name == "Thermostat 1"
-    await entity.async_added_to_hass()
+@pytest.fixture(autouse=True)
+def bypass_connection_setup():
+    """Mock async get current platform."""
+    with patch("custom_components.plum_ecomax.connection.EcomaxConnection.async_setup"):
+        yield
 
-    # Test update preset mode.
-    assert entity.preset_mode == PRESET_SCHEDULE
-    assert entity.target_temperature_name == "day_target_temp"
-    await entity.async_update_preset_mode(HA_TO_EM_MODE[PRESET_AIRING])
-    assert entity.preset_mode == PRESET_AIRING
-    assert entity.target_temperature_name == "day_target_temp"
-    await entity.async_update_preset_mode(HA_TO_EM_MODE[PRESET_ECO])
-    assert entity.preset_mode == PRESET_ECO
-    assert entity.target_temperature_name == "night_target_temp"
 
-    # Test update preset mode to unknown mode.
-    await entity.async_update_preset_mode(9)
-    assert entity.preset_mode == PRESET_ECO
-    assert "Unknown climate preset 9" in caplog.text
+@pytest.fixture(autouse=True)
+def bypass_async_migrate_entry():
+    """Bypass async migrate entry."""
+    with patch("custom_components.plum_ecomax.async_migrate_entry", return_value=True):
+        yield
 
-    # Test update hvac action.
-    assert entity.hvac_action == HVACAction.IDLE
-    await entity.async_update_hvac_action(True)
-    assert entity.hvac_action == HVACAction.HEATING
 
-    # Test update current temperature.
-    assert entity.current_temperature == 0
-    await entity.async_update(25)
-    assert entity.current_temperature == 25
+@pytest.fixture(autouse=True)
+def set_connected(connected):
+    """Assume connected."""
 
-    # Test update target temperature.
-    assert entity.target_temperature == 16.0
-    parameter = Mock(spec=Parameter)
-    parameter.configure_mock(value=18.0, min_value=10.0, max_value=35.0)
-    with patch(
-        "custom_components.plum_ecomax.climate.Thermostat.get_parameter",
-        create=True,
-        return_value=parameter,
+
+@pytest.fixture(name="frozen_time")
+def fixture_frozen_time():
+    """Get frozen time."""
+    with freeze_time("2012-12-12 12:00:00") as frozen_time:
+        yield frozen_time
+
+
+@pytest.fixture(name="async_set_preset_mode")
+async def fixture_async_set_preset_mode():
+    """Sets the climate preset mode."""
+
+    async def async_set_preset_mode(
+        hass: HomeAssistant, entity_id: str, preset_mode: str
     ):
-        # Since target temperature parameter is dynamic and based
-        # on preset mode, we mock get_parameter call instead of using
-        # value passed to the callback.
-        await entity.async_update_target_temperature(value=None)
+        await hass.services.async_call(
+            CLIMATE,
+            SERVICE_SET_PRESET_MODE,
+            {ATTR_ENTITY_ID: entity_id, ATTR_PRESET_MODE: preset_mode},
+            blocking=True,
+        )
+        return hass.states.get(entity_id)
 
-    assert entity.target_temperature == 18.0
-    assert entity.max_temp == 35.0
-    assert entity.min_temp == 10.0
+    return async_set_preset_mode
 
-    # Test set target temperature.
-    with patch(
-        "custom_components.plum_ecomax.climate.Thermostat.set_value_nowait",
-        new_callable=Mock,
-    ) as mock_set_value_nowait:
-        await entity.async_set_temperature(temperature=15.1)
 
-    assert entity.target_temperature == 15.1
-    mock_set_value_nowait.assert_called_once_with(entity.target_temperature_name, 15.1)
+@pytest.fixture(name="async_set_temperature")
+async def fixture_async_set_temperature():
+    """Sets the climate temperature."""
 
-    # Test set preset mode.
-    with patch(
-        "custom_components.plum_ecomax.climate.Thermostat.set_value_nowait",
-        new_callable=Mock,
-    ), patch(
-        "custom_components.plum_ecomax.climate.Thermostat.get_value", return_value=True
+    async def async_set_temperature(
+        hass: HomeAssistant, entity_id: str, temperature: float
     ):
-        await entity.async_set_preset_mode(PRESET_SCHEDULE)
+        await hass.services.async_call(
+            CLIMATE,
+            SERVICE_SET_TEMPERATURE,
+            {ATTR_ENTITY_ID: entity_id, ATTR_TEMPERATURE: temperature},
+            blocking=True,
+        )
+        return hass.states.get(entity_id)
 
-    assert entity.preset_mode == PRESET_SCHEDULE
-    assert entity.target_temperature_name == "night_target_temp"
-
-
-@pytest.mark.usefixtures("thermostats")
-async def test_async_added_removed_to_hass(
-    hass: HomeAssistant,
-    async_add_entities: AddEntitiesCallback,
-    config_entry: MockConfigEntry,
-) -> None:
-    """Test adding and removing entity to/from hass."""
-    assert await async_setup_entry(hass, config_entry, async_add_entities)
-    await hass.async_block_till_done()
-    async_add_entities.assert_called_once()
-    args = async_add_entities.call_args[0]
-    added_entities = list(args[0])
-    entity = added_entities[0]
-
-    # Test adding entity to hass.
-    mock_throttle = AsyncMock(spec=Filter)
-    mock_on_change = AsyncMock(spec=Filter)
-    with patch(
-        "custom_components.plum_ecomax.climate.throttle",
-        return_value=mock_throttle,
-    ), patch(
-        "custom_components.plum_ecomax.climate.on_change",
-        return_value=mock_on_change,
-    ), patch(
-        "custom_components.plum_ecomax.climate.Thermostat.subscribe"
-    ) as mock_subscribe:
-        await entity.async_added_to_hass()
-
-    # Test removing entity from hass.
-    mock_subscribe.assert_has_calls(
-        [
-            call("state", mock_on_change),
-            call("contacts", mock_on_change),
-            call("current_temp", mock_throttle),
-            call("target_temp", mock_on_change),
-        ]
-    )
-    assert mock_throttle.await_count == 1
-    assert mock_on_change.await_count == 3
-
-    with patch(
-        "custom_components.plum_ecomax.climate.Thermostat.unsubscribe"
-    ) as mock_unsubscribe:
-        await entity.async_will_remove_from_hass()
-
-    mock_unsubscribe.assert_has_calls(
-        [
-            call("state", entity.async_update_preset_mode),
-            call("contacts", entity.async_update_hvac_action),
-            call("current_temp", entity.async_update),
-            call("target_temp", entity.async_update_target_temperature),
-        ]
-    )
-
-
-@pytest.mark.usefixtures("ecomax_common")
-async def test_async_setup_entry_without_thermostats(
-    hass: HomeAssistant,
-    async_add_entities: AddEntitiesCallback,
-    config_entry: MockConfigEntry,
-):
-    """Test setup climate entry without connected thermostats."""
-    with patch(
-        "custom_components.plum_ecomax.entity.EcomaxConnection.has_thermostats", False
-    ):
-        assert not await async_setup_entry(hass, config_entry, async_add_entities)
+    return async_set_temperature
 
 
 @pytest.mark.usefixtures("ecomax_p", "thermostats")
-async def test_async_setup_entry_with_setup_thermostats_error(
+async def test_thermostat(
     hass: HomeAssistant,
-    async_add_entities: AddEntitiesCallback,
+    connection: EcomaxConnection,
     config_entry: MockConfigEntry,
-):
-    """Test setup climate entry with error during thermostat setup."""
+    setup_integration,
+    async_set_preset_mode,
+    async_set_temperature,
+    frozen_time,
+    caplog,
+) -> None:
+    """Test indirect water heater."""
+    await setup_integration(hass, config_entry)
+    thermostat_entity_id = "climate.test_thermostat_1"
+    thermostat_state_key = "state"
+    thermostat_contacts_key = "contacts"
+    thermostat_current_temperature_key = "current_temp"
+    thermostat_target_temperature_key = "target_temp"
+    thermostat_day_target_temperature_key = "day_target_temp"
+    thermostat_night_target_temperature_key = "night_target_temp"
+    thermostat_mode_key = "mode"
+
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(thermostat_entity_id)
+    assert entry
+
+    # Get initial value.
+    state = hass.states.get(thermostat_entity_id)
+    assert state.state == HVACMode.HEAT
+    assert state.attributes[ATTR_HVAC_MODES] == [HVACMode.HEAT]
+    assert state.attributes[ATTR_MIN_TEMP] == 10
+    assert state.attributes[ATTR_MAX_TEMP] == 35
+    assert state.attributes[ATTR_TARGET_TEMP_STEP] == 0.1
+    assert state.attributes[ATTR_PRESET_MODES] == CLIMATE_MODES
+    assert state.attributes[ATTR_CURRENT_TEMPERATURE] == 0
+    assert state.attributes[ATTR_HVAC_ACTION] == HVACAction.IDLE
+    assert state.attributes[ATTR_PRESET_MODE] == PRESET_SCHEDULE
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Thermostat 1"
+    assert (
+        state.attributes["supported_features"]
+        == ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE
+    )
+
+    # Dispatch new room temperature.
+    frozen_time.move_to("12:00:10")
+    await connection.device.thermostats[0].dispatch(
+        thermostat_current_temperature_key, 18
+    )
+    state = hass.states.get(thermostat_entity_id)
+    assert state.attributes[ATTR_CURRENT_TEMPERATURE] == 18
+
+    # Dispatch new thermostat state.
+    await connection.device.thermostats[0].dispatch(
+        thermostat_state_key, HA_TO_EM_MODE[PRESET_ECO]
+    )
+    state = hass.states.get(thermostat_entity_id)
+    assert state.attributes[ATTR_PRESET_MODE] == PRESET_ECO
+
+    # Dispatch unknown thermostat state and check for log message.
+    await connection.device.thermostats[0].dispatch(thermostat_state_key, 99)
+    assert "Unknown climate preset 99" in caplog.text
+
+    # Dispatch new thermostat contacts state.
+    await connection.device.thermostats[0].dispatch(thermostat_contacts_key, True)
+    state = hass.states.get(thermostat_entity_id)
+    assert state.attributes[ATTR_HVAC_ACTION] == HVACAction.HEATING
+
+    # Dispatch new thermostat target temperature.
+    await connection.device.thermostats[0].dispatch(
+        thermostat_day_target_temperature_key,
+        ThermostatParameter(
+            offset=0,
+            device=connection.device,
+            value=160,
+            min_value=100,
+            max_value=350,
+            description=ThermostatParameterDescription(
+                thermostat_day_target_temperature_key, multiplier=10, size=2
+            ),
+        ),
+    )
+    await connection.device.thermostats[0].dispatch(
+        thermostat_target_temperature_key, 16
+    )
+    state = hass.states.get(thermostat_entity_id)
+    assert state.attributes[ATTR_TEMPERATURE] == 16
+
+    # Test that thermostat preset mode can be set.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_set_preset_mode(hass, thermostat_entity_id, PRESET_COMFORT)
+
+    mock_set_nowait.assert_called_once_with(
+        thermostat_mode_key, HA_TO_EM_MODE[PRESET_COMFORT]
+    )
+    assert state.attributes[ATTR_PRESET_MODE] == PRESET_COMFORT
+
+    # Test that correct target temperature is being set depending on the preset.
+    for preset, temperature in HA_PRESET_TO_EM_TEMP.items():
+        with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+            await async_set_preset_mode(hass, thermostat_entity_id, preset)
+            await async_set_temperature(hass, thermostat_entity_id, 19)
+
+        mock_set_nowait.assert_any_call(temperature, 19)
+
+        # Test that target temperature name doesn't change when
+        # in airing mode.
+        with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+            await async_set_preset_mode(hass, thermostat_entity_id, PRESET_ECO)
+            await async_set_preset_mode(hass, thermostat_entity_id, PRESET_AIRING)
+            await async_set_temperature(hass, thermostat_entity_id, 19)
+
+        mock_set_nowait.assert_any_call(thermostat_night_target_temperature_key, 19)
+
+    # Test without thermostat.
+    await hass.config_entries.async_remove(config_entry.entry_id)
+    await hass.async_block_till_done()
+    config_entry.add_to_hass(hass)
     with patch(
-        "custom_components.plum_ecomax.entity.EcomaxConnection.has_thermostats", True
-    ), patch(
-        "custom_components.plum_ecomax.entity.EcomaxConnection.setup_thermostats",
-        return_value=False,
+        "custom_components.plum_ecomax.connection.EcomaxConnection.has_thermostats",
+        False,
     ):
-        assert not await async_setup_entry(hass, config_entry, async_add_entities)
+        await setup_integration(hass, config_entry)
+
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(thermostat_entity_id)
+    assert not entry
