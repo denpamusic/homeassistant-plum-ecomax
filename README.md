@@ -2,8 +2,8 @@
 [![ci](https://github.com/denpamusic/homeassistant-plum-ecomax/actions/workflows/ci.yml/badge.svg)](https://github.com/denpamusic/homeassistant-plum-ecomax/actions/workflows/ci.yml)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/bfa869d3c97a62eeb71c/test_coverage)](https://codeclimate.com/github/denpamusic/homeassistant-plum-ecomax/test_coverage)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-[![stability-beta](https://img.shields.io/badge/stability-beta-33bbff.svg)](https://github.com/mkenney/software-guides/blob/master/STABILITY-BADGES.md#beta)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg)](https://github.com/hacs/integration)
+[![stability-beta](https://img.shields.io/badge/stability-beta-33bbff.svg)](https://github.com/denpamusic/software-guides/blob/master/STABILITY-BADGES.md#beta)
 
 > ⚠️ IMPORTANT: before upgrading to the upcoming Home Assistant 2023.3, please make sure that you have at least version 0.3.3 of plum-ecomax integration. Versions lower than 0.3.3 will stop working due to [removal of async_setup_platforms()](https://github.com/home-assistant/core/blob/dev/homeassistant/config_entries.py#L1326).
 
@@ -15,10 +15,10 @@ It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and sup
 ![ecoMAX controllers](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/ecomax.png)
 
 ## Table of contents
+- [Connect the ecoMAX](#connect-the-ecomax)
 - [Installation](#installation)
   - [HACS](#hacs)
   - [Manual](#manual)
-- [Connect the ecoMAX](#connect-the-ecomax)
 - [Configuration](#configuration)
 - [Entities](#entities)
   - [Controller](#controller-hub)
@@ -29,7 +29,6 @@ It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and sup
 - [License](#license)
 
 ## Connect the ecoMAX
-
 With this integration you have two ways of connecting to your ecoMAX controller. One is directly connecting the PC that runs Home Assistant via **RS485 to USB adapter**.
 
 Other way is to use **RS485 to WiFi converter**. This has a benefit of being able to move PC that runs Home Assistant away from the boiler and connect to it wirelessly.
@@ -54,13 +53,12 @@ If you have an ecoNET 300 device, be sure to [check it out](https://github.com/p
 
 ## Installation
 ### HACS
-1. Follow [this guide](https://hacs.xyz/docs/faq/custom_repositories) to add homeassistant-plum-ecomax as custom repository to the HACS.  
-URL of the repository:
-```
-https://github.com/denpamusic/homeassistant-plum-ecomax
-```
-2. Search for `ecomax` in HACS search window and install `Plum ecoMAX boiler controller integration`.
-3. Restart Home Assistant.
+Click the following My button to install the integration via hacs:
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=denpamusic&repository=homeassistant-plum-ecomax&category=integration)
+
+HACS is **recommended** method to install and update the plum-ecomax integration.  
+If you still don't use it, give it a try, I'm sure you'll love it!
 
 ### Manual
 
