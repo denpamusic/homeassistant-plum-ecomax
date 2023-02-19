@@ -34,7 +34,7 @@ from custom_components.plum_ecomax.diagnostics import (
 )
 
 
-@pytest.mark.usefixtures("ecomax_p_51", "mixers", "connection")
+@pytest.mark.usefixtures("ecomax_860p3_o", "mixers", "connection")
 async def test_diagnostics(
     hass: HomeAssistant,
     config_entry: ConfigEntry,

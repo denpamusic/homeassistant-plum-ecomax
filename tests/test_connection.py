@@ -125,7 +125,7 @@ async def test_async_get_sub_devices(ecomax_p: EcoMAX, caplog) -> None:
     assert "Detected indirect water heater" in caplog.text
 
 
-@pytest.mark.usefixtures("ecomax_p_51")
+@pytest.mark.usefixtures("ecomax_860p3_o")
 async def test_async_get_capabilities(ecomax_p: EcoMAX, caplog) -> None:
     """Test helper function to check device capabilities."""
     caplog.set_level(logging.INFO)

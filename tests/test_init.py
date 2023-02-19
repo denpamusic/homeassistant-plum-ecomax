@@ -195,7 +195,7 @@ async def test_migrate_entry_v4_5_to_v6(
     assert "Migration to version 7 successful" in caplog.text
 
 
-@pytest.mark.usefixtures("ecomax_p_51")
+@pytest.mark.usefixtures("ecomax_860p3_o")
 async def test_migrate_entry_v6_to_v7(
     hass: HomeAssistant, config_entry: ConfigEntry, caplog
 ) -> None:

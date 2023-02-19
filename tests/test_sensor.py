@@ -1053,14 +1053,14 @@ async def test_total_fuel_burned_sensor(
     assert state.state == "0.00"
 
 
-@pytest.mark.usefixtures("ecomax_p_51")
+@pytest.mark.usefixtures("ecomax_860p3_o")
 async def test_ash_pan_full_sensor(
     hass: HomeAssistant,
     connection: EcomaxConnection,
     config_entry: MockConfigEntry,
     setup_integration,
 ) -> None:
-    """Test ash pan sensor for product 51."""
+    """Test ash pan sensor for ecoMAX 860P3-O."""
     await setup_integration(hass, config_entry)
     ash_pan_full_entity_id = "sensor.test_ash_pan_full"
     ash_pan_full_key = 227
@@ -1072,7 +1072,7 @@ async def test_ash_pan_full_sensor(
 
     # Get initial value.
     state = hass.states.get(ash_pan_full_entity_id)
-    assert state.state == "0"
+    assert state.state == "49"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "test Ash pan full"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
