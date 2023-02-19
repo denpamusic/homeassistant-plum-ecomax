@@ -19,6 +19,7 @@ import voluptuous as vol
 from . import format_model_name
 from .connection import async_check_connection, async_get_connection_handler
 from .const import (
+    CONF_CAPABILITIES,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
@@ -59,9 +60,13 @@ async def validate_input(
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
     try:
-        title, product, modules, sub_devices = await async_check_connection(
-            await async_get_connection_handler(hass, data)
-        )
+        (
+            title,
+            product,
+            modules,
+            sub_devices,
+            capabilities,
+        ) = await async_check_connection(await async_get_connection_handler(hass, data))
     except ConnectionFailedError as connection_failure:
         raise CannotConnect from connection_failure
     except asyncio.TimeoutError as connection_timeout:
@@ -80,6 +85,7 @@ async def validate_input(
         CONF_PRODUCT_ID: product.id,
         CONF_SOFTWARE: modules.module_a,
         CONF_SUB_DEVICES: sub_devices,
+        CONF_CAPABILITIES: capabilities,
     }
 
 
@@ -118,6 +124,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_PRODUCT_ID,
                 CONF_SOFTWARE,
                 CONF_SUB_DEVICES,
+                CONF_CAPABILITIES,
             ):
                 user_input[field] = info[field]
 

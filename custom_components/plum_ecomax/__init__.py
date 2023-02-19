@@ -23,6 +23,7 @@ from pyplumio.structures.alerts import Alert
 from .connection import (
     DEFAULT_TIMEOUT,
     EcomaxConnection,
+    async_get_capabilities,
     async_get_connection_handler,
     async_get_sub_devices,
 )
@@ -193,6 +194,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             device = await connection.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
             product = await device.get(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
             data[CONF_PRODUCT_ID] = product.id
+            data[CONF_CAPABILITIES] = await async_get_capabilities(device)
             await connection.close()
             config_entry.version = 7
             hass.config_entries.async_update_entry(config_entry, data=data)

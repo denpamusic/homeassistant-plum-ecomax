@@ -12,6 +12,7 @@ from pyplumio.structures.product_info import ProductInfo
 import pytest
 
 from custom_components.plum_ecomax.const import (
+    CONF_CAPABILITIES,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
@@ -59,11 +60,18 @@ async def test_form_tcp(
     modules = Mock(spec=ConnectedModules)
     modules.configure_mock(module_a=device_data.get(CONF_SOFTWARE))
     sub_devices = device_data.get(CONF_SUB_DEVICES)
+    capabilities = device_data.get(CONF_CAPABILITIES)
 
     # Set up attribute values for the connection.
     with patch(
         "custom_components.plum_ecomax.config_flow.async_check_connection",
-        return_value=(config_data.get(CONF_HOST), product, modules, sub_devices),
+        return_value=(
+            config_data.get(CONF_HOST),
+            product,
+            modules,
+            sub_devices,
+            capabilities,
+        ),
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"], config_data
@@ -101,11 +109,18 @@ async def test_form_serial(
     modules = Mock(spec=ConnectedModules)
     modules.configure_mock(module_a=device_data.get(CONF_SOFTWARE))
     sub_devices = device_data.get(CONF_SUB_DEVICES)
+    capabilities = device_data.get(CONF_CAPABILITIES)
     config_data[CONF_CONNECTION_TYPE] = CONNECTION_TYPE_SERIAL
 
     with patch(
         "custom_components.plum_ecomax.config_flow.async_check_connection",
-        return_value=(config_data[CONF_DEVICE], product, modules, sub_devices),
+        return_value=(
+            config_data[CONF_DEVICE],
+            product,
+            modules,
+            sub_devices,
+            capabilities,
+        ),
     ):
         result2 = await hass.config_entries.flow.async_configure(
             result["flow_id"],
@@ -169,7 +184,7 @@ async def test_form_unsupported_product(
 
     with patch(
         "custom_components.plum_ecomax.config_flow.async_check_connection",
-        return_value=(None, Mock(autospec=ProductInfo), None, None),
+        return_value=(None, Mock(autospec=ProductInfo), None, None, None),
     ), patch(
         "custom_components.plum_ecomax.config_flow.ProductType",
         side_effect=ValueError,

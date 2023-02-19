@@ -32,6 +32,7 @@ from .const import (
     ATTR_THERMOSTATS,
     ATTR_WATER_HEATER,
     ATTR_WATER_HEATER_TEMP,
+    CONF_CAPABILITIES,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
@@ -69,7 +70,7 @@ async def async_get_connection_handler(
 
 async def async_check_connection(
     connection: Connection,
-) -> tuple[str, ProductInfo, ConnectedModules, list[str]]:
+) -> tuple[str, ProductInfo, ConnectedModules, list[str], list[str]]:
     """Perform connection check."""
     _LOGGER.debug("Starting device identification...")
 
@@ -83,9 +84,10 @@ async def async_check_connection(
     product = await device.get(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
     modules = await device.get(ATTR_MODULES, timeout=DEFAULT_TIMEOUT)
     sub_devices = await async_get_sub_devices(device)
+    capabilities = await async_get_capabilities(device)
     await connection.close()
 
-    return title, product, modules, sub_devices
+    return title, product, modules, sub_devices, capabilities
 
 
 async def async_get_sub_devices(device: Addressable) -> list[str]:
@@ -120,6 +122,22 @@ async def async_get_sub_devices(device: Addressable) -> list[str]:
         sub_devices.append(ATTR_WATER_HEATER)
 
     return sub_devices
+
+
+async def async_get_capabilities(device: Addressable) -> list[str]:
+    """Return device capabilities."""
+    _LOGGER.debug("Checking device capabilities...")
+
+    capabilities: list[str] = []
+
+    try:
+        await device.wait_for(ATTR_REGDATA, timeout=DEFAULT_TIMEOUT)
+        capabilities.append(ATTR_REGDATA)
+        _LOGGER.info("Detected supported regulator data.")
+    except asyncio.TimeoutError:
+        pass
+
+    return capabilities
 
 
 class EcomaxConnection:
