@@ -1055,9 +1055,8 @@ async def test_ash_pan_full_sensor(
     connection: EcomaxConnection,
     config_entry: MockConfigEntry,
     setup_integration,
-    frozen_time,
 ) -> None:
-    """Test fireplace temperature sensor."""
+    """Test ash pan sensor for product 51."""
     await setup_integration(hass, config_entry)
     ash_pan_full_entity_id = "sensor.test_ash_pan_full"
     ash_pan_full_key = 227
@@ -1075,7 +1074,6 @@ async def test_ash_pan_full_sensor(
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
     # Dispatch new value.
-    frozen_time.move_to("12:00:10")
     await connection.device.regdata.dispatch(ash_pan_full_key, 55)
     state = hass.states.get(ash_pan_full_entity_id)
     assert state.state == "55"
