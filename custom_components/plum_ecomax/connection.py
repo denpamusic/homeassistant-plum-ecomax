@@ -171,7 +171,7 @@ class EcomaxConnection:
         await device.wait_for(ATTR_ECOMAX_PARAMETERS, timeout=DEFAULT_TIMEOUT)
         self._device = device
 
-    async def setup_thermostats(self) -> bool:
+    async def async_setup_thermostats(self) -> bool:
         """Setup thermostats."""
         try:
             return await self.device.request(
@@ -184,7 +184,7 @@ class EcomaxConnection:
             _LOGGER.error("Timed out while trying to setup thermostats.")
             return False
 
-    async def setup_mixers(self) -> bool:
+    async def async_setup_mixers(self) -> bool:
         """Setup mixers."""
         try:
             return await self.device.request(

@@ -256,7 +256,7 @@ async def async_setup_entry(
     async_setup_ecomax_binary_sensors(connection, entities)
 
     # Add mixer/circuit binary sensors.
-    if connection.has_mixers and await connection.setup_mixers():
+    if connection.has_mixers and await connection.async_setup_mixers():
         async_setup_mixer_binary_sensors(connection, entities)
 
     return async_add_entities(entities)

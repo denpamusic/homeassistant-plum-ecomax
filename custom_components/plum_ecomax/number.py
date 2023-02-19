@@ -328,7 +328,7 @@ async def async_setup_entry(
     async_setup_ecomax_numbers(connection, entities)
 
     # Add mixer/circuit numbers.
-    if connection.has_mixers and await connection.setup_mixers():
+    if connection.has_mixers and await connection.async_setup_mixers():
         async_setup_mixer_numbers(connection, entities)
 
     return async_add_entities(entities)

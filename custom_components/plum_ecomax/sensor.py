@@ -594,7 +594,7 @@ async def async_setup_entry(
     async_setup_ecomax_meters(connection, entities)
 
     # Add mixer/circuit sensors.
-    if connection.has_mixers and await connection.setup_mixers():
+    if connection.has_mixers and await connection.async_setup_mixers():
         async_setup_mixer_sensors(connection, entities)
 
     if has_meters(entities):

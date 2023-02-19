@@ -248,7 +248,7 @@ async def async_setup_entry(
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     _LOGGER.debug("Starting setup of climate platform...")
 
-    if connection.has_thermostats and await connection.setup_thermostats():
+    if connection.has_thermostats and await connection.async_setup_thermostats():
         return async_add_entities(
             EcomaxClimate(connection, thermostat)
             for thermostat in connection.device.thermostats.values()

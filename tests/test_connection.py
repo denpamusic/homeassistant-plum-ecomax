@@ -184,7 +184,7 @@ async def test_async_setup(
     assert connection.name == config_data.get(CONF_DEVICE)
 
 
-async def test_setup_thermostats(
+async def test_async_setup_thermostats(
     hass: HomeAssistant, config_entry: ConfigEntry, caplog
 ) -> None:
     """Test setup thermostats."""
@@ -193,8 +193,8 @@ async def test_setup_thermostats(
         "custom_components.plum_ecomax.connection.EcomaxConnection.device"
     ) as mock_device:
         mock_device.request = AsyncMock(side_effect=(True, asyncio.TimeoutError))
-        assert await connection.setup_thermostats()
-        assert not await connection.setup_thermostats()
+        assert await connection.async_setup_thermostats()
+        assert not await connection.async_setup_thermostats()
 
     assert "Timed out while trying to setup thermostats" in caplog.text
     mock_device.request.assert_any_await(
@@ -205,7 +205,7 @@ async def test_setup_thermostats(
     )
 
 
-async def test_setup_mixers(
+async def test_async_setup_mixers(
     hass: HomeAssistant, config_entry: ConfigEntry, caplog
 ) -> None:
     """Test setup mixers."""
@@ -214,8 +214,8 @@ async def test_setup_mixers(
         "custom_components.plum_ecomax.connection.EcomaxConnection.device"
     ) as mock_device:
         mock_device.request = AsyncMock(side_effect=(True, asyncio.TimeoutError))
-        assert await connection.setup_mixers()
-        assert not await connection.setup_mixers()
+        assert await connection.async_setup_mixers()
+        assert not await connection.async_setup_mixers()
 
     assert "Timed out while trying to setup mixers" in caplog.text
     mock_device.request.assert_any_await(
