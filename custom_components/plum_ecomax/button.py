@@ -1,7 +1,6 @@
 """Platform for button integration."""
 from __future__ import annotations
 
-import asyncio
 from dataclasses import dataclass
 
 from homeassistant.components.button import (
@@ -60,14 +59,8 @@ class EcomaxButton(EcomaxEntity, ButtonEntity):
 
     async def async_press(self) -> None:
         """Press the button."""
-        if not hasattr(self.connection, self.entity_description.press_fn):
-            raise NotImplementedError()
-
         func = getattr(self.connection, self.entity_description.press_fn)
-        if asyncio.iscoroutinefunction(func):
-            await func()
-        else:
-            func()
+        await func()
 
     @property
     def entity_registry_enabled_default(self) -> bool:
@@ -76,7 +69,6 @@ class EcomaxButton(EcomaxEntity, ButtonEntity):
 
     async def async_update(self, value) -> None:
         """Retrieve latest state."""
-        raise NotImplementedError()
 
     async def async_added_to_hass(self):
         """Called when an entity has their entity_id assigned."""
@@ -93,5 +85,5 @@ async def async_setup_entry(
     """Set up the sensor platform."""
     connection = hass.data[DOMAIN][config_entry.entry_id]
     return async_add_entities(
-        [EcomaxButton(connection, description) for description in BUTTON_TYPES]
+        EcomaxButton(connection, description) for description in BUTTON_TYPES
     )

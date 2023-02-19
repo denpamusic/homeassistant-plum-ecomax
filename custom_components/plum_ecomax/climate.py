@@ -26,7 +26,7 @@ from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from pyplumio.devices import Thermostat
-from pyplumio.helpers.filters import on_change, throttle
+from pyplumio.filters import on_change, throttle
 
 from .connection import EcomaxConnection
 from .const import DOMAIN
@@ -141,19 +141,19 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
         temperature = round(kwargs[ATTR_TEMPERATURE], 1)
-        self.device.set_value_nowait(self.target_temperature_name, temperature)
+        self.device.set_nowait(self.target_temperature_name, temperature)
         self._attr_target_temperature = temperature
         self.async_write_ha_state()
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         """Set new preset mode."""
         mode = HA_TO_EM_MODE[preset_mode]
-        self.device.set_value_nowait(ATTR_MODE, mode)
+        self.device.set_nowait(ATTR_MODE, mode)
         self._attr_preset_mode = preset_mode
         await self._async_update_target_temperature_name()
         self.async_write_ha_state()
 
-    async def async_update(self, value: float) -> None:
+    async def async_update(self, value) -> None:
         """Update entity state."""
         self._attr_current_temperature = value
         self.async_write_ha_state()
@@ -187,7 +187,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         callbacks = {
             "state": on_change(self.async_update_preset_mode),
             "contacts": on_change(self.async_update_hvac_action),
-            "current_temp": throttle(self.async_update, seconds=10),
+            "current_temp": throttle(on_change(self.async_update), seconds=10),
             "target_temp": on_change(self.async_update_target_temperature),
         }
 
@@ -213,7 +213,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
 
         preset_mode = self.preset_mode
         if preset_mode == PRESET_SCHEDULE:
-            schedule = await self.device.get_value("schedule")
+            schedule = await self.device.get("schedule")
             preset_mode = PRESET_ECO if schedule else PRESET_COMFORT
 
         self._attr_target_temperature_name = HA_PRESET_TO_EM_TEMP[preset_mode]
@@ -221,7 +221,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
     async def _async_update_target_temperature(self) -> None:
         """Update target temperature from the parameter related to the
         current state."""
-        target_temp = await self.device.get_parameter(self.target_temperature_name)
+        target_temp = await self.device.get(self.target_temperature_name)
         self._attr_max_temp = target_temp.max_value
         self._attr_min_temp = target_temp.min_value
         self._attr_target_temperature = target_temp.value
@@ -249,9 +249,9 @@ async def async_setup_entry(
     _LOGGER.debug("Starting setup of climate platform...")
 
     if connection.has_thermostats and await connection.setup_thermostats():
-        thermostats: dict[int, Thermostat] = connection.device.data[ATTR_THERMOSTATS]
         return async_add_entities(
-            EcomaxClimate(connection, thermostat) for thermostat in thermostats.values()
+            EcomaxClimate(connection, thermostat)
+            for thermostat in connection.device.thermostats.values()
         )
 
     return False

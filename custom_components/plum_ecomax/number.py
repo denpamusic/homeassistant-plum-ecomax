@@ -1,7 +1,7 @@
 """Platform for number integration."""
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass
 import logging
 from typing import Any, Optional
@@ -17,30 +17,37 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from pyplumio.const import ProductType
-from pyplumio.devices import Mixer
-from pyplumio.helpers.filters import on_change
+from pyplumio.filters import on_change
 from pyplumio.helpers.parameter import Parameter
 
 from .connection import EcomaxConnection
-from .const import ATTR_MIXERS, CALORIFIC_KWH_KG, DOMAIN
+from .const import CALORIFIC_KWH_KG, DOMAIN, MODULE_A
 from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
-class EcomaxNumberEntityDescription(NumberEntityDescription):
+class EcomaxNumberEntityAdditionalKeys:
+    """Additional keys for ecoMAX number entity description."""
+
+    product_types: set[ProductType]
+
+
+@dataclass
+class EcomaxNumberEntityDescription(
+    NumberEntityDescription, EcomaxNumberEntityAdditionalKeys
+):
     """Describes ecoMAX number entity."""
 
     filter_fn: Callable[[Any], Any] = on_change
     mode: NumberMode = NumberMode.AUTO
     min_value_key: Optional[str] = None
     max_value_key: Optional[str] = None
+    module: str = MODULE_A
 
 
-COMMON_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = ()
-
-ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
+NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="heating_target_temp",
         name="Target heating temperature",
@@ -48,18 +55,21 @@ ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         native_step=1,
         min_value_key="min_heating_target_temp",
         max_value_key="max_heating_target_temp",
+        product_types={ProductType.ECOMAX_P},
     ),
     EcomaxNumberEntityDescription(
         key="min_heating_target_temp",
         name="Minimum heating temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
+        product_types={ProductType.ECOMAX_P},
     ),
     EcomaxNumberEntityDescription(
         key="max_heating_target_temp",
         name="Maximum heating temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
+        product_types={ProductType.ECOMAX_P},
     ),
     EcomaxNumberEntityDescription(
         key="heating_temp_grate",
@@ -68,18 +78,21 @@ ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         native_step=1,
         min_value_key="min_heating_target_temp",
         max_value_key="max_heating_target_temp",
+        product_types={ProductType.ECOMAX_P},
     ),
     EcomaxNumberEntityDescription(
         key="min_fuzzy_logic_power",
         name="Fuzzy logic minimum power",
         native_unit_of_measurement=PERCENTAGE,
         native_step=1,
+        product_types={ProductType.ECOMAX_P},
     ),
     EcomaxNumberEntityDescription(
         key="max_fuzzy_logic_power",
         name="Fuzzy logic maximum power",
         native_unit_of_measurement=PERCENTAGE,
         native_step=1,
+        product_types={ProductType.ECOMAX_P},
     ),
     EcomaxNumberEntityDescription(
         key="fuel_calorific_value_kwh_kg",
@@ -87,15 +100,9 @@ ECOMAX_P_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         native_unit_of_measurement=CALORIFIC_KWH_KG,
         native_step=0.1,
         mode=NumberMode.BOX,
+        product_types={ProductType.ECOMAX_P},
     ),
 )
-
-ECOMAX_I_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = ()
-
-NUMBER_TYPES: dict[ProductType, tuple[EcomaxNumberEntityDescription, ...]] = {
-    ProductType.ECOMAX_P: COMMON_NUMBER_TYPES + ECOMAX_P_NUMBER_TYPES,
-    ProductType.ECOMAX_I: COMMON_NUMBER_TYPES + ECOMAX_I_NUMBER_TYPES,
-}
 
 
 class EcomaxNumber(EcomaxEntity, NumberEntity):
@@ -131,7 +138,7 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Update current value."""
-        self.device.set_value_nowait(self.entity_description.key, value)
+        self.device.set_nowait(self.entity_description.key, value)
         self._attr_native_value = value
         self.async_write_ha_state()
 
@@ -173,72 +180,77 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
         self.async_write_ha_state()
 
 
-ECOMAX_P_MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
-    EcomaxNumberEntityDescription(
+@dataclass
+class EcomaxMixerNumberEntityDescription(EcomaxNumberEntityDescription):
+    """Describes ecoMAX mixer entity."""
+
+
+MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
+    EcomaxMixerNumberEntityDescription(
         key="mixer_target_temp",
         name="Target mixer temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         min_value_key="min_target_temp",
         max_value_key="max_target_temp",
+        product_types={ProductType.ECOMAX_P},
     ),
-    EcomaxNumberEntityDescription(
+    EcomaxMixerNumberEntityDescription(
         key="min_target_temp",
         name="Minimum mixer temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
+        product_types={ProductType.ECOMAX_P},
     ),
-    EcomaxNumberEntityDescription(
+    EcomaxMixerNumberEntityDescription(
         key="max_target_temp",
         name="Maximum mixer temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
+        product_types={ProductType.ECOMAX_P},
     ),
-)
-
-ECOMAX_I_MIXER_NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
-    EcomaxNumberEntityDescription(
+    EcomaxMixerNumberEntityDescription(
         key="mixer_target_temp",
         name="Target circuit temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         min_value_key="min_target_temp",
         max_value_key="max_target_temp",
+        product_types={ProductType.ECOMAX_I},
     ),
-    EcomaxNumberEntityDescription(
+    EcomaxMixerNumberEntityDescription(
         key="min_target_temp",
         name="Minimum circuit temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
+        product_types={ProductType.ECOMAX_I},
     ),
-    EcomaxNumberEntityDescription(
+    EcomaxMixerNumberEntityDescription(
         key="max_target_temp",
         name="Maximum circuit temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
+        product_types={ProductType.ECOMAX_I},
     ),
-    EcomaxNumberEntityDescription(
+    EcomaxMixerNumberEntityDescription(
         key="day_target_temp",
         name="Day target circuit temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         min_value_key="min_target_temp",
         max_value_key="max_target_temp",
+        product_types={ProductType.ECOMAX_I},
     ),
-    EcomaxNumberEntityDescription(
+    EcomaxMixerNumberEntityDescription(
         key="night_target_temp",
         name="Night target circuit temperature",
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         native_step=1,
         min_value_key="min_target_temp",
         max_value_key="max_target_temp",
+        product_types={ProductType.ECOMAX_I},
     ),
 )
-
-MIXER_NUMBER_TYPES: dict[ProductType, tuple[EcomaxNumberEntityDescription, ...]] = {
-    ProductType.ECOMAX_P: ECOMAX_P_MIXER_NUMBER_TYPES,
-    ProductType.ECOMAX_I: ECOMAX_I_MIXER_NUMBER_TYPES,
-}
 
 
 class MixerNumber(MixerEntity, EcomaxNumber):
@@ -255,15 +267,49 @@ class MixerNumber(MixerEntity, EcomaxNumber):
         super().__init__(connection, description)
 
 
-def async_setup_mixer_entities(
+def get_by_product_type(
+    product_type: ProductType,
+    descriptions: Iterable[EcomaxNumberEntityDescription],
+) -> Generator[EcomaxNumberEntityDescription, None, None]:
+    """Filter descriptions by product type."""
+    for description in descriptions:
+        if product_type in description.product_types:
+            yield description
+
+
+def get_by_modules(
+    connected_modules, descriptions: Iterable[EcomaxNumberEntityDescription]
+) -> Generator[EcomaxNumberEntityDescription, None, None]:
+    """Filter descriptions by modules."""
+    for description in descriptions:
+        if getattr(connected_modules, description.module, None) is not None:
+            yield description
+
+
+def async_setup_ecomax_numbers(
     connection: EcomaxConnection, entities: list[EcomaxEntity]
 ) -> None:
-    """Setup mixer number entites."""
-    mixers: dict[int, Mixer] = connection.device.data[ATTR_MIXERS]
-    for index in mixers.keys():
+    """Setup ecoMAX numbers."""
+    entities.extend(
+        EcomaxNumber(connection, description)
+        for description in get_by_modules(
+            connection.device.modules,
+            get_by_product_type(connection.product_type, NUMBER_TYPES),
+        )
+    )
+
+
+def async_setup_mixer_numbers(
+    connection: EcomaxConnection, entities: list[EcomaxEntity]
+) -> None:
+    """Setup mixer numbers."""
+    for index in connection.device.mixers.keys():
         entities.extend(
             MixerNumber(connection, description, index)
-            for description in MIXER_NUMBER_TYPES[connection.product_type]
+            for description in get_by_modules(
+                connection.device.modules,
+                get_by_product_type(connection.product_type, MIXER_NUMBER_TYPES),
+            )
         )
 
 
@@ -276,20 +322,13 @@ async def async_setup_entry(
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     _LOGGER.debug("Starting setup of number platform...")
 
-    async def _async_setup_entities(product_type: ProductType) -> list[EcomaxEntity]:
-        """Add number entities."""
-        entities: list[EcomaxEntity] = []
+    entities: list[EcomaxEntity] = []
 
-        # Add ecoMAX numbers.
-        entities.extend(
-            EcomaxNumber(connection, description)
-            for description in NUMBER_TYPES[product_type]
-        )
+    # Add ecoMAX numbers.
+    async_setup_ecomax_numbers(connection, entities)
 
-        # Add mixer/circuit numbers.
-        if connection.has_mixers and await connection.setup_mixers():
-            async_setup_mixer_entities(connection, entities)
+    # Add mixer/circuit numbers.
+    if connection.has_mixers and await connection.setup_mixers():
+        async_setup_mixer_numbers(connection, entities)
 
-        return entities
-
-    return async_add_entities(await _async_setup_entities(connection.product_type))
+    return async_add_entities(entities)

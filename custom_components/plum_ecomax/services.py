@@ -113,7 +113,7 @@ def async_setup_set_parameter_service(
         devices = async_extract_referenced_devices(hass, connection, selected)
         for device in devices:
             try:
-                if result := await device.set_value(name, value):
+                if result := await device.set(name, value):
                     return result
             except ParameterNotFoundError as e:
                 _LOGGER.exception(e)
@@ -145,8 +145,9 @@ def async_setup_set_schedule_service(
         end_time = service_call.data[ATTR_END]
 
         name = name.lower().replace(" ", "_")
-        if name in connection.device.data.get(ATTR_SCHEDULES, {}):
-            schedule = connection.device.data[ATTR_SCHEDULES][name]
+        schedules = connection.device.get_nowait(ATTR_SCHEDULES, {})
+        if name in schedules:
+            schedule = schedules[name]
             schedule_day = getattr(schedule, weekday.lower())
             try:
                 schedule_day.set_state(

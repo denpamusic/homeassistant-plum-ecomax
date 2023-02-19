@@ -1,7 +1,7 @@
 """Platform for switch integration."""
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass
 import logging
 from typing import Any
@@ -13,75 +13,82 @@ from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from pyplumio.const import ProductType
-from pyplumio.devices import Mixer
-from pyplumio.helpers.filters import on_change
+from pyplumio.filters import on_change
 from pyplumio.helpers.parameter import Parameter
 from pyplumio.helpers.typing import ParameterValueType
 
 from .connection import EcomaxConnection
-from .const import ATTR_ECOMAX_CONTROL, ATTR_MIXERS, DOMAIN
+from .const import ATTR_ECOMAX_CONTROL, DOMAIN, MODULE_A
 from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
-class EcomaxSwitchEntityDescription(SwitchEntityDescription):
+class EcomaxSwitchEntityAdditionalKeys:
+    """Additional keys for ecoMAX switch entity description."""
+
+    product_types: set[ProductType]
+
+
+@dataclass
+class EcomaxSwitchEntityDescription(
+    SwitchEntityDescription, EcomaxSwitchEntityAdditionalKeys
+):
     """Describes ecoMAX switch entity."""
 
     state_off: ParameterValueType = STATE_OFF
     state_on: ParameterValueType = STATE_ON
     filter_fn: Callable[[Any], Any] = on_change
+    module: str = MODULE_A
 
 
-COMMON_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
+SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     EcomaxSwitchEntityDescription(
         key=ATTR_ECOMAX_CONTROL,
         name="Controller switch",
+        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
     EcomaxSwitchEntityDescription(
         key="water_heater_disinfection",
         name="Water heater disinfection switch",
+        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
     EcomaxSwitchEntityDescription(
         key="water_heater_work_mode",
         name="Water heater pump switch",
         state_off=0,
         state_on=2,
+        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
     EcomaxSwitchEntityDescription(
         key="summer_mode",
         name="Summer mode switch",
         state_off=0,
         state_on=1,
+        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
-)
-
-ECOMAX_P_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     EcomaxSwitchEntityDescription(
         key="heating_weather_control",
         name="Weather control switch",
+        product_types={ProductType.ECOMAX_P},
     ),
     EcomaxSwitchEntityDescription(
         key="fuzzy_logic",
         name="Fuzzy logic switch",
+        product_types={ProductType.ECOMAX_P},
     ),
     EcomaxSwitchEntityDescription(
         key="heating_schedule_switch",
         name="Heating schedule switch",
+        product_types={ProductType.ECOMAX_P},
     ),
     EcomaxSwitchEntityDescription(
         key="water_heater_schedule_switch",
         name="Water heater schedule switch",
+        product_types={ProductType.ECOMAX_P},
     ),
 )
-
-ECOMAX_I_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = ()
-
-SWITCH_TYPES: dict[ProductType, tuple[EcomaxSwitchEntityDescription, ...]] = {
-    ProductType.ECOMAX_P: COMMON_SWITCH_TYPES + ECOMAX_P_SWITCH_TYPES,
-    ProductType.ECOMAX_I: COMMON_SWITCH_TYPES + ECOMAX_I_SWITCH_TYPES,
-}
 
 
 class EcomaxSwitch(EcomaxEntity, SwitchEntity):
@@ -102,7 +109,7 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
 
     async def async_turn_on(self, **kwargs) -> None:
         """Turn the entity on."""
-        self.device.set_value_nowait(
+        self.device.set_nowait(
             self.entity_description.key, self.entity_description.state_on
         )
         self._attr_is_on = True
@@ -110,7 +117,7 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
 
     async def async_turn_off(self, **kwargs) -> None:
         """Turn the entity off."""
-        self.device.set_value_nowait(
+        self.device.set_nowait(
             self.entity_description.key, self.entity_description.state_off
         )
         self._attr_is_on = False
@@ -122,41 +129,38 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
             self.entity_description.state_on: True,
             self.entity_description.state_off: False,
         }
+
         self._attr_is_on = states[value.value] if value.value in states else None
         self.async_write_ha_state()
 
 
-ECOMAX_P_MIXER_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
-    EcomaxSwitchEntityDescription(
-        key="weather_control",
-        name="Weather control switch",
-    ),
-    EcomaxSwitchEntityDescription(
-        key="off_therm_pump",
-        name="Disable pump on thermostat",
-    ),
-    EcomaxSwitchEntityDescription(
+@dataclass
+class MixerSwitchEntityDescription(EcomaxSwitchEntityDescription):
+    """Describes ecoMAX mixer switch entity."""
+
+
+MIXER_SWITCH_TYPES: tuple[MixerSwitchEntityDescription, ...] = (
+    MixerSwitchEntityDescription(
         key="summer_work",
         name="Enable in summer mode",
+        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
-)
-
-ECOMAX_I_MIXER_SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
+    MixerSwitchEntityDescription(
+        key="weather_control",
+        name="Weather control switch",
+        product_types={ProductType.ECOMAX_P},
+    ),
+    MixerSwitchEntityDescription(
+        key="off_therm_pump",
+        name="Disable pump on thermostat",
+        product_types={ProductType.ECOMAX_P},
+    ),
     EcomaxSwitchEntityDescription(
         key="support",
         name="Enable circuit",
-    ),
-    EcomaxSwitchEntityDescription(
-        key="summer_work",
-        name="Enable in summer mode",
+        product_types={ProductType.ECOMAX_I},
     ),
 )
-
-
-MIXER_SWITCH_TYPES: dict[ProductType, tuple[EcomaxSwitchEntityDescription, ...]] = {
-    ProductType.ECOMAX_P: ECOMAX_P_MIXER_SWITCH_TYPES,
-    ProductType.ECOMAX_I: ECOMAX_I_MIXER_SWITCH_TYPES,
-}
 
 
 class MixerSwitch(MixerEntity, EcomaxSwitch):
@@ -173,15 +177,49 @@ class MixerSwitch(MixerEntity, EcomaxSwitch):
         super().__init__(connection, description)
 
 
-def async_setup_mixer_entities(
+def get_by_product_type(
+    product_type: ProductType,
+    descriptions: Iterable[EcomaxSwitchEntityDescription],
+) -> Generator[EcomaxSwitchEntityDescription, None, None]:
+    """Filter descriptions by product type."""
+    for description in descriptions:
+        if product_type in description.product_types:
+            yield description
+
+
+def get_by_modules(
+    connected_modules, descriptions: Iterable[EcomaxSwitchEntityDescription]
+) -> Generator[EcomaxSwitchEntityDescription, None, None]:
+    """Filter descriptions by modules."""
+    for description in descriptions:
+        if getattr(connected_modules, description.module, None) is not None:
+            yield description
+
+
+def async_setup_ecomax_switch(
     connection: EcomaxConnection, entities: list[EcomaxEntity]
 ) -> None:
-    """Setup mixer number entites."""
-    mixers: dict[int, Mixer] = connection.device.data[ATTR_MIXERS]
-    for index in mixers.keys():
+    """Setup ecoMAX switches."""
+    entities.extend(
+        EcomaxSwitch(connection, description)
+        for description in get_by_modules(
+            connection.device.modules,
+            get_by_product_type(connection.product_type, SWITCH_TYPES),
+        )
+    )
+
+
+def async_setup_mixer_switch(
+    connection: EcomaxConnection, entities: list[EcomaxEntity]
+) -> None:
+    """Setup mixers switches."""
+    for index in connection.device.mixers.keys():
         entities.extend(
             MixerSwitch(connection, description, index)
-            for description in MIXER_SWITCH_TYPES[connection.product_type]
+            for description in get_by_modules(
+                connection.device.modules,
+                get_by_product_type(connection.product_type, MIXER_SWITCH_TYPES),
+            )
         )
 
 
@@ -194,20 +232,13 @@ async def async_setup_entry(
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     _LOGGER.debug("Starting setup of switch platform...")
 
-    async def _async_setup_entities(product_type: ProductType) -> list[EcomaxEntity]:
-        """Add switch entites."""
-        entities: list[EcomaxEntity] = []
+    entities: list[EcomaxEntity] = []
 
-        # Add ecoMAX switches.
-        entities.extend(
-            EcomaxSwitch(connection, description)
-            for description in SWITCH_TYPES[product_type]
-        )
+    # Add ecoMAX switches.
+    async_setup_ecomax_switch(connection, entities)
 
-        # Add mixer/circuit switches.
-        if connection.has_mixers and await connection.setup_mixers():
-            async_setup_mixer_entities(connection, entities)
+    # Add mixer/circuit switches.
+    if connection.has_mixers and await connection.setup_mixers():
+        async_setup_mixer_switch(connection, entities)
 
-        return entities
-
-    return async_add_entities(await _async_setup_entities(connection.product_type))
+    return async_add_entities(entities)

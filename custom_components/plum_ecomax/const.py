@@ -4,7 +4,6 @@ from typing import Final
 
 DOMAIN = "plum_ecomax"
 MANUFACTURER: Final = "Plum Sp. z o.o."
-ECOMAX: Final = "ecomax"
 
 # Generic attributes.
 ATTR_ALERTS: Final = "alerts"
@@ -12,8 +11,6 @@ ATTR_ECOMAX_CONTROL: Final = "ecomax_control"
 ATTR_ECOMAX_PARAMETERS: Final = "ecomax_parameters"
 ATTR_END: Final = "end"
 ATTR_FROM: Final = "from"
-ATTR_FUEL_BURNED: Final = "fuel_burned"
-ATTR_LAMBDA_LEVEL: Final = "lambda_level"
 ATTR_LOADED: Final = "loaded"
 ATTR_MIXERS: Final = "mixers"
 ATTR_MIXER_PARAMETERS: Final = "mixer_parameters"
@@ -30,9 +27,17 @@ ATTR_VALUE: Final = "value"
 ATTR_WATER_HEATER: Final = "water_heater"
 ATTR_WATER_HEATER_TEMP: Final = "water_heater_temp"
 ATTR_WEEKDAY: Final = "weekday"
+ATTR_FIRMWARE: Final = "firmware"
 
-# ecoMAX modules.
-ATTR_MODULE_LAMBDA: Final = "module_lambda"
+# Devices.
+ECOMAX: Final = "ecomax"
+ECOLAMBDA: Final = "ecolambda"
+ECOSTER: Final = "ecoster"
+
+# Modules.
+MODULE_A: Final = "module_a"
+MODULE_B: Final = "module_b"
+MODULE_C: Final = "module_c"
 
 # Weekdays.
 WEEKDAYS: Final[tuple[str, ...]] = (

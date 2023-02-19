@@ -22,7 +22,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
-from pyplumio.helpers.filters import on_change, throttle
+from pyplumio.filters import on_change, throttle
 from pyplumio.helpers.parameter import Parameter
 
 from .connection import EcomaxConnection
@@ -60,6 +60,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     _attr_current_operation: str | None
     _attr_hysteresis: int
     _attr_entity_registry_enabled_default: bool
+    _attr_available: bool
 
     def __init__(
         self,
@@ -84,12 +85,13 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         self._attr_current_temperature = None
         self._attr_current_operation = None
         self._attr_hysteresis = 0
+        self._attr_available = True
         self._attr_entity_registry_enabled_default = True
 
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
         temperature = kwargs[ATTR_TEMPERATURE]
-        self.device.set_value_nowait(
+        self.device.set_nowait(
             f"{self.entity_description.key}_target_temp", int(temperature)
         )
         self._attr_target_temperature = temperature
@@ -97,7 +99,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
 
     async def async_set_operation_mode(self, operation_mode: str):
         """Set new target operation mode."""
-        self.device.set_value_nowait(
+        self.device.set_nowait(
             f"{self.entity_description.key}_work_mode", HA_TO_EM_STATE[operation_mode]
         )
         self._attr_current_operation = operation_mode
@@ -135,7 +137,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         """Called when an entity has their entity_id assigned."""
         key = self.entity_description.key
         callbacks = {
-            f"{key}_temp": throttle(self.async_update, seconds=10),
+            f"{key}_temp": throttle(on_change(self.async_update), seconds=10),
             f"{key}_target_temp": on_change(self.async_update_target_temp),
             f"{key}_work_mode": on_change(self.async_update_work_mode),
             f"{key}_hysteresis": on_change(self.async_update_hysteresis),

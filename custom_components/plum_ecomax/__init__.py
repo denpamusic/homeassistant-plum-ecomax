@@ -17,7 +17,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry
-from pyplumio.helpers.filters import delta
+from pyplumio.filters import delta
 from pyplumio.structures.alerts import Alert
 
 from .connection import (
@@ -149,8 +149,8 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                 await async_get_connection_handler(hass, config_entry.data),
             )
             await connection.connect()
-            device = await connection.get_device(ECOMAX, timeout=DEFAULT_TIMEOUT)
-            product = await device.get_value(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
+            device = await connection.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
+            product = await device.get(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
             data[CONF_PRODUCT_TYPE] = product.type
             await connection.close()
             config_entry.version = 3
@@ -175,7 +175,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                 await async_get_connection_handler(hass, config_entry.data),
             )
             await connection.connect()
-            device = await connection.get_device(ECOMAX, timeout=DEFAULT_TIMEOUT)
+            device = await connection.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
             data[CONF_SUB_DEVICES] = await async_get_sub_devices(device)
             await connection.close()
             config_entry.version = 6

@@ -17,7 +17,8 @@ import pyplumio
 from pyplumio.connection import Connection
 from pyplumio.const import FrameType
 from pyplumio.devices import Addressable
-from pyplumio.helpers.product_info import ConnectedModules, ProductInfo
+from pyplumio.structures.modules import ConnectedModules
+from pyplumio.structures.product_info import ProductInfo
 
 from .const import (
     ATTR_ECOMAX_PARAMETERS,
@@ -77,9 +78,9 @@ async def async_check_connection(
         else connection.device
     )
     await connection.connect()
-    device = await connection.get_device(ECOMAX, timeout=DEFAULT_TIMEOUT)
-    product = await device.get_value(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
-    modules = await device.get_value(ATTR_MODULES, timeout=DEFAULT_TIMEOUT)
+    device = await connection.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
+    product = await device.get(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
+    modules = await device.get(ATTR_MODULES, timeout=DEFAULT_TIMEOUT)
     sub_devices = await async_get_sub_devices(device)
     await connection.close()
 
@@ -145,7 +146,7 @@ class EcomaxConnection:
     async def async_setup(self) -> None:
         """Setup connection and add hass stop handler."""
         await self.connect()
-        device: Addressable = await self.get_device(ECOMAX, timeout=DEFAULT_TIMEOUT)
+        device: Addressable = await self.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
         await device.wait_for(ATTR_LOADED, timeout=DEFAULT_TIMEOUT)
         await device.wait_for(ATTR_SENSORS, timeout=DEFAULT_TIMEOUT)
         await device.wait_for(ATTR_ECOMAX_PARAMETERS, timeout=DEFAULT_TIMEOUT)
@@ -154,7 +155,7 @@ class EcomaxConnection:
     async def setup_thermostats(self) -> bool:
         """Setup thermostats."""
         try:
-            return await self.device.make_request(
+            return await self.device.request(
                 ATTR_THERMOSTAT_PARAMETERS,
                 FrameType.REQUEST_THERMOSTAT_PARAMETERS,
                 retries=5,
@@ -167,7 +168,7 @@ class EcomaxConnection:
     async def setup_mixers(self) -> bool:
         """Setup mixers."""
         try:
-            return await self.device.make_request(
+            return await self.device.request(
                 ATTR_MIXER_PARAMETERS,
                 FrameType.REQUEST_MIXER_PARAMETERS,
                 retries=5,

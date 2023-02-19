@@ -1,8 +1,7 @@
 """Platform for sensor integration."""
 from __future__ import annotations
 
-from collections.abc import Callable
-import dataclasses
+from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass
 from datetime import date, datetime
 import logging
@@ -35,23 +34,19 @@ from homeassistant.helpers.entity_platform import (
 from homeassistant.helpers.typing import ConfigType, StateType
 import homeassistant.util.dt as dt_util
 from pyplumio.const import ProductType
-from pyplumio.devices import Mixer
-from pyplumio.helpers.filters import aggregate, on_change, throttle
-from pyplumio.helpers.product_info import ConnectedModules
+from pyplumio.filters import aggregate, on_change, throttle
+from pyplumio.structures.modules import ConnectedModules
 import voluptuous as vol
 
 from .connection import EcomaxConnection
 from .const import (
-    ATTR_FUEL_BURNED,
-    ATTR_LAMBDA_LEVEL,
-    ATTR_MIXERS,
-    ATTR_MODULE_LAMBDA,
-    ATTR_MODULES,
     ATTR_PASSWORD,
     ATTR_PRODUCT,
     ATTR_VALUE,
     DOMAIN,
+    ECOLAMBDA,
     FLOW_KGH,
+    MODULE_A,
 )
 from .entity import EcomaxEntity, MixerEntity
 
@@ -86,6 +81,7 @@ class EcomaxSensorEntityAdditionalKeys:
     """Additional keys for ecoMAX sensor entity description."""
 
     value_fn: Callable[[Any], Any]
+    product_types: set[ProductType]
 
 
 @dataclass
@@ -95,9 +91,10 @@ class EcomaxSensorEntityDescription(
     """Describes ecoMAX sensor entity."""
 
     filter_fn: Callable[[Any], Any] = on_change
+    module: str = MODULE_A
 
 
-COMMON_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
+SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="heating_temp",
         name="Heating temperature",
@@ -108,6 +105,7 @@ COMMON_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_precision=1,
         value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
+        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
     EcomaxSensorEntityDescription(
         key="water_heater_temp",
@@ -119,6 +117,7 @@ COMMON_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_precision=1,
         value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
+        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
     EcomaxSensorEntityDescription(
         key="outside_temp",
@@ -130,6 +129,7 @@ COMMON_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_precision=1,
         value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
+        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
     EcomaxSensorEntityDescription(
         key="heating_target",
@@ -140,6 +140,7 @@ COMMON_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         native_precision=1,
         value_fn=lambda x: x,
+        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
     EcomaxSensorEntityDescription(
         key="water_heater_target",
@@ -150,6 +151,7 @@ COMMON_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         native_precision=1,
         value_fn=lambda x: x,
+        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
     EcomaxSensorEntityDescription(
         key="state",
@@ -157,6 +159,7 @@ COMMON_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         icon="mdi:eye",
         value_fn=lambda x: EM_TO_HA_STATE[x] if x in EM_TO_HA_STATE else STATE_UNKNOWN,
         translation_key="ecomax_state",
+        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
     EcomaxSensorEntityDescription(
         key=ATTR_PASSWORD,
@@ -164,22 +167,34 @@ COMMON_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         icon="mdi:form-textbox-password",
         value_fn=lambda x: x,
         entity_category=EntityCategory.DIAGNOSTIC,
+        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
     EcomaxSensorEntityDescription(
         key="modules",
         name="Software version",
         value_fn=lambda x: x.module_a,
         entity_category=EntityCategory.DIAGNOSTIC,
+        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
     EcomaxSensorEntityDescription(
         key=ATTR_PRODUCT,
         name="UID",
         value_fn=lambda x: x.uid,
         entity_category=EntityCategory.DIAGNOSTIC,
+        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
-)
-
-ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
+    EcomaxSensorEntityDescription(
+        key="lambda_level",
+        name="Oxygen level",
+        icon="mdi:weather-windy-variant",
+        native_unit_of_measurement=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda x: x,
+        filter_fn=lambda x: throttle(on_change(x), seconds=10),
+        module=ECOLAMBDA,
+        native_precision=1,
+        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
+    ),
     EcomaxSensorEntityDescription(
         key="power",
         name="Power",
@@ -189,6 +204,7 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.POWER,
         native_precision=2,
         value_fn=lambda x: x,
+        product_types={ProductType.ECOMAX_P},
     ),
     EcomaxSensorEntityDescription(
         key="fuel_level",
@@ -197,6 +213,7 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda x: x,
+        product_types={ProductType.ECOMAX_P},
     ),
     EcomaxSensorEntityDescription(
         key="fuel_consumption",
@@ -207,6 +224,7 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_precision=2,
         value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
+        product_types={ProductType.ECOMAX_P},
     ),
     EcomaxSensorEntityDescription(
         key="load",
@@ -215,6 +233,7 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda x: x,
+        product_types={ProductType.ECOMAX_P},
     ),
     EcomaxSensorEntityDescription(
         key="fan_power",
@@ -224,6 +243,7 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_precision=1,
         value_fn=lambda x: x,
+        product_types={ProductType.ECOMAX_P},
     ),
     EcomaxSensorEntityDescription(
         key="optical_temp",
@@ -234,6 +254,7 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_precision=1,
         value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
+        product_types={ProductType.ECOMAX_P},
     ),
     EcomaxSensorEntityDescription(
         key="feeder_temp",
@@ -245,6 +266,7 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_precision=1,
         value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
+        product_types={ProductType.ECOMAX_P},
     ),
     EcomaxSensorEntityDescription(
         key="exhaust_temp",
@@ -256,6 +278,7 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_precision=1,
         value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
+        product_types={ProductType.ECOMAX_P},
     ),
     EcomaxSensorEntityDescription(
         key="return_temp",
@@ -267,6 +290,7 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_precision=1,
         value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
+        product_types={ProductType.ECOMAX_P},
     ),
     EcomaxSensorEntityDescription(
         key="lower_buffer_temp",
@@ -278,6 +302,7 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_precision=1,
         value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
+        product_types={ProductType.ECOMAX_P},
     ),
     EcomaxSensorEntityDescription(
         key="upper_buffer_temp",
@@ -289,10 +314,8 @@ ECOMAX_P_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_precision=1,
         value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
+        product_types={ProductType.ECOMAX_P},
     ),
-)
-
-ECOMAX_I_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="lower_solar_temp",
         name="Lower solar temperature",
@@ -303,6 +326,7 @@ ECOMAX_I_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_precision=1,
         value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
+        product_types={ProductType.ECOMAX_I},
     ),
     EcomaxSensorEntityDescription(
         key="upper_solar_temp",
@@ -314,6 +338,7 @@ ECOMAX_I_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_precision=1,
         value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
+        product_types={ProductType.ECOMAX_I},
     ),
     EcomaxSensorEntityDescription(
         key="fireplace_temp",
@@ -325,30 +350,9 @@ ECOMAX_I_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_precision=1,
         value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
+        product_types={ProductType.ECOMAX_I},
     ),
 )
-
-SENSOR_TYPES: dict[int, tuple[EcomaxMeterEntityDescription, ...]] = {
-    ProductType.ECOMAX_P: COMMON_SENSOR_TYPES + ECOMAX_P_SENSOR_TYPES,
-    ProductType.ECOMAX_I: COMMON_SENSOR_TYPES + ECOMAX_I_SENSOR_TYPES,
-}
-
-MODULE_LAMBDA_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
-    EcomaxSensorEntityDescription(
-        key=ATTR_LAMBDA_LEVEL,
-        name="Oxygen level",
-        icon="mdi:weather-windy-variant",
-        native_unit_of_measurement=PERCENTAGE,
-        native_precision=1,
-        state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda x: x,
-        filter_fn=lambda x: throttle(on_change(x), seconds=10),
-    ),
-)
-
-MODULE_SENSOR_TYPES: dict[str, tuple[EcomaxSensorEntityDescription, ...]] = {
-    ATTR_MODULE_LAMBDA: MODULE_LAMBDA_SENSOR_TYPES
-}
 
 
 class EcomaxSensor(EcomaxEntity, SensorEntity):
@@ -373,8 +377,13 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
         self.async_write_ha_state()
 
 
-ECOMAX_P_MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
-    EcomaxSensorEntityDescription(
+@dataclass
+class MixerSensorEntityDescription(EcomaxSensorEntityDescription):
+    """Describes ecoMAX mixer sensor entity."""
+
+
+MIXER_SENSOR_TYPES: tuple[MixerSensorEntityDescription, ...] = (
+    MixerSensorEntityDescription(
         key="current_temp",
         name="Mixer temperature",
         icon="mdi:thermometer",
@@ -384,8 +393,9 @@ ECOMAX_P_MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_precision=1,
         value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
+        product_types={ProductType.ECOMAX_P},
     ),
-    EcomaxSensorEntityDescription(
+    MixerSensorEntityDescription(
         key="target_temp",
         name="Mixer target temperature",
         icon="mdi:thermometer",
@@ -395,11 +405,9 @@ ECOMAX_P_MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_precision=1,
         value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
+        product_types={ProductType.ECOMAX_P},
     ),
-)
-
-ECOMAX_I_MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
-    EcomaxSensorEntityDescription(
+    MixerSensorEntityDescription(
         key="current_temp",
         name="Circuit temperature",
         icon="mdi:thermometer",
@@ -409,8 +417,9 @@ ECOMAX_I_MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_precision=1,
         value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
+        product_types={ProductType.ECOMAX_I},
     ),
-    EcomaxSensorEntityDescription(
+    MixerSensorEntityDescription(
         key="target_temp",
         name="Circuit target temperature",
         icon="mdi:thermometer",
@@ -420,13 +429,9 @@ ECOMAX_I_MIXER_SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         native_precision=1,
         value_fn=lambda x: x,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
+        product_types={ProductType.ECOMAX_I},
     ),
 )
-
-MIXER_SENSOR_TYPES: dict[ProductType, tuple[EcomaxSensorEntityDescription, ...]] = {
-    ProductType.ECOMAX_P: ECOMAX_P_MIXER_SENSOR_TYPES,
-    ProductType.ECOMAX_I: ECOMAX_I_MIXER_SENSOR_TYPES,
-}
 
 
 class MixerSensor(MixerEntity, EcomaxSensor):
@@ -435,7 +440,7 @@ class MixerSensor(MixerEntity, EcomaxSensor):
     def __init__(
         self,
         connection: EcomaxConnection,
-        description: EcomaxSensorEntityDescription,
+        description: MixerSensorEntityDescription,
         index: int,
     ):
         """Initialize mixer sensor object."""
@@ -450,7 +455,7 @@ class EcomaxMeterEntityDescription(EcomaxSensorEntityDescription):
 
 METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
     EcomaxMeterEntityDescription(
-        key=ATTR_FUEL_BURNED,
+        key="fuel_burned",
         name="Total fuel burned",
         icon="mdi:counter",
         native_unit_of_measurement=UnitOfMass.KILOGRAMS,
@@ -459,6 +464,7 @@ METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
         native_precision=2,
         value_fn=lambda x: x,
         filter_fn=lambda x: aggregate(x, seconds=30),
+        product_types={ProductType.ECOMAX_P},
     ),
 )
 
@@ -497,39 +503,79 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
         self._attr_native_value = 0.0
         self.async_write_ha_state()
 
-    async def async_update(self, value) -> None:
+    async def async_update(self, value=None) -> None:
         """Update meter state."""
-        self._attr_native_value += value
-        self.async_write_ha_state()
+        if value is not None:
+            self._attr_native_value += value
+            self.async_write_ha_state()
 
     @property
     def native_value(self) -> StateType:
         return self.entity_description.value_fn(self._attr_native_value)
 
 
-def async_setup_mixer_entities(
+def has_meters(entities: Iterable[EcomaxEntity]) -> bool:
+    """Determines if entities collection has meters in it."""
+    return any(entity for entity in entities if isinstance(entity, EcomaxMeter))
+
+
+def get_by_product_type(
+    product_type: ProductType, descriptions: Iterable[EcomaxSensorEntityDescription]
+) -> Generator[EcomaxSensorEntityDescription, None, None]:
+    """Get descriptions by product type."""
+    for description in descriptions:
+        if product_type in description.product_types:
+            yield description
+
+
+def get_by_modules(
+    connected_modules: ConnectedModules,
+    descriptions: Iterable[EcomaxSensorEntityDescription],
+) -> Generator[EcomaxSensorEntityDescription, None, None]:
+    """Get descriptions by modules."""
+    for description in descriptions:
+        if getattr(connected_modules, description.module, None) is not None:
+            yield description
+
+
+def async_setup_ecomax_sensors(
+    connection: EcomaxConnection, entities: list[EcomaxEntity]
+) -> None:
+    """Setup ecoMAX sensors."""
+    entities.extend(
+        EcomaxSensor(connection, description)
+        for description in get_by_modules(
+            connection.device.modules,
+            get_by_product_type(connection.product_type, SENSOR_TYPES),
+        )
+    )
+
+
+def async_setup_ecomax_meters(
+    connection: EcomaxConnection, entities: list[EcomaxEntity]
+) -> None:
+    """Setup ecoMAX meters."""
+    entities.extend(
+        EcomaxMeter(connection, description)
+        for description in get_by_modules(
+            connection.device.modules,
+            get_by_product_type(connection.product_type, METER_TYPES),
+        )
+    )
+
+
+def async_setup_mixer_sensors(
     connection: EcomaxConnection, entities: list[EcomaxEntity]
 ) -> None:
     """Setup mixer sensors."""
-    mixers: dict[int, Mixer] = connection.device.data[ATTR_MIXERS]
-    for index in mixers.keys():
+    for index in connection.device.mixers.keys():
         entities.extend(
             MixerSensor(connection, description, index)
-            for description in MIXER_SENSOR_TYPES[connection.product_type]
-        )
-
-
-def async_setup_module_entities(
-    connection: EcomaxConnection, entities: list[EcomaxEntity]
-) -> None:
-    """Setup module-dependent sensors."""
-    modules: ConnectedModules = connection.device.data[ATTR_MODULES]
-    for module, version in dataclasses.asdict(modules).items():
-        if version is not None and module in MODULE_SENSOR_TYPES:
-            entities.extend(
-                EcomaxSensor(connection, description)
-                for description in MODULE_SENSOR_TYPES[module]
+            for description in get_by_modules(
+                connection.device.modules,
+                get_by_product_type(connection.product_type, MIXER_SENSOR_TYPES),
             )
+        )
 
 
 async def async_setup_entry(
@@ -541,40 +587,26 @@ async def async_setup_entry(
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     _LOGGER.debug("Starting setup of sensor platform...")
 
-    async def _async_setup_entities(product_type: ProductType) -> list[EcomaxEntity]:
-        """Add sensor entites."""
-        entities: list[EcomaxEntity] = []
+    entities: list[EcomaxEntity] = []
 
-        # Add ecoMAX sensors.
-        entities.extend(
-            EcomaxSensor(connection, description)
-            for description in SENSOR_TYPES[product_type]
+    # Add ecoMAX sensors and meters.
+    async_setup_ecomax_sensors(connection, entities)
+    async_setup_ecomax_meters(connection, entities)
+
+    # Add mixer/circuit sensors.
+    if connection.has_mixers and await connection.setup_mixers():
+        async_setup_mixer_sensors(connection, entities)
+
+    if has_meters(entities):
+        # If there's meters, setup services for them.
+        platform = async_get_current_platform()
+        platform.async_register_entity_service(
+            SERVICE_RESET_METER, {}, "async_reset_meter"
+        )
+        platform.async_register_entity_service(
+            SERVICE_CALIBRATE_METER,
+            {vol.Required(ATTR_VALUE): cv.positive_float},
+            "async_calibrate_meter",
         )
 
-        # Add module-dependent sensors.
-        async_setup_module_entities(connection, entities)
-
-        # Add mixer/circuit sensors.
-        if connection.has_mixers and await connection.setup_mixers():
-            async_setup_mixer_entities(connection, entities)
-
-        # Add meter sensors.
-        if product_type == ProductType.ECOMAX_P:
-            entities.extend(
-                EcomaxMeter(connection, description) for description in METER_TYPES
-            )
-
-            # Setup services.
-            platform = async_get_current_platform()
-            platform.async_register_entity_service(
-                SERVICE_RESET_METER, {}, "async_reset_meter"
-            )
-            platform.async_register_entity_service(
-                SERVICE_CALIBRATE_METER,
-                {vol.Required(ATTR_VALUE): cv.positive_float},
-                "async_calibrate_meter",
-            )
-
-        return entities
-
-    return async_add_entities(await _async_setup_entities(connection.product_type))
+    return async_add_entities(entities)
