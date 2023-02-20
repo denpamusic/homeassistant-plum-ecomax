@@ -142,58 +142,36 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
     """Migrate old entry."""
     _LOGGER.debug("Migrating from version %s", config_entry.version)
 
+    connection = EcomaxConnection(
+        hass, config_entry, await async_get_connection_handler(hass, config_entry.data)
+    )
+    await connection.connect()
+    data = {**config_entry.data}
+
     try:
+        device = await connection.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
+
         if config_entry.version in (1, 2):
-            data = {**config_entry.data}
-            connection = EcomaxConnection(
-                hass,
-                config_entry,
-                await async_get_connection_handler(hass, config_entry.data),
-            )
-            await connection.connect()
-            device = await connection.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
             product = await device.get(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
             data[CONF_PRODUCT_TYPE] = product.type
-            await connection.close()
             config_entry.version = 3
-            hass.config_entries.async_update_entry(config_entry, data=data)
 
         if config_entry.version == 3:
-            data = {**config_entry.data}
             data[CONF_MODEL] = format_model_name(data[CONF_MODEL])
             config_entry.version = 4
-            hass.config_entries.async_update_entry(config_entry, data=data)
 
         if config_entry.version in (4, 5):
-            data = {**config_entry.data}
-            connection = EcomaxConnection(
-                hass,
-                config_entry,
-                await async_get_connection_handler(hass, config_entry.data),
-            )
-            await connection.connect()
-            device = await connection.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
             data[CONF_SUB_DEVICES] = await async_get_sub_devices(device)
-            await connection.close()
             config_entry.version = 6
-            hass.config_entries.async_update_entry(config_entry, data=data)
 
         if config_entry.version == 6:
-            data = {**config_entry.data}
-            connection = EcomaxConnection(
-                hass,
-                config_entry,
-                await async_get_connection_handler(hass, config_entry.data),
-            )
-            await connection.connect()
-            device = await connection.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
             product = await device.get(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
-            data[CONF_PRODUCT_ID] = product.id
             data[CONF_CAPABILITIES] = await async_get_capabilities(device)
-            await connection.close()
+            data[CONF_PRODUCT_ID] = product.id
             config_entry.version = 7
-            hass.config_entries.async_update_entry(config_entry, data=data)
 
+        hass.config_entries.async_update_entry(config_entry, data=data)
+        await connection.close()
         _LOGGER.info("Migration to version %s successful", config_entry.version)
     except asyncio.TimeoutError:
         _LOGGER.error("Migration failed, device has failed to respond in time")
