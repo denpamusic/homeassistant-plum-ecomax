@@ -171,7 +171,6 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         if config_entry.version == 6:
             product = await device.get(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
             data[CONF_PRODUCT_ID] = product.id
-            await connection.close()
             config_entry.version = 7
 
         hass.config_entries.async_update_entry(config_entry, data=data)
