@@ -515,11 +515,6 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
         return self.entity_description.value_fn(self._attr_native_value)
 
 
-def has_meters(entities: Iterable[EcomaxEntity]) -> bool:
-    """Determines if entities collection has meters in it."""
-    return any(entity for entity in entities if isinstance(entity, EcomaxMeter))
-
-
 @dataclass
 class RegdataSensorEntityAdditionalKeys:
     """Additional keys for RegData sensor entity description."""
@@ -557,11 +552,6 @@ class RegdataSensor(EcomaxSensor):
     def device(self) -> RegulatorData:
         """Return device object."""
         return self.connection.device.regdata
-
-
-def has_regdata_sensors(entities: Iterable[EcomaxEntity]) -> bool:
-    """Determines if entities collection has regdata sensors in it."""
-    return any(entity for entity in entities if isinstance(entity, RegdataSensor))
 
 
 def get_by_product_id(
