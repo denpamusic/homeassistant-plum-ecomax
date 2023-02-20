@@ -196,7 +196,7 @@ async def test_async_setup_thermostats(
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.device"
     ) as mock_device:
-        mock_device.request = AsyncMock(side_effect=(True, asyncio.TimeoutError))
+        mock_device.request = AsyncMock(side_effect=(True, ValueError))
         assert await connection.async_setup_thermostats()
         assert not await connection.async_setup_thermostats()
 
@@ -217,7 +217,7 @@ async def test_async_setup_mixers(
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.device"
     ) as mock_device:
-        mock_device.request = AsyncMock(side_effect=(True, asyncio.TimeoutError))
+        mock_device.request = AsyncMock(side_effect=(True, ValueError))
         assert await connection.async_setup_mixers()
         assert not await connection.async_setup_mixers()
 
@@ -238,12 +238,17 @@ async def test_async_setup_regdata(
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.device"
     ) as mock_device:
-        mock_device.wait_for = AsyncMock(side_effect=(True, asyncio.TimeoutError))
+        mock_device.request = AsyncMock(side_effect=(True, ValueError))
         assert await connection.async_setup_regdata()
         assert not await connection.async_setup_regdata()
 
     assert "Timed out while trying to setup regulator data" in caplog.text
-    mock_device.wait_for.assert_any_await(ATTR_REGDATA, timeout=DEFAULT_TIMEOUT)
+    mock_device.request.assert_any_await(
+        ATTR_REGDATA,
+        FrameType.REQUEST_DATA_SCHEMA,
+        retries=5,
+        timeout=DEFAULT_TIMEOUT,
+    )
 
 
 async def test_async_update_sub_device(

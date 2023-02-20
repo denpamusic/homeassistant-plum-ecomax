@@ -39,6 +39,7 @@ from pyplumio.structures.product_info import ATTR_PRODUCT, ProductInfo
 from pyplumio.structures.statuses import ATTR_HEATING_TARGET, ATTR_WATER_HEATER_TARGET
 from pyplumio.structures.temperatures import (
     ATTR_EXHAUST_TEMP,
+    ATTR_FEEDER_TEMP,
     ATTR_FIREPLACE_TEMP,
     ATTR_HEATING_TEMP,
     ATTR_LOWER_BUFFER_TEMP,
@@ -213,7 +214,7 @@ async def test_water_heater_temperature_sensor(
     assert state.state == "51.0"
 
     # Test without water heater.
-    del connection.device.data["water_heater_temp"]
+    del connection.device.data[ATTR_WATER_HEATER_TEMP]
     await hass.config_entries.async_remove(config_entry.entry_id)
     await setup_integration(hass, config_entry)
     state = hass.states.get(water_heater_temperature_entity_id)
@@ -651,7 +652,7 @@ async def test_feeder_temperature_sensor(
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
-    await connection.device.dispatch("feeder_temp", 35)
+    await connection.device.dispatch(ATTR_FEEDER_TEMP, 35)
     state = hass.states.get(feeder_temperature_entity_id)
     assert state.state == "35.0"
 

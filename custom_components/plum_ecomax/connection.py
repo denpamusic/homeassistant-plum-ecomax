@@ -133,8 +133,8 @@ async def async_get_capabilities(device: Addressable) -> list[str]:
 
     try:
         await device.wait_for(ATTR_REGDATA, timeout=DEFAULT_TIMEOUT)
-        capabilities.append(ATTR_REGDATA)
         _LOGGER.info("Detected supported regulator data.")
+        capabilities.append(ATTR_REGDATA)
     except asyncio.TimeoutError:
         pass
 
@@ -181,7 +181,7 @@ class EcomaxConnection:
                 retries=5,
                 timeout=DEFAULT_TIMEOUT,
             )
-        except asyncio.TimeoutError:
+        except ValueError:
             _LOGGER.error("Timed out while trying to setup thermostats.")
             return False
 
@@ -194,16 +194,20 @@ class EcomaxConnection:
                 retries=5,
                 timeout=DEFAULT_TIMEOUT,
             )
-        except asyncio.TimeoutError:
+        except ValueError:
             _LOGGER.error("Timed out while trying to setup mixers.")
             return False
 
     async def async_setup_regdata(self) -> bool:
         """Setup regdata."""
         try:
-            await self.device.wait_for(ATTR_REGDATA, timeout=DEFAULT_TIMEOUT)
-            return True
-        except asyncio.TimeoutError:
+            return await self.device.request(
+                ATTR_REGDATA,
+                FrameType.REQUEST_DATA_SCHEMA,
+                retries=5,
+                timeout=DEFAULT_TIMEOUT,
+            )
+        except ValueError:
             _LOGGER.error("Timed out while trying to setup regulator data.")
             return False
 
