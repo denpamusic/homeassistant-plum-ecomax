@@ -592,37 +592,31 @@ def get_by_modules(
             yield description
 
 
-def async_setup_ecomax_sensors(
-    connection: EcomaxConnection, entities: list[EcomaxEntity]
-) -> None:
+def async_setup_ecomax_sensors(connection: EcomaxConnection) -> list[EcomaxSensor]:
     """Setup ecoMAX sensors."""
-    entities.extend(
+    return [
         EcomaxSensor(connection, description)
         for description in get_by_modules(
             connection.device.modules,
             get_by_product_type(connection.product_type, SENSOR_TYPES),
         )
-    )
+    ]
 
 
-def async_setup_ecomax_meters(
-    connection: EcomaxConnection, entities: list[EcomaxEntity]
-) -> None:
+def async_setup_ecomax_meters(connection: EcomaxConnection) -> list[EcomaxMeter]:
     """Setup ecoMAX meters."""
-    entities.extend(
+    return [
         EcomaxMeter(connection, description)
         for description in get_by_modules(
             connection.device.modules,
             get_by_product_type(connection.product_type, METER_TYPES),
         )
-    )
+    ]
 
 
-def async_setup_regdata_sensors(
-    connection: EcomaxConnection, entities: list[EcomaxEntity]
-) -> None:
+def async_setup_regdata_sensors(connection: EcomaxConnection) -> list[RegdataSensor]:
     """Setup RegData sensors."""
-    entities.extend(
+    return [
         RegdataSensor(connection, description)
         for description in get_by_modules(
             connection.device.modules,
@@ -631,13 +625,13 @@ def async_setup_regdata_sensors(
                 get_by_product_id(connection.product_id, REGDATA_SENSOR_TYPES),
             ),
         )
-    )
+    ]
 
 
-def async_setup_mixer_sensors(
-    connection: EcomaxConnection, entities: list[EcomaxEntity]
-) -> None:
+def async_setup_mixer_sensors(connection: EcomaxConnection) -> list[MixerSensor]:
     """Setup mixer sensors."""
+    entities: list[MixerSensor] = []
+
     for index in connection.device.mixers.keys():
         entities.extend(
             MixerSensor(connection, description, index)
@@ -646,6 +640,8 @@ def async_setup_mixer_sensors(
                 get_by_product_type(connection.product_type, MIXER_SENSOR_TYPES),
             )
         )
+
+    return entities
 
 
 async def async_setup_entry(
@@ -659,23 +655,23 @@ async def async_setup_entry(
 
     entities: list[EcomaxEntity] = []
 
-    # Add ecoMAX sensors and meters.
-    async_setup_ecomax_sensors(connection, entities)
-    async_setup_ecomax_meters(connection, entities)
+    # Add ecoMAX sensors.
+    entities.extend(async_setup_ecomax_sensors(connection))
 
     # Add device-specific sensors.
-    async_setup_regdata_sensors(connection, entities)
-
-    if has_regdata_sensors(entities):
+    if (
+        regdata := async_setup_regdata_sensors(connection)
+    ) and await connection.async_setup_regdata():
         # If there are device-specific sensors, setup regulator data.
-        await connection.async_setup_regdata()
+        entities.extend(regdata)
 
     # Add mixer/circuit sensors.
     if connection.has_mixers and await connection.async_setup_mixers():
-        async_setup_mixer_sensors(connection, entities)
+        entities.extend(async_setup_mixer_sensors(connection))
 
-    if has_meters(entities):
-        # If there are meters, setup services for them.
+    # Add ecoMAX meters.
+    if meters := async_setup_ecomax_meters(connection):
+        entities.extend(meters)
         platform = async_get_current_platform()
         platform.async_register_entity_service(
             SERVICE_RESET_METER, {}, "async_reset_meter"

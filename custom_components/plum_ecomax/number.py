@@ -286,23 +286,21 @@ def get_by_modules(
             yield description
 
 
-def async_setup_ecomax_numbers(
-    connection: EcomaxConnection, entities: list[EcomaxEntity]
-) -> None:
+def async_setup_ecomax_numbers(connection: EcomaxConnection) -> list[EcomaxNumber]:
     """Setup ecoMAX numbers."""
-    entities.extend(
+    return [
         EcomaxNumber(connection, description)
         for description in get_by_modules(
             connection.device.modules,
             get_by_product_type(connection.product_type, NUMBER_TYPES),
         )
-    )
+    ]
 
 
-def async_setup_mixer_numbers(
-    connection: EcomaxConnection, entities: list[EcomaxEntity]
-) -> None:
+def async_setup_mixer_numbers(connection: EcomaxConnection) -> list[MixerNumber]:
     """Setup mixer numbers."""
+    entities: list[MixerNumber] = []
+
     for index in connection.device.mixers.keys():
         entities.extend(
             MixerNumber(connection, description, index)
@@ -311,6 +309,8 @@ def async_setup_mixer_numbers(
                 get_by_product_type(connection.product_type, MIXER_NUMBER_TYPES),
             )
         )
+
+    return entities
 
 
 async def async_setup_entry(
@@ -325,10 +325,10 @@ async def async_setup_entry(
     entities: list[EcomaxEntity] = []
 
     # Add ecoMAX numbers.
-    async_setup_ecomax_numbers(connection, entities)
+    entities.extend(async_setup_ecomax_numbers(connection))
 
     # Add mixer/circuit numbers.
     if connection.has_mixers and await connection.async_setup_mixers():
-        async_setup_mixer_numbers(connection, entities)
+        entities.extend(async_setup_mixer_numbers(connection))
 
     return async_add_entities(entities)

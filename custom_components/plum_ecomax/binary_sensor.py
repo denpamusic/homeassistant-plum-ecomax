@@ -215,22 +215,24 @@ def get_by_modules(
 
 
 def async_setup_ecomax_binary_sensors(
-    connection: EcomaxConnection, entities: list[EcomaxEntity]
-) -> None:
+    connection: EcomaxConnection,
+) -> list[EcomaxBinarySensor]:
     """Setup ecoMAX binary sensors."""
-    entities.extend(
+    return [
         EcomaxBinarySensor(connection, description)
         for description in get_by_modules(
             connection.device.modules,
             get_by_product_type(connection.product_type, BINARY_SENSOR_TYPES),
         )
-    )
+    ]
 
 
 def async_setup_mixer_binary_sensors(
-    connection: EcomaxConnection, entities: list[EcomaxEntity]
-) -> None:
+    connection: EcomaxConnection,
+) -> list[MixerBinarySensor]:
     """Setup mixer binary sensors."""
+    entities: list[MixerBinarySensor] = []
+
     for index in connection.device.mixers.keys():
         entities.extend(
             MixerBinarySensor(connection, description, index)
@@ -239,6 +241,8 @@ def async_setup_mixer_binary_sensors(
                 get_by_product_type(connection.product_type, MIXER_BINARY_SENSOR_TYPES),
             )
         )
+
+    return entities
 
 
 async def async_setup_entry(
@@ -253,10 +257,10 @@ async def async_setup_entry(
     entities: list[EcomaxEntity] = []
 
     # Add ecoMAX binary sensors.
-    async_setup_ecomax_binary_sensors(connection, entities)
+    entities.extend(async_setup_ecomax_binary_sensors(connection))
 
     # Add mixer/circuit binary sensors.
     if connection.has_mixers and await connection.async_setup_mixers():
-        async_setup_mixer_binary_sensors(connection, entities)
+        entities.extend(async_setup_mixer_binary_sensors(connection))
 
     return async_add_entities(entities)

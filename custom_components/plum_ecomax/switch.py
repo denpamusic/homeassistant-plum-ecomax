@@ -196,23 +196,21 @@ def get_by_modules(
             yield description
 
 
-def async_setup_ecomax_switch(
-    connection: EcomaxConnection, entities: list[EcomaxEntity]
-) -> None:
+def async_setup_ecomax_switch(connection: EcomaxConnection) -> list[EcomaxSwitch]:
     """Setup ecoMAX switches."""
-    entities.extend(
+    return [
         EcomaxSwitch(connection, description)
         for description in get_by_modules(
             connection.device.modules,
             get_by_product_type(connection.product_type, SWITCH_TYPES),
         )
-    )
+    ]
 
 
-def async_setup_mixer_switch(
-    connection: EcomaxConnection, entities: list[EcomaxEntity]
-) -> None:
+def async_setup_mixer_switch(connection: EcomaxConnection) -> list[MixerSwitch]:
     """Setup mixers switches."""
+    entities: list[MixerSwitch] = []
+
     for index in connection.device.mixers.keys():
         entities.extend(
             MixerSwitch(connection, description, index)
@@ -221,6 +219,8 @@ def async_setup_mixer_switch(
                 get_by_product_type(connection.product_type, MIXER_SWITCH_TYPES),
             )
         )
+
+    return entities
 
 
 async def async_setup_entry(
@@ -235,10 +235,10 @@ async def async_setup_entry(
     entities: list[EcomaxEntity] = []
 
     # Add ecoMAX switches.
-    async_setup_ecomax_switch(connection, entities)
+    entities.extend(async_setup_ecomax_switch(connection))
 
     # Add mixer/circuit switches.
     if connection.has_mixers and await connection.async_setup_mixers():
-        async_setup_mixer_switch(connection, entities)
+        entities.extend(async_setup_mixer_switch(connection))
 
     return async_add_entities(entities)
