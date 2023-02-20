@@ -23,7 +23,6 @@ from custom_components.plum_ecomax.connection import (
     DEFAULT_TIMEOUT,
     EcomaxConnection,
     async_check_connection,
-    async_get_capabilities,
     async_get_connection_handler,
     async_get_sub_devices,
 )
@@ -105,7 +104,6 @@ async def test_async_check_connection(
         mock_product,
         mock_modules,
         [ATTR_MIXERS],
-        [ATTR_REGDATA],
     )
 
 
@@ -123,14 +121,6 @@ async def test_async_get_sub_devices(ecomax_p: EcoMAX, caplog) -> None:
     assert "Detected 1 mixer" in caplog.text
     assert "Detected 1 thermostat" in caplog.text
     assert "Detected indirect water heater" in caplog.text
-
-
-@pytest.mark.usefixtures("ecomax_860p3_o")
-async def test_async_get_capabilities(ecomax_p: EcoMAX, caplog) -> None:
-    """Test helper function to check device capabilities."""
-    caplog.set_level(logging.INFO)
-    assert await async_get_capabilities(ecomax_p) == [ATTR_REGDATA]
-    assert "Detected supported regulator data" in caplog.text
 
 
 async def test_async_setup(

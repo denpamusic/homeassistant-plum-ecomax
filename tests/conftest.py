@@ -35,8 +35,6 @@ from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
     ATTR_ECOMAX_CONTROL,
     ATTR_MIXERS,
-    ATTR_REGDATA,
-    CONF_CAPABILITIES,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
@@ -84,7 +82,6 @@ def fixture_device_data():
         CONF_PRODUCT_ID: 4,
         CONF_SOFTWARE: "6.10.32.K1",
         CONF_SUB_DEVICES: [ATTR_MIXERS],
-        CONF_CAPABILITIES: [ATTR_REGDATA],
     }
 
 

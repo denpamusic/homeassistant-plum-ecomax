@@ -14,7 +14,6 @@ from custom_components.plum_ecomax.const import (
     ATTR_PASSWORD,
     ATTR_PRODUCT,
     ATTR_REGDATA,
-    CONF_CAPABILITIES,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
@@ -61,7 +60,6 @@ async def test_diagnostics(
             CONF_MODEL: device_data.get(CONF_MODEL),
             CONF_SOFTWARE: device_data.get(CONF_SOFTWARE),
             CONF_SUB_DEVICES: device_data.get(CONF_SUB_DEVICES),
-            CONF_CAPABILITIES: device_data.get(CONF_CAPABILITIES),
         },
     }
     ecomax_data = dict(ecomax_p.data)
