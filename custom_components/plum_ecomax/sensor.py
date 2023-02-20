@@ -559,6 +559,11 @@ class RegdataSensor(EcomaxSensor):
         return self.connection.device.regdata
 
 
+def has_regdata_sensors(entities: Iterable[EcomaxEntity]) -> bool:
+    """Determines if entities collection has regdata sensors in it."""
+    return any(entity for entity in entities if isinstance(entity, RegdataSensor))
+
+
 def get_by_product_id(
     product_id: int, descriptions: Iterable[RegdataSensorEntityDescription]
 ) -> Generator[RegdataSensorEntityDescription, None, None]:
@@ -659,15 +664,18 @@ async def async_setup_entry(
     async_setup_ecomax_meters(connection, entities)
 
     # Add device-specific sensors.
-    if connection.has_regdata and await connection.async_setup_regdata():
-        async_setup_regdata_sensors(connection, entities)
+    async_setup_regdata_sensors(connection, entities)
+
+    if has_regdata_sensors(entities):
+        # If there are device-specific sensors, setup regulator data.
+        await connection.async_setup_regdata()
 
     # Add mixer/circuit sensors.
     if connection.has_mixers and await connection.async_setup_mixers():
         async_setup_mixer_sensors(connection, entities)
 
     if has_meters(entities):
-        # If there's meters, setup services for them.
+        # If there are meters, setup services for them.
         platform = async_get_current_platform()
         platform.async_register_entity_service(
             SERVICE_RESET_METER, {}, "async_reset_meter"
