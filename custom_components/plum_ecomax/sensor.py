@@ -93,6 +93,7 @@ class EcomaxSensorEntityDescription(
 
     filter_fn: Callable[[Any], Any] = on_change
     module: str = MODULE_A
+    always_available: bool = False
 
 
 SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
@@ -466,19 +467,13 @@ METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
         value_fn=lambda x: x,
         filter_fn=lambda x: aggregate(x, seconds=30),
         product_types={ProductType.ECOMAX_P},
+        always_available=True,
     ),
 )
 
 
 class EcomaxMeter(RestoreSensor, EcomaxSensor):
     """Represents ecoMAX sensor that restores previous value."""
-
-    def __init__(
-        self, connection: EcomaxConnection, description: EcomaxSensorEntityDescription
-    ):
-        """Initialize ecoMAX meter object."""
-        super().__init__(connection, description)
-        self._attr_available = True
 
     async def async_added_to_hass(self):
         """Called when an entity has their entity_id assigned."""
