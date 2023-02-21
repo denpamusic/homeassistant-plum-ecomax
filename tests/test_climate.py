@@ -131,6 +131,10 @@ async def test_thermostat(
     entry = entity_registry.async_get(thermostat_entity_id)
     assert entry
     assert entry.translation_key == "ecomax_climate"
+    assert (
+        entry.supported_features
+        == ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE
+    )
 
     # Get initial value.
     state = hass.states.get(thermostat_entity_id)
@@ -144,10 +148,6 @@ async def test_thermostat(
     assert state.attributes[ATTR_HVAC_ACTION] == HVACAction.IDLE
     assert state.attributes[ATTR_PRESET_MODE] == PRESET_SCHEDULE
     assert state.attributes[ATTR_FRIENDLY_NAME] == "test Thermostat 1"
-    assert (
-        state.attributes["supported_features"]
-        == ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE
-    )
 
     # Dispatch new room temperature.
     frozen_time.move_to("12:00:10")

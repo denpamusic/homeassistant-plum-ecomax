@@ -119,6 +119,11 @@ async def test_indirect_water_heater(
     # Check entry.
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(indirect_water_heater_entity_id)
+    assert (
+        entry.supported_features
+        == WaterHeaterEntityFeature.TARGET_TEMPERATURE
+        | WaterHeaterEntityFeature.OPERATION_MODE
+    )
     assert entry
 
     # Get initial value.
@@ -133,11 +138,6 @@ async def test_indirect_water_heater(
     assert state.attributes[ATTR_TARGET_TEMP_HIGH] == 50
     assert state.attributes[ATTR_TARGET_TEMP_LOW] == 45
     assert state.attributes[ATTR_OPERATION_MODE] == STATE_OFF
-    assert (
-        state.attributes["supported_features"]
-        == WaterHeaterEntityFeature.TARGET_TEMPERATURE
-        | WaterHeaterEntityFeature.OPERATION_MODE
-    )
 
     # Dispatch new water heater temperature.
     frozen_time.move_to("12:00:10")
