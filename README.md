@@ -25,6 +25,7 @@ It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and sup
   - [Water Heater](#water-heater)
   - [Thermostats](#thermostats)
   - [Mixers/Circuits](#mixerscircuits-sub-devices)
+  - [Device-specific entities](#device-specific-entities)
 - [Services](#services)
 - [License](#license)
 
@@ -267,6 +268,15 @@ If you connected them after setting up the integration, you can use `Detect sub-
 | Night target mixer temperature <sup>1</sup> | °C   | slider | :x:                | :white_check_mark:  |
 
 <small><sup>1</sup> Only available on second circuit.</small>
+
+### Device-specific entities
+These entities are only available for specific devices.
+
+#### Sensors
+
+| Name                                   | Unit | Model          | Product ID | Data key | 
+|----------------------------------------|:----:|:--------------:|:----------:|:--------:|
+| Ash pan full                           | %    | ecoMAX 860P3-O | 51         | 227      |
 
 ## Services
 This integration provides following services:
