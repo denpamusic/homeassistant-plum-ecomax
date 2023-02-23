@@ -18,7 +18,7 @@ from custom_components.plum_ecomax.const import (
     EVENT_PLUM_ECOMAX_ALERT,
 )
 
-ALERT_TYPES: dict[AlertType, str] = {
+ALERT_MESSAGES: dict[AlertType, str] = {
     AlertType.POWER_LOSS: "encountered power loss",
     AlertType.BOILER_TEMP_SENSOR_FAILURE: "encountered boiler temperature sensor failure",
     AlertType.MAX_BOILER_TEMP_EXCEEDED: "maximum boiler temperature exceeded",
@@ -50,7 +50,7 @@ def async_describe_events(
         except KeyError:
             pass
 
-        alert_string = ALERT_TYPES.get(
+        alert_string = ALERT_MESSAGES.get(
             alert_code, f'encountered alert with code "{alert_code}"'
         )
 
