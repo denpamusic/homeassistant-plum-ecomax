@@ -125,16 +125,16 @@ async def async_get_sub_devices(device: Addressable) -> list[str]:
 class EcomaxConnection:
     """Represents the ecoMAX connection."""
 
-    entry: ConfigEntry
-    _hass: HomeAssistant
     _connection: Connection
     _device: Addressable | None
+    _hass: HomeAssistant
+    entry: ConfigEntry
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, connection: Connection):
         """Initialize new ecoMAX connection object."""
-        self._hass = hass
-        self._device = None
         self._connection = connection
+        self._device = None
+        self._hass = hass
         self.entry = entry
 
     def __getattr__(self, name: str):

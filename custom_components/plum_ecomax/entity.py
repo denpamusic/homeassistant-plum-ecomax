@@ -16,10 +16,10 @@ from .const import ATTR_MIXERS, DOMAIN, MANUFACTURER
 class EcomaxEntity(ABC):
     """Represents base ecoMAX entity."""
 
-    _connection: EcomaxConnection
-    entity_description: EntityDescription
     _attr_available: bool
     _attr_entity_registry_enabled_default: bool
+    _connection: EcomaxConnection
+    entity_description: EntityDescription
 
     async def async_added_to_hass(self):
         """Called when an entity has their entity_id assigned."""

@@ -45,46 +45,46 @@ class EcomaxWaterHeaterEntityDescription(WaterHeaterEntityEntityDescription):
 class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     """Represents ecoMAX water heater platform."""
 
-    _connection: EcomaxConnection
-    entity_description: EntityDescription
-    _attr_temperature_unit: str
+    _attr_current_operation: str | None
+    _attr_current_temperature: float | None
+    _attr_entity_registry_enabled_default: bool
+    _attr_hysteresis: int
+    _attr_max_temp: float | None
+    _attr_min_temp: float | None
+    _attr_operation_list: list[str] | None
     _attr_precision: float
     _attr_supported_features: WaterHeaterEntityFeature = WaterHeaterEntityFeature(0)
-    _attr_operation_list: list[str] | None
-    _attr_min_temp: float | None
-    _attr_max_temp: float | None
     _attr_target_temperature: float | None
     _attr_target_temperature_high: float | None
     _attr_target_temperature_low: float | None
-    _attr_current_temperature: float | None
-    _attr_current_operation: str | None
-    _attr_hysteresis: int
-    _attr_entity_registry_enabled_default: bool
+    _attr_temperature_unit: str
+    _connection: EcomaxConnection
+    entity_description: EntityDescription
 
     def __init__(
         self,
         connection: EcomaxConnection,
     ):
-        self._connection = connection
-        self.entity_description = EcomaxWaterHeaterEntityDescription(
-            key=ATTR_WATER_HEATER, name="Indirect water heater"
-        )
-        self._attr_temperature_unit = UnitOfTemperature.CELSIUS
+        self._attr_current_operation = None
+        self._attr_current_temperature = None
+        self._attr_entity_registry_enabled_default = True
+        self._attr_hysteresis = 0
+        self._attr_max_temp = None
+        self._attr_min_temp = None
+        self._attr_operation_list = WATER_HEATER_MODES
         self._attr_precision = PRECISION_WHOLE
         self._attr_supported_features = (
             WaterHeaterEntityFeature.TARGET_TEMPERATURE
             | WaterHeaterEntityFeature.OPERATION_MODE
         )
-        self._attr_operation_list = WATER_HEATER_MODES
-        self._attr_min_temp = None
-        self._attr_max_temp = None
         self._attr_target_temperature = None
         self._attr_target_temperature_high = None
         self._attr_target_temperature_low = None
-        self._attr_current_temperature = None
-        self._attr_current_operation = None
-        self._attr_hysteresis = 0
-        self._attr_entity_registry_enabled_default = True
+        self._attr_temperature_unit = UnitOfTemperature.CELSIUS
+        self._connection = connection
+        self.entity_description = EcomaxWaterHeaterEntityDescription(
+            key=ATTR_WATER_HEATER, name="Indirect water heater"
+        )
 
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""

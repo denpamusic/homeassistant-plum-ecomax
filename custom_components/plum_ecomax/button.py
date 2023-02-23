@@ -36,8 +36,8 @@ BUTTON_TYPES: tuple[EcomaxButtonEntityDescription, ...] = (
     EcomaxButtonEntityDescription(
         key="detect_sub_devices",
         name="Detect sub-devices",
-        entity_category=EntityCategory.DIAGNOSTIC,
         device_class=ButtonDeviceClass.UPDATE,
+        entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=True,
         press_fn="async_update_sub_devices",
     ),

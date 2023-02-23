@@ -94,25 +94,42 @@ class EcomaxClimateEntityDescription(
 class EcomaxClimate(EcomaxEntity, ClimateEntity):
     """Represents ecoMAX climate platform."""
 
-    _connection: EcomaxConnection
-    entity_description: EntityDescription
-    _attr_supported_features: ClimateEntityFeature = ClimateEntityFeature(0)
     _attr_current_temperature: float | None = None
+    _attr_entity_registry_enabled_default: bool
     _attr_hvac_action: HVACAction | str | None = None
     _attr_hvac_mode: HVACMode | str | None
     _attr_hvac_modes: list[HVACMode] | list[str]
+    _attr_precision: float
     _attr_preset_mode: str | None
     _attr_preset_modes: list[str] | None
-    _attr_precision: float
+    _attr_supported_features: ClimateEntityFeature = ClimateEntityFeature(0)
     _attr_target_temperature: float | None = None
-    _attr_target_temperature_name: str | None
     _attr_target_temperature_high: float | None
     _attr_target_temperature_low: float | None
+    _attr_target_temperature_name: str | None
     _attr_target_temperature_step: float | None
     _attr_temperature_unit: str
-    _attr_entity_registry_enabled_default: bool
+    _connection: EcomaxConnection
+    entity_description: EntityDescription
 
     def __init__(self, connection: EcomaxConnection, thermostat: Thermostat):
+        self._attr_current_temperature = None
+        self._attr_entity_registry_enabled_default = True
+        self._attr_hvac_action = None
+        self._attr_hvac_mode = HVACMode.HEAT
+        self._attr_hvac_modes = [HVACMode.HEAT]
+        self._attr_precision = PRECISION_TENTHS
+        self._attr_preset_mode = None
+        self._attr_preset_modes = CLIMATE_MODES
+        self._attr_supported_features = (
+            ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE
+        )
+        self._attr_target_temperature = None
+        self._attr_target_temperature_high = None
+        self._attr_target_temperature_low = None
+        self._attr_target_temperature_name = None
+        self._attr_target_temperature_step = TEMPERATURE_STEP
+        self._attr_temperature_unit = UnitOfTemperature.CELSIUS
         self._connection = connection
         self.entity_description = EcomaxClimateEntityDescription(
             key=f"thermostat-{thermostat.index}",
@@ -120,23 +137,6 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
             translation_key="ecomax_climate",
             index=thermostat.index,
         )
-        self._attr_supported_features = (
-            ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE
-        )
-        self._attr_hvac_modes = [HVACMode.HEAT]
-        self._attr_temperature_unit = UnitOfTemperature.CELSIUS
-        self._attr_preset_modes = CLIMATE_MODES
-        self._attr_precision = PRECISION_TENTHS
-        self._attr_hvac_mode = HVACMode.HEAT
-        self._attr_hvac_action = None
-        self._attr_preset_mode = None
-        self._attr_current_temperature = None
-        self._attr_target_temperature = None
-        self._attr_target_temperature_high = None
-        self._attr_target_temperature_low = None
-        self._attr_target_temperature_name = None
-        self._attr_target_temperature_step = TEMPERATURE_STEP
-        self._attr_entity_registry_enabled_default = True
 
     async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""

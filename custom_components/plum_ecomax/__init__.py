@@ -43,13 +43,13 @@ from .const import (
 from .services import async_setup_services
 
 PLATFORMS: list[Platform] = [
-    Platform.SENSOR,
     Platform.BINARY_SENSOR,
-    Platform.SWITCH,
     Platform.BUTTON,
-    Platform.NUMBER,
-    Platform.WATER_HEATER,
     Platform.CLIMATE,
+    Platform.NUMBER,
+    Platform.SENSOR,
+    Platform.SWITCH,
+    Platform.WATER_HEATER,
 ]
 
 DATE_STR_FORMAT: Final = "%Y-%m-%d %H:%M:%S"

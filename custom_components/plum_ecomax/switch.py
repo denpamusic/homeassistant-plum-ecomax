@@ -37,10 +37,10 @@ class EcomaxSwitchEntityDescription(
 ):
     """Describes ecoMAX switch entity."""
 
-    state_off: ParameterValueType = STATE_OFF
-    state_on: ParameterValueType = STATE_ON
     filter_fn: Callable[[Any], Any] = on_change
     module: str = MODULE_A
+    state_off: ParameterValueType = STATE_OFF
+    state_on: ParameterValueType = STATE_ON
 
 
 SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
@@ -57,16 +57,16 @@ SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     EcomaxSwitchEntityDescription(
         key="water_heater_work_mode",
         name="Water heater pump switch",
+        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         state_off=0,
         state_on=2,
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
     EcomaxSwitchEntityDescription(
         key="summer_mode",
         name="Summer mode switch",
+        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         state_off=0,
         state_on=1,
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
     EcomaxSwitchEntityDescription(
         key="heating_weather_control",
@@ -94,18 +94,18 @@ SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
 class EcomaxSwitch(EcomaxEntity, SwitchEntity):
     """Represents ecoMAX switch platform."""
 
+    _attr_is_on: bool | None
     _connection: EcomaxConnection
     entity_description: EntityDescription
-    _attr_is_on: bool | None
 
     def __init__(
         self, connection: EcomaxConnection, description: EcomaxSwitchEntityDescription
     ):
         """Initialize ecoMAX switch object."""
-        self._connection = connection
-        self.entity_description = description
         self._attr_available = False
         self._attr_is_on = None
+        self._connection = connection
+        self.entity_description = description
 
     async def async_turn_on(self, **kwargs) -> None:
         """Turn the entity on."""

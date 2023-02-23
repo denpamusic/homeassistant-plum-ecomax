@@ -29,8 +29,8 @@ _LOGGER = logging.getLogger(__name__)
 class EcomaxBinarySensorEntityAdditionalKeys:
     """Additional keys for ecoMAX binary sensor entity description."""
 
-    value_fn: Callable[[Any], Any]
     product_types: set[ProductType]
+    value_fn: Callable[[Any], Any]
 
 
 @dataclass
@@ -39,43 +39,43 @@ class EcomaxBinarySensorEntityDescription(
 ):
     """Describes ecoMAX binary sensor entity."""
 
+    always_available: bool = False
     filter_fn: Callable[[Any], Any] = on_change
     module: str = MODULE_A
-    always_available: bool = False
 
 
 BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     EcomaxBinarySensorEntityDescription(
         key="heating_pump",
         name="Heating pump",
-        icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
-        value_fn=lambda x: x,
+        icon="mdi:pump",
         product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
+        value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="water_heater_pump",
         name="Water heater pump",
-        icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
-        value_fn=lambda x: x,
+        icon="mdi:pump",
         product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
+        value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="circulation_pump",
         name="Circulation pump",
-        icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
-        value_fn=lambda x: x,
+        icon="mdi:pump",
         product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
+        value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="pending_alerts",
         name="Alert",
         device_class=BinarySensorDeviceClass.PROBLEM,
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda x: x > 0,
         product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
+        value_fn=lambda x: x > 0,
     ),
     EcomaxBinarySensorEntityDescription(
         key="connected",
@@ -89,50 +89,50 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     EcomaxBinarySensorEntityDescription(
         key="fan",
         name="Fan",
-        icon="mdi:fan",
         device_class=BinarySensorDeviceClass.RUNNING,
-        value_fn=lambda x: x,
+        icon="mdi:fan",
         product_types={ProductType.ECOMAX_P},
+        value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="fan2_exhaust",
         name="Exhaust fan",
-        icon="mdi:fan",
         device_class=BinarySensorDeviceClass.RUNNING,
-        value_fn=lambda x: x,
+        icon="mdi:fan",
         product_types={ProductType.ECOMAX_P},
+        value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="feeder",
         name="Feeder",
-        icon="mdi:screw-lag",
         device_class=BinarySensorDeviceClass.RUNNING,
-        value_fn=lambda x: x,
+        icon="mdi:screw-lag",
         product_types={ProductType.ECOMAX_P},
+        value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="lighter",
         name="Lighter",
-        icon="mdi:fire",
         device_class=BinarySensorDeviceClass.RUNNING,
-        value_fn=lambda x: x,
+        icon="mdi:fire",
         product_types={ProductType.ECOMAX_P},
+        value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="solar_pump",
         name="Solar pump",
-        icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
-        value_fn=lambda x: x,
+        icon="mdi:pump",
         product_types={ProductType.ECOMAX_I},
+        value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="fireplace_pump",
         name="Fireplace pump",
-        icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
-        value_fn=lambda x: x,
+        icon="mdi:pump",
         product_types={ProductType.ECOMAX_I},
+        value_fn=lambda x: x,
     ),
 )
 
@@ -165,18 +165,18 @@ MIXER_BINARY_SENSOR_TYPES: tuple[MixerBinarySensorEntityDescription, ...] = (
     MixerBinarySensorEntityDescription(
         key="pump",
         name="Mixer pump",
-        icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
-        value_fn=lambda x: x,
+        icon="mdi:pump",
         product_types={ProductType.ECOMAX_P},
+        value_fn=lambda x: x,
     ),
     MixerBinarySensorEntityDescription(
         key="pump",
         name="Circuit pump",
-        icon="mdi:pump",
         device_class=BinarySensorDeviceClass.RUNNING,
-        value_fn=lambda x: x,
+        icon="mdi:pump",
         product_types={ProductType.ECOMAX_I},
+        value_fn=lambda x: x,
     ),
 )
 
