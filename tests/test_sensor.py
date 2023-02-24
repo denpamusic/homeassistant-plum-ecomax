@@ -16,6 +16,7 @@ from homeassistant.const import (
     ATTR_UNIT_OF_MEASUREMENT,
     PERCENTAGE,
     UnitOfMass,
+    UnitOfPower,
     UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant
@@ -35,6 +36,7 @@ from pyplumio.structures.fuel_level import ATTR_FUEL_LEVEL
 from pyplumio.structures.lambda_sensor import ATTR_LAMBDA_LEVEL
 from pyplumio.structures.load import ATTR_LOAD
 from pyplumio.structures.modules import ATTR_MODULES, ConnectedModules
+from pyplumio.structures.power import ATTR_POWER
 from pyplumio.structures.product_info import ATTR_PRODUCT, ProductInfo
 from pyplumio.structures.statuses import ATTR_HEATING_TARGET, ATTR_WATER_HEATER_TARGET
 from pyplumio.structures.temperatures import (
@@ -473,6 +475,38 @@ async def test_oxygen_level_sensor(
     await hass.config_entries.async_remove(config_entry.entry_id)
     await setup_integration(hass, config_entry)
     assert hass.states.get(oxygen_level_entity_id) is None
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_power_sensor(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    frozen_time,
+) -> None:
+    """Test power sensor."""
+    await setup_integration(hass, config_entry)
+    power_entity_id = "sensor.test_power"
+
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(power_entity_id)
+    assert entry
+    assert entry.original_icon == "mdi:radiator"
+
+    # Get initial value.
+    state = hass.states.get(power_entity_id)
+    assert state.state == "0.00"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Power"
+    assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfPower.KILO_WATT
+    assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
+
+    # Dispatch new value.
+    frozen_time.move_to("12:00:10")
+    await connection.device.dispatch(ATTR_POWER, 16)
+    state = hass.states.get(power_entity_id)
+    assert state.state == "16.00"
 
 
 @pytest.mark.usefixtures("ecomax_p")
