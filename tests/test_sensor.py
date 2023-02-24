@@ -367,6 +367,7 @@ async def test_service_password_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(service_password_entity_id)
     assert entry
+    assert entry.original_icon == "mdi:form-textbox-password"
 
     # Get initial value.
     state = hass.states.get(service_password_entity_id)
@@ -456,6 +457,7 @@ async def test_oxygen_level_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(oxygen_level_entity_id)
     assert entry
+    assert entry.original_icon == "mdi:weather-windy-variant"
 
     # Get initial value.
     state = hass.states.get(oxygen_level_entity_id)
@@ -525,6 +527,7 @@ async def test_fuel_level_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fuel_level_entity_id)
     assert entry
+    assert entry.original_icon == "mdi:gas-station"
 
     # Get initial value.
     state = hass.states.get(fuel_level_entity_id)
@@ -556,6 +559,7 @@ async def test_fuel_consumption_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fuel_consumption_entity_id)
     assert entry
+    assert entry.original_icon == "mdi:fire"
 
     # Get initial value.
     state = hass.states.get(fuel_consumption_entity_id)
@@ -586,6 +590,7 @@ async def test_load_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(load_entity_id)
     assert entry
+    assert entry.original_icon == "mdi:gauge"
 
     # Get initial value.
     state = hass.states.get(load_entity_id)
@@ -615,6 +620,7 @@ async def test_fan_power_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fan_power_entity_id)
     assert entry
+    assert entry.original_icon == "mdi:fan"
 
     # Get initial value.
     state = hass.states.get(fan_power_entity_id)
@@ -645,6 +651,7 @@ async def test_flame_intensity_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(flame_intensity_entity_id)
     assert entry
+    assert entry.original_icon == "mdi:fire"
 
     # Get initial value.
     state = hass.states.get(flame_intensity_entity_id)
@@ -1057,6 +1064,7 @@ async def test_total_fuel_burned_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fuel_burned_entity_id)
     assert entry
+    assert entry.original_icon == "mdi:counter"
 
     # Get initial value.
     state = hass.states.get(fuel_burned_entity_id)
@@ -1104,6 +1112,7 @@ async def test_ash_pan_full_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(ash_pan_full_entity_id)
     assert entry
+    assert entry.original_icon == "mdi:tray-alert"
 
     # Get initial value.
     state = hass.states.get(ash_pan_full_entity_id)
