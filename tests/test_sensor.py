@@ -160,6 +160,8 @@ async def test_heating_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(heating_temperature_entity_id)
     assert entry
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     state = hass.states.get(heating_temperature_entity_id)
@@ -173,7 +175,7 @@ async def test_heating_temperature_sensor(
     frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_HEATING_TEMP, 65)
     state = hass.states.get(heating_temperature_entity_id)
-    assert state.state == "65.0"
+    assert state.state == "65"
 
     # Check that entity is disabled if unavailable on setup.
     del connection.device.data[ATTR_HEATING_TEMP]
@@ -200,6 +202,8 @@ async def test_water_heater_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(water_heater_temperature_entity_id)
     assert entry
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     state = hass.states.get(water_heater_temperature_entity_id)
@@ -213,7 +217,7 @@ async def test_water_heater_temperature_sensor(
     frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_WATER_HEATER_TEMP, 51)
     state = hass.states.get(water_heater_temperature_entity_id)
-    assert state.state == "51.0"
+    assert state.state == "51"
 
     # Test without water heater.
     del connection.device.data[ATTR_WATER_HEATER_TEMP]
@@ -239,6 +243,8 @@ async def test_outside_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(outside_temperature_entity_id)
     assert entry
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     frozen_time.move_to("12:00:10")
@@ -252,7 +258,7 @@ async def test_outside_temperature_sensor(
     # Dispatch new value.
     await connection.device.dispatch(ATTR_OUTSIDE_TEMP, 1)
     state = hass.states.get(outside_temperature_entity_id)
-    assert state.state == "1.0"
+    assert state.state == "1"
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -270,10 +276,12 @@ async def test_heating_target_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(heating_target_temperature_entity_id)
     assert entry
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     state = hass.states.get(heating_target_temperature_entity_id)
-    assert state.state == "0.0"
+    assert state.state == "0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Heating target temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
@@ -282,7 +290,7 @@ async def test_heating_target_temperature_sensor(
     # Dispatch new value.
     await connection.device.dispatch(ATTR_HEATING_TARGET, 65)
     state = hass.states.get(heating_target_temperature_entity_id)
-    assert state.state == "65.0"
+    assert state.state == "65"
 
 
 @pytest.mark.usefixtures("ecomax_p", "water_heater")
@@ -302,10 +310,12 @@ async def test_water_heater_target_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(water_heater_target_temperature_entity_id)
     assert entry
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     state = hass.states.get(water_heater_target_temperature_entity_id)
-    assert state.state == "0.0"
+    assert state.state == "0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Water heater target temperature"
     )
@@ -316,7 +326,7 @@ async def test_water_heater_target_temperature_sensor(
     # Dispatch new value.
     await connection.device.dispatch(ATTR_WATER_HEATER_TARGET, 50)
     state = hass.states.get(water_heater_target_temperature_entity_id)
-    assert state.state == "50.0"
+    assert state.state == "50"
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -458,6 +468,8 @@ async def test_oxygen_level_sensor(
     entry = entity_registry.async_get(oxygen_level_entity_id)
     assert entry
     assert entry.original_icon == "mdi:weather-windy-variant"
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     state = hass.states.get(oxygen_level_entity_id)
@@ -470,7 +482,7 @@ async def test_oxygen_level_sensor(
     frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_LAMBDA_LEVEL, 15)
     state = hass.states.get(oxygen_level_entity_id)
-    assert state.state == "15.0"
+    assert state.state == "15"
 
     # Test without ecoLAMBDA.
     await connection.device.dispatch(ATTR_MODULES, ConnectedModules(ecolambda=None))
@@ -496,10 +508,12 @@ async def test_power_sensor(
     entry = entity_registry.async_get(power_entity_id)
     assert entry
     assert entry.original_icon == "mdi:radiator"
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 2
 
     # Get initial value.
     state = hass.states.get(power_entity_id)
-    assert state.state == "0.00"
+    assert state.state == "0.0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Power"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfPower.KILO_WATT
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
@@ -508,7 +522,7 @@ async def test_power_sensor(
     frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_POWER, 16)
     state = hass.states.get(power_entity_id)
-    assert state.state == "16.00"
+    assert state.state == "16"
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -528,6 +542,8 @@ async def test_fuel_level_sensor(
     entry = entity_registry.async_get(fuel_level_entity_id)
     assert entry
     assert entry.original_icon == "mdi:gas-station"
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 0
 
     # Get initial value.
     state = hass.states.get(fuel_level_entity_id)
@@ -560,10 +576,12 @@ async def test_fuel_consumption_sensor(
     entry = entity_registry.async_get(fuel_consumption_entity_id)
     assert entry
     assert entry.original_icon == "mdi:fire"
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 2
 
     # Get initial value.
     state = hass.states.get(fuel_consumption_entity_id)
-    assert state.state == "0.00"
+    assert state.state == "0.0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fuel consumption"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == FLOW_KGH
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
@@ -572,7 +590,7 @@ async def test_fuel_consumption_sensor(
     frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_FUEL_CONSUMPTION, 2.5)
     state = hass.states.get(fuel_consumption_entity_id)
-    assert state.state == "2.50"
+    assert state.state == "2.5"
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -621,6 +639,8 @@ async def test_fan_power_sensor(
     entry = entity_registry.async_get(fan_power_entity_id)
     assert entry
     assert entry.original_icon == "mdi:fan"
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     state = hass.states.get(fan_power_entity_id)
@@ -632,7 +652,7 @@ async def test_fan_power_sensor(
     # Dispatch new value.
     await connection.device.dispatch(ATTR_FAN_POWER, 100)
     state = hass.states.get(fan_power_entity_id)
-    assert state.state == "100.0"
+    assert state.state == "100"
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -652,6 +672,8 @@ async def test_flame_intensity_sensor(
     entry = entity_registry.async_get(flame_intensity_entity_id)
     assert entry
     assert entry.original_icon == "mdi:fire"
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     state = hass.states.get(flame_intensity_entity_id)
@@ -664,7 +686,7 @@ async def test_flame_intensity_sensor(
     frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_OPTICAL_TEMP, 100)
     state = hass.states.get(flame_intensity_entity_id)
-    assert state.state == "100.0"
+    assert state.state == "100"
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -683,6 +705,8 @@ async def test_feeder_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(feeder_temperature_entity_id)
     assert entry
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     state = hass.states.get(feeder_temperature_entity_id)
@@ -695,7 +719,7 @@ async def test_feeder_temperature_sensor(
     frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_FEEDER_TEMP, 35)
     state = hass.states.get(feeder_temperature_entity_id)
-    assert state.state == "35.0"
+    assert state.state == "35"
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -710,6 +734,13 @@ async def test_exhaust_temperature_sensor(
     await setup_integration(hass, config_entry)
     exhaust_temperature_entity_id = "sensor.ecomax_exhaust_temperature"
 
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(exhaust_temperature_entity_id)
+    assert entry
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
+
     # Get initial value.
     state = hass.states.get(exhaust_temperature_entity_id)
     assert state.state == "0.0"
@@ -721,12 +752,7 @@ async def test_exhaust_temperature_sensor(
     frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_EXHAUST_TEMP, 120)
     state = hass.states.get(exhaust_temperature_entity_id)
-    assert state.state == "120.0"
-
-    # Test entry.
-    entity_registry = er.async_get(hass)
-    entry = entity_registry.async_get(exhaust_temperature_entity_id)
-    assert entry
+    assert state.state == "120"
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -745,6 +771,8 @@ async def test_return_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(return_temperature_entity_id)
     assert entry
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     state = hass.states.get(return_temperature_entity_id)
@@ -757,7 +785,7 @@ async def test_return_temperature_sensor(
     frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_RETURN_TEMP, 45)
     state = hass.states.get(return_temperature_entity_id)
-    assert state.state == "45.0"
+    assert state.state == "45"
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -776,6 +804,8 @@ async def test_lower_buffer_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(lower_buffer_temperature_entity_id)
     assert entry
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     state = hass.states.get(lower_buffer_temperature_entity_id)
@@ -788,7 +818,7 @@ async def test_lower_buffer_temperature_sensor(
     frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_LOWER_BUFFER_TEMP, 45)
     state = hass.states.get(lower_buffer_temperature_entity_id)
-    assert state.state == "45.0"
+    assert state.state == "45"
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -807,6 +837,8 @@ async def test_upper_buffer_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(upper_buffer_temperature_entity_id)
     assert entry
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     state = hass.states.get(upper_buffer_temperature_entity_id)
@@ -819,7 +851,7 @@ async def test_upper_buffer_temperature_sensor(
     frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_UPPER_BUFFER_TEMP, 45)
     state = hass.states.get(upper_buffer_temperature_entity_id)
-    assert state.state == "45.0"
+    assert state.state == "45"
 
 
 @pytest.mark.usefixtures("ecomax_i")
@@ -838,6 +870,8 @@ async def test_lower_solar_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(lower_solar_temperature_entity_id)
     assert entry
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     state = hass.states.get(lower_solar_temperature_entity_id)
@@ -850,7 +884,7 @@ async def test_lower_solar_temperature_sensor(
     frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_LOWER_SOLAR_TEMP, 45)
     state = hass.states.get(lower_solar_temperature_entity_id)
-    assert state.state == "45.0"
+    assert state.state == "45"
 
 
 @pytest.mark.usefixtures("ecomax_i")
@@ -869,6 +903,8 @@ async def test_upper_solar_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(upper_solar_temperature_entity_id)
     assert entry
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     state = hass.states.get(upper_solar_temperature_entity_id)
@@ -881,7 +917,7 @@ async def test_upper_solar_temperature_sensor(
     frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_UPPER_SOLAR_TEMP, 45)
     state = hass.states.get(upper_solar_temperature_entity_id)
-    assert state.state == "45.0"
+    assert state.state == "45"
 
 
 @pytest.mark.usefixtures("ecomax_i")
@@ -900,6 +936,8 @@ async def test_fireplace_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fireplace_temperature_entity_id)
     assert entry
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     state = hass.states.get(fireplace_temperature_entity_id)
@@ -912,7 +950,7 @@ async def test_fireplace_temperature_sensor(
     frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_FIREPLACE_TEMP, 45)
     state = hass.states.get(fireplace_temperature_entity_id)
-    assert state.state == "45.0"
+    assert state.state == "45"
 
 
 @pytest.mark.usefixtures("ecomax_p", "mixers")
@@ -931,6 +969,8 @@ async def test_mixer_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(mixer_temperature_entity_id)
     assert entry
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     state = hass.states.get(mixer_temperature_entity_id)
@@ -943,7 +983,7 @@ async def test_mixer_temperature_sensor(
     frozen_time.move_to("12:00:10")
     await connection.device.mixers[0].dispatch(ATTR_CURRENT_TEMP, 45)
     state = hass.states.get(mixer_temperature_entity_id)
-    assert state.state == "45.0"
+    assert state.state == "45"
 
 
 @pytest.mark.usefixtures("ecomax_p", "mixers")
@@ -964,10 +1004,12 @@ async def test_mixer_target_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(mixer_target_temperature_entity_id)
     assert entry
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     state = hass.states.get(mixer_target_temperature_entity_id)
-    assert state.state == "0.0"
+    assert state.state == "0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
         == "ecoMAX Mixer 1 Mixer target temperature"
@@ -979,7 +1021,7 @@ async def test_mixer_target_temperature_sensor(
     frozen_time.move_to("12:00:10")
     await connection.device.mixers[0].dispatch(ATTR_TARGET_TEMP, 45)
     state = hass.states.get(mixer_target_temperature_entity_id)
-    assert state.state == "45.0"
+    assert state.state == "45"
 
 
 @pytest.mark.usefixtures("ecomax_i", "mixers")
@@ -998,6 +1040,8 @@ async def test_circuit_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(circuit_temperature_entity_id)
     assert entry
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     state = hass.states.get(circuit_temperature_entity_id)
@@ -1012,7 +1056,7 @@ async def test_circuit_temperature_sensor(
     frozen_time.move_to("12:00:10")
     await connection.device.mixers[0].dispatch(ATTR_CURRENT_TEMP, 45)
     state = hass.states.get(circuit_temperature_entity_id)
-    assert state.state == "45.0"
+    assert state.state == "45"
 
 
 @pytest.mark.usefixtures("ecomax_i", "mixers")
@@ -1033,10 +1077,12 @@ async def test_circuit_target_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(circuit_target_temperature_entity_id)
     assert entry
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     state = hass.states.get(circuit_target_temperature_entity_id)
-    assert state.state == "0.0"
+    assert state.state == "0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
         == "ecoMAX Circuit 1 Circuit target temperature"
@@ -1048,7 +1094,7 @@ async def test_circuit_target_temperature_sensor(
     frozen_time.move_to("12:00:10")
     await connection.device.mixers[0].dispatch(ATTR_TARGET_TEMP, 45)
     state = hass.states.get(circuit_target_temperature_entity_id)
-    assert state.state == "45.0"
+    assert state.state == "45"
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -1070,10 +1116,12 @@ async def test_total_fuel_burned_sensor(
     entry = entity_registry.async_get(fuel_burned_entity_id)
     assert entry
     assert entry.original_icon == "mdi:counter"
+    options = entry.options["sensor"]
+    assert options["suggested_display_precision"] == 2
 
     # Get initial value.
     state = hass.states.get(fuel_burned_entity_id)
-    assert state.state == "0.00"
+    assert state.state == "0.0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Total fuel burned"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfMass.KILOGRAMS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.TOTAL_INCREASING
@@ -1083,21 +1131,21 @@ async def test_total_fuel_burned_sensor(
     frozen_time.move_to("12:00:30")
     await connection.device.dispatch(ATTR_FUEL_BURNED, 0.2)
     state = hass.states.get(fuel_burned_entity_id)
-    assert state.state == "0.30"
+    assert state.state == "0.3"
 
     # Test that value is restored after HASS restart.
     await hass.async_stop()
     await hass.async_start()
     state = hass.states.get(fuel_burned_entity_id)
-    assert state.state == "0.30"
+    assert state.state == "0.3"
 
     # Test that meter can be calibrated.
     state = await calibrate_meter(hass, fuel_burned_entity_id, 0.5)
-    assert state.state == "0.50"
+    assert state.state == "0.5"
 
     # Test that meter can be reset.
     state = await reset_meter(hass, fuel_burned_entity_id)
-    assert state.state == "0.00"
+    assert state.state == "0.0"
 
 
 @pytest.mark.usefixtures("ecomax_860p3_o")
