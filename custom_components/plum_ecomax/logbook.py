@@ -2,21 +2,19 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import Final
 
 from homeassistant.components.logbook.const import (
     LOGBOOK_ENTRY_MESSAGE,
     LOGBOOK_ENTRY_NAME,
 )
-from homeassistant.const import ATTR_CODE
+from homeassistant.const import ATTR_CODE, ATTR_NAME
 from homeassistant.core import Event, HomeAssistant, callback
 from pyplumio.const import AlertType
 
-from custom_components.plum_ecomax.const import (
-    ATTR_FROM,
-    ATTR_TO,
-    DOMAIN,
-    EVENT_PLUM_ECOMAX_ALERT,
-)
+from .const import ATTR_FROM, ATTR_TO, DOMAIN, EVENT_PLUM_ECOMAX_ALERT
+
+DEFAULT_MESSAGE: Final = "encountered alert with code"
 
 ALERT_MESSAGES: dict[AlertType, str] = {
     AlertType.POWER_LOSS: "encountered power loss",
@@ -51,11 +49,11 @@ def async_describe_events(
             pass
 
         alert_string = ALERT_MESSAGES.get(
-            alert_code, f'encountered alert with code "{alert_code}"'
+            alert_code, f'{DEFAULT_MESSAGE} "{alert_code}"'
         )
 
         return {
-            LOGBOOK_ENTRY_NAME: "ecoMAX",
+            LOGBOOK_ENTRY_NAME: event.data[ATTR_NAME],
             LOGBOOK_ENTRY_MESSAGE: f"{alert_string} {time_string}",
         }
 

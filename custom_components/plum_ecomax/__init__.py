@@ -11,6 +11,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_CODE,
     ATTR_DEVICE_ID,
+    ATTR_NAME,
     EVENT_HOMEASSISTANT_STOP,
     Platform,
 )
@@ -116,6 +117,7 @@ def async_setup_events(hass: HomeAssistant, connection: EcomaxConnection) -> boo
 
         for alert in alerts:
             event_data = {
+                ATTR_NAME: connection.name,
                 ATTR_DEVICE_ID: device.id,
                 ATTR_CODE: alert.code,
                 ATTR_FROM: alert.from_dt.strftime(DATE_STR_FORMAT),

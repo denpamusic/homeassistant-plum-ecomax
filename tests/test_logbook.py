@@ -7,7 +7,7 @@ from homeassistant.components.logbook.const import (
     LOGBOOK_ENTRY_MESSAGE,
     LOGBOOK_ENTRY_NAME,
 )
-from homeassistant.const import ATTR_CODE
+from homeassistant.const import ATTR_CODE, ATTR_NAME
 from homeassistant.core import Event, HomeAssistant
 from pyplumio.const import AlertType
 
@@ -34,6 +34,7 @@ async def test_logbook(hass: HomeAssistant) -> None:
     callback = args[2]
     mock_event = Mock(spec=Event)
     mock_event.data = {
+        ATTR_NAME: "ecoMAX",
         ATTR_CODE: AlertType.POWER_LOSS,
         ATTR_FROM: DATE_FROM,
         ATTR_TO: DATE_TO,
@@ -46,6 +47,7 @@ async def test_logbook(hass: HomeAssistant) -> None:
 
     # Test with no end date.
     mock_event.data = {
+        ATTR_NAME: "ecoMAX",
         ATTR_CODE: AlertType.POWER_LOSS,
         ATTR_FROM: DATE_FROM,
     }

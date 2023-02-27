@@ -5,7 +5,12 @@ from typing import Final
 from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
-from homeassistant.const import ATTR_CODE, ATTR_DEVICE_ID, EVENT_HOMEASSISTANT_STOP
+from homeassistant.const import (
+    ATTR_CODE,
+    ATTR_DEVICE_ID,
+    ATTR_NAME,
+    EVENT_HOMEASSISTANT_STOP,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.device_registry import DeviceEntry
@@ -128,6 +133,7 @@ async def test_setup_events(
     mock_async_fire.assert_called_once_with(
         EVENT_PLUM_ECOMAX_ALERT,
         {
+            ATTR_NAME: connection.name,
             ATTR_DEVICE_ID: mock_device_entry.id,
             ATTR_CODE: AlertType.POWER_LOSS,
             ATTR_FROM: DATE_FROM,
