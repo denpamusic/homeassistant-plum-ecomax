@@ -14,27 +14,35 @@ from .const import ATTR_PASSWORD, ATTR_PRODUCT, CONF_HOST, CONF_UID, DOMAIN
 REDACTED: Final = "**REDACTED**"
 
 
-def _device_data_as_dict(device_data: dict[str, Any]) -> dict[str, Any]:
-    """Represent device data as dictionary."""
-    for key, value in device_data.items():
-        if isinstance(value, dict):
-            device_data[key] = _device_data_as_dict(dict(value))
+def _value_as_dict(value):
+    """Return value as a dictionary."""
+    if isinstance(value, EventManager):
+        return dict(value.data)
 
-        if isinstance(value, EventManager):
-            device_data[key] = _device_data_as_dict(dict(value.data))
-
-    return device_data
+    return value
 
 
-def _redact_device_data(device_data: dict[str, Any]) -> dict[str, Any]:
+def _data_as_dict(data: dict[str, Any]) -> dict[str, Any]:
+    """Return data as dictionary."""
+    for key, value in data.items():
+        data[key] = (
+            _data_as_dict(dict(value))
+            if isinstance(value, dict)
+            else _value_as_dict(value)
+        )
+
+    return data
+
+
+def _redact_device_data(data: dict[str, Any]) -> dict[str, Any]:
     """Redact sensitive information in device data."""
-    if ATTR_PRODUCT in device_data:
-        device_data[ATTR_PRODUCT].uid = REDACTED
+    if ATTR_PRODUCT in data:
+        data[ATTR_PRODUCT].uid = REDACTED
 
-    if ATTR_PASSWORD in device_data:
-        device_data[ATTR_PASSWORD] = REDACTED
+    if ATTR_PASSWORD in data:
+        data[ATTR_PASSWORD] = REDACTED
 
-    return device_data
+    return data
 
 
 def _redact_entry_data(entry_data: dict[str, Any]) -> dict[str, Any]:
@@ -59,5 +67,5 @@ async def async_get_config_entry_diagnostics(
         "pyplumio": {
             "version": pyplumio_version,
         },
-        "data": _redact_device_data(_device_data_as_dict(dict(device.data))),
+        "data": _redact_device_data(_data_as_dict(dict(device.data))),
     }
