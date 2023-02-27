@@ -54,14 +54,19 @@ async def async_get_connection_handler(
     """Return connection handler object."""
     _LOGGER.debug("Getting connection handler for type: %s...", connection_type)
 
-    public_ip = await async_get_source_ip(hass, target_ip=IPV4_BROADCAST_ADDR)
-    ethernet = pyplumio.ethernet_parameters(ip=public_ip)
     if connection_type == CONNECTION_TYPE_TCP:
+        public_ip = await async_get_source_ip(hass, target_ip=IPV4_BROADCAST_ADDR)
+        ethernet = pyplumio.ethernet_parameters(ip=public_ip)
         return pyplumio.TcpConnection(
-            data[CONF_HOST], data[CONF_PORT], ethernet_parameters=ethernet
+            data[CONF_HOST],
+            data.get(CONF_PORT, DEFAULT_PORT),
+            ethernet_parameters=ethernet,
         )
 
-    return pyplumio.SerialConnection(data[CONF_DEVICE], ethernet_parameters=ethernet)
+    return pyplumio.SerialConnection(
+        data.get(CONF_DEVICE, DEFAULT_DEVICE),
+        int(data.get(CONF_BAUDRATE, DEFAULT_BAUDRATE)),
+    )
 
 
 async def async_get_sub_devices(device: Addressable) -> list[str]:
