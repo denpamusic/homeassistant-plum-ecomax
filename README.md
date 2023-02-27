@@ -26,6 +26,7 @@ It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and sup
   - [Thermostats](#thermostats)
   - [Mixers/Circuits](#mixerscircuits-sub-devices)
   - [Device-specific entities](#device-specific-entities)
+- [Events](#events)
 - [Services](#services)
 - [License](#license)
 
@@ -282,6 +283,23 @@ These entities are only available for specific devices.
 | Name                                   | Unit | Model          | Product ID | Data key | 
 |----------------------------------------|:----:|:--------------:|:----------:|:--------:|
 | Ash pan full                           | %    | ecoMAX 860P3-O | 51         | 227      |
+
+## Events
+This integration fires following events:
+
+### plum_ecomax_alert
+This event is fired when ecoMAX controller issues an alert.
+
+#### Event data
+| Name              | Description                                                                                                                    |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| name              | Config entry name. By default is set to the device model.                                                                      |
+| code              | Alert code. List of known codes is available [here](https://github.com/denpamusic/PyPlumIO/blob/v0.3.5/pyplumio/const.py#L73). |
+| from              | Datetime object representing the alert start time.                                                                             |
+| to <sup>1</sup>   | Datetime object representing the alert end time.                                                                               |
+
+<small><sup>1</sup> Only present if the alert has already ended.</small>
+
 
 ## Services
 This integration provides following services:
