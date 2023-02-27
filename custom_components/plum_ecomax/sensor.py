@@ -32,7 +32,6 @@ from homeassistant.helpers.entity_platform import (
     async_get_current_platform,
 )
 from homeassistant.helpers.typing import ConfigType, StateType
-import homeassistant.util.dt as dt_util
 from pyplumio.const import ProductType
 from pyplumio.filters import aggregate, on_change, throttle
 from pyplumio.structures.modules import ConnectedModules
@@ -500,9 +499,6 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
 
     async def async_reset_meter(self):
         """Reset stored value."""
-        if self.state_class == SensorStateClass.TOTAL:
-            self._attr_last_reset = dt_util.utcnow()
-
         self._attr_native_value = 0.0
         self.async_write_ha_state()
 
