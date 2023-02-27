@@ -66,3 +66,8 @@ async def test_diagnostics(
     ecomax_data[ATTR_REGDATA] = ecomax_data[ATTR_REGDATA].data
     assert result["data"][ATTR_PRODUCT].uid == REDACTED
     assert result["data"] == ecomax_data
+
+    # Check that redactor doesn't fail on missing key.
+    del ecomax_p.data[ATTR_PASSWORD]
+    result = await async_get_config_entry_diagnostics(hass, config_entry)
+    assert ATTR_PASSWORD not in result["data"]

@@ -35,23 +35,32 @@ def _data_as_dict(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def _redact_device_data(data: dict[str, Any]) -> dict[str, Any]:
-    """Redact sensitive information in device data."""
-    if ATTR_PRODUCT in data:
-        data[ATTR_PRODUCT].uid = REDACTED
+    """Redact sensitive information in the device data."""
+    sensitive: tuple[tuple[str, str | None], ...] = (
+        (ATTR_PRODUCT, "uid"),
+        (ATTR_PASSWORD, None),
+    )
 
-    if ATTR_PASSWORD in data:
-        data[ATTR_PASSWORD] = REDACTED
+    for key, attribute in sensitive:
+        if key not in data:
+            continue
+
+        if attribute is None:
+            data[key] = REDACTED
+            continue
+
+        setattr(data[key], attribute, REDACTED)
 
     return data
 
 
-def _redact_entry_data(entry_data: dict[str, Any]) -> dict[str, Any]:
-    """Redact sensitive information in config entry data."""
+def _redact_entry_data(data: dict[str, Any]) -> dict[str, Any]:
+    """Redact sensitive information in the config entry data."""
     for field in (CONF_UID, CONF_HOST):
-        if field in entry_data:
-            entry_data[field] = REDACTED
+        if field in data:
+            data[field] = REDACTED
 
-    return entry_data
+    return data
 
 
 async def async_get_config_entry_diagnostics(
