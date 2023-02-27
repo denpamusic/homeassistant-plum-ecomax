@@ -230,9 +230,9 @@ async def test_migrate_entry_with_timeout(
     assert "Migration failed" in caplog.text
 
 
-async def test_format_model_name() -> None:
-    """Test model name formatter."""
-    model_names: tuple[str, str] = (
+@pytest.mark.parametrize(
+    "model_name,formatted",
+    [
         ("EM350P2-ZF", "ecoMAX 350P2-ZF"),
         ("ecoMAXX800R3", "ecoMAXX 800R3"),
         ("ecoMAX 850i", "ecoMAX 850i"),
@@ -240,7 +240,8 @@ async def test_format_model_name() -> None:
         ("ecoMAX920P1-O", "ecoMAX 920P1-O"),
         ("ecoMAX860D3-HB", "ecoMAX 860D3-HB"),
         ("ignore", "ignore"),
-    )
-
-    for raw, formatted in model_names:
-        assert format_model_name(raw) == formatted
+    ],
+)
+async def test_format_model_name(model_name: str, formatted: str) -> None:
+    """Test model name formatter."""
+    assert format_model_name(model_name) == formatted
