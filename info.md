@@ -34,7 +34,7 @@ Adapter ->  ecoMAX
 
 2. Select you connection type. Choose serial port if your ecoMAX controller is connected directly to the PC that is running Home Assistant, choose network if ecoMAX is connected via RS-485 to WiFi converter
 
-![Menu](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/menu.png)__
+![Menu](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/menu.png)
 
 To connect via the network fill Host and Port:
 
