@@ -129,29 +129,29 @@ Following section lists entities that are added to the ecoMAX device.
 Sensors can have numerical or text state.
 Temperature changes that are less than 0.1°C are ignored. 
 
-| Name                                   | Unit | ecoMAX pellet      | ecoMAX installation |
-|----------------------------------------|:----:|:------------------:|:-------------------:|
-| Heating temperature                    | °C   | :white_check_mark: | :white_check_mark:  |
-| Water heater temperature               | °C   | :white_check_mark: | :white_check_mark:  |
-| Outside temperature                    | °C   | :white_check_mark: | :white_check_mark:  |
-| Heating target temperature             | °C   | :white_check_mark: | :white_check_mark:  |
-| Water heater target temperature        | °C   | :white_check_mark: | :white_check_mark:  |
-| Heating mode                           | n/a  | :white_check_mark: | :white_check_mark:  |
-| Solar temperature                      | °C   | :x:                | :white_check_mark:  |
-| Fireplace temperature                  | °C   | :x:                | :white_check_mark:  |
-| Exhaust temperature                    | °C   | :white_check_mark: | :x:                 |
-| Feeder temperature                     | °C   | :white_check_mark: | :x:                 |
-| Return temperature                     | °C   | :white_check_mark: | :x:                 |
-| Heating load                           | %    | :white_check_mark: | :x:                 |
-| Fan power                              | %    | :white_check_mark: | :x:                 |
-| Fuel level                             | %    | :white_check_mark: | :x:                 |
-| Fuel consumption                       | kg   | :white_check_mark: | :x:                 |
-| Total fuel burned <sup>1</sup>         | kg   | :white_check_mark: | :x:                 |
-| Heating power                          | kW   | :white_check_mark: | :x:                 |
-| Lower buffer temperature <sup>2</sup>  | °C   | :white_check_mark: | :x:                 |
-| Upper buffer temperature <sup>2</sup>  | °C   | :white_check_mark: | :x:                 |
-| Flame intensity <sup>2</sup>           | %    | :white_check_mark: | :x:                 |
-| Oxygen level <sup>3</sup>              | %    | :white_check_mark: | :white_check_mark:  |
+| Name                                  | Unit | ecoMAX pellet      | ecoMAX installation |
+|---------------------------------------|:----:|:------------------:|:-------------------:|
+| Heating temperature                   | °C   | :white_check_mark: | :white_check_mark:  |
+| Water heater temperature              | °C   | :white_check_mark: | :white_check_mark:  |
+| Outside temperature                   | °C   | :white_check_mark: | :white_check_mark:  |
+| Heating target temperature            | °C   | :white_check_mark: | :white_check_mark:  |
+| Water heater target temperature       | °C   | :white_check_mark: | :white_check_mark:  |
+| Heating mode                          | n/a  | :white_check_mark: | :white_check_mark:  |
+| Solar temperature                     | °C   | :x:                | :white_check_mark:  |
+| Fireplace temperature                 | °C   | :x:                | :white_check_mark:  |
+| Exhaust temperature                   | °C   | :white_check_mark: | :x:                 |
+| Feeder temperature                    | °C   | :white_check_mark: | :x:                 |
+| Return temperature                    | °C   | :white_check_mark: | :x:                 |
+| Heating load                          | %    | :white_check_mark: | :x:                 |
+| Fan power                             | %    | :white_check_mark: | :x:                 |
+| Fuel level                            | %    | :white_check_mark: | :x:                 |
+| Fuel consumption                      | kg   | :white_check_mark: | :x:                 |
+| Total fuel burned <sup>1</sup>        | kg   | :white_check_mark: | :x:                 |
+| Heating power                         | kW   | :white_check_mark: | :x:                 |
+| Lower buffer temperature <sup>2</sup> | °C   | :white_check_mark: | :x:                 |
+| Upper buffer temperature <sup>2</sup> | °C   | :white_check_mark: | :x:                 |
+| Flame intensity <sup>2</sup>          | %    | :white_check_mark: | :x:                 |
+| Oxygen level <sup>3</sup>             | %    | :white_check_mark: | :white_check_mark:  |
  
 <small><sup>1</sup> Special meter entity. It counts burned fuel when HomeAssistant is running.</small><br>
 <small><sup>2</sup> Controller support is required.</small><br>
@@ -219,11 +219,11 @@ Please note, that due to the way base water heater entity is implemented,
 custom modes [are not allowed](https://developers.home-assistant.io/docs/core/entity/water-heater/#states).
 Please use the following reference table to convert between water heater operation modes displayed in Home Assistant and ecoMAX.
 
-| HomeAssistant  | ecoMAX            |
-|----------------|-------------------|
-| Off            | On                |
-| Performance    | Priority mode     |
-| Eco            | Non-priority mode |
+| HomeAssistant | ecoMAX            |
+|---------------|-------------------|
+| Off           | On                |
+| Performance   | Priority mode     |
+| Eco           | Non-priority mode |
 
 ### Thermostats
 This integration provides Home Assistant's [climate platform](https://www.home-assistant.io/integrations/climate/) entity for each ecoSTER thermostat connected to the ecoMAX controller.
@@ -243,10 +243,10 @@ If you connected them after setting up the integration, you can use `Detect sub-
 
 ### Sensors
 
-| Name                      | Unit | ecoMAX pellet      | ecoMAX installation |
-|---------------------------|:----:|:------------------:|:-------------------:|
-| Mixer temperature         | °C   | :white_check_mark: | :white_check_mark:  |
-| Target mixer temperature  | °C   | :white_check_mark: | :white_check_mark:  |
+| Name                     | Unit | ecoMAX pellet      | ecoMAX installation |
+|--------------------------|:----:|:------------------:|:-------------------:|
+| Mixer temperature        | °C   | :white_check_mark: | :white_check_mark:  |
+| Target mixer temperature | °C   | :white_check_mark: | :white_check_mark:  |
 
 
 #### Binary sensors
@@ -256,12 +256,12 @@ If you connected them after setting up the integration, you can use `Detect sub-
 | Mixer pump | :white_check_mark: | :white_check_mark:  |
 
 #### Switches
-| Name                                 | ecoMAX pellet      | ecoMAX installation |
-|--------------------------------------|:------------------:|:-------------------:|
-| Enable in summer mode                | :white_check_mark: | :white_check_mark:  |
-| Enable mixer                         | :x:                | :white_check_mark:  |
-| Weather control                      | :white_check_mark: | :x:                 |
-| Disable pump on thermostat           | :white_check_mark: | :x:                 |
+| Name                       | ecoMAX pellet      | ecoMAX installation |
+|----------------------------|:------------------:|:-------------------:|
+| Enable in summer mode      | :white_check_mark: | :white_check_mark:  |
+| Enable mixer               | :x:                | :white_check_mark:  |
+| Weather control            | :white_check_mark: | :x:                 |
+| Disable pump on thermostat | :white_check_mark: | :x:                 |
 
 #### Numbers
 
@@ -280,9 +280,9 @@ These entities are only available for specific devices.
 
 #### Sensors
 
-| Name                                   | Unit | Model          | Product ID | Data key | 
-|----------------------------------------|:----:|:--------------:|:----------:|:--------:|
-| Ash pan full                           | %    | ecoMAX 860P3-O | 51         | 227      |
+| Name         | Unit | Model          | Product ID | Data key | 
+|--------------|:----:|:--------------:|:----------:|:--------:|
+| Ash pan full | %    | ecoMAX 860P3-O | 51         | 227      |
 
 ## Events
 This integration fires following events:
@@ -291,12 +291,12 @@ This integration fires following events:
 This event is fired when ecoMAX controller issues an alert.
 
 #### Event data
-| Name              | Description                                                                                                                    |
-|-------------------|--------------------------------------------------------------------------------------------------------------------------------|
-| name              | Config entry name. By default is set to the device model.                                                                      |
-| code              | Alert code. List of known codes is available [here](https://github.com/denpamusic/PyPlumIO/blob/v0.3.5/pyplumio/const.py#L73). |
-| from              | Datetime object representing the alert start time.                                                                             |
-| to <sup>1</sup>   | Datetime object representing the alert end time.                                                                               |
+| Name            | Description                                                                                                                    |
+|-----------------|--------------------------------------------------------------------------------------------------------------------------------|
+| name            | Config entry name. By default is set to the device model.                                                                      |
+| code            | Alert code. List of known codes is available [here](https://github.com/denpamusic/PyPlumIO/blob/v0.3.5/pyplumio/const.py#L73). |
+| from            | Datetime object representing the alert start time.                                                                             |
+| to <sup>1</sup> | Datetime object representing the alert end time.                                                                               |
 
 <small><sup>1</sup> Only present if the alert has already ended.</small>
 
