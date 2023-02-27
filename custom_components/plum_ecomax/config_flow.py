@@ -29,6 +29,8 @@ from .connection import (
 from .const import (
     ATTR_MODULES,
     ATTR_PRODUCT,
+    BAUDRATES,
+    CONF_BAUDRATE,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
@@ -41,6 +43,7 @@ from .const import (
     CONF_UID,
     CONNECTION_TYPE_SERIAL,
     CONNECTION_TYPE_TCP,
+    DEFAULT_BAUDRATE,
     DEFAULT_DEVICE,
     DEFAULT_PORT,
     DOMAIN,
@@ -52,13 +55,14 @@ _LOGGER = logging.getLogger(__name__)
 STEP_TCP_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_HOST): cv.string,
-        vol.Required(CONF_PORT, default=DEFAULT_PORT): cv.port,
+        vol.Optional(CONF_PORT, default=DEFAULT_PORT): cv.port,
     }
 )
 
 STEP_SERIAL_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_DEVICE, default=DEFAULT_DEVICE): cv.string,
+        vol.Optional(CONF_BAUDRATE, default=DEFAULT_BAUDRATE): vol.In(BAUDRATES),
     }
 )
 

@@ -35,6 +35,7 @@ from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
     ATTR_ECOMAX_CONTROL,
     ATTR_MIXERS,
+    CONF_BAUDRATE,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
@@ -47,14 +48,14 @@ from custom_components.plum_ecomax.const import (
     CONF_UID,
     CONNECTION_TYPE_SERIAL,
     CONNECTION_TYPE_TCP,
+    DEFAULT_BAUDRATE,
+    DEFAULT_DEVICE,
+    DEFAULT_PORT,
     DOMAIN,
 )
 
-UNKNOWN_ECOMAX_TYPE: Final = 99
 TITLE: Final = "ecoMAX"
-DEVICE: Final = "/dev/ttyUSB0"
 HOST: Final = "localhost"
-PORT: Final = 8899
 
 
 @pytest.fixture(autouse=True)
@@ -78,7 +79,7 @@ def fixture_tcp_user_input():
     """Get the TCP config data."""
     yield {
         CONF_HOST: HOST,
-        CONF_PORT: PORT,
+        CONF_PORT: DEFAULT_PORT,
     }
 
 
@@ -86,7 +87,8 @@ def fixture_tcp_user_input():
 def fixture_serial_user_input():
     """Get the serial config data."""
     yield {
-        CONF_DEVICE: DEVICE,
+        CONF_DEVICE: DEFAULT_DEVICE,
+        CONF_BAUDRATE: DEFAULT_BAUDRATE,
     }
 
 

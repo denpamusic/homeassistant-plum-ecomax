@@ -24,7 +24,8 @@
       },
       "serial": {
         "data": {
-          "device": "Cesta"
+          "device": "Cesta",
+          "baudrate": "Přenosová rychlost"
         }
       },
       "tcp": {

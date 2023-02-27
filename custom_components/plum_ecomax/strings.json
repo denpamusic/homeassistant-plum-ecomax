@@ -24,7 +24,8 @@
       },
       "serial": {
         "data": {
-          "device": "Device"
+          "device": "Device",
+          "baudrate": "Baudrate"
         }
       },
       "tcp": {

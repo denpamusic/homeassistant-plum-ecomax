@@ -40,6 +40,17 @@ MODULE_A: Final = "module_a"
 MODULE_B: Final = "module_b"
 MODULE_C: Final = "module_c"
 
+# Baudrates.
+# (should be listed as strings due to the visual bug in hass selectors)
+BAUDRATES: Final[tuple[str, ...]] = (
+    "9600",
+    "14400",
+    "19200",
+    "38400",
+    "57600",
+    "115200",
+)
+
 # Weekdays.
 WEEKDAYS: Final[tuple[str, ...]] = (
     "Monday",
@@ -55,6 +66,7 @@ WEEKDAYS: Final[tuple[str, ...]] = (
 CONF_CAPABILITIES: Final = "capabilities"
 CONF_CONNECTION_TYPE: Final = "connection_type"
 CONF_DEVICE: Final = "device"
+CONF_BAUDRATE: Final = "baudrate"
 CONF_HOST: Final = "host"
 CONF_MODEL: Final = "model"
 CONF_PORT: Final = "port"
@@ -73,6 +85,7 @@ CONNECTION_TYPES: Final = (CONNECTION_TYPE_TCP, CONNECTION_TYPE_SERIAL)
 # Defaults.
 DEFAULT_CONNECTION_TYPE: Final = CONNECTION_TYPE_TCP
 DEFAULT_DEVICE: Final = "/dev/ttyUSB0"
+DEFAULT_BAUDRATE: Final = BAUDRATES[-1]
 DEFAULT_PORT: Final = 8899
 
 # Units of measurement.

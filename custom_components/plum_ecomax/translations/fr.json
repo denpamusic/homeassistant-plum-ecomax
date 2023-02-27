@@ -24,7 +24,8 @@
       },
       "serial": {
         "data": {
-          "device": "Chemin de l'appareil"
+          "device": "Chemin de l'appareil",
+          "baudrate": "Débit en bauds"
         }
       },
       "tcp": {

@@ -24,7 +24,8 @@
       },
       "serial": {
         "data": {
-          "device": "Ścieżka urządzenia"
+          "device": "Ścieżka urządzenia",
+          "baudrate": "Szybkość transmisji"
         }
       },
       "tcp": {

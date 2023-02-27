@@ -14,6 +14,7 @@ from pyplumio.exceptions import ConnectionFailedError
 import pytest
 
 from custom_components.plum_ecomax.const import (
+    CONF_BAUDRATE,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
@@ -26,6 +27,9 @@ from custom_components.plum_ecomax.const import (
     CONF_UID,
     CONNECTION_TYPE_SERIAL,
     CONNECTION_TYPE_TCP,
+    DEFAULT_BAUDRATE,
+    DEFAULT_DEVICE,
+    DEFAULT_PORT,
     DOMAIN,
 )
 
@@ -131,7 +135,7 @@ async def test_form_tcp(
     assert result6["title"] == "ecoMAX 850P2-C"
     assert result6["data"] == {
         CONF_HOST: "localhost",
-        CONF_PORT: 8899,
+        CONF_PORT: DEFAULT_PORT,
         CONF_CONNECTION_TYPE: CONNECTION_TYPE_TCP,
         CONF_UID: "TEST",
         CONF_MODEL: "ecoMAX 850P2-C",
@@ -229,7 +233,8 @@ async def test_form_serial(
     assert result6["type"] == FlowResultType.CREATE_ENTRY
     assert result6["title"] == "ecoMAX 850P2-C"
     assert result6["data"] == {
-        CONF_DEVICE: "/dev/ttyUSB0",
+        CONF_DEVICE: DEFAULT_DEVICE,
+        CONF_BAUDRATE: DEFAULT_BAUDRATE,
         CONF_CONNECTION_TYPE: CONNECTION_TYPE_SERIAL,
         CONF_UID: "TEST",
         CONF_MODEL: "ecoMAX 850P2-C",
