@@ -32,10 +32,12 @@ from .const import (
     ATTR_PRODUCT,
     ATTR_TO,
     CONF_CAPABILITIES,
+    CONF_CONNECTION_TYPE,
     CONF_MODEL,
     CONF_PRODUCT_ID,
     CONF_PRODUCT_TYPE,
     CONF_SUB_DEVICES,
+    DEFAULT_CONNECTION_TYPE,
     DOMAIN,
     ECOMAX,
     EVENT_PLUM_ECOMAX_ALERT,
@@ -70,8 +72,11 @@ def format_model_name(model_name: str) -> str:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Plum ecoMAX from a config entry."""
+    connection_type = entry.data.get(CONF_CONNECTION_TYPE, DEFAULT_CONNECTION_TYPE)
     connection = EcomaxConnection(
-        hass, entry, await async_get_connection_handler(hass, entry.data)
+        hass,
+        entry,
+        await async_get_connection_handler(connection_type, hass, entry.data),
     )
 
     async def async_close_connection(event=None):
@@ -141,8 +146,13 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
     """Migrate old entry."""
     _LOGGER.debug("Migrating from version %s", config_entry.version)
 
+    connection_type = config_entry.data.get(
+        CONF_CONNECTION_TYPE, DEFAULT_CONNECTION_TYPE
+    )
     connection = EcomaxConnection(
-        hass, config_entry, await async_get_connection_handler(hass, config_entry.data)
+        hass,
+        config_entry,
+        await async_get_connection_handler(connection_type, hass, config_entry.data),
     )
     await connection.connect()
     data = {**config_entry.data}

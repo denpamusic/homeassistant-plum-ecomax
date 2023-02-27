@@ -154,7 +154,7 @@ async def test_heating_temperature_sensor(
 ) -> None:
     """Test heating temperature sensor."""
     await setup_integration(hass, config_entry)
-    heating_temperature_entity_id = "sensor.test_heating_temperature"
+    heating_temperature_entity_id = "sensor.ecomax_heating_temperature"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -164,7 +164,7 @@ async def test_heating_temperature_sensor(
     # Get initial value.
     state = hass.states.get(heating_temperature_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Heating temperature"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Heating temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
     assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.TEMPERATURE
@@ -194,7 +194,7 @@ async def test_water_heater_temperature_sensor(
 ) -> None:
     """Test water heater temperature sensor."""
     await setup_integration(hass, config_entry)
-    water_heater_temperature_entity_id = "sensor.test_water_heater_temperature"
+    water_heater_temperature_entity_id = "sensor.ecomax_water_heater_temperature"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -204,7 +204,7 @@ async def test_water_heater_temperature_sensor(
     # Get initial value.
     state = hass.states.get(water_heater_temperature_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Water heater temperature"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Water heater temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
     assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.TEMPERATURE
@@ -233,7 +233,7 @@ async def test_outside_temperature_sensor(
 ) -> None:
     """Test outside temperature sensor."""
     await setup_integration(hass, config_entry)
-    outside_temperature_entity_id = "sensor.test_outside_temperature"
+    outside_temperature_entity_id = "sensor.ecomax_outside_temperature"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -244,7 +244,7 @@ async def test_outside_temperature_sensor(
     frozen_time.move_to("12:00:10")
     state = hass.states.get(outside_temperature_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Outside temperature"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Outside temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
     assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.TEMPERATURE
@@ -264,7 +264,7 @@ async def test_heating_target_temperature_sensor(
 ) -> None:
     """Test heating target temperature sensor."""
     await setup_integration(hass, config_entry)
-    heating_target_temperature_entity_id = "sensor.test_heating_target_temperature"
+    heating_target_temperature_entity_id = "sensor.ecomax_heating_target_temperature"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -274,7 +274,7 @@ async def test_heating_target_temperature_sensor(
     # Get initial value.
     state = hass.states.get(heating_target_temperature_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Heating target temperature"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Heating target temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
     assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.TEMPERATURE
@@ -295,7 +295,7 @@ async def test_water_heater_target_temperature_sensor(
     """Test water heater target temperature sensor."""
     await setup_integration(hass, config_entry)
     water_heater_target_temperature_entity_id = (
-        "sensor.test_water_heater_target_temperature"
+        "sensor.ecomax_water_heater_target_temperature"
     )
 
     # Check entry.
@@ -307,7 +307,7 @@ async def test_water_heater_target_temperature_sensor(
     state = hass.states.get(water_heater_target_temperature_entity_id)
     assert state.state == "0.0"
     assert (
-        state.attributes[ATTR_FRIENDLY_NAME] == "test Water heater target temperature"
+        state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Water heater target temperature"
     )
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
@@ -328,7 +328,7 @@ async def test_state_sensor(
 ) -> None:
     """Test state sensor."""
     await setup_integration(hass, config_entry)
-    state_entity_id = "sensor.test_state"
+    state_entity_id = "sensor.ecomax_state"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -339,7 +339,7 @@ async def test_state_sensor(
     # Get initial value.
     state = hass.states.get(state_entity_id)
     assert state.state == "off"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test State"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX State"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_STATE, DeviceState.ALERT)
@@ -361,7 +361,7 @@ async def test_service_password_sensor(
 ) -> None:
     """Test service password sensor."""
     await setup_integration(hass, config_entry)
-    service_password_entity_id = "sensor.test_service_password"
+    service_password_entity_id = "sensor.ecomax_service_password"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -372,7 +372,7 @@ async def test_service_password_sensor(
     # Get initial value.
     state = hass.states.get(service_password_entity_id)
     assert state.state == "0000"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Service password"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Service password"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_PASSWORD, "1234")
@@ -389,7 +389,7 @@ async def test_software_version_sensor(
 ) -> None:
     """Test software version sensor."""
     await setup_integration(hass, config_entry)
-    software_version_entity_id = "sensor.test_software_version"
+    software_version_entity_id = "sensor.ecomax_software_version"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -399,7 +399,7 @@ async def test_software_version_sensor(
     # Get initial value.
     state = hass.states.get(software_version_entity_id)
     assert state.state == "6.10.32.K1"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Software version"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Software version"
 
     # Dispatch new value.
     await connection.device.dispatch(
@@ -418,7 +418,7 @@ async def test_uid_sensor(
 ) -> None:
     """Test uid sensor."""
     await setup_integration(hass, config_entry)
-    uid_entity_id = "sensor.test_uid"
+    uid_entity_id = "sensor.ecomax_uid"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -428,7 +428,7 @@ async def test_uid_sensor(
     # Get initial value.
     state = hass.states.get(uid_entity_id)
     assert state.state == "TEST"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test UID"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX UID"
 
     # Dispatch new value.
     await connection.device.dispatch(
@@ -451,7 +451,7 @@ async def test_oxygen_level_sensor(
 ) -> None:
     """Test oxygen level sensor."""
     await setup_integration(hass, config_entry)
-    oxygen_level_entity_id = "sensor.test_oxygen_level"
+    oxygen_level_entity_id = "sensor.ecomax_oxygen_level"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -462,7 +462,7 @@ async def test_oxygen_level_sensor(
     # Get initial value.
     state = hass.states.get(oxygen_level_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Oxygen level"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Oxygen level"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
@@ -489,7 +489,7 @@ async def test_power_sensor(
 ) -> None:
     """Test power sensor."""
     await setup_integration(hass, config_entry)
-    power_entity_id = "sensor.test_power"
+    power_entity_id = "sensor.ecomax_power"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -500,7 +500,7 @@ async def test_power_sensor(
     # Get initial value.
     state = hass.states.get(power_entity_id)
     assert state.state == "0.00"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Power"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Power"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfPower.KILO_WATT
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
@@ -521,7 +521,7 @@ async def test_fuel_level_sensor(
 ) -> None:
     """Test fuel level sensor."""
     await setup_integration(hass, config_entry)
-    fuel_level_entity_id = "sensor.test_fuel_level"
+    fuel_level_entity_id = "sensor.ecomax_fuel_level"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -532,7 +532,7 @@ async def test_fuel_level_sensor(
     # Get initial value.
     state = hass.states.get(fuel_level_entity_id)
     assert state.state == "0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Fuel level"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fuel level"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
@@ -553,7 +553,7 @@ async def test_fuel_consumption_sensor(
 ) -> None:
     """Test fuel consumption sensor."""
     await setup_integration(hass, config_entry)
-    fuel_consumption_entity_id = "sensor.test_fuel_consumption"
+    fuel_consumption_entity_id = "sensor.ecomax_fuel_consumption"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -564,7 +564,7 @@ async def test_fuel_consumption_sensor(
     # Get initial value.
     state = hass.states.get(fuel_consumption_entity_id)
     assert state.state == "0.00"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Fuel consumption"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fuel consumption"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == FLOW_KGH
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
@@ -584,7 +584,7 @@ async def test_load_sensor(
 ) -> None:
     """Test load sensor."""
     await setup_integration(hass, config_entry)
-    load_entity_id = "sensor.test_load"
+    load_entity_id = "sensor.ecomax_load"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -595,7 +595,7 @@ async def test_load_sensor(
     # Get initial value.
     state = hass.states.get(load_entity_id)
     assert state.state == "0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Load"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Load"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
@@ -614,7 +614,7 @@ async def test_fan_power_sensor(
 ) -> None:
     """Test fan power sensor."""
     await setup_integration(hass, config_entry)
-    fan_power_entity_id = "sensor.test_fan_power"
+    fan_power_entity_id = "sensor.ecomax_fan_power"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -625,7 +625,7 @@ async def test_fan_power_sensor(
     # Get initial value.
     state = hass.states.get(fan_power_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Fan power"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fan power"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
@@ -645,7 +645,7 @@ async def test_flame_intensity_sensor(
 ) -> None:
     """Test flame intensity sensor."""
     await setup_integration(hass, config_entry)
-    flame_intensity_entity_id = "sensor.test_flame_intensity"
+    flame_intensity_entity_id = "sensor.ecomax_flame_intensity"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -656,7 +656,7 @@ async def test_flame_intensity_sensor(
     # Get initial value.
     state = hass.states.get(flame_intensity_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Flame intensity"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Flame intensity"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
@@ -677,7 +677,7 @@ async def test_feeder_temperature_sensor(
 ) -> None:
     """Test feeder temperature sensor."""
     await setup_integration(hass, config_entry)
-    feeder_temperature_entity_id = "sensor.test_feeder_temperature"
+    feeder_temperature_entity_id = "sensor.ecomax_feeder_temperature"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -687,7 +687,7 @@ async def test_feeder_temperature_sensor(
     # Get initial value.
     state = hass.states.get(feeder_temperature_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Feeder temperature"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Feeder temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
@@ -708,12 +708,12 @@ async def test_exhaust_temperature_sensor(
 ) -> None:
     """Test exhaust temperature sensor."""
     await setup_integration(hass, config_entry)
-    exhaust_temperature_entity_id = "sensor.test_exhaust_temperature"
+    exhaust_temperature_entity_id = "sensor.ecomax_exhaust_temperature"
 
     # Get initial value.
     state = hass.states.get(exhaust_temperature_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Exhaust temperature"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Exhaust temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
@@ -739,7 +739,7 @@ async def test_return_temperature_sensor(
 ) -> None:
     """Test return temperature sensor."""
     await setup_integration(hass, config_entry)
-    return_temperature_entity_id = "sensor.test_return_temperature"
+    return_temperature_entity_id = "sensor.ecomax_return_temperature"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -749,7 +749,7 @@ async def test_return_temperature_sensor(
     # Get initial value.
     state = hass.states.get(return_temperature_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Return temperature"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Return temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
@@ -770,7 +770,7 @@ async def test_lower_buffer_temperature_sensor(
 ) -> None:
     """Test lower buffer temperature sensor."""
     await setup_integration(hass, config_entry)
-    lower_buffer_temperature_entity_id = "sensor.test_lower_buffer_temperature"
+    lower_buffer_temperature_entity_id = "sensor.ecomax_lower_buffer_temperature"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -780,7 +780,7 @@ async def test_lower_buffer_temperature_sensor(
     # Get initial value.
     state = hass.states.get(lower_buffer_temperature_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Lower buffer temperature"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Lower buffer temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
@@ -801,7 +801,7 @@ async def test_upper_buffer_temperature_sensor(
 ) -> None:
     """Test upper buffer temperature sensor."""
     await setup_integration(hass, config_entry)
-    upper_buffer_temperature_entity_id = "sensor.test_upper_buffer_temperature"
+    upper_buffer_temperature_entity_id = "sensor.ecomax_upper_buffer_temperature"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -811,7 +811,7 @@ async def test_upper_buffer_temperature_sensor(
     # Get initial value.
     state = hass.states.get(upper_buffer_temperature_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Upper buffer temperature"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Upper buffer temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
@@ -832,7 +832,7 @@ async def test_lower_solar_temperature_sensor(
 ) -> None:
     """Test lower solar temperature sensor."""
     await setup_integration(hass, config_entry)
-    lower_solar_temperature_entity_id = "sensor.test_lower_solar_temperature"
+    lower_solar_temperature_entity_id = "sensor.ecomax_lower_solar_temperature"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -842,7 +842,7 @@ async def test_lower_solar_temperature_sensor(
     # Get initial value.
     state = hass.states.get(lower_solar_temperature_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Lower solar temperature"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Lower solar temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
@@ -863,7 +863,7 @@ async def test_upper_solar_temperature_sensor(
 ) -> None:
     """Test upper solar temperature sensor."""
     await setup_integration(hass, config_entry)
-    upper_solar_temperature_entity_id = "sensor.test_upper_solar_temperature"
+    upper_solar_temperature_entity_id = "sensor.ecomax_upper_solar_temperature"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -873,7 +873,7 @@ async def test_upper_solar_temperature_sensor(
     # Get initial value.
     state = hass.states.get(upper_solar_temperature_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Upper solar temperature"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Upper solar temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
@@ -894,7 +894,7 @@ async def test_fireplace_temperature_sensor(
 ) -> None:
     """Test fireplace temperature sensor."""
     await setup_integration(hass, config_entry)
-    fireplace_temperature_entity_id = "sensor.test_fireplace_temperature"
+    fireplace_temperature_entity_id = "sensor.ecomax_fireplace_temperature"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -904,7 +904,7 @@ async def test_fireplace_temperature_sensor(
     # Get initial value.
     state = hass.states.get(fireplace_temperature_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Fireplace temperature"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fireplace temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
@@ -925,7 +925,7 @@ async def test_mixer_temperature_sensor(
 ) -> None:
     """Test mixer temperature sensor."""
     await setup_integration(hass, config_entry)
-    mixer_temperature_entity_id = "sensor.test_mixer_1_mixer_temperature"
+    mixer_temperature_entity_id = "sensor.ecomax_mixer_1_mixer_temperature"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -935,7 +935,7 @@ async def test_mixer_temperature_sensor(
     # Get initial value.
     state = hass.states.get(mixer_temperature_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Mixer 1 Mixer temperature"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Mixer 1 Mixer temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
@@ -956,7 +956,9 @@ async def test_mixer_target_temperature_sensor(
 ) -> None:
     """Test mixer target temperature sensor."""
     await setup_integration(hass, config_entry)
-    mixer_target_temperature_entity_id = "sensor.test_mixer_1_mixer_target_temperature"
+    mixer_target_temperature_entity_id = (
+        "sensor.ecomax_mixer_1_mixer_target_temperature"
+    )
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -967,7 +969,8 @@ async def test_mixer_target_temperature_sensor(
     state = hass.states.get(mixer_target_temperature_entity_id)
     assert state.state == "0.0"
     assert (
-        state.attributes[ATTR_FRIENDLY_NAME] == "test Mixer 1 Mixer target temperature"
+        state.attributes[ATTR_FRIENDLY_NAME]
+        == "ecoMAX Mixer 1 Mixer target temperature"
     )
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
@@ -989,7 +992,7 @@ async def test_circuit_temperature_sensor(
 ) -> None:
     """Test circuit temperature sensor."""
     await setup_integration(hass, config_entry)
-    circuit_temperature_entity_id = "sensor.test_circuit_1_circuit_temperature"
+    circuit_temperature_entity_id = "sensor.ecomax_circuit_1_circuit_temperature"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -999,7 +1002,9 @@ async def test_circuit_temperature_sensor(
     # Get initial value.
     state = hass.states.get(circuit_temperature_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Circuit 1 Circuit temperature"
+    assert (
+        state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Circuit 1 Circuit temperature"
+    )
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
@@ -1021,7 +1026,7 @@ async def test_circuit_target_temperature_sensor(
     """Test circuit target temperature sensor."""
     await setup_integration(hass, config_entry)
     circuit_target_temperature_entity_id = (
-        "sensor.test_circuit_1_circuit_target_temperature"
+        "sensor.ecomax_circuit_1_circuit_target_temperature"
     )
 
     # Check entry.
@@ -1034,7 +1039,7 @@ async def test_circuit_target_temperature_sensor(
     assert state.state == "0.0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
-        == "test Circuit 1 Circuit target temperature"
+        == "ecoMAX Circuit 1 Circuit target temperature"
     )
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
@@ -1058,7 +1063,7 @@ async def test_total_fuel_burned_sensor(
 ) -> None:
     """Test total fuel burned sensor."""
     await setup_integration(hass, config_entry)
-    fuel_burned_entity_id = "sensor.test_total_fuel_burned"
+    fuel_burned_entity_id = "sensor.ecomax_total_fuel_burned"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -1069,7 +1074,7 @@ async def test_total_fuel_burned_sensor(
     # Get initial value.
     state = hass.states.get(fuel_burned_entity_id)
     assert state.state == "0.00"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Total fuel burned"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Total fuel burned"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfMass.KILOGRAMS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.TOTAL
     assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.WEIGHT
@@ -1105,7 +1110,7 @@ async def test_ash_pan_full_sensor(
 ) -> None:
     """Test ash pan sensor for ecoMAX 860P3-O."""
     await setup_integration(hass, config_entry)
-    ash_pan_full_entity_id = "sensor.test_ash_pan_full"
+    ash_pan_full_entity_id = "sensor.ecomax_ash_pan_full"
     ash_pan_full_key = 227
 
     # Check entry.
@@ -1117,7 +1122,7 @@ async def test_ash_pan_full_sensor(
     # Get initial value.
     state = hass.states.get(ash_pan_full_entity_id)
     assert state.state == "49"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Ash pan full"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Ash pan full"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 

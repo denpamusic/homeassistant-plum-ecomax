@@ -77,7 +77,7 @@ async def test_target_heating_temperature_number(
 ) -> None:
     """Test target heating temperature number."""
     await setup_integration(hass, config_entry)
-    target_heating_temperature_entity_id = "number.test_target_heating_temperature"
+    target_heating_temperature_entity_id = "number.ecomax_target_heating_temperature"
     target_heating_temperature_key = "heating_target_temp"
 
     # Check entry.
@@ -88,7 +88,7 @@ async def test_target_heating_temperature_number(
     # Get initial state.
     state = hass.states.get(target_heating_temperature_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Target heating temperature"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Target heating temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0
     assert state.attributes[ATTR_MAX] == 1
@@ -154,7 +154,7 @@ async def test_minimum_heating_temperature_number(
 ) -> None:
     """Test minimum heating temperature number."""
     await setup_integration(hass, config_entry)
-    minimum_heating_temperature_entity_id = "number.test_minimum_heating_temperature"
+    minimum_heating_temperature_entity_id = "number.ecomax_minimum_heating_temperature"
     minimum_heating_temperature_key = "min_heating_target_temp"
 
     # Check entry.
@@ -165,7 +165,7 @@ async def test_minimum_heating_temperature_number(
     # Get initial state.
     state = hass.states.get(minimum_heating_temperature_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Minimum heating temperature"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Minimum heating temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0
     assert state.attributes[ATTR_MAX] == 1
@@ -206,7 +206,7 @@ async def test_maximum_heating_temperature_number(
 ) -> None:
     """Test maximum heating temperature number."""
     await setup_integration(hass, config_entry)
-    maximum_heating_temperature_entity_id = "number.test_maximum_heating_temperature"
+    maximum_heating_temperature_entity_id = "number.ecomax_maximum_heating_temperature"
     maximum_heating_temperature_key = "max_heating_target_temp"
 
     # Check entry.
@@ -217,7 +217,7 @@ async def test_maximum_heating_temperature_number(
     # Get initial state.
     state = hass.states.get(maximum_heating_temperature_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Maximum heating temperature"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Maximum heating temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0
     assert state.attributes[ATTR_MAX] == 1
@@ -258,7 +258,7 @@ async def test_grate_mode_temperature_number(
 ) -> None:
     """Test grate mode temperature number."""
     await setup_integration(hass, config_entry)
-    grate_mode_temperature_entity_id = "number.test_grate_mode_temperature"
+    grate_mode_temperature_entity_id = "number.ecomax_grate_mode_temperature"
     grate_mode_temperature_key = "heating_temp_grate"
 
     # Check entry.
@@ -269,7 +269,7 @@ async def test_grate_mode_temperature_number(
     # Get initial state.
     state = hass.states.get(grate_mode_temperature_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Grate mode temperature"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Grate mode temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0
     assert state.attributes[ATTR_MAX] == 1
@@ -335,7 +335,7 @@ async def test_fuzzy_logic_minimum_power_number(
 ) -> None:
     """Test fuzzy logic minimum power number."""
     await setup_integration(hass, config_entry)
-    fuzzy_logic_minimum_power_entity_id = "number.test_fuzzy_logic_minimum_power"
+    fuzzy_logic_minimum_power_entity_id = "number.ecomax_fuzzy_logic_minimum_power"
     fuzzy_logic_minimum_power_key = "min_fuzzy_logic_power"
 
     # Check entry.
@@ -346,7 +346,7 @@ async def test_fuzzy_logic_minimum_power_number(
     # Get initial state.
     state = hass.states.get(fuzzy_logic_minimum_power_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Fuzzy logic minimum power"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fuzzy logic minimum power"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
     assert state.attributes[ATTR_MIN] == 0
     assert state.attributes[ATTR_MAX] == 1
@@ -387,7 +387,7 @@ async def test_fuzzy_logic_maximum_power_number(
 ) -> None:
     """Test fuzzy logic maximum power number."""
     await setup_integration(hass, config_entry)
-    fuzzy_logic_maximum_power_entity_id = "number.test_fuzzy_logic_maximum_power"
+    fuzzy_logic_maximum_power_entity_id = "number.ecomax_fuzzy_logic_maximum_power"
     fuzzy_logic_maximum_power_key = "max_fuzzy_logic_power"
 
     # Check entry.
@@ -398,7 +398,7 @@ async def test_fuzzy_logic_maximum_power_number(
     # Get initial state.
     state = hass.states.get(fuzzy_logic_maximum_power_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Fuzzy logic maximum power"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fuzzy logic maximum power"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
     assert state.attributes[ATTR_MIN] == 0
     assert state.attributes[ATTR_MAX] == 1
@@ -439,7 +439,7 @@ async def test_fuel_calorific_value_number(
 ) -> None:
     """Test fuel calorific value number."""
     await setup_integration(hass, config_entry)
-    fuel_calorific_value_entity_id = "number.test_fuel_calorific_value"
+    fuel_calorific_value_entity_id = "number.ecomax_fuel_calorific_value"
     fuel_calorific_value_key = "fuel_calorific_value_kwh_kg"
 
     # Check entry.
@@ -450,7 +450,7 @@ async def test_fuel_calorific_value_number(
     # Get initial state.
     state = hass.states.get(fuel_calorific_value_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Fuel calorific value"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fuel calorific value"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == CALORIFIC_KWH_KG
     assert state.attributes[ATTR_MIN] == 0
     assert state.attributes[ATTR_MAX] == 0.1
@@ -493,7 +493,9 @@ async def test_mixer_target_mixer_temperature_number(
 ) -> None:
     """Test mixer target mixer temperature number."""
     await setup_integration(hass, config_entry)
-    target_mixer_temperature_entity_id = "number.test_mixer_1_target_mixer_temperature"
+    target_mixer_temperature_entity_id = (
+        "number.ecomax_mixer_1_target_mixer_temperature"
+    )
     target_mixer_temperature_key = "mixer_target_temp"
 
     # Check entry.
@@ -505,7 +507,8 @@ async def test_mixer_target_mixer_temperature_number(
     state = hass.states.get(target_mixer_temperature_entity_id)
     assert state.state == "0.0"
     assert (
-        state.attributes[ATTR_FRIENDLY_NAME] == "test Mixer 1 Target mixer temperature"
+        state.attributes[ATTR_FRIENDLY_NAME]
+        == "ecoMAX Mixer 1 Target mixer temperature"
     )
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0
@@ -573,7 +576,7 @@ async def test_mixer_minimum_mixer_temperature_number(
     """Test mixer minimum mixer temperature number."""
     await setup_integration(hass, config_entry)
     minimum_mixer_temperature_entity_id = (
-        "number.test_mixer_1_minimum_mixer_temperature"
+        "number.ecomax_mixer_1_minimum_mixer_temperature"
     )
     minimum_mixer_temperature_key = "min_target_temp"
 
@@ -586,7 +589,8 @@ async def test_mixer_minimum_mixer_temperature_number(
     state = hass.states.get(minimum_mixer_temperature_entity_id)
     assert state.state == "0.0"
     assert (
-        state.attributes[ATTR_FRIENDLY_NAME] == "test Mixer 1 Minimum mixer temperature"
+        state.attributes[ATTR_FRIENDLY_NAME]
+        == "ecoMAX Mixer 1 Minimum mixer temperature"
     )
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0
@@ -629,7 +633,7 @@ async def test_mixer_maximum_mixer_temperature_number(
     """Test mixer maximum mixer temperature number."""
     await setup_integration(hass, config_entry)
     maximum_mixer_temperature_entity_id = (
-        "number.test_mixer_1_maximum_mixer_temperature"
+        "number.ecomax_mixer_1_maximum_mixer_temperature"
     )
     maximum_mixer_temperature_key = "max_target_temp"
 
@@ -642,7 +646,8 @@ async def test_mixer_maximum_mixer_temperature_number(
     state = hass.states.get(maximum_mixer_temperature_entity_id)
     assert state.state == "0.0"
     assert (
-        state.attributes[ATTR_FRIENDLY_NAME] == "test Mixer 1 Maximum mixer temperature"
+        state.attributes[ATTR_FRIENDLY_NAME]
+        == "ecoMAX Mixer 1 Maximum mixer temperature"
     )
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0
@@ -685,7 +690,7 @@ async def test_circuit_target_circuit_temperature_number(
     """Test cicuit target circuit temperature number."""
     await setup_integration(hass, config_entry)
     target_circuit_temperature_entity_id = (
-        "number.test_circuit_1_target_circuit_temperature"
+        "number.ecomax_circuit_1_target_circuit_temperature"
     )
     target_circuit_temperature_key = "mixer_target_temp"
 
@@ -699,7 +704,7 @@ async def test_circuit_target_circuit_temperature_number(
     assert state.state == "0.0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
-        == "test Circuit 1 Target circuit temperature"
+        == "ecoMAX Circuit 1 Target circuit temperature"
     )
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0
@@ -767,7 +772,7 @@ async def test_circuit_minimum_circuit_temperature_number(
     """Test circuit minimum circuit temperature number."""
     await setup_integration(hass, config_entry)
     minimum_circuit_temperature_entity_id = (
-        "number.test_circuit_1_minimum_circuit_temperature"
+        "number.ecomax_circuit_1_minimum_circuit_temperature"
     )
     minimum_circuit_temperature_key = "min_target_temp"
 
@@ -781,7 +786,7 @@ async def test_circuit_minimum_circuit_temperature_number(
     assert state.state == "0.0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
-        == "test Circuit 1 Minimum circuit temperature"
+        == "ecoMAX Circuit 1 Minimum circuit temperature"
     )
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0
@@ -824,7 +829,7 @@ async def test_circuit_maximum_circuit_temperature_number(
     """Test circuit maximum circuit temperature number."""
     await setup_integration(hass, config_entry)
     maximum_circuit_temperature_entity_id = (
-        "number.test_circuit_1_maximum_circuit_temperature"
+        "number.ecomax_circuit_1_maximum_circuit_temperature"
     )
     maximum_circuit_temperature_key = "max_target_temp"
 
@@ -838,7 +843,7 @@ async def test_circuit_maximum_circuit_temperature_number(
     assert state.state == "0.0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
-        == "test Circuit 1 Maximum circuit temperature"
+        == "ecoMAX Circuit 1 Maximum circuit temperature"
     )
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0
@@ -881,7 +886,7 @@ async def test_circuit_day_target_circuit_temperature_number(
     """Test cicuit day target circuit temperature number."""
     await setup_integration(hass, config_entry)
     day_target_circuit_temperature_entity_id = (
-        "number.test_circuit_1_day_target_circuit_temperature"
+        "number.ecomax_circuit_1_day_target_circuit_temperature"
     )
     day_target_circuit_temperature_key = "day_target_temp"
 
@@ -895,7 +900,7 @@ async def test_circuit_day_target_circuit_temperature_number(
     assert state.state == "0.0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
-        == "test Circuit 1 Day target circuit temperature"
+        == "ecoMAX Circuit 1 Day target circuit temperature"
     )
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0
@@ -965,7 +970,7 @@ async def test_circuit_night_target_circuit_temperature_number(
     """Test cicuit night target circuit temperature number."""
     await setup_integration(hass, config_entry)
     night_target_circuit_temperature_entity_id = (
-        "number.test_circuit_1_night_target_circuit_temperature"
+        "number.ecomax_circuit_1_night_target_circuit_temperature"
     )
     night_target_circuit_temperature_key = "night_target_temp"
 
@@ -979,7 +984,7 @@ async def test_circuit_night_target_circuit_temperature_number(
     assert state.state == "0.0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
-        == "test Circuit 1 Night target circuit temperature"
+        == "ecoMAX Circuit 1 Night target circuit temperature"
     )
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0

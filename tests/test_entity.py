@@ -75,13 +75,13 @@ async def test_base_entity(
     assert entity.unique_id == "test_uid-heating_temp"
 
     # Test name property.
-    mock_connection.name = "Test connection"
-    assert entity.name == "Test connection Heating temperature"
+    mock_connection.name = "ecoMAX connection"
+    assert entity.name == "ecoMAX connection Heating temperature"
 
     # Test should poll property.
     assert not entity.should_poll
 
     # Test enabled by default property.
     assert entity.entity_registry_enabled_default
-    entity.entity_description = EntityDescription("test_data2", name="Test Data 2")
+    entity.entity_description = EntityDescription("test_data2", name="ecoMAX Data 2")
     assert not entity.entity_registry_enabled_default

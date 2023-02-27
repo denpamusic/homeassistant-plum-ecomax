@@ -45,11 +45,13 @@ from custom_components.plum_ecomax.const import (
     CONF_SOFTWARE,
     CONF_SUB_DEVICES,
     CONF_UID,
+    CONNECTION_TYPE_SERIAL,
     CONNECTION_TYPE_TCP,
     DOMAIN,
 )
 
 UNKNOWN_ECOMAX_TYPE: Final = 99
+TITLE: Final = "ecoMAX"
 DEVICE: Final = "/dev/ttyUSB0"
 HOST: Final = "localhost"
 PORT: Final = 8899
@@ -61,20 +63,36 @@ def auto_enable_custom_integrations(enable_custom_integrations):
     yield
 
 
-@pytest.fixture(name="config_data")
-def fixture_config_data():
-    """Get config data."""
+@pytest.fixture(autouse=True)
+def bypass_pyplumio_events():
+    """Bypass pyplumio event system."""
+    with patch(
+        "pyplumio.helpers.event_manager.EventManager.create_event",
+        side_effect=asyncio.TimeoutError,
+    ):
+        yield
+
+
+@pytest.fixture(name="tcp_user_input")
+def fixture_tcp_user_input():
+    """Get the TCP config data."""
     yield {
-        CONF_CONNECTION_TYPE: CONNECTION_TYPE_TCP,
-        CONF_DEVICE: DEVICE,
         CONF_HOST: HOST,
         CONF_PORT: PORT,
     }
 
 
-@pytest.fixture(name="device_data")
-def fixture_device_data():
-    """Get the device data for config flow."""
+@pytest.fixture(name="serial_user_input")
+def fixture_serial_user_input():
+    """Get the serial config data."""
+    yield {
+        CONF_DEVICE: DEVICE,
+    }
+
+
+@pytest.fixture(name="config_data")
+def fixture_config_data():
+    """Get the data for config flow."""
     return {
         CONF_UID: "TEST",
         CONF_MODEL: "ecoMAX 850P2-C",
@@ -83,6 +101,32 @@ def fixture_device_data():
         CONF_SOFTWARE: "6.10.32.K1",
         CONF_SUB_DEVICES: [ATTR_MIXERS],
     }
+
+
+@pytest.fixture(name="tcp_config_data")
+def fixture_tcp_config_data(tcp_user_input, config_data):
+    """Inject the TCP connection type."""
+    config_data |= tcp_user_input
+    config_data.update(
+        {
+            CONF_CONNECTION_TYPE: CONNECTION_TYPE_TCP,
+        }
+    )
+
+    yield config_data
+
+
+@pytest.fixture(name="serial_config_data")
+def fixture_serial_config_data(serial_user_input, config_data):
+    """Inject the serial connection type."""
+    config_data |= serial_user_input
+    config_data.update(
+        {
+            CONF_CONNECTION_TYPE: CONNECTION_TYPE_SERIAL,
+        }
+    )
+
+    yield config_data
 
 
 @pytest.fixture
@@ -99,46 +143,24 @@ async def setup_integration():
 
 @pytest.fixture(name="config_entry")
 def fixture_config_entry(
-    hass: HomeAssistant,
-    config_data: dict[str, str],
-    device_data: dict[str, str],
+    hass: HomeAssistant, tcp_config_data: dict[str, str]
 ) -> MockConfigEntry:
     """Create mock config entry and add it to hass."""
-    config_data |= device_data
-    config_entry = MockConfigEntry(domain=DOMAIN, data=config_data, entry_id="test")
+    config_entry = MockConfigEntry(
+        domain=DOMAIN, data=tcp_config_data, title=TITLE, entry_id="test"
+    )
     config_entry.add_to_hass(hass)
     return config_entry
 
 
-@pytest.fixture(name="connection_name")
-def fixture_connection_name():
-    """Patch ecoMAX connection name."""
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.name",
-        "test",
-        create=True,
-    ):
-        yield
-
-
 @pytest.fixture(name="connection")
 def fixture_connection(
-    hass: HomeAssistant, config_entry: MockConfigEntry, connection_name
+    hass: HomeAssistant, config_entry: MockConfigEntry
 ) -> EcomaxConnection:
     """Get ecoMAX connection."""
     connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=Connection))
     hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = connection
     return connection
-
-
-@pytest.fixture(autouse=True)
-def bypass_pyplumio_events():
-    """Bypass pyplumio event system."""
-    with patch(
-        "pyplumio.helpers.event_manager.EventManager.create_event",
-        side_effect=asyncio.TimeoutError,
-    ):
-        yield
 
 
 @pytest.fixture

@@ -1,19 +1,34 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Appareil déja connecté"
+      "unsupported_product": "Produit non compatible",
+      "discovery_failed": "Impossible de terminer la découverte du module",
+      "no_devices_found": "Aucun appareil trouvé sur le réseau"
     },
     "error": {
       "cannot_connect": "Connexion échouée",
       "timeout_connect": "Delai de connexion dépassé",
-      "unsupported_product": "Produit non compatible",
       "unknown": "Erreur inattendue"
+    },
+    "progress": {
+      "wait_for_device": "Établissement de la connexion à l'appareil...",
+      "identify_device": "Vérification du modèle d'appareil...",
+      "discover_modules": "Découverte des modules de {model}..."
     },
     "step": {
       "user": {
+        "menu_options": {
+          "tcp": "Se connecter via le réseau (TCP)",
+          "serial": "Se connecter via le port série (RS-485)"
+        }
+      },
+      "serial": {
         "data": {
-          "connection_type": "Type de connexion",
-          "device": "Chemin de l'appareil",
+          "device": "Chemin de l'appareil"
+        }
+      },
+      "tcp": {
+        "data": {
           "host": "Hôte",
           "port": "Port"
         }

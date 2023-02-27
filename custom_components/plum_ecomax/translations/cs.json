@@ -1,19 +1,34 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Zařízení je již nakonfigurováno"
+      "unsupported_product": "Nepodporovaný produkt",
+      "discovery_failed": "Zjišťování modulu nelze dokončit",
+      "no_devices_found": "V síti nebyla nalezena žádná zařízení"
     },
     "error": {
       "cannot_connect": "Připojení selhalo",
       "timeout_connect": "Časový limit připojení vypršel",
-      "unsupported_product": "Nepodporovaný produkt",
       "unknown": "Neočekávaná chyba"
+    },
+    "progress": {
+      "wait_for_device": "Navazování připojení k zařízení...",
+      "identify_device": "Kontrola modelu zařízení...",
+      "discover_modules": "Objevování modulů pro {model}..."
     },
     "step": {
       "user": {
+        "menu_options": {
+          "tcp": "Připojte se přes síť (TCP)",
+          "serial": "Připojte se přes sériový port (RS-485)"
+        }
+      },
+      "serial": {
         "data": {
-          "connection_type": "Cesta k zařízení",
-          "device": "Cesta",
+          "device": "Cesta"
+        }
+      },
+      "tcp": {
+        "data": {
           "host": "IP adresa/Doména",
           "port": "Port"
         }

@@ -1,23 +1,38 @@
 {
   "config": {
-    "step": {
-      "user": {
-        "data": {
-          "connection_type": "Connection type",
-          "device": "Device",
-          "host": "[%key:common::config_flow::data::host%]",
-          "port": "[%key:common::config_flow::data::port%]"
-        }
-      }
+    "abort": {
+      "unsupported_product": "Connected device is not supported.",
+      "discovery_failed": "Could not finish module discovery",
+      "no_devices_found": "[%key:common::config_flow::abort::no_devices_found%]"
     },
     "error": {
       "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
       "timeout_connect": "[%key:common::config_flow::error::timeout_connect%]",
-      "unsupported_product": "Unsupported product",
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },
-    "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    "progress": {
+      "wait_for_device": "Establishing connection to the device...",
+      "identify_device": "Checking the device model...",
+      "discover_modules": "Discovering modules for the {model}..."
+    },
+    "step": {
+      "user": {
+        "menu_options": {
+          "tcp": "Connect via network (TCP)",
+          "serial": "Connect via serial (RS-485)"
+        }
+      },
+      "serial": {
+        "data": {
+          "device": "Device"
+        }
+      },
+      "tcp": {
+        "data": {
+          "host": "[%key:common::config_flow::data::host%]",
+          "port": "[%key:common::config_flow::data::port%]"
+        }
+      }
     }
   },
   "entity": {

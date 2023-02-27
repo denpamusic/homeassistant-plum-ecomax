@@ -1,19 +1,34 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Urządzenie jest już skonfigurowane"
+      "unsupported_product": "Nieobsługiwany produkt",
+      "discovery_failed": "Zjišťování modulu nelze dokončit",
+      "no_devices_found": "V síti nebyla nalezena žádná zařízení"
     },
     "error": {
       "cannot_connect": "Nie udało się połączyć",
       "timeout_connect": "Limit czasu nawiązania połączenia",
-      "unsupported_product": "Nieobsługiwany produkt",
       "unknown": "Niespodziewany błąd"
+    },
+    "progress": {
+      "wait_for_device": "Nawiązywanie połączenia z urządzeniem...",
+      "identify_device": "Sprawdzanie modelu urządzenia...",
+      "discover_modules": "Wykrywanie modułów dla {model}..."
     },
     "step": {
       "user": {
+        "menu_options": {
+          "tcp": "Połącz przez sieć (TCP)",
+          "serial": "Połącz przez port szeregowy (RS-485)"
+        }
+      },
+      "serial": {
         "data": {
-          "connection_type": "Rodzaj połączenia",
-          "device": "Ścieżka urządzenia",
+          "device": "Ścieżka urządzenia"
+        }
+      },
+      "tcp": {
+        "data": {
           "host": "Host",
           "port": "Port"
         }

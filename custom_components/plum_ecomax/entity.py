@@ -77,7 +77,7 @@ class EcomaxEntity(ABC):
 
     @property
     def connection(self) -> EcomaxConnection:
-        """Ecomax connection instance."""
+        """ecoMAX connection instance."""
         return self._connection
 
     @property

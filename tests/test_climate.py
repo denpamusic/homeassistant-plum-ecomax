@@ -117,7 +117,7 @@ async def test_thermostat(
 ) -> None:
     """Test indirect water heater."""
     await setup_integration(hass, config_entry)
-    thermostat_entity_id = "climate.test_thermostat_1"
+    thermostat_entity_id = "climate.ecomax_thermostat_1"
     thermostat_state_key = "state"
     thermostat_contacts_key = "contacts"
     thermostat_current_temperature_key = "current_temp"
@@ -147,7 +147,7 @@ async def test_thermostat(
     assert state.attributes[ATTR_CURRENT_TEMPERATURE] == 0
     assert state.attributes[ATTR_HVAC_ACTION] == HVACAction.IDLE
     assert state.attributes[ATTR_PRESET_MODE] == PRESET_SCHEDULE
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Thermostat 1"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Thermostat 1"
 
     # Dispatch new room temperature.
     frozen_time.move_to("12:00:10")

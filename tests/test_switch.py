@@ -88,7 +88,7 @@ async def test_ecomax_control_switch(
 ) -> None:
     """Test ecoMAX control switch."""
     await setup_integration(hass, config_entry)
-    controller_switch_entity_id = "switch.test_controller_switch"
+    controller_switch_entity_id = "switch.ecomax_controller_switch"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -98,7 +98,7 @@ async def test_ecomax_control_switch(
     # Get initial value.
     state = hass.states.get(controller_switch_entity_id)
     assert state.state == STATE_OFF
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Controller switch"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Controller switch"
 
     # Dispatch new value.
     await connection.device.dispatch(
@@ -141,7 +141,7 @@ async def test_water_heater_disinfection_switch(
     """Test water heater disinfection switch."""
     await setup_integration(hass, config_entry)
     water_heater_disinfection_switch_entity_id = (
-        "switch.test_water_heater_disinfection_switch"
+        "switch.ecomax_water_heater_disinfection_switch"
     )
     water_heater_disinfection_switch_key = "water_heater_disinfection"
 
@@ -154,7 +154,8 @@ async def test_water_heater_disinfection_switch(
     state = hass.states.get(water_heater_disinfection_switch_entity_id)
     assert state.state == STATE_OFF
     assert (
-        state.attributes[ATTR_FRIENDLY_NAME] == "test Water heater disinfection switch"
+        state.attributes[ATTR_FRIENDLY_NAME]
+        == "ecoMAX Water heater disinfection switch"
     )
 
     # Dispatch new value.
@@ -203,7 +204,7 @@ async def test_water_heater_pump_switch(
 ) -> None:
     """Test water heater pump switch."""
     await setup_integration(hass, config_entry)
-    water_heater_pump_switch_entity_id = "switch.test_water_heater_pump_switch"
+    water_heater_pump_switch_entity_id = "switch.ecomax_water_heater_pump_switch"
     water_heater_pump_switch_key = "water_heater_work_mode"
 
     # Check entry.
@@ -214,7 +215,7 @@ async def test_water_heater_pump_switch(
     # Get initial value.
     state = hass.states.get(water_heater_pump_switch_entity_id)
     assert state.state == STATE_OFF
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Water heater pump switch"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Water heater pump switch"
 
     # Dispatch new value.
     await connection.device.dispatch(
@@ -256,7 +257,7 @@ async def test_summer_mode_switch(
 ) -> None:
     """Test summer mode switch."""
     await setup_integration(hass, config_entry)
-    summer_mode_switch_entity_id = "switch.test_summer_mode_switch"
+    summer_mode_switch_entity_id = "switch.ecomax_summer_mode_switch"
     summer_mode_switch_key = "summer_mode"
 
     # Check entry.
@@ -267,7 +268,7 @@ async def test_summer_mode_switch(
     # Get initial value.
     state = hass.states.get(summer_mode_switch_entity_id)
     assert state.state == STATE_OFF
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Summer mode switch"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Summer mode switch"
 
     # Dispatch new value.
     await connection.device.dispatch(
@@ -309,7 +310,7 @@ async def test_weather_control_switch(
 ) -> None:
     """Test weather control switch."""
     await setup_integration(hass, config_entry)
-    weather_control_switch_entity_id = "switch.test_weather_control_switch"
+    weather_control_switch_entity_id = "switch.ecomax_weather_control_switch"
     weather_control_switch_key = "heating_weather_control"
 
     # Check entry.
@@ -320,7 +321,7 @@ async def test_weather_control_switch(
     # Get initial value.
     state = hass.states.get(weather_control_switch_entity_id)
     assert state.state == STATE_OFF
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Weather control switch"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Weather control switch"
 
     # Dispatch new value.
     await connection.device.dispatch(
@@ -362,7 +363,7 @@ async def test_fuzzy_logic_switch(
 ) -> None:
     """Test fuzzy logic switch."""
     await setup_integration(hass, config_entry)
-    fuzzy_logic_switch_entity_id = "switch.test_fuzzy_logic_switch"
+    fuzzy_logic_switch_entity_id = "switch.ecomax_fuzzy_logic_switch"
     fuzzy_logic_switch_key = "fuzzy_logic"
 
     # Check entry.
@@ -373,7 +374,7 @@ async def test_fuzzy_logic_switch(
     # Get initial value.
     state = hass.states.get(fuzzy_logic_switch_entity_id)
     assert state.state == STATE_OFF
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Fuzzy logic switch"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fuzzy logic switch"
 
     # Dispatch new value.
     await connection.device.dispatch(
@@ -415,7 +416,7 @@ async def test_heating_schedule_switch(
 ) -> None:
     """Test heating schedule switch."""
     await setup_integration(hass, config_entry)
-    heating_schedule_switch_entity_id = "switch.test_heating_schedule_switch"
+    heating_schedule_switch_entity_id = "switch.ecomax_heating_schedule_switch"
     heating_schedule_switch_key = "heating_schedule_switch"
 
     # Check entry.
@@ -426,7 +427,7 @@ async def test_heating_schedule_switch(
     # Get initial value.
     state = hass.states.get(heating_schedule_switch_entity_id)
     assert state.state == STATE_OFF
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Heating schedule switch"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Heating schedule switch"
 
     # Dispatch new value.
     await connection.device.dispatch(
@@ -468,7 +469,9 @@ async def test_water_heater_schedule_switch(
 ) -> None:
     """Test water heater schedule switch."""
     await setup_integration(hass, config_entry)
-    water_heater_schedule_switch_entity_id = "switch.test_water_heater_schedule_switch"
+    water_heater_schedule_switch_entity_id = (
+        "switch.ecomax_water_heater_schedule_switch"
+    )
     water_heater_schedule_switch_key = "water_heater_schedule_switch"
 
     # Check entry.
@@ -479,7 +482,7 @@ async def test_water_heater_schedule_switch(
     # Get initial value.
     state = hass.states.get(water_heater_schedule_switch_entity_id)
     assert state.state == STATE_OFF
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Water heater schedule switch"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Water heater schedule switch"
 
     # Dispatch new value.
     await connection.device.dispatch(
@@ -521,7 +524,7 @@ async def test_mixer_enable_in_summer_mode_switch(
 ) -> None:
     """Test enable in summer mode switch."""
     await setup_integration(hass, config_entry)
-    enable_in_summer_mode_entity_id = "switch.test_mixer_1_enable_in_summer_mode"
+    enable_in_summer_mode_entity_id = "switch.ecomax_mixer_1_enable_in_summer_mode"
     enable_in_summer_mode_key = "summer_work"
 
     # Check entry.
@@ -532,7 +535,9 @@ async def test_mixer_enable_in_summer_mode_switch(
     # Get initial value.
     state = hass.states.get(enable_in_summer_mode_entity_id)
     assert state.state == STATE_OFF
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Mixer 1 Enable in summer mode"
+    assert (
+        state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Mixer 1 Enable in summer mode"
+    )
 
     # Dispatch new value.
     await connection.device.mixers[0].dispatch(
@@ -575,7 +580,7 @@ async def test_circuit_enable_in_summer_mode_switch(
 ) -> None:
     """Test enable in summer mode switch."""
     await setup_integration(hass, config_entry)
-    enable_in_summer_mode_entity_id = "switch.test_circuit_1_enable_in_summer_mode"
+    enable_in_summer_mode_entity_id = "switch.ecomax_circuit_1_enable_in_summer_mode"
     enable_in_summer_mode_key = "summer_work"
 
     # Check entry.
@@ -587,7 +592,7 @@ async def test_circuit_enable_in_summer_mode_switch(
     state = hass.states.get(enable_in_summer_mode_entity_id)
     assert state.state == STATE_OFF
     assert (
-        state.attributes[ATTR_FRIENDLY_NAME] == "test Circuit 1 Enable in summer mode"
+        state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Circuit 1 Enable in summer mode"
     )
 
     # Dispatch new value.
@@ -632,7 +637,7 @@ async def test_mixer_weather_control_switch(
     """Test mixer weather control switch."""
     await setup_integration(hass, config_entry)
     mixer_weather_control_switch_entity_id = (
-        "switch.test_mixer_1_weather_control_switch"
+        "switch.ecomax_mixer_1_weather_control_switch"
     )
     mixer_weather_control_switch_key = "weather_control"
 
@@ -644,7 +649,9 @@ async def test_mixer_weather_control_switch(
     # Get initial value.
     state = hass.states.get(mixer_weather_control_switch_entity_id)
     assert state.state == STATE_OFF
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Mixer 1 Weather control switch"
+    assert (
+        state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Mixer 1 Weather control switch"
+    )
 
     # Dispatch new value.
     await connection.device.mixers[0].dispatch(
@@ -687,7 +694,7 @@ async def test_mixer_disable_pump_on_thermostat_switch(
     """Test disable pump on thermostat switch."""
     await setup_integration(hass, config_entry)
     disable_pump_on_thermostat_entity_id = (
-        "switch.test_mixer_1_disable_pump_on_thermostat"
+        "switch.ecomax_mixer_1_disable_pump_on_thermostat"
     )
     disable_pump_on_thermostat_key = "off_therm_pump"
 
@@ -701,7 +708,7 @@ async def test_mixer_disable_pump_on_thermostat_switch(
     assert state.state == STATE_OFF
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
-        == "test Mixer 1 Disable pump on thermostat"
+        == "ecoMAX Mixer 1 Disable pump on thermostat"
     )
 
     # Dispatch new value.
@@ -745,7 +752,7 @@ async def test_circuit_enable_circuit_switch(
 ) -> None:
     """Test enable circuit switch."""
     await setup_integration(hass, config_entry)
-    enable_circuit_entity_id = "switch.test_circuit_1_enable_circuit"
+    enable_circuit_entity_id = "switch.ecomax_circuit_1_enable_circuit"
     enable_circuit_key = "support"
 
     # Check entry.
@@ -756,7 +763,7 @@ async def test_circuit_enable_circuit_switch(
     # Get initial value.
     state = hass.states.get(enable_circuit_entity_id)
     assert state.state == STATE_OFF
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Circuit 1 Enable circuit"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Circuit 1 Enable circuit"
 
     # Dispatch new value.
     await connection.device.mixers[0].dispatch(

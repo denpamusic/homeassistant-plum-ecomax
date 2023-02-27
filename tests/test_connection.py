@@ -2,8 +2,8 @@
 
 import asyncio
 import logging
-from typing import Final
-from unittest.mock import AsyncMock, Mock, call, patch
+from typing import Any, Final
+from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
 from homeassistant.config_entries import ConfigEntry
@@ -13,28 +13,21 @@ from homeassistant.helpers.entity import DeviceInfo
 from pyplumio import Connection, SerialConnection, TcpConnection
 from pyplumio.const import FrameType
 from pyplumio.devices.ecomax import EcoMAX
-from pyplumio.structures.modules import ConnectedModules
-from pyplumio.structures.product_info import ProductInfo
 import pytest
 
 from custom_components.plum_ecomax.climate import ATTR_THERMOSTATS
 from custom_components.plum_ecomax.connection import (
-    ATTR_MODULES,
     DEFAULT_TIMEOUT,
     EcomaxConnection,
-    async_check_connection,
     async_get_connection_handler,
     async_get_sub_devices,
 )
 from custom_components.plum_ecomax.const import (
     ATTR_MIXER_PARAMETERS,
     ATTR_MIXERS,
-    ATTR_PRODUCT,
     ATTR_REGDATA,
     ATTR_THERMOSTAT_PARAMETERS,
     ATTR_WATER_HEATER,
-    CONF_CONNECTION_TYPE,
-    CONF_DEVICE,
     CONF_HOST,
     CONF_MODEL,
     CONF_PRODUCT_ID,
@@ -43,6 +36,7 @@ from custom_components.plum_ecomax.const import (
     CONF_SUB_DEVICES,
     CONF_UID,
     CONNECTION_TYPE_SERIAL,
+    CONNECTION_TYPE_TCP,
     DOMAIN,
     ECOMAX,
     MANUFACTURER,
@@ -62,49 +56,26 @@ def fixture_async_get_source_ip():
 
 
 async def test_async_get_connection_handler(
-    hass: HomeAssistant, async_get_source_ip, config_data
+    hass: HomeAssistant,
+    tcp_config_data: dict[str, Any],
+    serial_config_data: dict[str, Any],
+    async_get_source_ip,
 ) -> None:
     """Test helper function to get connection handler."""
     with patch("pyplumio.ethernet_parameters") as mock_ethernet_parameters:
-        connection: Connection = await async_get_connection_handler(hass, config_data)
+        connection: Connection = await async_get_connection_handler(
+            CONNECTION_TYPE_TCP, hass, tcp_config_data
+        )
 
     assert isinstance(connection, TcpConnection)
     async_get_source_ip.assert_awaited_once_with(hass, target_ip=IPV4_BROADCAST_ADDR)
     mock_ethernet_parameters.assert_called_once_with(ip=SOURCE_IP)
 
     # Test with serial connection.
-    config_data[CONF_CONNECTION_TYPE] = CONNECTION_TYPE_SERIAL
-    connection = await async_get_connection_handler(hass, config_data)
+    connection: Connection = await async_get_connection_handler(
+        CONNECTION_TYPE_SERIAL, hass, serial_config_data
+    )
     assert isinstance(connection, SerialConnection)
-
-
-@pytest.mark.usefixtures("mixers")
-async def test_async_check_connection(
-    config_data: dict[str, str], ecomax_p: EcoMAX
-) -> None:
-    """Test helper function to check the connection."""
-    mock_product = Mock(spec=ProductInfo)
-    mock_modules = Mock(spec=ConnectedModules)
-    mock_ecomax = Mock(spec=EcoMAX)
-    mock_ecomax.get = AsyncMock(side_effect=(mock_product, mock_modules, True))
-    mock_ecomax.data = ecomax_p.data
-    mock_connection = AsyncMock(spec=TcpConnection)
-    mock_connection.configure_mock(host=config_data.get(CONF_HOST))
-    mock_connection.get = AsyncMock(return_value=mock_ecomax)
-    result = await async_check_connection(mock_connection)
-    mock_ecomax.get.assert_has_calls(
-        [
-            call(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT),
-            call(ATTR_MODULES, timeout=DEFAULT_TIMEOUT),
-        ]
-    )
-    mock_connection.close.assert_awaited_once()
-    assert result == (
-        config_data.get(CONF_HOST),
-        mock_product,
-        mock_modules,
-        [ATTR_MIXERS],
-    )
 
 
 @pytest.mark.usefixtures("mixers", "thermostats", "water_heater")
@@ -126,8 +97,7 @@ async def test_async_get_sub_devices(ecomax_p: EcoMAX, caplog) -> None:
 async def test_async_setup(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    device_data: dict[str, str],
-    config_data: dict[str, str],
+    tcp_config_data: dict[str, str],
 ) -> None:
     """Test connection setup."""
     mock_ecomax = Mock(spec=EcoMAX)
@@ -135,7 +105,7 @@ async def test_async_setup(
         side_effect=(True, True, True, asyncio.TimeoutError)
     )
     mock_connection = Mock(spec=TcpConnection)
-    mock_connection.configure_mock(host=config_data.get(CONF_HOST))
+    mock_connection.configure_mock(host=tcp_config_data.get(CONF_HOST))
     mock_connection.get = AsyncMock(side_effect=(mock_ecomax, asyncio.TimeoutError))
     connection = EcomaxConnection(hass, config_entry, mock_connection)
 
@@ -149,33 +119,27 @@ async def test_async_setup(
 
     # Check connection class properties for tcp connection.
     assert not hasattr(connection, "nonexistent")
-    assert connection.host == config_data.get(CONF_HOST)
-    assert connection.model == device_data.get(CONF_MODEL)
-    assert connection.uid == device_data.get(CONF_UID)
-    assert connection.software == device_data.get(CONF_SOFTWARE)
-    assert connection.name == config_data.get(CONF_HOST)
+    assert connection.host == tcp_config_data.get(CONF_HOST)
+    assert connection.model == tcp_config_data.get(CONF_MODEL)
+    assert connection.uid == tcp_config_data.get(CONF_UID)
+    assert connection.software == tcp_config_data.get(CONF_SOFTWARE)
+    assert connection.name == config_entry.title
     assert connection.device == mock_ecomax
     assert connection.connection == mock_connection
-    assert connection.product_type == device_data.get(CONF_PRODUCT_TYPE)
-    assert connection.product_id == device_data.get(CONF_PRODUCT_ID)
+    assert connection.product_type == tcp_config_data.get(CONF_PRODUCT_TYPE)
+    assert connection.product_id == tcp_config_data.get(CONF_PRODUCT_ID)
     assert connection.device_info == DeviceInfo(
         name=connection.name,
         identifiers={(DOMAIN, connection.uid)},
         manufacturer=MANUFACTURER,
         model=f"{connection.model}",
         sw_version=connection.software,
-        configuration_url=f"http://{config_data.get(CONF_HOST)}",
+        configuration_url=f"http://{tcp_config_data.get(CONF_HOST)}",
     )
 
     # Check with device timeout.
     with pytest.raises(asyncio.TimeoutError):
         await connection.async_setup()
-
-    # Check connection name for serial connection.
-    mock_connection = AsyncMock(spec=SerialConnection)
-    mock_connection.device = config_data.get(CONF_DEVICE)
-    connection = EcomaxConnection(hass, config_entry, mock_connection)
-    assert connection.name == config_data.get(CONF_DEVICE)
 
 
 async def test_async_setup_thermostats(

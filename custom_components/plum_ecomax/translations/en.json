@@ -1,19 +1,34 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Device is already configured"
+      "unsupported_product": "Connected device is not supported",
+      "discovery_failed": "Could not finish module discovery",
+      "no_devices_found": "No devices found on the network"
     },
     "error": {
       "cannot_connect": "Failed to connect",
       "timeout_connect": "Timeout establishing connection",
-      "unsupported_product": "Unsupported product",
       "unknown": "Unexpected error"
+    },
+    "progress": {
+      "wait_for_device": "Establishing connection to the device...",
+      "identify_device": "Checking the device model...",
+      "discover_modules": "Discovering modules for the {model}..."
     },
     "step": {
       "user": {
+        "menu_options": {
+          "tcp": "Connect via network (TCP)",
+          "serial": "Connect via serial (RS-485)"
+        }
+      },
+      "serial": {
         "data": {
-          "connection_type": "Connection type",
-          "device": "Device path",
+          "device": "Device"
+        }
+      },
+      "tcp": {
+        "data": {
           "host": "Host",
           "port": "Port"
         }

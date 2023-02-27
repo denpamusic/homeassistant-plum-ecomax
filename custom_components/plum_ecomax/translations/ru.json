@@ -1,19 +1,34 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Устройство уже настроено"
+      "unsupported_product": "Контроллер не поддерживается",
+      "discovery_failed": "Ошибка обнаружения модулей",
+      "no_devices_found": "Устройства не обнаружены"
     },
     "error": {
       "cannot_connect": "Ошибка подключения",
       "timeout_connect": "Время ожидания подключения истекло",
-      "unsupported_product": "Контроллер не поддерживается",
       "unknown": "Неопознанная ошибка"
+    },
+    "progress": {
+      "wait_for_device": "Устанавливаем подключение к контроллеру...",
+      "identify_device": "Определяем модель контроллера...",
+      "discover_modules": "Обнаруживаем подключенные к {model} модули..."
     },
     "step": {
       "user": {
+        "menu_options": {
+          "tcp": "Подключиться по сети (TCP)",
+          "serial": "Подключиться через последовательный порт (RS-485)"
+        }
+      },
+      "serial": {
         "data": {
-          "connection_type": "Тип подключения",
-          "device": "Путь к устройству",
+          "device": "Путь к устройству"
+        }
+      },
+      "tcp": {
+        "data": {
           "host": "IP-адрес/домен",
           "port": "Порт"
         }

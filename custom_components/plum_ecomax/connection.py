@@ -13,19 +13,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.entity import DeviceInfo
 import pyplumio
-from pyplumio.connection import Connection
 from pyplumio.const import FrameType, ProductType
 from pyplumio.devices import Addressable
-from pyplumio.structures.modules import ConnectedModules
-from pyplumio.structures.product_info import ProductInfo
 
 from .const import (
     ATTR_ECOMAX_PARAMETERS,
     ATTR_LOADED,
     ATTR_MIXER_PARAMETERS,
     ATTR_MIXERS,
-    ATTR_MODULES,
-    ATTR_PRODUCT,
     ATTR_REGDATA,
     ATTR_SENSORS,
     ATTR_THERMOSTAT_PARAMETERS,
@@ -54,38 +49,19 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_get_connection_handler(
-    hass: HomeAssistant, data: Mapping[str, Any]
+    connection_type: str, hass: HomeAssistant, data: Mapping[str, Any]
 ) -> pyplumio.Connection:
     """Return connection handler object."""
+    _LOGGER.debug("Getting connection handler for type: %s...", connection_type)
+
     public_ip = await async_get_source_ip(hass, target_ip=IPV4_BROADCAST_ADDR)
     ethernet = pyplumio.ethernet_parameters(ip=public_ip)
-    if data[CONF_CONNECTION_TYPE] == CONNECTION_TYPE_TCP:
+    if connection_type == CONNECTION_TYPE_TCP:
         return pyplumio.TcpConnection(
             data[CONF_HOST], data[CONF_PORT], ethernet_parameters=ethernet
         )
 
     return pyplumio.SerialConnection(data[CONF_DEVICE], ethernet_parameters=ethernet)
-
-
-async def async_check_connection(
-    connection: Connection,
-) -> tuple[str, ProductInfo, ConnectedModules, list[str]]:
-    """Perform connection check."""
-    _LOGGER.debug("Starting device identification...")
-
-    title = (
-        connection.host
-        if isinstance(connection, pyplumio.TcpConnection)
-        else connection.device
-    )
-    await connection.connect()
-    device = await connection.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
-    product = await device.get(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
-    modules = await device.get(ATTR_MODULES, timeout=DEFAULT_TIMEOUT)
-    sub_devices = await async_get_sub_devices(device)
-    await connection.close()
-
-    return title, product, modules, sub_devices
 
 
 async def async_get_sub_devices(device: Addressable) -> list[str]:
@@ -95,7 +71,7 @@ async def async_get_sub_devices(device: Addressable) -> list[str]:
     sub_devices: list[str] = []
 
     # Wait until sensors become available.
-    await device.wait_for(ATTR_SENSORS)
+    await device.wait_for(ATTR_SENSORS, timeout=DEFAULT_TIMEOUT)
 
     if ATTR_MIXERS in device.data:
         mixer_count = len(device.data[ATTR_MIXERS])
@@ -125,12 +101,14 @@ async def async_get_sub_devices(device: Addressable) -> list[str]:
 class EcomaxConnection:
     """Represents the ecoMAX connection."""
 
-    _connection: Connection
+    _connection: pyplumio.Connection
     _device: Addressable | None
     _hass: HomeAssistant
     entry: ConfigEntry
 
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, connection: Connection):
+    def __init__(
+        self, hass: HomeAssistant, entry: ConfigEntry, connection: pyplumio.Connection
+    ):
         """Initialize new ecoMAX connection object."""
         self._connection = connection
         self._device = None
@@ -250,20 +228,17 @@ class EcomaxConnection:
 
     @property
     def name(self) -> str:
-        """Return connection name."""
-        if isinstance(self.connection, pyplumio.TcpConnection):
-            return self.connection.host
-
-        return self.connection.device
+        """Return the connection name."""
+        return self.entry.title
 
     @property
-    def connection(self) -> Connection:
-        """Returns connection handler instance."""
+    def connection(self) -> pyplumio.Connection:
+        """Return the connection handler instance."""
         return self._connection
 
     @property
     def device_info(self) -> DeviceInfo:
-        """Return device info."""
+        """Return the device info."""
         return DeviceInfo(
             name=self.name,
             identifiers={(DOMAIN, self.uid)},

@@ -96,16 +96,21 @@ If the above My button doesn’t work, you can also perform the following steps 
 
 ![Search dialog](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/search.png)
 
-6. Enter your connection details and click `Submit`.  
-__Serial connection__: you will need to fill Device path. Host and Port will be ignored.  
-__TCP connection__: you will need to fill Host and Port. Device path will be ignored
+6. Select you connection type. Choose serial port if your ecoMAX controller is connected directly to the PC that is running Home Assistant, choose network if ecoMAX is connected via RS-485 to WiFi converter
 
-![Configuration dialog](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/config.png)
+![Menu](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/menu.png)__
+
+To connect via the network fill Host and Port:
+
+![TCP](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/tcp.png)
+
+To connect via serial port fill the Device path:
+
+![serial](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/serial.png)
 
 7. Your device should now be available in your Home Assistant installation.
 
 ![Success](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/success.png)
-  
 </details>
 
 ## Entities

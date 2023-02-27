@@ -1,19 +1,34 @@
 {
   "config": {
     "abort": {
-      "already_configured": "Пристрій уже налаштовано"
+      "unsupported_product": "Контролер не підтримується",
+      "discovery_failed": "Помилка виявлення модулів",
+      "no_devices_found": "Пристрої не виявлено"
     },
     "error": {
       "cannot_connect": "Не вдалося підключитися",
       "timeout_connect": "Час очікування встановлення з’єднання",
-      "unsupported_product": "Контролер не підтримується",
       "unknown": "Неочікувана помилка"
+    },
+    "progress": {
+      "wait_for_device": "Встановлюємо підключення до контролера...",
+      "identify_device": "Визначаємо модель контролера...",
+      "discover_modules": "Виявляємо підключені до {model} модулі..."
     },
     "step": {
       "user": {
+        "menu_options": {
+          "tcp": "Підключитися через мережу (TCP)",
+          "serial": "Підключитись через послідовний порт (RS-485)"
+        }
+      },
+      "serial": {
         "data": {
-          "connection_type": "Тип підключення",
-          "device": "Шлях пристрою",
+          "device": "Шлях пристрою"
+        }
+      },
+      "tcp": {
+        "data": {
           "host": "Хост",
           "port": "Порт"
         }

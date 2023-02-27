@@ -71,7 +71,7 @@ async def test_detect_sub_devices_button(
 ) -> None:
     """Test detect sub-device button."""
     await setup_integration(hass, config_entry)
-    detect_sub_devices_entity_id = "button.test_detect_sub_devices"
+    detect_sub_devices_entity_id = "button.ecomax_detect_sub_devices"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -81,7 +81,7 @@ async def test_detect_sub_devices_button(
     # Get initial value.
     state = hass.states.get(detect_sub_devices_entity_id)
     assert state.state == STATE_UNKNOWN
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Detect sub-devices"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Detect sub-devices"
     assert state.attributes[ATTR_DEVICE_CLASS] == ButtonDeviceClass.UPDATE
 
     # Check that button can be pressed.

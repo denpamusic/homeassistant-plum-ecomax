@@ -1,5 +1,6 @@
 """Test Plum ecoMAX diagnostics."""
 
+from typing import Any
 from unittest.mock import AsyncMock
 
 from homeassistant.config_entries import ConfigEntry
@@ -15,7 +16,6 @@ from custom_components.plum_ecomax.const import (
     ATTR_PRODUCT,
     ATTR_REGDATA,
     CONF_CONNECTION_TYPE,
-    CONF_DEVICE,
     CONF_HOST,
     CONF_MODEL,
     CONF_PORT,
@@ -38,8 +38,7 @@ async def test_diagnostics(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
     ecomax_p: EcoMAX,
-    config_data: dict[str, str],
-    device_data: dict[str, str],
+    tcp_config_data: dict[str, Any],
 ) -> None:
     """Test config entry diagnostics."""
     mock_connection = AsyncMock(spec=EcomaxConnection)
@@ -48,18 +47,17 @@ async def test_diagnostics(
     result = await async_get_config_entry_diagnostics(hass, config_entry)
     assert result["pyplumio"]["version"] == __version__
     assert result["entry"] == {
-        "title": "Mock Title",
+        "title": config_entry.title,
         "data": {
             CONF_CONNECTION_TYPE: CONNECTION_TYPE_TCP,
-            CONF_DEVICE: config_data.get(CONF_DEVICE),
             CONF_HOST: REDACTED,
-            CONF_PORT: config_data.get(CONF_PORT),
+            CONF_PORT: tcp_config_data.get(CONF_PORT),
             CONF_UID: REDACTED,
-            CONF_PRODUCT_TYPE: device_data.get(CONF_PRODUCT_TYPE),
-            CONF_PRODUCT_ID: device_data.get(CONF_PRODUCT_ID),
-            CONF_MODEL: device_data.get(CONF_MODEL),
-            CONF_SOFTWARE: device_data.get(CONF_SOFTWARE),
-            CONF_SUB_DEVICES: device_data.get(CONF_SUB_DEVICES),
+            CONF_PRODUCT_TYPE: tcp_config_data.get(CONF_PRODUCT_TYPE),
+            CONF_PRODUCT_ID: tcp_config_data.get(CONF_PRODUCT_ID),
+            CONF_MODEL: tcp_config_data.get(CONF_MODEL),
+            CONF_SOFTWARE: tcp_config_data.get(CONF_SOFTWARE),
+            CONF_SUB_DEVICES: tcp_config_data.get(CONF_SUB_DEVICES),
         },
     }
     ecomax_data = dict(ecomax_p.data)

@@ -110,7 +110,7 @@ async def test_indirect_water_heater(
 ) -> None:
     """Test indirect water heater."""
     await setup_integration(hass, config_entry)
-    indirect_water_heater_entity_id = "water_heater.test_indirect_water_heater"
+    indirect_water_heater_entity_id = "water_heater.ecomax_indirect_water_heater"
     water_heater_target_temperature_key = "water_heater_target_temp"
     water_heater_current_temperature_key = "water_heater_temp"
     water_heater_operation_mode_key = "water_heater_work_mode"
@@ -129,7 +129,7 @@ async def test_indirect_water_heater(
     # Get initial value.
     state = hass.states.get(indirect_water_heater_entity_id)
     assert state.state == STATE_OFF
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "test Indirect water heater"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Indirect water heater"
     assert state.attributes[ATTR_MIN_TEMP] == 10
     assert state.attributes[ATTR_MAX_TEMP] == 80
     assert state.attributes[ATTR_OPERATION_LIST] == WATER_HEATER_MODES
