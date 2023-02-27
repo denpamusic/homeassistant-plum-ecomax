@@ -1,4 +1,4 @@
-"""Platform for sensor integration."""
+"""Platform for water heater integration."""
 from __future__ import annotations
 
 from dataclasses import dataclass
