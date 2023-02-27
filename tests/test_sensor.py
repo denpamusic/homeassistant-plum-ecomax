@@ -1076,8 +1076,7 @@ async def test_total_fuel_burned_sensor(
     assert state.state == "0.00"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Total fuel burned"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfMass.KILOGRAMS
-    assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.TOTAL
-    assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.WEIGHT
+    assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.TOTAL_INCREASING
 
     # Move time 30 seconds in future and dispatch new value.
     await connection.device.dispatch(ATTR_FUEL_BURNED, 0.1)
