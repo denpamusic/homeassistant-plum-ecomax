@@ -100,11 +100,11 @@ If the above My button doesn’t work, you can also perform the following steps 
 
 ![Menu](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/menu.png)
 
-To connect via the network fill Host and Port:
+To connect via the network you'll need fill Host and Port:
 
 ![TCP](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/tcp.png)
 
-To connect via serial port fill the Device path:
+To connect via serial port you'll need to fill the Device path and Baudrate:
 
 ![serial](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/serial.png)
 
