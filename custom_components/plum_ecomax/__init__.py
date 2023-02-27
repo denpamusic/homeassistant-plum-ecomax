@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import asyncio
-from functools import lru_cache
 import logging
 import re
 from typing import Final
@@ -60,7 +59,6 @@ DATE_STR_FORMAT: Final = "%Y-%m-%d %H:%M:%S"
 _LOGGER = logging.getLogger(__name__)
 
 
-@lru_cache(maxsize=10)
 def format_model_name(model_name: str) -> str:
     """Format the device model."""
     if m := re.match(r"^([A-Z]+)\s{0,}([0-9]{3,})(.+)$", model_name, re.IGNORECASE):
