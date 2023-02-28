@@ -3,7 +3,7 @@
 [![Test Coverage](https://api.codeclimate.com/v1/badges/bfa869d3c97a62eeb71c/test_coverage)](https://codeclimate.com/github/denpamusic/homeassistant-plum-ecomax/test_coverage)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg)](https://github.com/hacs/integration)
-[![stability-beta](https://img.shields.io/badge/stability-beta-33bbff.svg)](https://github.com/denpamusic/software-guides/blob/master/STABILITY-BADGES.md#beta)
+[![stability-beta](https://img.shields.io/badge/stability-beta-33bbff.svg)](https://guidelines.denpa.pro/stability#beta)
 
 > ⚠️ IMPORTANT: before upgrading to the upcoming Home Assistant 2023.3, please make sure that you have at least version 0.3.3 of plum-ecomax integration. Versions lower than 0.3.3 will stop working due to [removal of async_setup_platforms()](https://github.com/home-assistant/core/blob/2023.2.5/homeassistant/config_entries.py#L1327).
 

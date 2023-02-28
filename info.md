@@ -1,6 +1,6 @@
 # Plum ecoMAX pellet boiler regulator integration for Home Assistant.
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg)](https://github.com/hacs/integration)
-[![stability-beta](https://img.shields.io/badge/stability-beta-33bbff.svg)](https://github.com/mkenney/software-guides/blob/master/STABILITY-BADGES.md#beta)
+[![stability-beta](https://img.shields.io/badge/stability-beta-33bbff.svg)](https://guidelines.denpa.pro/stability#beta)
 
 ## Overview
 This Home Assistant integration provides support for ecoMAX boilers controllers manufactured by [Plum Sp. z o.o.](https://www.plum.pl/)
