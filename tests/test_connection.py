@@ -72,7 +72,7 @@ async def test_async_get_connection_handler(
     mock_ethernet_parameters.assert_called_once_with(ip=SOURCE_IP)
 
     # Test with serial connection.
-    connection: Connection = await async_get_connection_handler(
+    connection = await async_get_connection_handler(
         CONNECTION_TYPE_SERIAL, hass, serial_config_data
     )
     assert isinstance(connection, SerialConnection)
