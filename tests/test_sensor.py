@@ -509,7 +509,7 @@ async def test_power_sensor(
     assert entry
     assert entry.original_icon == "mdi:radiator"
     options = entry.options["sensor"]
-    assert options["suggested_display_precision"] == 2
+    assert options["suggested_display_precision"] == 1
 
     # Get initial value.
     state = hass.states.get(power_entity_id)
