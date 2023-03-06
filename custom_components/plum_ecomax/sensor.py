@@ -153,10 +153,10 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="state",
         name="State",
+        device_class=DEVICE_CLASS_STATE,
         product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         translation_key="ecomax_state",
         value_fn=lambda x: EM_TO_HA_STATE[x] if x in EM_TO_HA_STATE else STATE_UNKNOWN,
-        device_class=DEVICE_CLASS_STATE,
     ),
     EcomaxSensorEntityDescription(
         key=ATTR_PASSWORD,
