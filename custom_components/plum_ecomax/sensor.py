@@ -43,6 +43,7 @@ from .const import (
     ATTR_PASSWORD,
     ATTR_PRODUCT,
     ATTR_VALUE,
+    DEVICE_CLASS_STATE,
     DOMAIN,
     ECOLAMBDA,
     FLOW_KGH,
@@ -155,6 +156,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         translation_key="ecomax_state",
         value_fn=lambda x: EM_TO_HA_STATE[x] if x in EM_TO_HA_STATE else STATE_UNKNOWN,
+        device_class=DEVICE_CLASS_STATE,
     ),
     EcomaxSensorEntityDescription(
         key=ATTR_PASSWORD,
@@ -362,6 +364,12 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
     async def async_update(self, value) -> None:
         """Update entity state."""
         self._attr_native_value = self.entity_description.value_fn(value)
+
+        if self.entity_description.device_class == DEVICE_CLASS_STATE:
+            # Include raw numeric value as an extra attribute for the
+            # device state.
+            self._attr_extra_state_attributes = {ATTR_VALUE: int(value)}
+
         self.async_write_ha_state()
 
 

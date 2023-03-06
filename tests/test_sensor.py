@@ -57,7 +57,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import DOMAIN, FLOW_KGH
+from custom_components.plum_ecomax.const import DEVICE_CLASS_STATE, DOMAIN, FLOW_KGH
 from custom_components.plum_ecomax.sensor import (
     ATTR_VALUE,
     SERVICE_CALIBRATE_METER,
@@ -350,6 +350,8 @@ async def test_state_sensor(
     state = hass.states.get(state_entity_id)
     assert state.state == "off"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX State"
+    assert state.attributes[ATTR_DEVICE_CLASS] == DEVICE_CLASS_STATE
+    assert state.attributes[ATTR_VALUE] == 0
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_STATE, DeviceState.ALERT)

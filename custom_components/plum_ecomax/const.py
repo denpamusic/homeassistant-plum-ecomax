@@ -94,3 +94,6 @@ FLOW_KGH: Final = "kg/h"
 
 # Events.
 EVENT_PLUM_ECOMAX_ALERT: Final = "plum_ecomax_alert"
+
+# Device classes.
+DEVICE_CLASS_STATE: Final = "plum_ecomax__state"
