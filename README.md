@@ -5,8 +5,6 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg)](https://github.com/hacs/integration)
 [![stability-beta](https://img.shields.io/badge/stability-beta-33bbff.svg)](https://guidelines.denpa.pro/stability#beta)
 
-> ⚠️ IMPORTANT: before upgrading to the upcoming Home Assistant 2023.3, please make sure that you have at least version 0.3.3 of plum-ecomax integration. Versions lower than 0.3.3 will stop working due to [removal of async_setup_platforms()](https://github.com/home-assistant/core/blob/2023.2.5/homeassistant/config_entries.py#L1327).
-
 ## Overview
 This Home Assistant integration provides support for ecoMAX controllers manufactured by [Plum Sp. z o.o.](https://www.plum.pl/)
 
