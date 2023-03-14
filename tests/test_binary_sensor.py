@@ -6,6 +6,7 @@ from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.const import (
     ATTR_DEVICE_CLASS,
     ATTR_FRIENDLY_NAME,
+    ATTR_ICON,
     STATE_OFF,
     STATE_ON,
 )
@@ -66,13 +67,13 @@ async def test_heating_pump_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(heating_pump_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:pump"
 
     # Get initial value.
     state = hass.states.get(heating_pump_entity_id)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Heating pump"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+    assert state.attributes[ATTR_ICON] == "mdi:pump"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_HEATING_PUMP, True)
@@ -95,13 +96,13 @@ async def test_water_heater_pump_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(water_heater_pump_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:pump"
 
     # Get initial value.
     state = hass.states.get(water_heater_pump_entity_id)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Water heater pump"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+    assert state.attributes[ATTR_ICON] == "mdi:pump"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_WATER_HEATER_PUMP, True)
@@ -124,13 +125,13 @@ async def test_circulation_pump_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(circulation_pump_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:pump"
 
     # Get initial value.
     state = hass.states.get(circulation_pump_entity_id)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Circulation pump"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+    assert state.attributes[ATTR_ICON] == "mdi:pump"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_CIRCULATION_PUMP, True)
@@ -211,13 +212,13 @@ async def test_fan_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fan_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:fan"
 
     # Get initial value.
     state = hass.states.get(fan_entity_id)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fan"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+    assert state.attributes[ATTR_ICON] == "mdi:fan"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_FAN, True)
@@ -240,13 +241,13 @@ async def test_exhaust_fan_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(exhaust_fan_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:fan"
 
     # Get initial value.
     state = hass.states.get(exhaust_fan_entity_id)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Exhaust fan"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+    assert state.attributes[ATTR_ICON] == "mdi:fan"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_FAN2_EXHAUST, True)
@@ -269,13 +270,13 @@ async def test_feeder_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(feeder_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:screw-lag"
 
     # Get initial value.
     state = hass.states.get(feeder_entity_id)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Feeder"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+    assert state.attributes[ATTR_ICON] == "mdi:screw-lag"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_FEEDER, True)
@@ -298,13 +299,13 @@ async def test_lighter_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(lighter_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:fire"
 
     # Get initial value.
     state = hass.states.get(lighter_entity_id)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Lighter"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+    assert state.attributes[ATTR_ICON] == "mdi:fire"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_LIGHTER, True)
@@ -327,13 +328,13 @@ async def test_solar_pump_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(solar_pump_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:pump"
 
     # Get initial value.
     state = hass.states.get(solar_pump_entity_id)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Solar pump"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+    assert state.attributes[ATTR_ICON] == "mdi:pump"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_SOLAR_PUMP, True)
@@ -356,13 +357,13 @@ async def test_fireplace_pump_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fireplace_pump_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:pump"
 
     # Get initial value.
     state = hass.states.get(fireplace_pump_entity_id)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fireplace pump"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+    assert state.attributes[ATTR_ICON] == "mdi:pump"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_FIREPLACE_PUMP, True)
@@ -385,13 +386,13 @@ async def test_mixer_pump_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(mixer_pump_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:pump"
 
     # Get initial value.
     state = hass.states.get(mixer_pump_entity_id)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Mixer 1 Mixer pump"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+    assert state.attributes[ATTR_ICON] == "mdi:pump"
 
     # Dispatch new value.
     await connection.device.mixers[0].dispatch(ATTR_PUMP, True)
@@ -414,13 +415,13 @@ async def test_circuit_pump_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(circuit_pump_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:pump"
 
     # Get initial value.
     state = hass.states.get(circuit_pump_entity_id)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Circuit 1 Circuit pump"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+    assert state.attributes[ATTR_ICON] == "mdi:pump"
 
     # Dispatch new value.
     await connection.device.mixers[0].dispatch(ATTR_PUMP, True)

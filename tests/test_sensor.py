@@ -13,6 +13,7 @@ from homeassistant.const import (
     ATTR_DEVICE_CLASS,
     ATTR_ENTITY_ID,
     ATTR_FRIENDLY_NAME,
+    ATTR_ICON,
     ATTR_UNIT_OF_MEASUREMENT,
     PERCENTAGE,
     UnitOfMass,
@@ -379,12 +380,12 @@ async def test_service_password_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(service_password_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:form-textbox-password"
 
     # Get initial value.
     state = hass.states.get(service_password_entity_id)
     assert state.state == "0000"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Service password"
+    assert state.attributes[ATTR_ICON] == "mdi:form-textbox-password"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_PASSWORD, "1234")
@@ -469,7 +470,6 @@ async def test_oxygen_level_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(oxygen_level_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:weather-windy-variant"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -479,6 +479,7 @@ async def test_oxygen_level_sensor(
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Oxygen level"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
+    assert state.attributes[ATTR_ICON] == "mdi:weather-windy-variant"
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
@@ -509,7 +510,6 @@ async def test_power_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(power_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:radiator"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -519,6 +519,7 @@ async def test_power_sensor(
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Power"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfPower.KILO_WATT
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
+    assert state.attributes[ATTR_ICON] == "mdi:radiator"
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
@@ -543,7 +544,6 @@ async def test_fuel_level_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fuel_level_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:gas-station"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 0
 
@@ -553,6 +553,7 @@ async def test_fuel_level_sensor(
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fuel level"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
+    assert state.attributes[ATTR_ICON] == "mdi:gas-station"
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
@@ -577,7 +578,6 @@ async def test_fuel_consumption_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fuel_consumption_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:fire"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 2
 
@@ -587,6 +587,7 @@ async def test_fuel_consumption_sensor(
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fuel consumption"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == FLOW_KGH
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
+    assert state.attributes[ATTR_ICON] == "mdi:fire"
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
@@ -610,7 +611,6 @@ async def test_load_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(load_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:gauge"
 
     # Get initial value.
     state = hass.states.get(load_entity_id)
@@ -618,6 +618,7 @@ async def test_load_sensor(
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Load"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
+    assert state.attributes[ATTR_ICON] == "mdi:gauge"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_LOAD, 50)
@@ -640,7 +641,6 @@ async def test_fan_power_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fan_power_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:fan"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -650,6 +650,7 @@ async def test_fan_power_sensor(
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fan power"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
+    assert state.attributes[ATTR_ICON] == "mdi:fan"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_FAN_POWER, 100)
@@ -673,7 +674,6 @@ async def test_flame_intensity_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(flame_intensity_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:fire"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -683,6 +683,7 @@ async def test_flame_intensity_sensor(
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Flame intensity"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
+    assert state.attributes[ATTR_ICON] == "mdi:fire"
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
@@ -1117,7 +1118,6 @@ async def test_total_fuel_burned_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fuel_burned_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:counter"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 2
 
@@ -1127,6 +1127,7 @@ async def test_total_fuel_burned_sensor(
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Total fuel burned"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfMass.KILOGRAMS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.TOTAL_INCREASING
+    assert state.attributes[ATTR_ICON] == "mdi:counter"
 
     # Move time 30 seconds in future and dispatch new value.
     await connection.device.dispatch(ATTR_FUEL_BURNED, 0.1)
@@ -1166,7 +1167,6 @@ async def test_ash_pan_full_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(ash_pan_full_entity_id)
     assert entry
-    assert entry.original_icon == "mdi:tray-alert"
 
     # Get initial value.
     state = hass.states.get(ash_pan_full_entity_id)
@@ -1174,6 +1174,7 @@ async def test_ash_pan_full_sensor(
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Ash pan full"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
+    assert state.attributes[ATTR_ICON] == "mdi:tray-alert"
 
     # Dispatch new value.
     await connection.device.regdata.dispatch(ash_pan_full_key, 55)
