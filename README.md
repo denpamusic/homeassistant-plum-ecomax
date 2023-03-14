@@ -107,6 +107,8 @@ To connect via serial port you'll need to fill in the Device path and Baudrate:
 
 ![serial](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/serial.png)
 
+> :warning: If you're running your Home Assistant in the docker container, don't forget to map your adapter/converter device, as described [here](https://www.home-assistant.io/installation/raspberrypi#exposing-devices).
+
 7. Your device should now be available in your Home Assistant installation.
 
 ![Success](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/success.png)
