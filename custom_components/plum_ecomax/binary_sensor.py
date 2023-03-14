@@ -42,6 +42,7 @@ class EcomaxBinarySensorEntityDescription(
     always_available: bool = False
     filter_fn: Callable[[Any], Any] = on_change
     module: str = MODULE_A
+    icon_off: str | None = None
 
 
 BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
@@ -50,6 +51,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         name="Heating pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:pump",
+        icon_off="mdi:pump-off",
         product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         value_fn=lambda x: x,
     ),
@@ -58,6 +60,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         name="Water heater pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:pump",
+        icon_off="mdi:pump-off",
         product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         value_fn=lambda x: x,
     ),
@@ -66,6 +69,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         name="Circulation pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:pump",
+        icon_off="mdi:pump-off",
         product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         value_fn=lambda x: x,
     ),
@@ -91,6 +95,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         name="Fan",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:fan",
+        icon_off="mdi:fan-off",
         product_types={ProductType.ECOMAX_P},
         value_fn=lambda x: x,
     ),
@@ -99,6 +104,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         name="Exhaust fan",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:fan",
+        icon_off="mdi:fan-off",
         product_types={ProductType.ECOMAX_P},
         value_fn=lambda x: x,
     ),
@@ -115,6 +121,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         name="Lighter",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:fire",
+        icon_off="mdi:fire-off",
         product_types={ProductType.ECOMAX_P},
         value_fn=lambda x: x,
     ),
@@ -123,6 +130,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         name="Solar pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:pump",
+        icon_off="mdi:pump-off",
         product_types={ProductType.ECOMAX_I},
         value_fn=lambda x: x,
     ),
@@ -131,6 +139,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         name="Fireplace pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:pump",
+        icon_off="mdi:pump-off",
         product_types={ProductType.ECOMAX_I},
         value_fn=lambda x: x,
     ),
@@ -155,6 +164,15 @@ class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
         self._attr_is_on = self.entity_description.value_fn(value)
         self.async_write_ha_state()
 
+    @property
+    def icon(self) -> str | None:
+        """Return the icon to use in the frontend."""
+        return (
+            self.entity_description.icon_off
+            if self.entity_description.icon_off is not None and not self.is_on
+            else self.entity_description.icon
+        )
+
 
 @dataclass
 class MixerBinarySensorEntityDescription(EcomaxBinarySensorEntityDescription):
@@ -167,6 +185,7 @@ MIXER_BINARY_SENSOR_TYPES: tuple[MixerBinarySensorEntityDescription, ...] = (
         name="Mixer pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:pump",
+        icon_off="mdi:pump-off",
         product_types={ProductType.ECOMAX_P},
         value_fn=lambda x: x,
     ),
@@ -175,6 +194,7 @@ MIXER_BINARY_SENSOR_TYPES: tuple[MixerBinarySensorEntityDescription, ...] = (
         name="Circuit pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:pump",
+        icon_off="mdi:pump-off",
         product_types={ProductType.ECOMAX_I},
         value_fn=lambda x: x,
     ),
