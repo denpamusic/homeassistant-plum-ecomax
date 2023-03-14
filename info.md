@@ -36,11 +36,11 @@ Adapter ->  ecoMAX
 
 ![Menu](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/menu.png)
 
-To connect via the network you'll need fill Host and Port:
+To connect via the network you'll need to fill in Host and Port:
 
 ![TCP](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/tcp.png)
 
-To connect via serial port you'll need to fill the Device path and Baudrate:
+To connect via serial port you'll need to fill in the Device path and Baudrate:
 
 ![serial](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/serial.png)
 
