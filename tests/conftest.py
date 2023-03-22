@@ -52,6 +52,7 @@ from custom_components.plum_ecomax.const import (
     DEFAULT_DEVICE,
     DEFAULT_PORT,
     DOMAIN,
+    ProductId,
 )
 from tests.common import load_regdata_fixture
 
@@ -404,7 +405,7 @@ def ecomax_860p3_o(ecomax_p: EcoMAX):
     (product_type: 0, product_id: 51)
     """
     model = "ecoMAX860P3-O"
-    product_id = 51
+    product_id = ProductId.ECOMAX_860P3_O
     product_type = ProductType.ECOMAX_P
 
     regulator_data = RegulatorData()

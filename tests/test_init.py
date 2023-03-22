@@ -37,6 +37,7 @@ from custom_components.plum_ecomax.const import (
     CONF_SUB_DEVICES,
     DOMAIN,
     EVENT_PLUM_ECOMAX_ALERT,
+    ProductId,
 )
 
 DATE_FROM: Final = "2012-12-12 00:00:00"
@@ -211,7 +212,7 @@ async def test_migrate_entry_v6_to_v7(
     assert await async_migrate_entry(hass, config_entry)
     data = dict(config_entry.data)
     assert CONF_PRODUCT_ID in data
-    assert data[CONF_PRODUCT_ID] == 51
+    assert data[CONF_PRODUCT_ID] == ProductId.ECOMAX_860P3_O
     assert config_entry.version == 7
     assert "Migration to version 7 successful" in caplog.text
 

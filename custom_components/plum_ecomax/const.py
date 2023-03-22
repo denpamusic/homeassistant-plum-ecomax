@@ -1,5 +1,6 @@
 """Constants for the Plum ecoMAX integration."""
 
+from enum import IntEnum, unique
 from typing import Final
 
 DOMAIN = "plum_ecomax"
@@ -97,3 +98,11 @@ EVENT_PLUM_ECOMAX_ALERT: Final = "plum_ecomax_alert"
 
 # Device classes.
 DEVICE_CLASS_STATE: Final = "plum_ecomax__state"
+
+
+# Device ids enum.
+@unique
+class ProductId(IntEnum):
+    """Contains known product ids."""
+
+    ECOMAX_860P3_O = 51

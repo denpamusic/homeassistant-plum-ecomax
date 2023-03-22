@@ -48,6 +48,7 @@ from .const import (
     ECOLAMBDA,
     FLOW_KGH,
     MODULE_A,
+    ProductId,
 )
 from .entity import EcomaxEntity, MixerEntity
 
@@ -517,7 +518,7 @@ REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
         name="Ash pan full",
         icon="mdi:tray-alert",
         native_unit_of_measurement=PERCENTAGE,
-        product_ids={51},
+        product_ids={ProductId.ECOMAX_860P3_O},
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=0,
