@@ -47,3 +47,15 @@ disable_error_code = "call-arg"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+
+[tool.flake8]
+exclude = ".git,.mypy_cache"
+max-complexity = 25
+ignore = [
+    "E501",
+    "W503",
+    "E203",
+    "D202",
+    "W504",
+]
+noqa-require-code = true
