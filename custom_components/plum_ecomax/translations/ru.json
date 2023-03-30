@@ -3,7 +3,8 @@
     "abort": {
       "unsupported_product": "Контроллер не поддерживается",
       "discovery_failed": "Ошибка обнаружения модулей",
-      "no_devices_found": "Устройства не обнаружены"
+      "no_devices_found": "Устройства не обнаружены",
+      "already_configured": "Устройство уже настроено"
     },
     "error": {
       "cannot_connect": "Ошибка подключения",

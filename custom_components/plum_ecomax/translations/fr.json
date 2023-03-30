@@ -3,7 +3,8 @@
     "abort": {
       "unsupported_product": "Produit non compatible",
       "discovery_failed": "Impossible de terminer la découverte du module",
-      "no_devices_found": "Aucun appareil trouvé sur le réseau"
+      "no_devices_found": "Aucun appareil trouvé sur le réseau",
+      "already_configured": "Appareil déja connecté"
     },
     "error": {
       "cannot_connect": "Connexion échouée",

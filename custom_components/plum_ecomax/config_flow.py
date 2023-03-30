@@ -219,8 +219,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     }
                 )
 
-                await self.async_set_unique_id(product.uid)
-
             finally:
                 self.hass.async_create_task(
                     self.hass.config_entries.flow.async_configure(flow_id=self.flow_id)
@@ -264,6 +262,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     self.hass.config_entries.flow.async_configure(flow_id=self.flow_id)
                 )
 
+        await self._async_set_unique_id(self.init_info[CONF_UID])
+
         if not self.modules_task:
             self.modules_task = self.hass.async_create_task(_discover_modules())
             return self.async_show_progress(
@@ -302,6 +302,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_discovery_failed(self, user_input=None) -> FlowResult:
         """Handle issues that need transition await from progress step."""
         return self.async_abort(reason="discovery_failed")
+
+    async def _async_set_unique_id(self, uid: str) -> None:
+        """Set the config entry's unique ID (based on UID)."""
+        await self.async_set_unique_id(uid)
+        self._abort_if_unique_id_configured()
 
 
 class CannotConnect(HomeAssistantError):

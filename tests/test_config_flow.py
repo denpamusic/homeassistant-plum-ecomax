@@ -383,3 +383,54 @@ async def test_abort_discovery_failed(
     result5 = await hass.config_entries.flow.async_configure(result4["flow_id"])
     assert result5["type"] == FlowResultType.ABORT
     assert result5["reason"] == "discovery_failed"
+
+
+async def test_abort_already_configured(
+    hass: HomeAssistant, ecomax_p: EcoMAX, tcp_user_input: dict[str, Any]
+) -> None:
+    """Test that we get the device already configured message."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    assert result["type"] == FlowResultType.MENU
+
+    # Get the TCP connection form.
+    result2 = await hass.config_entries.flow.async_configure(
+        result["flow_id"], user_input={"next_step_id": "tcp"}
+    )
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["errors"] is None
+
+    # Create the PyPlumIO connection mock.
+    mock_connection = Mock(spec=TcpConnection)
+    mock_connection.get = AsyncMock(return_value=ecomax_p)
+
+    # Wait for the device.
+    with patch(
+        "custom_components.plum_ecomax.config_flow.async_get_connection_handler",
+        return_value=mock_connection,
+    ):
+        result3 = await hass.config_entries.flow.async_configure(
+            result2["flow_id"], tcp_user_input
+        )
+        await hass.async_block_till_done()
+
+    assert result3["type"] == FlowResultType.SHOW_PROGRESS
+    assert result3["step_id"] == "device"
+
+    # Identify the device.
+    result4 = await hass.config_entries.flow.async_configure(result3["flow_id"])
+    await hass.async_block_till_done()
+    assert result4["type"] == FlowResultType.SHOW_PROGRESS
+    assert result4["step_id"] == "identify"
+
+    # Fail with device already configured.
+    mock_config_entry = Mock(spec=config_entries.ConfigEntry)
+    mock_config_entry.unique_id = ecomax_p.get_nowait("product").uid
+    with patch(
+        "homeassistant.config_entries.ConfigEntries.async_entries",
+        return_value=[mock_config_entry],
+    ):
+        result5 = await hass.config_entries.flow.async_configure(result4["flow_id"])
+        assert result5["type"] == FlowResultType.ABORT
+        assert result5["reason"] == "already_configured"

@@ -3,7 +3,8 @@
     "abort": {
       "unsupported_product": "Nepodporovaný produkt",
       "discovery_failed": "Zjišťování modulu nelze dokončit",
-      "no_devices_found": "V síti nebyla nalezena žádná zařízení"
+      "no_devices_found": "V síti nebyla nalezena žádná zařízení",
+      "already_configured": "Zařízení je již nakonfigurováno"
     },
     "error": {
       "cannot_connect": "Připojení selhalo",

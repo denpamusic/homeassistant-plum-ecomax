@@ -3,7 +3,8 @@
     "abort": {
       "unsupported_product": "Nieobsługiwany produkt",
       "discovery_failed": "Zjišťování modulu nelze dokončit",
-      "no_devices_found": "V síti nebyla nalezena žádná zařízení"
+      "no_devices_found": "V síti nebyla nalezena žádná zařízení",
+      "already_configured": "Urządzenie jest już skonfigurowane"
     },
     "error": {
       "cannot_connect": "Nie udało się połączyć",

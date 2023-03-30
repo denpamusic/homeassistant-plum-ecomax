@@ -3,7 +3,8 @@
     "abort": {
       "unsupported_product": "Контролер не підтримується",
       "discovery_failed": "Помилка виявлення модулів",
-      "no_devices_found": "Пристрої не виявлено"
+      "no_devices_found": "Пристрої не виявлено",
+      "already_configured": "Пристрій уже налаштовано"
     },
     "error": {
       "cannot_connect": "Не вдалося підключитися",
