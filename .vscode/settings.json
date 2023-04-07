@@ -19,5 +19,6 @@
     ],
     "files.associations": {
         "*.yaml": "home-assistant"
-    }
+    },
+    "json.format.keepLines": true
 }
