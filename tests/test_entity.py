@@ -74,10 +74,6 @@ async def test_base_entity(
     mock_connection.uid = "test_uid"
     assert entity.unique_id == "test_uid-heating_temp"
 
-    # Test name property.
-    mock_connection.name = "ecoMAX connection"
-    assert entity.name == "ecoMAX connection Heating temperature"
-
     # Test should poll property.
     assert not entity.should_poll
 

@@ -38,24 +38,27 @@
     }
   },
   "entity": {
-    "sensor": {
-      "ecomax_state": {
-        "state": {
-          "off": "Vypnuto",
-          "fanning": "Stabilizace",
-          "kindling": "Roztápění",
-          "heating": "Práce",
-          "paused": "Pozastaveno",
-          "idle": "Nečinný",
-          "standby": "Pohotovost",
-          "burning_off": "Spalování",
-          "alert": "Výstraha",
-          "unknown": "Neznámý"
-        }
-      }
+    "binary_sensor": {
+      "heating_pump": { "name": "Heating pump" },
+      "water_heater_pump": { "name": "Water heater pump" },
+      "circulation_pump": { "name": "Circulation pump" },
+      "alert": { "name": "Alert" },
+      "connection_status": { "name": "Connection status" },
+      "fan": { "name": "Fan" },
+      "exhaust_fan": { "name": "Exhaust fan" },
+      "feeder": { "name": "Feeder" },
+      "lighter": { "name": "Lighter" },
+      "solar_pump": { "name": "Solar pump" },
+      "fireplace_pump": { "name": "Fireplace pump" },
+      "mixer_pump": { "name": "Mixer pump" },
+      "circuit_pump": { "name": "Circuit pump" }
+    },
+    "button": {
+      "detect_sub_devices": { "name": "Detect sub-devices" }
     },
     "climate": {
       "ecomax_climate": {
+        "name": "Thermostat",
         "state_attributes": {
           "preset_mode": {
             "state": {
@@ -68,6 +71,85 @@
           }
         }
       }
+    },
+    "number": {
+      "target_heating_temp": { "name": "Target heating temperature" },
+      "min_heating_temp": { "name": "Minimum heating temperature" },
+      "max_heating_temp": { "name": "Maximum heating temperature" },
+      "grate_mode_temp": { "name": "Grate mode temperature" },
+      "fuzzy_logic_min_power": { "name": "Fuzzy logic minimum power" },
+      "fuzzy_logic_max_power": { "name": "Fuzzy logic maximum power" },
+      "fuel_calorific_value": { "name": "Fuel calorific value" },
+      "target_mixer_temp": { "name": "Target mixer temperature" },
+      "min_mixer_temp": { "name": "Minimum mixer temperature" },
+      "max_mixer_temp": { "name": "Maximum mixer temperature" },
+      "target_circuit_temp": { "name": "Target circuit temperature" },
+      "min_circuit_temp": { "name": "Minimum circuit temperature" },
+      "max_circuit_temp": { "name": "Maximum circuit temperature" },
+      "day_target_circuit_temp": { "name": "Day target circuit temperature" },
+      "night_target_circuit_temp": { "name": "Night target circuit temperature" }
+    },
+    "sensor": {
+      "heating_temp": { "name": "Heating temperature" },
+      "water_heater_temp": { "name": "Water heater temperature" },
+      "outside_temp": { "name": "Outside temperature" },
+      "heating_target": { "name": "Heating target temperature" },
+      "water_heater_target": { "name": "Water heater target temperature" },
+      "ecomax_state": {
+        "name": "State",
+        "state": {
+          "off": "Vypnuto",
+          "fanning": "Stabilizace",
+          "kindling": "Roztápění",
+          "heating": "Práce",
+          "paused": "Pozastaveno",
+          "idle": "Nečinný",
+          "standby": "Pohotovost",
+          "burning_off": "Spalování",
+          "alert": "Výstraha",
+          "unknown": "Neznámý"
+        }
+      },
+      "service_password": { "name": "Service password" },
+      "software_version": { "name": "Software version" },
+      "uid": { "name": "UID" },
+      "oxygen_level": { "name": "Oxygen level" },
+      "power": { "name": "Power" },
+      "fuel_level": { "name": "Fuel level" },
+      "fuel_consumption": { "name": "Fuel consumption" },
+      "load": { "name": "Load" },
+      "fan_power": { "name": "Fan power" },
+      "flame_intensity": { "name": "Flame intensity" },
+      "feeder_temp": { "name": "Feeder temperature" },
+      "exhaust_temp": { "name": "Exhaust temperature" },
+      "return_temp": { "name": "Return temperature" },
+      "lower_buffer_temp": { "name": "Lower buffer temperature" },
+      "upper_buffer_temp": { "name": "Upper buffer temperature" },
+      "lower_solar_temp": { "name": "Lower solar temperature" },
+      "upper_solar_temp": { "name": "Upper solar temperature" },
+      "fireplace_temp": { "name": "Fireplace temperature" },
+      "mixer_temp": { "name": "Mixer temperature" },
+      "mixer_target_temp": { "name": "Mixer target temperature" },
+      "circuit_temp": { "name": "Circuit temperature" },
+      "circuit_target_temp": { "name": "Circuit target temperature" },
+      "total_fuel_burned": { "name": "Total fuel burned" },
+      "ash_pan_full": { "name": "Ash pan full" }
+    },
+    "switch": {
+      "controller_switch": { "name": "Controller switch" },
+      "water_heater_disinfection_switch": { "name": "Water heater disinfection switch" },
+      "water_heater_pump_switch": { "name": "Water heater pump switch" },
+      "summer_mode_switch": { "name": "Summer mode switch" },
+      "weather_control_switch": { "name": "Weather control switch" },
+      "fuzzy_logic_switch": { "name": "Fuzzy logic switch" },
+      "heating_schedule_switch": { "name": "Heating schedule switch" },
+      "water_heater_schedule_switch": { "name": "Water heater schedule switch" },
+      "enable_in_summer_mode": { "name": "Enable in summer mode" },
+      "disable_pump_on_thermostat": { "name": "Disable pump on thermostat" },
+      "enable_circuit": { "name": "Enable circuit" }
+    },
+    "water_heater": {
+      "indirect_water_heater": { "name": "Indirect water heater" }
     }
   }
 }

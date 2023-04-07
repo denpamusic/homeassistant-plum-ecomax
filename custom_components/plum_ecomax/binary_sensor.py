@@ -48,7 +48,7 @@ class EcomaxBinarySensorEntityDescription(
 BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     EcomaxBinarySensorEntityDescription(
         key="heating_pump",
-        name="Heating pump",
+        translation_key="heating_pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:pump",
         icon_off="mdi:pump-off",
@@ -57,7 +57,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     ),
     EcomaxBinarySensorEntityDescription(
         key="water_heater_pump",
-        name="Water heater pump",
+        translation_key="water_heater_pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:pump",
         icon_off="mdi:pump-off",
@@ -66,7 +66,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     ),
     EcomaxBinarySensorEntityDescription(
         key="circulation_pump",
-        name="Circulation pump",
+        translation_key="circulation_pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:pump",
         icon_off="mdi:pump-off",
@@ -75,7 +75,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     ),
     EcomaxBinarySensorEntityDescription(
         key="pending_alerts",
-        name="Alert",
+        translation_key="alert",
         device_class=BinarySensorDeviceClass.PROBLEM,
         entity_category=EntityCategory.DIAGNOSTIC,
         product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
@@ -83,7 +83,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     ),
     EcomaxBinarySensorEntityDescription(
         key="connected",
-        name="Connection status",
+        translation_key="connection_status",
         device_class=BinarySensorDeviceClass.CONNECTIVITY,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda x: x,
@@ -92,7 +92,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     ),
     EcomaxBinarySensorEntityDescription(
         key="fan",
-        name="Fan",
+        translation_key="fan",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:fan",
         icon_off="mdi:fan-off",
@@ -101,7 +101,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     ),
     EcomaxBinarySensorEntityDescription(
         key="fan2_exhaust",
-        name="Exhaust fan",
+        translation_key="exhaust_fan",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:fan",
         icon_off="mdi:fan-off",
@@ -110,7 +110,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     ),
     EcomaxBinarySensorEntityDescription(
         key="feeder",
-        name="Feeder",
+        translation_key="feeder",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:screw-lag",
         product_types={ProductType.ECOMAX_P},
@@ -118,7 +118,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     ),
     EcomaxBinarySensorEntityDescription(
         key="lighter",
-        name="Lighter",
+        translation_key="lighter",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:fire",
         icon_off="mdi:fire-off",
@@ -127,7 +127,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     ),
     EcomaxBinarySensorEntityDescription(
         key="solar_pump",
-        name="Solar pump",
+        translation_key="solar_pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:pump",
         icon_off="mdi:pump-off",
@@ -136,7 +136,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     ),
     EcomaxBinarySensorEntityDescription(
         key="fireplace_pump",
-        name="Fireplace pump",
+        translation_key="fireplace_pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:pump",
         icon_off="mdi:pump-off",
@@ -182,7 +182,7 @@ class MixerBinarySensorEntityDescription(EcomaxBinarySensorEntityDescription):
 MIXER_BINARY_SENSOR_TYPES: tuple[MixerBinarySensorEntityDescription, ...] = (
     MixerBinarySensorEntityDescription(
         key="pump",
-        name="Mixer pump",
+        translation_key="mixer_pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:pump",
         icon_off="mdi:pump-off",
@@ -191,7 +191,7 @@ MIXER_BINARY_SENSOR_TYPES: tuple[MixerBinarySensorEntityDescription, ...] = (
     ),
     MixerBinarySensorEntityDescription(
         key="pump",
-        name="Circuit pump",
+        translation_key="circuit_pump",
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:pump",
         icon_off="mdi:pump-off",

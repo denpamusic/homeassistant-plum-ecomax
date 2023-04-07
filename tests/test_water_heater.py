@@ -125,6 +125,7 @@ async def test_indirect_water_heater(
         | WaterHeaterEntityFeature.OPERATION_MODE
     )
     assert entry
+    assert entry.translation_key == "indirect_water_heater"
 
     # Get initial value.
     state = hass.states.get(indirect_water_heater_entity_id)

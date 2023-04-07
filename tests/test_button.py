@@ -77,6 +77,7 @@ async def test_detect_sub_devices_button(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(detect_sub_devices_entity_id)
     assert entry
+    assert entry.translation_key == "detect_sub_devices"
 
     # Get initial value.
     state = hass.states.get(detect_sub_devices_entity_id)

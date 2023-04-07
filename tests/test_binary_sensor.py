@@ -67,6 +67,7 @@ async def test_heating_pump_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(heating_pump_entity_id)
     assert entry
+    assert entry.translation_key == "heating_pump"
 
     # Get initial value.
     state = hass.states.get(heating_pump_entity_id)
@@ -97,6 +98,7 @@ async def test_water_heater_pump_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(water_heater_pump_entity_id)
     assert entry
+    assert entry.translation_key == "water_heater_pump"
 
     # Get initial value.
     state = hass.states.get(water_heater_pump_entity_id)
@@ -127,6 +129,7 @@ async def test_circulation_pump_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(circulation_pump_entity_id)
     assert entry
+    assert entry.translation_key == "circulation_pump"
 
     # Get initial value.
     state = hass.states.get(circulation_pump_entity_id)
@@ -157,6 +160,7 @@ async def test_alert_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(alert_entity_id)
     assert entry
+    assert entry.translation_key == "alert"
     assert entry.entity_category == EntityCategory.DIAGNOSTIC
 
     # Get initial value.
@@ -186,6 +190,7 @@ async def test_connection_status_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(connection_status_entity_id)
     assert entry
+    assert entry.translation_key == "connection_status"
     assert entry.entity_category == EntityCategory.DIAGNOSTIC
 
     # Get initial value.
@@ -215,6 +220,7 @@ async def test_fan_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fan_entity_id)
     assert entry
+    assert entry.translation_key == "fan"
 
     # Get initial value.
     state = hass.states.get(fan_entity_id)
@@ -245,6 +251,7 @@ async def test_exhaust_fan_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(exhaust_fan_entity_id)
     assert entry
+    assert entry.translation_key == "exhaust_fan"
 
     # Get initial value.
     state = hass.states.get(exhaust_fan_entity_id)
@@ -275,6 +282,7 @@ async def test_feeder_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(feeder_entity_id)
     assert entry
+    assert entry.translation_key == "feeder"
 
     # Get initial value.
     state = hass.states.get(feeder_entity_id)
@@ -304,6 +312,7 @@ async def test_lighter_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(lighter_entity_id)
     assert entry
+    assert entry.translation_key == "lighter"
 
     # Get initial value.
     state = hass.states.get(lighter_entity_id)
@@ -334,6 +343,7 @@ async def test_solar_pump_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(solar_pump_entity_id)
     assert entry
+    assert entry.translation_key == "solar_pump"
 
     # Get initial value.
     state = hass.states.get(solar_pump_entity_id)
@@ -364,6 +374,7 @@ async def test_fireplace_pump_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fireplace_pump_entity_id)
     assert entry
+    assert entry.translation_key == "fireplace_pump"
 
     # Get initial value.
     state = hass.states.get(fireplace_pump_entity_id)
@@ -394,6 +405,7 @@ async def test_mixer_pump_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(mixer_pump_entity_id)
     assert entry
+    assert entry.translation_key == "mixer_pump"
 
     # Get initial value.
     state = hass.states.get(mixer_pump_entity_id)
@@ -424,6 +436,7 @@ async def test_circuit_pump_binary_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(circuit_pump_entity_id)
     assert entry
+    assert entry.translation_key == "circuit_pump"
 
     # Get initial value.
     state = hass.states.get(circuit_pump_entity_id)

@@ -26,7 +26,7 @@ from pyplumio.filters import on_change, throttle
 from pyplumio.helpers.parameter import Parameter
 
 from .connection import EcomaxConnection
-from .const import ATTR_WATER_HEATER, DOMAIN
+from .const import DOMAIN
 from .entity import EcomaxEntity
 
 EM_TO_HA_STATE: Final = {0: STATE_OFF, 1: STATE_PERFORMANCE, 2: STATE_ECO}
@@ -83,7 +83,8 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         self._attr_temperature_unit = UnitOfTemperature.CELSIUS
         self._connection = connection
         self.entity_description = EcomaxWaterHeaterEntityDescription(
-            key=ATTR_WATER_HEATER, name="Indirect water heater"
+            key="water_heater",
+            translation_key="indirect_water_heater",
         )
 
     async def async_set_temperature(self, **kwargs):

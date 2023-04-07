@@ -94,6 +94,7 @@ async def test_ecomax_control_switch(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(controller_switch_entity_id)
     assert entry
+    assert entry.translation_key == "controller_switch"
 
     # Get initial value.
     state = hass.states.get(controller_switch_entity_id)
@@ -149,6 +150,7 @@ async def test_water_heater_disinfection_switch(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(water_heater_disinfection_switch_entity_id)
     assert entry
+    assert entry.translation_key == "water_heater_disinfection_switch"
 
     # Get initial value.
     state = hass.states.get(water_heater_disinfection_switch_entity_id)
@@ -211,6 +213,7 @@ async def test_water_heater_pump_switch(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(water_heater_pump_switch_entity_id)
     assert entry
+    assert entry.translation_key == "water_heater_pump_switch"
 
     # Get initial value.
     state = hass.states.get(water_heater_pump_switch_entity_id)
@@ -264,6 +267,7 @@ async def test_summer_mode_switch(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(summer_mode_switch_entity_id)
     assert entry
+    assert entry.translation_key == "summer_mode_switch"
 
     # Get initial value.
     state = hass.states.get(summer_mode_switch_entity_id)
@@ -317,6 +321,7 @@ async def test_weather_control_switch(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(weather_control_switch_entity_id)
     assert entry
+    assert entry.translation_key == "weather_control_switch"
 
     # Get initial value.
     state = hass.states.get(weather_control_switch_entity_id)
@@ -370,6 +375,7 @@ async def test_fuzzy_logic_switch(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fuzzy_logic_switch_entity_id)
     assert entry
+    assert entry.translation_key == "fuzzy_logic_switch"
 
     # Get initial value.
     state = hass.states.get(fuzzy_logic_switch_entity_id)
@@ -423,6 +429,7 @@ async def test_heating_schedule_switch(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(heating_schedule_switch_entity_id)
     assert entry
+    assert entry.translation_key == "heating_schedule_switch"
 
     # Get initial value.
     state = hass.states.get(heating_schedule_switch_entity_id)
@@ -478,6 +485,7 @@ async def test_water_heater_schedule_switch(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(water_heater_schedule_switch_entity_id)
     assert entry
+    assert entry.translation_key == "water_heater_schedule_switch"
 
     # Get initial value.
     state = hass.states.get(water_heater_schedule_switch_entity_id)
@@ -531,6 +539,7 @@ async def test_mixer_enable_in_summer_mode_switch(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(enable_in_summer_mode_entity_id)
     assert entry
+    assert entry.translation_key == "enable_in_summer_mode"
 
     # Get initial value.
     state = hass.states.get(enable_in_summer_mode_entity_id)
@@ -587,6 +596,7 @@ async def test_circuit_enable_in_summer_mode_switch(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(enable_in_summer_mode_entity_id)
     assert entry
+    assert entry.translation_key == "enable_in_summer_mode"
 
     # Get initial value.
     state = hass.states.get(enable_in_summer_mode_entity_id)
@@ -645,6 +655,7 @@ async def test_mixer_weather_control_switch(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(mixer_weather_control_switch_entity_id)
     assert entry
+    assert entry.translation_key == "weather_control_switch"
 
     # Get initial value.
     state = hass.states.get(mixer_weather_control_switch_entity_id)
@@ -702,6 +713,7 @@ async def test_mixer_disable_pump_on_thermostat_switch(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(disable_pump_on_thermostat_entity_id)
     assert entry
+    assert entry.translation_key == "disable_pump_on_thermostat"
 
     # Get initial value.
     state = hass.states.get(disable_pump_on_thermostat_entity_id)
@@ -759,6 +771,7 @@ async def test_circuit_enable_circuit_switch(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(enable_circuit_entity_id)
     assert entry
+    assert entry.translation_key == "enable_circuit"
 
     # Get initial value.
     state = hass.states.get(enable_circuit_entity_id)

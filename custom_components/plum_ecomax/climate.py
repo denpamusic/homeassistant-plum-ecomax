@@ -133,7 +133,6 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         self._connection = connection
         self.entity_description = EcomaxClimateEntityDescription(
             key=f"thermostat-{thermostat.index}",
-            name=f"Thermostat {thermostat.index+1}",
             translation_key="ecomax_climate",
             index=thermostat.index,
         )

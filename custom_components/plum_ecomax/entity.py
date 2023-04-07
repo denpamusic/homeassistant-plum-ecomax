@@ -71,11 +71,6 @@ class EcomaxEntity(ABC):
         return f"{self.connection.uid}-{self.entity_description.key}"
 
     @property
-    def name(self) -> str:
-        """Name of the entity."""
-        return f"{self.connection.name} {self.entity_description.name}"
-
-    @property
     def connection(self) -> EcomaxConnection:
         """ecoMAX connection instance."""
         return self._connection
@@ -84,6 +79,11 @@ class EcomaxEntity(ABC):
     def should_poll(self) -> bool:
         """Should hass check with the entity for an updated state."""
         return False
+
+    @property
+    def has_entity_name(self) -> bool:
+        """Return if the name of the entity is describing only the entity itself."""
+        return True
 
     @abstractmethod
     async def async_update(self, value) -> None:
@@ -101,14 +101,6 @@ class MixerEntity(EcomaxEntity):
         return (
             f"{self.connection.uid}-mixer-"
             + f"{self.index}-{self.entity_description.key}"
-        )
-
-    @property
-    def name(self) -> str:
-        """Name of the entity."""
-        return (
-            f"{self.connection.name} {self.device_name} "
-            + f"{self.index + 1} {self.entity_description.name}"
         )
 
     @property

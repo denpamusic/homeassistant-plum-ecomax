@@ -18,7 +18,7 @@ from pyplumio.helpers.parameter import Parameter
 from pyplumio.helpers.typing import ParameterValueType
 
 from .connection import EcomaxConnection
-from .const import ATTR_ECOMAX_CONTROL, DOMAIN, MODULE_A
+from .const import DOMAIN, MODULE_A
 from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -45,47 +45,47 @@ class EcomaxSwitchEntityDescription(
 
 SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     EcomaxSwitchEntityDescription(
-        key=ATTR_ECOMAX_CONTROL,
-        name="Controller switch",
+        key="ecomax_control",
+        translation_key="controller_switch",
         product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
     EcomaxSwitchEntityDescription(
         key="water_heater_disinfection",
-        name="Water heater disinfection switch",
+        translation_key="water_heater_disinfection_switch",
         product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
     EcomaxSwitchEntityDescription(
         key="water_heater_work_mode",
-        name="Water heater pump switch",
+        translation_key="water_heater_pump_switch",
         product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         state_off=0,
         state_on=2,
     ),
     EcomaxSwitchEntityDescription(
         key="summer_mode",
-        name="Summer mode switch",
+        translation_key="summer_mode_switch",
         product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         state_off=0,
         state_on=1,
     ),
     EcomaxSwitchEntityDescription(
         key="heating_weather_control",
-        name="Weather control switch",
+        translation_key="weather_control_switch",
         product_types={ProductType.ECOMAX_P},
     ),
     EcomaxSwitchEntityDescription(
         key="fuzzy_logic",
-        name="Fuzzy logic switch",
+        translation_key="fuzzy_logic_switch",
         product_types={ProductType.ECOMAX_P},
     ),
     EcomaxSwitchEntityDescription(
         key="heating_schedule_switch",
-        name="Heating schedule switch",
+        translation_key="heating_schedule_switch",
         product_types={ProductType.ECOMAX_P},
     ),
     EcomaxSwitchEntityDescription(
         key="water_heater_schedule_switch",
-        name="Water heater schedule switch",
+        translation_key="water_heater_schedule_switch",
         product_types={ProductType.ECOMAX_P},
     ),
 )
@@ -142,22 +142,22 @@ class MixerSwitchEntityDescription(EcomaxSwitchEntityDescription):
 MIXER_SWITCH_TYPES: tuple[MixerSwitchEntityDescription, ...] = (
     MixerSwitchEntityDescription(
         key="summer_work",
-        name="Enable in summer mode",
+        translation_key="enable_in_summer_mode",
         product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
     MixerSwitchEntityDescription(
         key="weather_control",
-        name="Weather control switch",
+        translation_key="weather_control_switch",
         product_types={ProductType.ECOMAX_P},
     ),
     MixerSwitchEntityDescription(
         key="off_therm_pump",
-        name="Disable pump on thermostat",
+        translation_key="disable_pump_on_thermostat",
         product_types={ProductType.ECOMAX_P},
     ),
     EcomaxSwitchEntityDescription(
         key="support",
-        name="Enable circuit",
+        translation_key="enable_circuit",
         product_types={ProductType.ECOMAX_I},
     ),
 )

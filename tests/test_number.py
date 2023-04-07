@@ -84,6 +84,7 @@ async def test_target_heating_temperature_number(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(target_heating_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "target_heating_temp"
 
     # Get initial state.
     state = hass.states.get(target_heating_temperature_entity_id)
@@ -161,6 +162,7 @@ async def test_minimum_heating_temperature_number(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(minimum_heating_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "min_heating_temp"
 
     # Get initial state.
     state = hass.states.get(minimum_heating_temperature_entity_id)
@@ -213,6 +215,7 @@ async def test_maximum_heating_temperature_number(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(maximum_heating_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "max_heating_temp"
 
     # Get initial state.
     state = hass.states.get(maximum_heating_temperature_entity_id)
@@ -265,6 +268,7 @@ async def test_grate_mode_temperature_number(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(grate_mode_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "grate_mode_temp"
 
     # Get initial state.
     state = hass.states.get(grate_mode_temperature_entity_id)
@@ -342,6 +346,7 @@ async def test_fuzzy_logic_minimum_power_number(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fuzzy_logic_minimum_power_entity_id)
     assert entry
+    assert entry.translation_key == "fuzzy_logic_min_power"
 
     # Get initial state.
     state = hass.states.get(fuzzy_logic_minimum_power_entity_id)
@@ -394,6 +399,7 @@ async def test_fuzzy_logic_maximum_power_number(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fuzzy_logic_maximum_power_entity_id)
     assert entry
+    assert entry.translation_key == "fuzzy_logic_max_power"
 
     # Get initial state.
     state = hass.states.get(fuzzy_logic_maximum_power_entity_id)
@@ -446,6 +452,7 @@ async def test_fuel_calorific_value_number(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fuel_calorific_value_entity_id)
     assert entry
+    assert entry.translation_key == "fuel_calorific_value"
 
     # Get initial state.
     state = hass.states.get(fuel_calorific_value_entity_id)
@@ -502,6 +509,7 @@ async def test_mixer_target_mixer_temperature_number(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(target_mixer_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "target_mixer_temp"
 
     # Get initial state.
     state = hass.states.get(target_mixer_temperature_entity_id)
@@ -584,6 +592,7 @@ async def test_mixer_minimum_mixer_temperature_number(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(minimum_mixer_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "min_mixer_temp"
 
     # Get initial state.
     state = hass.states.get(minimum_mixer_temperature_entity_id)
@@ -641,6 +650,7 @@ async def test_mixer_maximum_mixer_temperature_number(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(maximum_mixer_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "max_mixer_temp"
 
     # Get initial state.
     state = hass.states.get(maximum_mixer_temperature_entity_id)
@@ -698,6 +708,7 @@ async def test_circuit_target_circuit_temperature_number(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(target_circuit_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "target_circuit_temp"
 
     # Get initial state.
     state = hass.states.get(target_circuit_temperature_entity_id)
@@ -780,6 +791,7 @@ async def test_circuit_minimum_circuit_temperature_number(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(minimum_circuit_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "min_circuit_temp"
 
     # Get initial state.
     state = hass.states.get(minimum_circuit_temperature_entity_id)
@@ -837,6 +849,7 @@ async def test_circuit_maximum_circuit_temperature_number(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(maximum_circuit_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "max_circuit_temp"
 
     # Get initial state.
     state = hass.states.get(maximum_circuit_temperature_entity_id)
@@ -894,6 +907,7 @@ async def test_circuit_day_target_circuit_temperature_number(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(day_target_circuit_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "day_target_circuit_temp"
 
     # Get initial state.
     state = hass.states.get(day_target_circuit_temperature_entity_id)
@@ -978,6 +992,7 @@ async def test_circuit_night_target_circuit_temperature_number(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(night_target_circuit_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "night_target_circuit_temp"
 
     # Get initial state.
     state = hass.states.get(night_target_circuit_temperature_entity_id)

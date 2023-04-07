@@ -15,6 +15,7 @@ from homeassistant.const import (
     ATTR_FRIENDLY_NAME,
     ATTR_ICON,
     ATTR_UNIT_OF_MEASUREMENT,
+    EVENT_HOMEASSISTANT_START,
     PERCENTAGE,
     UnitOfMass,
     UnitOfPower,
@@ -161,6 +162,7 @@ async def test_heating_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(heating_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "heating_temp"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -202,6 +204,7 @@ async def test_water_heater_temperature_sensor(
     # Check entry.
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(water_heater_temperature_entity_id)
+    assert entry.translation_key == "water_heater_temp"
     assert entry
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
@@ -244,6 +247,7 @@ async def test_outside_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(outside_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "outside_temp"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -277,6 +281,7 @@ async def test_heating_target_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(heating_target_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "heating_target"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -311,6 +316,7 @@ async def test_water_heater_target_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(water_heater_target_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "water_heater_target"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -379,6 +385,7 @@ async def test_service_password_sensor(
     # Check entry.
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(service_password_entity_id)
+    assert entry.translation_key == "service_password"
     assert entry
 
     # Get initial value.
@@ -408,6 +415,7 @@ async def test_software_version_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(software_version_entity_id)
     assert entry
+    assert entry.translation_key == "software_version"
 
     # Get initial value.
     state = hass.states.get(software_version_entity_id)
@@ -437,6 +445,7 @@ async def test_uid_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(uid_entity_id)
     assert entry
+    assert entry.translation_key == "uid"
 
     # Get initial value.
     state = hass.states.get(uid_entity_id)
@@ -470,6 +479,7 @@ async def test_oxygen_level_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(oxygen_level_entity_id)
     assert entry
+    assert entry.translation_key == "oxygen_level"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -510,6 +520,7 @@ async def test_power_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(power_entity_id)
     assert entry
+    assert entry.translation_key == "power"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -544,6 +555,7 @@ async def test_fuel_level_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fuel_level_entity_id)
     assert entry
+    assert entry.translation_key == "fuel_level"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 0
 
@@ -578,6 +590,7 @@ async def test_fuel_consumption_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fuel_consumption_entity_id)
     assert entry
+    assert entry.translation_key == "fuel_consumption"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 2
 
@@ -611,6 +624,7 @@ async def test_load_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(load_entity_id)
     assert entry
+    assert entry.translation_key == "load"
 
     # Get initial value.
     state = hass.states.get(load_entity_id)
@@ -641,6 +655,7 @@ async def test_fan_power_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fan_power_entity_id)
     assert entry
+    assert entry.translation_key == "fan_power"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -674,6 +689,7 @@ async def test_flame_intensity_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(flame_intensity_entity_id)
     assert entry
+    assert entry.translation_key == "flame_intensity"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -708,6 +724,7 @@ async def test_feeder_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(feeder_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "feeder_temp"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -741,6 +758,7 @@ async def test_exhaust_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(exhaust_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "exhaust_temp"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -774,6 +792,7 @@ async def test_return_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(return_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "return_temp"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -807,6 +826,7 @@ async def test_lower_buffer_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(lower_buffer_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "lower_buffer_temp"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -840,6 +860,7 @@ async def test_upper_buffer_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(upper_buffer_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "upper_buffer_temp"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -873,6 +894,7 @@ async def test_lower_solar_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(lower_solar_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "lower_solar_temp"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -906,6 +928,7 @@ async def test_upper_solar_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(upper_solar_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "upper_solar_temp"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -939,6 +962,7 @@ async def test_fireplace_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fireplace_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "fireplace_temp"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -972,6 +996,7 @@ async def test_mixer_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(mixer_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "mixer_temp"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -1007,6 +1032,7 @@ async def test_mixer_target_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(mixer_target_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "mixer_target_temp"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -1043,6 +1069,7 @@ async def test_circuit_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(circuit_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "circuit_temp"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -1080,6 +1107,7 @@ async def test_circuit_target_temperature_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(circuit_target_temperature_entity_id)
     assert entry
+    assert entry.translation_key == "circuit_target_temp"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
@@ -1118,6 +1146,7 @@ async def test_total_fuel_burned_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(fuel_burned_entity_id)
     assert entry
+    assert entry.translation_key == "total_fuel_burned"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 2
 
@@ -1138,7 +1167,9 @@ async def test_total_fuel_burned_sensor(
 
     # Test that value is restored after HASS restart.
     await hass.async_stop()
-    await hass.async_start()
+    await hass.async_block_till_done()
+    hass.bus.async_fire(EVENT_HOMEASSISTANT_START)
+    await hass.async_block_till_done()
     state = hass.states.get(fuel_burned_entity_id)
     assert state.state == "0.3"
 
@@ -1167,6 +1198,7 @@ async def test_ash_pan_full_sensor(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(ash_pan_full_entity_id)
     assert entry
+    assert entry.translation_key == "ash_pan_full"
 
     # Get initial value.
     state = hass.states.get(ash_pan_full_entity_id)
