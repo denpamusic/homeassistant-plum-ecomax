@@ -40,6 +40,7 @@ import voluptuous as vol
 
 from .connection import EcomaxConnection
 from .const import (
+    ATTR_NUMERIC,
     ATTR_VALUE,
     DEVICE_CLASS_STATE,
     DOMAIN,
@@ -366,7 +367,7 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
         if self.entity_description.device_class == DEVICE_CLASS_STATE:
             # Include raw numeric value as an extra attribute for the
             # device state.
-            self._attr_extra_state_attributes = {ATTR_VALUE: int(value)}
+            self._attr_extra_state_attributes = {ATTR_NUMERIC: int(value)}
 
         self.async_write_ha_state()
 
