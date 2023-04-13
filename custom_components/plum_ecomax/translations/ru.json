@@ -39,26 +39,26 @@
   },
   "entity": {
     "binary_sensor": {
-      "heating_pump": { "name": "Heating pump" },
-      "water_heater_pump": { "name": "Water heater pump" },
-      "circulation_pump": { "name": "Circulation pump" },
-      "alert": { "name": "Alert" },
-      "connection_status": { "name": "Connection status" },
-      "fan": { "name": "Fan" },
-      "exhaust_fan": { "name": "Exhaust fan" },
-      "feeder": { "name": "Feeder" },
-      "lighter": { "name": "Lighter" },
-      "solar_pump": { "name": "Solar pump" },
-      "fireplace_pump": { "name": "Fireplace pump" },
-      "mixer_pump": { "name": "Mixer pump" },
-      "circuit_pump": { "name": "Circuit pump" }
+      "heating_pump": { "name": "Насос отопления" },
+      "water_heater_pump": { "name": "Насос водонагревателя" },
+      "circulation_pump": { "name": "Насос рециркуляции ГВС" },
+      "alert": { "name": "Тревога" },
+      "connection_status": { "name": "Состояние подключения" },
+      "fan": { "name": "Вентилятор" },
+      "exhaust_fan": { "name": "Дымосос" },
+      "feeder": { "name": "Подача" },
+      "lighter": { "name": "Авторозжиг" },
+      "solar_pump": { "name": "Насос солнечного нагвателя" },
+      "fireplace_pump": { "name": "Насос камина" },
+      "mixer_pump": { "name": "Насос миксера" },
+      "circuit_pump": { "name": "Насос контура" }
     },
     "button": {
-      "detect_sub_devices": { "name": "Detect sub-devices" }
+      "detect_sub_devices": { "name": "Определить модули" }
     },
     "climate": {
       "ecomax_climate": {
-        "name": "Thermostat",
+        "name": "Термостат",
         "state_attributes": {
           "preset_mode": {
             "state": {
@@ -73,30 +73,30 @@
       }
     },
     "number": {
-      "target_heating_temp": { "name": "Target heating temperature" },
-      "min_heating_temp": { "name": "Minimum heating temperature" },
-      "max_heating_temp": { "name": "Maximum heating temperature" },
-      "grate_mode_temp": { "name": "Grate mode temperature" },
-      "fuzzy_logic_min_power": { "name": "Fuzzy logic minimum power" },
-      "fuzzy_logic_max_power": { "name": "Fuzzy logic maximum power" },
-      "fuel_calorific_value": { "name": "Fuel calorific value" },
-      "target_mixer_temp": { "name": "Target mixer temperature" },
-      "min_mixer_temp": { "name": "Minimum mixer temperature" },
-      "max_mixer_temp": { "name": "Maximum mixer temperature" },
-      "target_circuit_temp": { "name": "Target circuit temperature" },
-      "min_circuit_temp": { "name": "Minimum circuit temperature" },
-      "max_circuit_temp": { "name": "Maximum circuit temperature" },
-      "day_target_circuit_temp": { "name": "Day target circuit temperature" },
-      "night_target_circuit_temp": { "name": "Night target circuit temperature" }
+      "target_heating_temp": { "name": "Заданная температура отопления" },
+      "min_heating_temp": { "name": "Минимальная температура отопления" },
+      "max_heating_temp": { "name": "Максимальная температура отопления" },
+      "grate_mode_temp": { "name": "Заданная температура отопления в ручном режиме" },
+      "fuzzy_logic_min_power": { "name": "Минимальная мощность fuzzy logic" },
+      "fuzzy_logic_max_power": { "name": "Максимальная мощность Fuzzy logic" },
+      "fuel_calorific_value": { "name": "Теплотворность топлива" },
+      "target_mixer_temp": { "name": "Заданная температура миксера" },
+      "min_mixer_temp": { "name": "Минимальная температура миксера" },
+      "max_mixer_temp": { "name": "Максимальная температура миксера" },
+      "target_circuit_temp": { "name": "Заданная температура контура" },
+      "min_circuit_temp": { "name": "Минимальная температура контура" },
+      "max_circuit_temp": { "name": "Максимальная температура контура" },
+      "day_target_circuit_temp": { "name": "Дневная температура контура" },
+      "night_target_circuit_temp": { "name": "Ночная температура контура" }
     },
     "sensor": {
-      "heating_temp": { "name": "Heating temperature" },
-      "water_heater_temp": { "name": "Water heater temperature" },
-      "outside_temp": { "name": "Outside temperature" },
-      "heating_target": { "name": "Heating target temperature" },
-      "water_heater_target": { "name": "Water heater target temperature" },
+      "heating_temp": { "name": "Температура отопления" },
+      "water_heater_temp": { "name": "Температура водонагревателя" },
+      "outside_temp": { "name": "Температура на улице" },
+      "heating_target": { "name": "Заданная температура отопления" },
+      "water_heater_target": { "name": "Заданная температура водонагревателя" },
       "ecomax_state": {
-        "name": "State",
+        "name": "Режим",
         "state": {
           "off": "Выключено",
           "fanning": "Раздув",
@@ -110,46 +110,46 @@
           "unknown": "Неизвестно"
         }
       },
-      "service_password": { "name": "Service password" },
-      "software_version": { "name": "Software version" },
+      "service_password": { "name": "Сервисный пароль" },
+      "software_version": { "name": "Версия ПО" },
       "uid": { "name": "UID" },
-      "oxygen_level": { "name": "Oxygen level" },
-      "power": { "name": "Power" },
-      "fuel_level": { "name": "Fuel level" },
-      "fuel_consumption": { "name": "Fuel consumption" },
-      "load": { "name": "Load" },
-      "fan_power": { "name": "Fan power" },
-      "flame_intensity": { "name": "Flame intensity" },
-      "feeder_temp": { "name": "Feeder temperature" },
-      "exhaust_temp": { "name": "Exhaust temperature" },
-      "return_temp": { "name": "Return temperature" },
-      "lower_buffer_temp": { "name": "Lower buffer temperature" },
-      "upper_buffer_temp": { "name": "Upper buffer temperature" },
-      "lower_solar_temp": { "name": "Lower solar temperature" },
-      "upper_solar_temp": { "name": "Upper solar temperature" },
-      "fireplace_temp": { "name": "Fireplace temperature" },
-      "mixer_temp": { "name": "Mixer temperature" },
-      "mixer_target_temp": { "name": "Mixer target temperature" },
-      "circuit_temp": { "name": "Circuit temperature" },
-      "circuit_target_temp": { "name": "Circuit target temperature" },
-      "total_fuel_burned": { "name": "Total fuel burned" },
-      "ash_pan_full": { "name": "Ash pan full" }
+      "oxygen_level": { "name": "Содержание кислорода" },
+      "power": { "name": "Мощность" },
+      "fuel_level": { "name": "Уровень топлива" },
+      "fuel_consumption": { "name": "Потребление топлива" },
+      "load": { "name": "Нагрузка" },
+      "fan_power": { "name": "Производительность вентелятора" },
+      "flame_intensity": { "name": "Интенсивность пламени" },
+      "feeder_temp": { "name": "Температура механизма подачи" },
+      "exhaust_temp": { "name": "Температура дымовых газов" },
+      "return_temp": { "name": "Температура обратки" },
+      "lower_buffer_temp": { "name": "Температура накопителя в нижней точке" },
+      "upper_buffer_temp": { "name": "Температура накопителя в верхней точке" },
+      "lower_solar_temp": { "name": "Температура солнечного нагревателя в нижней точке" },
+      "upper_solar_temp": { "name": "Температура солнечного нагревателя в верхней точке" },
+      "fireplace_temp": { "name": "Температура камина" },
+      "mixer_temp": { "name": "Температура миксера" },
+      "mixer_target_temp": { "name": "Заданная температура миксера" },
+      "circuit_temp": { "name": "Температура контура" },
+      "circuit_target_temp": { "name": "Заданная температура контура" },
+      "total_fuel_burned": { "name": "Сожжено топлива" },
+      "ash_pan_full": { "name": "Заполненность зольного ящика" }
     },
     "switch": {
-      "controller_switch": { "name": "Controller switch" },
-      "water_heater_disinfection_switch": { "name": "Water heater disinfection switch" },
-      "water_heater_pump_switch": { "name": "Water heater pump switch" },
-      "summer_mode_switch": { "name": "Summer mode switch" },
-      "weather_control_switch": { "name": "Weather control switch" },
-      "fuzzy_logic_switch": { "name": "Fuzzy logic switch" },
-      "heating_schedule_switch": { "name": "Heating schedule switch" },
-      "water_heater_schedule_switch": { "name": "Water heater schedule switch" },
-      "enable_in_summer_mode": { "name": "Enable in summer mode" },
-      "disable_pump_on_thermostat": { "name": "Disable pump on thermostat" },
-      "enable_circuit": { "name": "Enable circuit" }
+      "controller_switch": { "name": "Питание контроллера" },
+      "water_heater_disinfection_switch": { "name": "Дезинфекция водонагревателя" },
+      "water_heater_pump_switch": { "name": "Насос водонагревателя" },
+      "summer_mode_switch": { "name": "Летний режим" },
+      "weather_control_switch": { "name": "Погодозависимое управление" },
+      "fuzzy_logic_switch": { "name": "Fuzzy logic" },
+      "heating_schedule_switch": { "name": "Работа отопления по расписанию" },
+      "water_heater_schedule_switch": { "name": "Работа водонагревателя по расписанию" },
+      "enable_in_summer_mode": { "name": "Включен в летнем режиме" },
+      "disable_pump_on_thermostat": { "name": "Отключать насос по сигналу термостата" },
+      "enable_circuit": { "name": "Включить контур" }
     },
     "water_heater": {
-      "indirect_water_heater": { "name": "Indirect water heater" }
+      "indirect_water_heater": { "name": "Пассивный водонагреватель" }
     }
   }
 }

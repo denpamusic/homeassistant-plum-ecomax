@@ -39,26 +39,26 @@
   },
   "entity": {
     "binary_sensor": {
-      "heating_pump": { "name": "Heating pump" },
-      "water_heater_pump": { "name": "Water heater pump" },
-      "circulation_pump": { "name": "Circulation pump" },
-      "alert": { "name": "Alert" },
+      "heating_pump": { "name": "Pompa CO" },
+      "water_heater_pump": { "name": "Pompa CWU" },
+      "circulation_pump": { "name": "Pompa cyrkulacyjna" },
+      "alert": { "name": "Alarm" },
       "connection_status": { "name": "Connection status" },
-      "fan": { "name": "Fan" },
-      "exhaust_fan": { "name": "Exhaust fan" },
-      "feeder": { "name": "Feeder" },
+      "fan": { "name": "Wentylator" },
+      "exhaust_fan": { "name": "Wentylator wyciągowy" },
+      "feeder": { "name": "Podajnika" },
       "lighter": { "name": "Lighter" },
-      "solar_pump": { "name": "Solar pump" },
-      "fireplace_pump": { "name": "Fireplace pump" },
-      "mixer_pump": { "name": "Mixer pump" },
-      "circuit_pump": { "name": "Circuit pump" }
+      "solar_pump": { "name": "Pompa solarna" },
+      "fireplace_pump": { "name": "Pompa kominkowa" },
+      "mixer_pump": { "name": "Pompa mieszacza" },
+      "circuit_pump": { "name": "Pompa obiega" }
     },
     "button": {
       "detect_sub_devices": { "name": "Detect sub-devices" }
     },
     "climate": {
       "ecomax_climate": {
-        "name": "Thermostat",
+        "name": "Termostat",
         "state_attributes": {
           "preset_mode": {
             "state": {
@@ -73,30 +73,30 @@
       }
     },
     "number": {
-      "target_heating_temp": { "name": "Target heating temperature" },
-      "min_heating_temp": { "name": "Minimum heating temperature" },
-      "max_heating_temp": { "name": "Maximum heating temperature" },
-      "grate_mode_temp": { "name": "Grate mode temperature" },
-      "fuzzy_logic_min_power": { "name": "Fuzzy logic minimum power" },
-      "fuzzy_logic_max_power": { "name": "Fuzzy logic maximum power" },
-      "fuel_calorific_value": { "name": "Fuel calorific value" },
-      "target_mixer_temp": { "name": "Target mixer temperature" },
-      "min_mixer_temp": { "name": "Minimum mixer temperature" },
-      "max_mixer_temp": { "name": "Maximum mixer temperature" },
-      "target_circuit_temp": { "name": "Target circuit temperature" },
-      "min_circuit_temp": { "name": "Minimum circuit temperature" },
-      "max_circuit_temp": { "name": "Maximum circuit temperature" },
-      "day_target_circuit_temp": { "name": "Day target circuit temperature" },
-      "night_target_circuit_temp": { "name": "Night target circuit temperature" }
+      "target_heating_temp": { "name": "Temperatura zadana kotła" },
+      "min_heating_temp": { "name": "Min. temperatura kotła" },
+      "max_heating_temp": { "name": "Max. temperatura kotła" },
+      "grate_mode_temp": { "name": "Temperatura trybu rusztu" },
+      "fuzzy_logic_min_power": { "name": "Min. moc kotła FL" },
+      "fuzzy_logic_max_power": { "name": "Max. moc kotła FL" },
+      "fuel_calorific_value": { "name": "Kaloryczność paliwa" },
+      "target_mixer_temp": { "name": "Temperatura zadana mieszacza" },
+      "min_mixer_temp": { "name": "Min. temperatura mieszacza" },
+      "max_mixer_temp": { "name": "Max. temperatura  mieszacza" },
+      "target_circuit_temp": { "name": "Temperatura zadana obiega" },
+      "min_circuit_temp": { "name": "Min. temperatura obiega" },
+      "max_circuit_temp": { "name": "Max. temperatura obiega" },
+      "day_target_circuit_temp": { "name": "Temperatura zadana dzień" },
+      "night_target_circuit_temp": { "name": "Temperatura zadana noc" }
     },
     "sensor": {
-      "heating_temp": { "name": "Heating temperature" },
-      "water_heater_temp": { "name": "Water heater temperature" },
-      "outside_temp": { "name": "Outside temperature" },
-      "heating_target": { "name": "Heating target temperature" },
-      "water_heater_target": { "name": "Water heater target temperature" },
+      "heating_temp": { "name": "Temperatura CO" },
+      "water_heater_temp": { "name": "Temperatura CWU" },
+      "outside_temp": { "name": "Temperatura na zewnątrz" },
+      "heating_target": { "name": "Temperatura zadana CO" },
+      "water_heater_target": { "name": "Temperatura zadana CWU" },
       "ecomax_state": {
-        "name": "State",
+        "name": "Tryb",
         "state": {
           "off": "Wyłączony",
           "fanning": "Stabilizacja",
@@ -110,46 +110,46 @@
           "unknown": "Nieznany"
         }
       },
-      "service_password": { "name": "Service password" },
-      "software_version": { "name": "Software version" },
+      "service_password": { "name": "Hasło specjalne" },
+      "software_version": { "name": "Wersja oprogramowania" },
       "uid": { "name": "UID" },
-      "oxygen_level": { "name": "Oxygen level" },
-      "power": { "name": "Power" },
-      "fuel_level": { "name": "Fuel level" },
-      "fuel_consumption": { "name": "Fuel consumption" },
-      "load": { "name": "Load" },
-      "fan_power": { "name": "Fan power" },
-      "flame_intensity": { "name": "Flame intensity" },
-      "feeder_temp": { "name": "Feeder temperature" },
-      "exhaust_temp": { "name": "Exhaust temperature" },
-      "return_temp": { "name": "Return temperature" },
-      "lower_buffer_temp": { "name": "Lower buffer temperature" },
-      "upper_buffer_temp": { "name": "Upper buffer temperature" },
-      "lower_solar_temp": { "name": "Lower solar temperature" },
-      "upper_solar_temp": { "name": "Upper solar temperature" },
-      "fireplace_temp": { "name": "Fireplace temperature" },
-      "mixer_temp": { "name": "Mixer temperature" },
-      "mixer_target_temp": { "name": "Mixer target temperature" },
-      "circuit_temp": { "name": "Circuit temperature" },
-      "circuit_target_temp": { "name": "Circuit target temperature" },
-      "total_fuel_burned": { "name": "Total fuel burned" },
-      "ash_pan_full": { "name": "Ash pan full" }
+      "oxygen_level": { "name": "Poziom tlenu" },
+      "power": { "name": "Moc" },
+      "fuel_level": { "name": "Poziom paliwa" },
+      "fuel_consumption": { "name": "Zużycie paliwa" },
+      "load": { "name": "Poziom mocy kotła" },
+      "fan_power": { "name": "Moc wentylatora" },
+      "flame_intensity": { "name": "Intensywność płomienia" },
+      "feeder_temp": { "name": "Temperatura podajnika" },
+      "exhaust_temp": { "name": "Temperatura spalin" },
+      "return_temp": { "name": "Temperatura powrotu" },
+      "lower_buffer_temp": { "name": "Temperatura dolna bufora" },
+      "upper_buffer_temp": { "name": "Temperatura górna bufora" },
+      "lower_solar_temp": { "name": "Temperatura dolna solarny" },
+      "upper_solar_temp": { "name": "Temperatura górna solarny" },
+      "fireplace_temp": { "name": "Temperatura kominkowa" },
+      "mixer_temp": { "name": "Temperatura mieszacza" },
+      "mixer_target_temp": { "name": "Temperatura zadana mieszacza" },
+      "circuit_temp": { "name": "Temperatura obiega" },
+      "circuit_target_temp": { "name": "Temperatura zadana obiega" },
+      "total_fuel_burned": { "name": "Spalone paliwo" },
+      "ash_pan_full": { "name": "Popielnik" }
     },
     "switch": {
-      "controller_switch": { "name": "Controller switch" },
-      "water_heater_disinfection_switch": { "name": "Water heater disinfection switch" },
-      "water_heater_pump_switch": { "name": "Water heater pump switch" },
-      "summer_mode_switch": { "name": "Summer mode switch" },
-      "weather_control_switch": { "name": "Weather control switch" },
-      "fuzzy_logic_switch": { "name": "Fuzzy logic switch" },
-      "heating_schedule_switch": { "name": "Heating schedule switch" },
-      "water_heater_schedule_switch": { "name": "Water heater schedule switch" },
-      "enable_in_summer_mode": { "name": "Enable in summer mode" },
-      "disable_pump_on_thermostat": { "name": "Disable pump on thermostat" },
-      "enable_circuit": { "name": "Enable circuit" }
+      "controller_switch": { "name": "Przełącznik regulatora" },
+      "water_heater_disinfection_switch": { "name": "Dezynfekcja zasobnika CWU" },
+      "water_heater_pump_switch": { "name": "Przełącznik CWU pompy" },
+      "summer_mode_switch": { "name": "Tryb LATO" },
+      "weather_control_switch": { "name": "Sterowanie pogodowe" },
+      "fuzzy_logic_switch": { "name": "Przełącznik Fuzzy Logic" },
+      "heating_schedule_switch": { "name": "Harmonogram CO" },
+      "water_heater_schedule_switch": { "name": "Harmonogram CWU" },
+      "enable_in_summer_mode": { "name": "Praca w LATO" },
+      "disable_pump_on_thermostat": { "name": "Blokada pompy od termostatu" },
+      "enable_circuit": { "name": "Obsługa obiega" }
     },
     "water_heater": {
-      "indirect_water_heater": { "name": "Indirect water heater" }
+      "indirect_water_heater": { "name": "CWU" }
     }
   }
 }
