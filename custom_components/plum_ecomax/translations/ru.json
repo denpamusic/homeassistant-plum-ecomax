@@ -89,6 +89,16 @@
       "day_target_circuit_temp": { "name": "Дневная температура контура" },
       "night_target_circuit_temp": { "name": "Ночная температура контура" }
     },
+    "select": {
+      "summer_mode": {
+        "name": "Summer mode",
+        "state": {
+          "on": "On",
+          "off": "Off",
+          "auto": "Auto"
+        }
+      }
+    },
     "sensor": {
       "heating_temp": { "name": "Температура отопления" },
       "water_heater_temp": { "name": "Температура водонагревателя" },

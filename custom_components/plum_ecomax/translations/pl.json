@@ -89,6 +89,16 @@
       "day_target_circuit_temp": { "name": "Temperatura zadana dzień" },
       "night_target_circuit_temp": { "name": "Temperatura zadana noc" }
     },
+    "select": {
+      "summer_mode": {
+        "name": "Summer mode",
+        "state": {
+          "on": "On",
+          "off": "Off",
+          "auto": "Auto"
+        }
+      }
+    },
     "sensor": {
       "heating_temp": { "name": "Temperatura CO" },
       "water_heater_temp": { "name": "Temperatura CWU" },

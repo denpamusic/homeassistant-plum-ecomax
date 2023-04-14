@@ -89,6 +89,16 @@
       "day_target_circuit_temp": { "name": "Day target circuit temperature" },
       "night_target_circuit_temp": { "name": "Night target circuit temperature" }
     },
+    "select": {
+      "summer_mode": {
+        "name": "Summer mode",
+        "state": {
+          "on": "[%key:common::state::on%]",
+          "off": "[%key:common::state::off%]",
+          "auto": "Auto"
+        }
+      }
+    },
     "sensor": {
       "heating_temp": { "name": "Heating temperature" },
       "water_heater_temp": { "name": "Water heater temperature" },
