@@ -274,7 +274,7 @@ async def async_setup_entry(
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     _LOGGER.debug("Starting setup of binary sensor platform...")
 
-    entities: list[EcomaxEntity] = []
+    entities: list[EcomaxBinarySensor] = []
 
     # Add ecoMAX binary sensors.
     entities.extend(async_setup_ecomax_binary_sensors(connection))

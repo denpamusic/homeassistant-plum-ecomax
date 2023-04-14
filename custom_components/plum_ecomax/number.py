@@ -322,7 +322,7 @@ async def async_setup_entry(
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     _LOGGER.debug("Starting setup of number platform...")
 
-    entities: list[EcomaxEntity] = []
+    entities: list[EcomaxNumber] = []
 
     # Add ecoMAX numbers.
     entities.extend(async_setup_ecomax_numbers(connection))

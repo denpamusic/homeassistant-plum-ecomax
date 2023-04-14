@@ -623,7 +623,7 @@ async def async_setup_entry(
     connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
     _LOGGER.debug("Starting setup of sensor platform...")
 
-    entities: list[EcomaxEntity] = []
+    entities: list[EcomaxSensor] = []
 
     # Add ecoMAX sensors.
     entities.extend(async_setup_ecomax_sensors(connection))
