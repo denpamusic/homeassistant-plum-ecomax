@@ -139,7 +139,6 @@
       "controller_switch": { "name": "Питание контроллера" },
       "water_heater_disinfection_switch": { "name": "Дезинфекция водонагревателя" },
       "water_heater_pump_switch": { "name": "Насос водонагревателя" },
-      "summer_mode_switch": { "name": "Летний режим" },
       "weather_control_switch": { "name": "Погодозависимое управление" },
       "fuzzy_logic_switch": { "name": "Fuzzy logic" },
       "heating_schedule_switch": { "name": "Работа отопления по расписанию" },

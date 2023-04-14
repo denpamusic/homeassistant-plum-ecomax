@@ -139,7 +139,6 @@
       "controller_switch": { "name": "Przełącznik regulatora" },
       "water_heater_disinfection_switch": { "name": "Dezynfekcja zasobnika CWU" },
       "water_heater_pump_switch": { "name": "Przełącznik CWU pompy" },
-      "summer_mode_switch": { "name": "Tryb LATO" },
       "weather_control_switch": { "name": "Sterowanie pogodowe" },
       "fuzzy_logic_switch": { "name": "Przełącznik Fuzzy Logic" },
       "heating_schedule_switch": { "name": "Harmonogram CO" },

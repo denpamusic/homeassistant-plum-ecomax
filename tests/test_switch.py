@@ -250,60 +250,6 @@ async def test_water_heater_pump_switch(
 
 
 @pytest.mark.usefixtures("ecomax_p")
-async def test_summer_mode_switch(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    async_turn_off,
-    async_turn_on,
-) -> None:
-    """Test summer mode switch."""
-    await setup_integration(hass, config_entry)
-    summer_mode_switch_entity_id = "switch.ecomax_summer_mode_switch"
-    summer_mode_switch_key = "summer_mode"
-
-    # Check entry.
-    entity_registry = er.async_get(hass)
-    entry = entity_registry.async_get(summer_mode_switch_entity_id)
-    assert entry
-    assert entry.translation_key == "summer_mode_switch"
-
-    # Get initial value.
-    state = hass.states.get(summer_mode_switch_entity_id)
-    assert state.state == STATE_OFF
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Summer mode switch"
-
-    # Dispatch new value.
-    await connection.device.dispatch(
-        summer_mode_switch_key,
-        EcomaxParameter(
-            device=connection.device,
-            value=1,
-            min_value=0,
-            max_value=2,
-            description=EcomaxParameterDescription(summer_mode_switch_key),
-        ),
-    )
-    state = hass.states.get(summer_mode_switch_entity_id)
-    assert state.state == STATE_ON
-
-    # Turn off.
-    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
-        state = await async_turn_off(hass, summer_mode_switch_entity_id)
-
-    mock_set_nowait.assert_called_once_with(summer_mode_switch_key, 0)
-    assert state.state == STATE_OFF
-
-    # Turn on.
-    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
-        state = await async_turn_on(hass, summer_mode_switch_entity_id)
-
-    mock_set_nowait.assert_called_once_with(summer_mode_switch_key, 1)
-    assert state.state == STATE_ON
-
-
-@pytest.mark.usefixtures("ecomax_p")
 async def test_weather_control_switch(
     hass: HomeAssistant,
     connection: EcomaxConnection,

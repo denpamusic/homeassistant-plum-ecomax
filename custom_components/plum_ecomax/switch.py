@@ -62,13 +62,6 @@ SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
         state_on=2,
     ),
     EcomaxSwitchEntityDescription(
-        key="summer_mode",
-        translation_key="summer_mode_switch",
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
-        state_off=0,
-        state_on=1,
-    ),
-    EcomaxSwitchEntityDescription(
         key="heating_weather_control",
         translation_key="weather_control_switch",
         product_types={ProductType.ECOMAX_P},

@@ -139,7 +139,6 @@
       "controller_switch": { "name": "Controller switch" },
       "water_heater_disinfection_switch": { "name": "Water heater disinfection switch" },
       "water_heater_pump_switch": { "name": "Water heater pump switch" },
-      "summer_mode_switch": { "name": "Summer mode switch" },
       "weather_control_switch": { "name": "Weather control switch" },
       "fuzzy_logic_switch": { "name": "Fuzzy logic switch" },
       "heating_schedule_switch": { "name": "Heating schedule switch" },
