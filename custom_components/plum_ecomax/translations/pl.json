@@ -91,7 +91,7 @@
     },
     "select": {
       "summer_mode": {
-        "name": "Summer mode",
+        "name": "Tryb LATO",
         "state": {
           "on": "On",
           "off": "Off",

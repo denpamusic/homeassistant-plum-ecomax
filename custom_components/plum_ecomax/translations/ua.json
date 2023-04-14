@@ -91,11 +91,11 @@
     },
     "select": {
       "summer_mode": {
-        "name": "Summer mode",
+        "name": "Літній режим",
         "state": {
-          "on": "On",
-          "off": "Off",
-          "auto": "Auto"
+          "on": "Включено",
+          "off": "Вимкнено",
+          "auto": "Авто"
         }
       }
     },
