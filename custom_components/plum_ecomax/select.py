@@ -20,9 +20,12 @@ from pyplumio.filters import on_change
 
 from .connection import EcomaxConnection
 from .const import DOMAIN, MODULE_A
-from .entity import EcomaxEntity
+from .entity import EcomaxEntity, MixerEntity
 
 STATE_AUTO: Final = "auto"
+STATE_HEATING: Final = "heating"
+STATE_HEATED_FLOOR: Final = "heated_floor"
+STATE_PUMP_ONLY: Final = "pump_only"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -83,6 +86,35 @@ class EcomaxSelect(EcomaxEntity, SelectEntity):
         self.async_write_ha_state()
 
 
+@dataclass
+class EcomaxMixerSelectEntityDescription(EcomaxSelectEntityDescription):
+    """Describes mixer select entity."""
+
+
+MIXER_SELECT_TYPES: tuple[EcomaxMixerSelectEntityDescription, ...] = (
+    EcomaxSelectEntityDescription(
+        key="work_mode",
+        translation_key="mixer_work_mode",
+        options=[STATE_OFF, STATE_HEATING, STATE_HEATED_FLOOR, STATE_PUMP_ONLY],
+        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
+    ),
+)
+
+
+class MixerSelect(MixerEntity, EcomaxSelect):
+    """Represents mixer select platform."""
+
+    def __init__(
+        self,
+        connection: EcomaxConnection,
+        description: EcomaxSelectEntityDescription,
+        index: int,
+    ):
+        """Initialize mixer select object."""
+        self.index = index
+        super().__init__(connection, description)
+
+
 def get_by_product_type(
     product_type: ProductType,
     descriptions: Iterable[EcomaxSelectEntityDescription],
@@ -113,6 +145,22 @@ def async_setup_ecomax_selects(connection: EcomaxConnection) -> list[EcomaxSelec
     ]
 
 
+def async_setup_mixer_selects(connection: EcomaxConnection) -> list[MixerSelect]:
+    """Setup mixer selects."""
+    entities: list[MixerSelect] = []
+
+    for index in connection.device.mixers.keys():
+        entities.extend(
+            MixerSelect(connection, description, index)
+            for description in get_by_modules(
+                connection.device.modules,
+                get_by_product_type(connection.product_type, MIXER_SELECT_TYPES),
+            )
+        )
+
+    return entities
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigType,
@@ -125,6 +173,10 @@ async def async_setup_entry(
     entities: list[EcomaxSelect] = []
 
     # Add ecoMAX selects.
-    entities.extend(async_setup_ecomax_select(connection))
+    entities.extend(async_setup_ecomax_selects(connection))
+
+    # Add mixer/circuit selects.
+    if connection.has_mixers and await connection.async_setup_mixers():
+        entities.extend(async_setup_mixer_selects(connection))
 
     return async_add_entities(entities)

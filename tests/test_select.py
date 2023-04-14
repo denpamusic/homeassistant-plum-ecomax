@@ -21,11 +21,20 @@ from pyplumio.structures.ecomax_parameters import (
     EcomaxParameter,
     EcomaxParameterDescription,
 )
+from pyplumio.structures.mixer_parameters import (
+    MixerParameter,
+    MixerParameterDescription,
+)
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.select import STATE_AUTO
+from custom_components.plum_ecomax.select import (
+    STATE_AUTO,
+    STATE_HEATED_FLOOR,
+    STATE_HEATING,
+    STATE_PUMP_ONLY,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -112,3 +121,58 @@ async def test_summer_mode_select(
         summer_mode_select_key, options.index(STATE_ON)
     )
     assert state.state == STATE_ON
+
+
+@pytest.mark.usefixtures("ecomax_p", "mixers")
+async def test_mixer_work_mode_select(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    async_select_option,
+) -> None:
+    """Test mixer work mode select."""
+    await setup_integration(hass, config_entry)
+    work_mode_entity_id = "select.ecomax_mixer_1_work_mode"
+    work_mode_select_key = "work_mode"
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(work_mode_entity_id)
+    assert entry
+    assert entry.translation_key == "mixer_work_mode"
+
+    # Get initial value.
+    state = hass.states.get(work_mode_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Mixer 1 Work mode"
+    assert state.attributes[ATTR_OPTIONS] == [
+        STATE_OFF,
+        STATE_HEATING,
+        STATE_HEATED_FLOOR,
+        STATE_PUMP_ONLY,
+    ]
+    options = state.attributes[ATTR_OPTIONS]
+
+    # Dispatch new value.
+    await connection.device.dispatch(
+        work_mode_select_key,
+        MixerParameter(
+            device=connection.device,
+            value=1,
+            min_value=0,
+            max_value=2,
+            description=MixerParameterDescription(work_mode_select_key),
+        ),
+    )
+    state = hass.states.get(work_mode_entity_id)
+    assert state.state == STATE_OFF
+
+    # Select an option.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_select_option(hass, work_mode_entity_id, STATE_HEATING)
+
+    mock_set_nowait.assert_called_once_with(
+        work_mode_select_key, options.index(STATE_HEATING)
+    )
+    assert state.state == STATE_HEATING

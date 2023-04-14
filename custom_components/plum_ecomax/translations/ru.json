@@ -97,6 +97,15 @@
           "off": "Выключен",
           "auto": "Авто"
         }
+      },
+      "mixer_work_mode": {
+        "name": "Режим работы",
+        "state": {
+          "off": "Выключено",
+          "heating": "Отопление",
+          "heated_floor": "Теплый пол",
+          "pump_only": "Только насос"
+        }
       }
     },
     "sensor": {

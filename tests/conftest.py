@@ -494,6 +494,13 @@ def mixers(ecomax_common: EcoMAX):
         "pump": False,
         "current_temp": 0.0,
         "target_temp": 0,
+        "work_mode": MixerParameter(
+            device=ecomax_common,
+            value=0,
+            min_value=0,
+            max_value=3,
+            description=MixerParameterDescription("work_mode"),
+        ),
         "mixer_target_temp": MixerParameter(
             device=ecomax_common,
             value=0,

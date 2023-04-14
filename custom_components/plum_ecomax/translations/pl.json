@@ -97,6 +97,15 @@
           "off": "Off",
           "auto": "Auto"
         }
+      },
+      "mixer_work_mode": {
+        "name": "Obsługa mieszacza",
+        "state": {
+          "off": "Wyłączona",
+          "heating": "Włączana CO",
+          "heated_floor": "Włączona podłog",
+          "pump_only": "Tylko pompa"
+        }
       }
     },
     "sensor": {

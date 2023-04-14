@@ -97,6 +97,15 @@
           "off": "[%key:common::state::off%]",
           "auto": "Auto"
         }
+      },
+      "mixer_work_mode": {
+        "name": "Work mode",
+        "state": {
+          "off": "[%key:common::state::off%]",
+          "heating": "Heating",
+          "heated_floor": "Heated floor",
+          "pump_only": "Pump only"
+        }
       }
     },
     "sensor": {
