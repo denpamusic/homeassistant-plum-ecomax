@@ -71,8 +71,9 @@ class EcomaxSelect(EcomaxEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
-        index = self.entity_description.options.index(option)
-        self.device.set_nowait(self.entity_description.key, int(index))
+        options: list[str] = self.entity_description.options
+        index = options.index(option)
+        self.device.set_nowait(self.entity_description.key, index)
         self._attr_current_option = option
         self.async_write_ha_state()
 
@@ -101,8 +102,8 @@ def get_by_modules(
             yield description
 
 
-def async_setup_ecomax_select(connection: EcomaxConnection) -> list[EcomaxSelect]:
-    """Setup ecoMAX switches."""
+def async_setup_ecomax_selects(connection: EcomaxConnection) -> list[EcomaxSelect]:
+    """Setup ecoMAX selects."""
     return [
         EcomaxSelect(connection, description)
         for description in get_by_modules(
