@@ -104,7 +104,7 @@ async def test_summer_mode_select(
     state = hass.states.get(summer_mode_entity_id)
     assert state.state == STATE_AUTO
 
-    # Set new state.
+    # Select an option.
     with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
         state = await async_select_option(hass, summer_mode_entity_id, STATE_ON)
 
