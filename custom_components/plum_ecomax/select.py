@@ -96,7 +96,7 @@ MIXER_SELECT_TYPES: tuple[EcomaxMixerSelectEntityDescription, ...] = (
         key="work_mode",
         translation_key="mixer_work_mode",
         options=[STATE_OFF, STATE_HEATING, STATE_HEATED_FLOOR, STATE_PUMP_ONLY],
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
+        product_types={ProductType.ECOMAX_P},
     ),
 )
 
