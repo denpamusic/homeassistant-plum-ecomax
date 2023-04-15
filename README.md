@@ -171,6 +171,13 @@ Binary sensors have two states (on/off, running/not running, etc.).
 | Lighter state           | :white_check_mark: | :x:                 |
 | Exhaust fan state       | :white_check_mark: | :x:                 |
 
+#### Selects
+Select entites can have multiple options to choose from.
+
+| Name        | Options         | ecoMAX pellet      | ecoMAX installation |
+|-------------|:---------------:|:------------------:|:-------------------:|
+| Summer mode | Off, Auto, On   | :white_check_mark: | :white_check_mark:  |
+
 #### Switches
 Switches have two states (on/off) that can be switched between.
 
@@ -179,7 +186,6 @@ Switches have two states (on/off) that can be switched between.
 | Controller power switch          | :white_check_mark: | :white_check_mark:  |
 | Water heater disinfection switch | :white_check_mark: | :white_check_mark:  |
 | Water heater pump switch         | :white_check_mark: | :white_check_mark:  |
-| Summer mode switch               | :white_check_mark: | :white_check_mark:  |
 | Weather control switch           | :white_check_mark: | :x:                 |
 | Fuzzy logic switch               | :white_check_mark: | :x:                 |
 | Heating schedule switch          | :white_check_mark: | :x:                 |
@@ -255,7 +261,14 @@ If you connected them after setting up the integration, you can use `Detect sub-
 |------------|:------------------:|:-------------------:|
 | Mixer pump | :white_check_mark: | :white_check_mark:  |
 
+#### Selects
+
+| Name       | Options                          | ecoMAX pellet      | ecoMAX installation |
+|------------|:--------------------------------:|:------------------:|:-------------------:|
+| Work mode  | Off, Heating, Floor, Pump only   | :white_check_mark: | :x:                 |
+
 #### Switches
+
 | Name                       | ecoMAX pellet      | ecoMAX installation |
 |----------------------------|:------------------:|:-------------------:|
 | Enable in summer mode      | :white_check_mark: | :white_check_mark:  |
