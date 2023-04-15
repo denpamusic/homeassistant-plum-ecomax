@@ -42,6 +42,7 @@ from .connection import EcomaxConnection
 from .const import (
     ATTR_NUMERIC,
     ATTR_VALUE,
+    DEVICE_CLASS_METER,
     DEVICE_CLASS_STATE,
     DOMAIN,
     ECOLAMBDA,
@@ -442,6 +443,8 @@ class MixerSensor(MixerEntity, EcomaxSensor):
 @dataclass
 class EcomaxMeterEntityDescription(EcomaxSensorEntityDescription):
     """Describes ecoMAX meter entity."""
+
+    device_class: str = DEVICE_CLASS_METER
 
 
 METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
