@@ -115,8 +115,8 @@ def async_setup_set_parameter_service(
             try:
                 if result := await device.set(name, value):
                     return result
-            except ParameterNotFoundError as e:
-                _LOGGER.exception(e)
+            except ParameterNotFoundError:
+                _LOGGER.exception("Requested parameter %s not found", name)
 
         raise HomeAssistantError(
             f"Couldn't set parameter '{name}', please check logs for more info"
