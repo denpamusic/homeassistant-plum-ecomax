@@ -75,8 +75,7 @@ class EcomaxSelect(EcomaxEntity, SelectEntity):
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
         options: list[str] = self.entity_description.options
-        index = options.index(option)
-        self.device.set_nowait(self.entity_description.key, index)
+        self.device.set_nowait(self.entity_description.key, options.index(option))
         self._attr_current_option = option
         self.async_write_ha_state()
 
