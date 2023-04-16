@@ -6,7 +6,7 @@ from typing import final
 
 from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 from pyplumio.const import ProductType
-from pyplumio.devices import Mixer
+from pyplumio.devices.mixer import Mixer
 from pyplumio.helpers.event_manager import EventManager
 
 from .connection import EcomaxConnection

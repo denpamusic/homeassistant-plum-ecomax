@@ -25,7 +25,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
-from pyplumio.devices import Thermostat
+from pyplumio.devices.thermostat import Thermostat
 from pyplumio.filters import on_change, throttle
 
 from .connection import EcomaxConnection

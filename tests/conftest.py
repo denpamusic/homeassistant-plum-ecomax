@@ -8,8 +8,9 @@ from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
 from pyplumio import Connection
 from pyplumio.const import DeviceState, ProductType
-from pyplumio.devices import Mixer, Thermostat
 from pyplumio.devices.ecomax import EcoMAX
+from pyplumio.devices.mixer import Mixer
+from pyplumio.devices.thermostat import Thermostat
 from pyplumio.structures.ecomax_parameters import (
     EcomaxBinaryParameter,
     EcomaxParameter,
