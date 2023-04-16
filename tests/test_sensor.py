@@ -62,6 +62,7 @@ from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
     ATTR_NUMERIC,
     ATTR_VALUE,
+    DEVICE_CLASS_METER,
     DEVICE_CLASS_STATE,
     DOMAIN,
     FLOW_KGH,
@@ -1161,6 +1162,7 @@ async def test_total_fuel_burned_sensor(
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Total fuel burned"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfMass.KILOGRAMS
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.TOTAL_INCREASING
+    assert state.attributes[ATTR_DEVICE_CLASS] == DEVICE_CLASS_METER
     assert state.attributes[ATTR_ICON] == "mdi:counter"
 
     # Move time 30 seconds in future and dispatch new value.
