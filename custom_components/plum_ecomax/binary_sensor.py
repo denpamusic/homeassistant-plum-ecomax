@@ -25,24 +25,16 @@ from .entity import EcomaxEntity, MixerEntity
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass
-class EcomaxBinarySensorEntityAdditionalKeys:
-    """Additional keys for ecoMAX binary sensor entity description."""
+@dataclass(kw_only=True)
+class EcomaxBinarySensorEntityDescription(BinarySensorEntityDescription):
+    """Describes ecoMAX binary sensor entity."""
 
     product_types: set[ProductType]
     value_fn: Callable[[Any], Any]
-
-
-@dataclass
-class EcomaxBinarySensorEntityDescription(
-    BinarySensorEntityDescription, EcomaxBinarySensorEntityAdditionalKeys
-):
-    """Describes ecoMAX binary sensor entity."""
-
     always_available: bool = False
     filter_fn: Callable[[Any], Any] = on_change
-    module: str = MODULE_A
     icon_off: str | None = None
+    module: str = MODULE_A
 
 
 BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (

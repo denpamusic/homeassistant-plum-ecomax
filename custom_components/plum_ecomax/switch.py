@@ -24,19 +24,11 @@ from .entity import EcomaxEntity, MixerEntity
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass
-class EcomaxSwitchEntityAdditionalKeys:
-    """Additional keys for ecoMAX switch entity description."""
-
-    product_types: set[ProductType]
-
-
-@dataclass
-class EcomaxSwitchEntityDescription(
-    SwitchEntityDescription, EcomaxSwitchEntityAdditionalKeys
-):
+@dataclass(kw_only=True)
+class EcomaxSwitchEntityDescription(SwitchEntityDescription):
     """Describes ecoMAX switch entity."""
 
+    product_types: set[ProductType]
     filter_fn: Callable[[Any], Any] = on_change
     module: str = MODULE_A
     state_off: ParameterValueType = STATE_OFF

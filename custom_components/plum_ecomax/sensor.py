@@ -78,20 +78,12 @@ EM_TO_HA_STATE: dict[int, str] = {
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass
-class EcomaxSensorEntityAdditionalKeys:
-    """Additional keys for ecoMAX sensor entity description."""
+@dataclass(kw_only=True)
+class EcomaxSensorEntityDescription(SensorEntityDescription):
+    """Describes ecoMAX sensor entity."""
 
     product_types: set[ProductType]
     value_fn: Callable[[Any], Any]
-
-
-@dataclass
-class EcomaxSensorEntityDescription(
-    SensorEntityDescription, EcomaxSensorEntityAdditionalKeys
-):
-    """Describes ecoMAX sensor entity."""
-
     always_available: bool = False
     filter_fn: Callable[[Any], Any] = on_change
     module: str = MODULE_A
@@ -499,19 +491,12 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
         return self.entity_description.value_fn(self._attr_native_value)
 
 
-@dataclass
-class RegdataSensorEntityAdditionalKeys:
-    """Additional keys for RegData sensor entity description."""
+@dataclass(kw_only=True)
+class RegdataSensorEntityDescription(EcomaxSensorEntityDescription):
+    """Describes RegData sensor entity."""
 
     key: int
     product_ids: set[int]
-
-
-@dataclass
-class RegdataSensorEntityDescription(
-    EcomaxSensorEntityDescription, RegdataSensorEntityAdditionalKeys
-):
-    """Describes RegData sensor entity."""
 
 
 REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (

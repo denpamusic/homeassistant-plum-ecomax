@@ -18,18 +18,11 @@ from custom_components.plum_ecomax.const import DOMAIN
 from custom_components.plum_ecomax.entity import EcomaxEntity
 
 
-@dataclass
-class EcomaxButtonEntityAdditionalKeys:
-    """Additional keys for ecoMAX sensor entity description."""
+@dataclass(kw_only=True)
+class EcomaxButtonEntityDescription(ButtonEntityDescription):
+    """Describes ecoMAX button entity."""
 
     press_fn: str
-
-
-@dataclass
-class EcomaxButtonEntityDescription(
-    ButtonEntityDescription, EcomaxButtonEntityAdditionalKeys
-):
-    """Describes ecoMAX button entity."""
 
 
 BUTTON_TYPES: tuple[EcomaxButtonEntityDescription, ...] = (

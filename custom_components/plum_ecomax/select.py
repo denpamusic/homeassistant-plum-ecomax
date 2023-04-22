@@ -30,19 +30,11 @@ STATE_PUMP_ONLY: Final = "pump_only"
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass
-class EcomaxSelectEntityAdditionalKeys:
-    """Additional keys for ecoMAX select entity description."""
-
-    product_types: set[ProductType]
-
-
-@dataclass
-class EcomaxSelectEntityDescription(
-    SelectEntityDescription, EcomaxSelectEntityAdditionalKeys
-):
+@dataclass(kw_only=True)
+class EcomaxSelectEntityDescription(SelectEntityDescription):
     """Describes ecoMAX select entity."""
 
+    product_types: set[ProductType]
     filter_fn: Callable[[Any], Any] = on_change
     module: str = MODULE_A
 

@@ -77,18 +77,11 @@ CLIMATE_MODES: Final[list[str]] = [
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass
-class EcomaxClimateEntityAdditionalKeys:
-    """Additional keys for ecoMAX climate entity description."""
+@dataclass(kw_only=True)
+class EcomaxClimateEntityDescription(ClimateEntityDescription):
+    """Describes ecoMAX climate entity."""
 
     index: int
-
-
-@dataclass
-class EcomaxClimateEntityDescription(
-    ClimateEntityDescription, EcomaxClimateEntityAdditionalKeys
-):
-    """Describes ecoMAX climate entity."""
 
 
 class EcomaxClimate(EcomaxEntity, ClimateEntity):

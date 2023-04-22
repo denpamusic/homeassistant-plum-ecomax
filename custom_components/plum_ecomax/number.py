@@ -27,19 +27,11 @@ from .entity import EcomaxEntity, MixerEntity
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass
-class EcomaxNumberEntityAdditionalKeys:
-    """Additional keys for ecoMAX number entity description."""
-
-    product_types: set[ProductType]
-
-
-@dataclass
-class EcomaxNumberEntityDescription(
-    NumberEntityDescription, EcomaxNumberEntityAdditionalKeys
-):
+@dataclass(kw_only=True)
+class EcomaxNumberEntityDescription(NumberEntityDescription):
     """Describes ecoMAX number entity."""
 
+    product_types: set[ProductType]
     filter_fn: Callable[[Any], Any] = on_change
     max_value_key: Optional[str] = None
     min_value_key: Optional[str] = None
