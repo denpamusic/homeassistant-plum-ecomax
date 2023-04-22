@@ -37,7 +37,7 @@ WATER_HEATER_MODES: Final = [STATE_OFF, STATE_PERFORMANCE, STATE_ECO]
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(slots=True)
 class EcomaxWaterHeaterEntityDescription(WaterHeaterEntityEntityDescription):
     """Describes ecoMAX water heater entity."""
 

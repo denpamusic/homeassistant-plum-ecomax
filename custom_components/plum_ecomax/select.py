@@ -30,7 +30,7 @@ STATE_PUMP_ONLY: Final = "pump_only"
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, slots=True)
 class EcomaxSelectEntityDescription(SelectEntityDescription):
     """Describes ecoMAX select entity."""
 
@@ -77,7 +77,7 @@ class EcomaxSelect(EcomaxEntity, SelectEntity):
         self.async_write_ha_state()
 
 
-@dataclass
+@dataclass(slots=True)
 class EcomaxMixerSelectEntityDescription(EcomaxSelectEntityDescription):
     """Describes mixer select entity."""
 

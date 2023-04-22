@@ -78,7 +78,7 @@ EM_TO_HA_STATE: dict[int, str] = {
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, slots=True)
 class EcomaxSensorEntityDescription(SensorEntityDescription):
     """Describes ecoMAX sensor entity."""
 
@@ -365,7 +365,7 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
         self.async_write_ha_state()
 
 
-@dataclass
+@dataclass(slots=True)
 class MixerSensorEntityDescription(EcomaxSensorEntityDescription):
     """Describes ecoMAX mixer sensor entity."""
 
@@ -432,7 +432,7 @@ class MixerSensor(MixerEntity, EcomaxSensor):
         super().__init__(connection, description)
 
 
-@dataclass
+@dataclass(slots=True)
 class EcomaxMeterEntityDescription(EcomaxSensorEntityDescription):
     """Describes ecoMAX meter entity."""
 
@@ -491,7 +491,7 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
         return self.entity_description.value_fn(self._attr_native_value)
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, slots=True)
 class RegdataSensorEntityDescription(EcomaxSensorEntityDescription):
     """Describes RegData sensor entity."""
 

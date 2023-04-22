@@ -24,7 +24,7 @@ from .entity import EcomaxEntity, MixerEntity
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True)
+@dataclass(kw_only=True, slots=True)
 class EcomaxSwitchEntityDescription(SwitchEntityDescription):
     """Describes ecoMAX switch entity."""
 
@@ -119,7 +119,7 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
         self.async_write_ha_state()
 
 
-@dataclass
+@dataclass(slots=True)
 class MixerSwitchEntityDescription(EcomaxSwitchEntityDescription):
     """Describes ecoMAX mixer switch entity."""
 
