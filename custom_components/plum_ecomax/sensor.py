@@ -495,6 +495,7 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
 
     @property
     def native_value(self) -> StateType:
+        """Return the value reported by the sensor."""
         return self.entity_description.value_fn(self._attr_native_value)
 
 
