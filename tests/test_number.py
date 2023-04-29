@@ -296,31 +296,6 @@ async def test_grate_mode_temperature_number(
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 80
 
-    # Dispatch new boundaries.
-    await connection.device.dispatch(
-        "min_heating_target_temp",
-        EcomaxParameter(
-            device=connection.device,
-            value=20,
-            min_value=10,
-            max_value=40,
-            description=EcomaxParameterDescription("min_heating_target_temp"),
-        ),
-    )
-    await connection.device.dispatch(
-        "max_heating_target_temp",
-        EcomaxParameter(
-            device=connection.device,
-            value=90,
-            min_value=60,
-            max_value=90,
-            description=EcomaxParameterDescription("max_heating_target_temp"),
-        ),
-    )
-    state = hass.states.get(grate_mode_temperature_entity_id)
-    assert state.attributes[ATTR_MIN] == 20
-    assert state.attributes[ATTR_MAX] == 90
-
     # Set new state.
     with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
         state = await async_set_value(hass, grate_mode_temperature_entity_id, 70)

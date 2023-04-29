@@ -66,8 +66,6 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="heating_temp_grate",
         translation_key="grate_mode_temp",
-        max_value_key="max_heating_target_temp",
-        min_value_key="min_heating_target_temp",
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
