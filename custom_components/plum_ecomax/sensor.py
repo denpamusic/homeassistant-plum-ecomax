@@ -208,7 +208,6 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="fuel_consumption",
         translation_key="fuel_consumption",
-        filter_fn=lambda x: throttle(on_change(x), seconds=10),
         icon="mdi:fire",
         native_unit_of_measurement=FLOW_KGH,
         product_types={ProductType.ECOMAX_P},

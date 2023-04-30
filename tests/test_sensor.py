@@ -609,7 +609,6 @@ async def test_fuel_consumption_sensor(
     assert state.attributes[ATTR_ICON] == "mdi:fire"
 
     # Dispatch new value.
-    frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_FUEL_CONSUMPTION, 2.5)
     state = hass.states.get(fuel_consumption_entity_id)
     assert state.state == "2.5"
