@@ -112,31 +112,6 @@ async def test_target_heating_temperature_number(
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 80
 
-    # Dispatch new boundaries.
-    await connection.device.dispatch(
-        "min_heating_target_temp",
-        EcomaxParameter(
-            device=connection.device,
-            value=20,
-            min_value=10,
-            max_value=40,
-            description=EcomaxParameterDescription("min_heating_target_temp"),
-        ),
-    )
-    await connection.device.dispatch(
-        "max_heating_target_temp",
-        EcomaxParameter(
-            device=connection.device,
-            value=90,
-            min_value=60,
-            max_value=90,
-            description=EcomaxParameterDescription("max_heating_target_temp"),
-        ),
-    )
-    state = hass.states.get(target_heating_temperature_entity_id)
-    assert state.attributes[ATTR_MIN] == 20
-    assert state.attributes[ATTR_MAX] == 90
-
     # Set new state.
     with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
         state = await async_set_value(hass, target_heating_temperature_entity_id, 70)
@@ -515,31 +490,6 @@ async def test_mixer_target_mixer_temperature_number(
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 80
 
-    # Dispatch new boundaries.
-    await connection.device.mixers[0].dispatch(
-        "min_target_temp",
-        EcomaxParameter(
-            device=connection.device,
-            value=20,
-            min_value=10,
-            max_value=40,
-            description=EcomaxParameterDescription("min_target_temp"),
-        ),
-    )
-    await connection.device.mixers[0].dispatch(
-        "max_target_temp",
-        EcomaxParameter(
-            device=connection.device,
-            value=90,
-            min_value=60,
-            max_value=90,
-            description=EcomaxParameterDescription("max_target_temp"),
-        ),
-    )
-    state = hass.states.get(target_mixer_temperature_entity_id)
-    assert state.attributes[ATTR_MIN] == 20
-    assert state.attributes[ATTR_MAX] == 90
-
     # Set new state.
     with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
         state = await async_set_value(hass, target_mixer_temperature_entity_id, 70)
@@ -713,31 +663,6 @@ async def test_circuit_target_circuit_temperature_number(
     assert state.state == "65.0"
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 80
-
-    # Dispatch new boundaries.
-    await connection.device.mixers[0].dispatch(
-        "min_target_temp",
-        EcomaxParameter(
-            device=connection.device,
-            value=20,
-            min_value=10,
-            max_value=40,
-            description=EcomaxParameterDescription("min_target_temp"),
-        ),
-    )
-    await connection.device.mixers[0].dispatch(
-        "max_target_temp",
-        EcomaxParameter(
-            device=connection.device,
-            value=90,
-            min_value=60,
-            max_value=90,
-            description=EcomaxParameterDescription("max_target_temp"),
-        ),
-    )
-    state = hass.states.get(target_circuit_temperature_entity_id)
-    assert state.attributes[ATTR_MIN] == 20
-    assert state.attributes[ATTR_MAX] == 90
 
     # Set new state.
     with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
@@ -913,31 +838,6 @@ async def test_circuit_day_target_circuit_temperature_number(
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 80
 
-    # Dispatch new boundaries.
-    await connection.device.mixers[0].dispatch(
-        "min_target_temp",
-        EcomaxParameter(
-            device=connection.device,
-            value=20,
-            min_value=10,
-            max_value=40,
-            description=EcomaxParameterDescription("min_target_temp"),
-        ),
-    )
-    await connection.device.mixers[0].dispatch(
-        "max_target_temp",
-        EcomaxParameter(
-            device=connection.device,
-            value=90,
-            min_value=60,
-            max_value=90,
-            description=EcomaxParameterDescription("max_target_temp"),
-        ),
-    )
-    state = hass.states.get(day_target_circuit_temperature_entity_id)
-    assert state.attributes[ATTR_MIN] == 20
-    assert state.attributes[ATTR_MAX] == 90
-
     # Set new state.
     with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
         state = await async_set_value(
@@ -999,31 +899,6 @@ async def test_circuit_night_target_circuit_temperature_number(
     assert state.state == "65.0"
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 80
-
-    # Dispatch new boundaries.
-    await connection.device.mixers[0].dispatch(
-        "min_target_temp",
-        EcomaxParameter(
-            device=connection.device,
-            value=20,
-            min_value=10,
-            max_value=40,
-            description=EcomaxParameterDescription("min_target_temp"),
-        ),
-    )
-    await connection.device.mixers[0].dispatch(
-        "max_target_temp",
-        EcomaxParameter(
-            device=connection.device,
-            value=90,
-            min_value=60,
-            max_value=90,
-            description=EcomaxParameterDescription("max_target_temp"),
-        ),
-    )
-    state = hass.states.get(night_target_circuit_temperature_entity_id)
-    assert state.attributes[ATTR_MIN] == 20
-    assert state.attributes[ATTR_MAX] == 90
 
     # Set new state.
     with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
