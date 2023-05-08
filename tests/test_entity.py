@@ -28,11 +28,12 @@ async def test_base_entity(
 ) -> None:
     """Test base entity."""
     entity = _TestEntity()
-    entity.entity_description = EntityDescription(
-        "heating_temp", name="Heating temperature"
-    )
+    mock_description = Mock(spec=EntityDescription)
+    mock_description.key = "heating_temp"
+    mock_description.name = "Heating temperature"
     mock_filter = AsyncMock(spec=Filter)
-    entity.entity_description.filter_fn = Mock(return_value=mock_filter)
+    mock_description.filter_fn = Mock(return_value=mock_filter)
+    entity.entity_description = mock_description
     mock_connection.device = ecomax_p
 
     # Test adding entity to hass.
@@ -41,10 +42,8 @@ async def test_base_entity(
     ) as mock_subscribe:
         await entity.async_added_to_hass()
 
-    entity.entity_description.filter_fn.assert_called_once()
-    mock_subscribe.assert_has_calls(
-        [call("heating_temp", entity.entity_description.filter_fn.return_value)]
-    )
+    mock_description.filter_fn.assert_called_once()
+    mock_subscribe.assert_has_calls([call("heating_temp", mock_filter)])
 
     # Test removing entity from the hass.
     with patch(
