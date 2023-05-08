@@ -18,5 +18,5 @@
   "requirements": [
     "pyplumio==0.4.2.post1"
   ],
-  "version": "0.3.7"
+  "version": "0.3.8-beta.1"
 }
