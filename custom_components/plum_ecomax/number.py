@@ -112,16 +112,6 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
         self._connection = connection
         self.entity_description = description
 
-    async def async_set_min_value(self, value: Parameter) -> None:
-        """Update minimum bound for target temperature."""
-        self._attr_native_min_value = value.value
-        self.async_write_ha_state()
-
-    async def async_set_max_value(self, value: Parameter) -> None:
-        """Update maximum bound for target temperature."""
-        self._attr_native_max_value = value.value
-        self.async_write_ha_state()
-
     async def async_set_native_value(self, value: float) -> None:
         """Update current value."""
         self.device.set_nowait(self.entity_description.key, value)
