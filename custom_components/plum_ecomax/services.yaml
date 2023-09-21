@@ -1,95 +1,73 @@
 set_parameter:
-  name: Set parameter
-  description: Set controller or mixer parameter value.
   target:
     device:
       integration: "plum_ecomax"
   fields:
-    name:
-      name: Name
-      description: Name of the parameter
+    parameter_name:
       example: "heating_target_temp"
       required: true
       selector:
         text:
     value:
-      name: Value
-      description: A value that parameter will be set to
       example: "65"
       required: true
       selector:
         text:
 
 set_schedule:
-  name: Set schedule
-  description: Set device schedule.
   fields:
-    name:
-      name: Name
-      description: Name of the schedule
+    schedule_type:
       example: "heating"
       required: true
       selector:
         select:
+          translation_key: "schedule_type"
           options:
-            - "Heating"
-            - "Water Heater"
+            - "heating"
+            - "water_heater"
     weekday:
-      name: Weekday
-      description: Weekday to set the schedule
       example: "monday"
       required: true
       selector:
         select:
+          translation_key: "weekday"
           options:
-            - "Monday"
-            - "Tuesday"
-            - "Wednesday"
-            - "Thursday"
-            - "Friday"
-            - "Saturday"
-            - "Sunday"
+            - "monday"
+            - "tuesday"
+            - "wednesday"
+            - "thursday"
+            - "friday"
+            - "saturday"
+            - "sunday"
     state:
-      name: State
-      description: State at scheduled time
       example: false
       required: true
       selector:
         boolean:
-    start:
-      name: Start
-      description: Time at which scheduled state will be set
+    start_time:
       example: "00:00:00"
       required: false
       selector:
         time:
-    end:
-      name: End
-      description: Time at which scheduled state will be cleared
+    end_time:
       example: "12:00:00"
       required: false
       selector:
         time:
 
 reset_meter:
-  name: Reset meter
-  description: Reset meter value.
   target:
     entity:
       integration: "plum_ecomax"
       device_class: "plum_ecomax__meter"
 
 calibrate_meter:
-  name: Calibrate meter
-  description: Calibrate meter value.
   target:
     entity:
       integration: "plum_ecomax"
       device_class: "plum_ecomax__meter"
   fields:
     value:
-      name: Value
-      description: A value that meter will be set to
       example: "100"
       required: true
       selector:

@@ -169,5 +169,80 @@
     "water_heater": {
       "indirect_water_heater": { "name": "Пассивный водонагреватель" }
     }
+  },
+  "selector": {
+    "schedule_type": {
+      "options": {
+        "heating": "Heating",
+        "water_heater": "Water heater"
+      }
+    },
+    "weekday": {
+      "options": {
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thusrday",
+        "friday": "Friday",
+        "saturday": "Saturday",
+        "sunday": "Sunday"
+      }
+    }
+  },
+  "services": {
+    "set_parameter": {
+      "name": "Set parameter",
+      "description": "Sets device parameter.",
+      "fields": {
+        "parameter_name": {
+          "name": "Parameter name",
+          "description": "Name of the parameter"
+        },
+        "value": {
+          "name": "Value",
+          "description": "A value that parameter will be set to"
+        }
+      }
+    },
+    "set_schedule": {
+      "name": "Set schedule",
+      "description": "Sets device schedule.",
+      "fields": {
+        "schedule_type": {
+          "name": "Schedule type",
+          "description": "Name of the schedule"
+        },
+        "weekday": {
+          "name": "Weekday",
+          "description": "Weekday to set the schedule"
+        },
+        "state": {
+          "name": "State",
+          "description": "State at scheduled time"
+        },
+        "start_time": {
+          "name": "Start time",
+          "description": "Time at which scheduled state will be set"
+        },
+        "end_time": {
+          "name": "End time",
+          "description": "Time at which scheduled state will be cleared"
+        }
+      }
+    },
+    "reset_meter": {
+      "name": "Reset meter",
+      "description": "Resets meter value."
+    },
+    "calibrate_meter": {
+      "name": "Calibrate meter",
+      "description": "Allows to calibrate meter by pre-setting it's value.",
+      "fields": {
+        "value": {
+          "name": "Value",
+          "description": "Sets meter to this value."
+        }
+      }
+    }
   }
 }

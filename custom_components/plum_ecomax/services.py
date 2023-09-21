@@ -144,11 +144,10 @@ def async_setup_set_schedule_service(
         start_time = service_call.data[ATTR_START]
         end_time = service_call.data[ATTR_END]
 
-        name = name.lower().replace(" ", "_")
         schedules = connection.device.get_nowait(ATTR_SCHEDULES, {})
         if name in schedules:
             schedule = schedules[name]
-            schedule_day = getattr(schedule, weekday.lower())
+            schedule_day = getattr(schedule, weekday)
             try:
                 schedule_day.set_state(
                     (STATE_ON if state else STATE_OFF), start_time[:-3], end_time[:-3]

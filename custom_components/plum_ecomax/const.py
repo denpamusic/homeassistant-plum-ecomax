@@ -55,13 +55,13 @@ BAUDRATES: Final[tuple[str, ...]] = (
 
 # Weekdays.
 WEEKDAYS: Final[tuple[str, ...]] = (
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
 )
 
 # Configuration flow.
