@@ -3,7 +3,7 @@ set_parameter:
     device:
       integration: "plum_ecomax"
   fields:
-    parameter_name:
+    name:
       example: "heating_target_temp"
       required: true
       selector:
@@ -16,7 +16,7 @@ set_parameter:
 
 set_schedule:
   fields:
-    schedule_type:
+    type:
       example: "heating"
       required: true
       selector:

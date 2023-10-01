@@ -194,8 +194,8 @@
       "name": "Set parameter",
       "description": "Sets device parameter.",
       "fields": {
-        "parameter_name": {
-          "name": "Parameter name",
+        "name": {
+          "name": "Name",
           "description": "Name of the parameter"
         },
         "value": {
@@ -208,9 +208,9 @@
       "name": "Set schedule",
       "description": "Sets device schedule.",
       "fields": {
-        "schedule_type": {
-          "name": "Schedule type",
-          "description": "Name of the schedule"
+        "type": {
+          "name": "Type",
+          "description": "Type of the schedule"
         },
         "weekday": {
           "name": "Weekday",

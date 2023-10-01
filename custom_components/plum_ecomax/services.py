@@ -24,6 +24,7 @@ from .const import (
     ATTR_MIXERS,
     ATTR_SCHEDULES,
     ATTR_START,
+    ATTR_TYPE,
     ATTR_VALUE,
     ATTR_WEEKDAY,
     DOMAIN,
@@ -31,8 +32,8 @@ from .const import (
 )
 
 SCHEDULES: Final = (
-    "Heating",
-    "Water Heater",
+    "heating",
+    "water_heater",
 )
 
 SERVICE_SET_PARAMETER = "set_parameter"
@@ -46,7 +47,7 @@ SERVICE_SET_PARAMETER_SCHEMA = make_entity_service_schema(
 SERVICE_SET_SCHEDULE = "set_schedule"
 SERVICE_SET_SCHEDULE_SCHEMA = vol.Schema(
     {
-        vol.Required(ATTR_NAME): vol.All(str, vol.In(SCHEDULES)),
+        vol.Required(ATTR_TYPE): vol.All(str, vol.In(SCHEDULES)),
         vol.Required(ATTR_WEEKDAY): vol.All(str, vol.In(WEEKDAYS)),
         vol.Required(ATTR_STATE): bool,
         vol.Optional(ATTR_START, default="00:00:00"): vol.Datetime("%H:%M:%S"),
@@ -138,15 +139,15 @@ def async_setup_set_schedule_service(
 
     async def async_set_schedule_service(service_call: ServiceCall) -> None:
         """Service to set a schedule."""
-        name = service_call.data[ATTR_NAME]
+        schedule_type = service_call.data[ATTR_TYPE]
         weekday = service_call.data[ATTR_WEEKDAY]
         state = service_call.data[ATTR_STATE]
         start_time = service_call.data[ATTR_START]
         end_time = service_call.data[ATTR_END]
 
         schedules = connection.device.get_nowait(ATTR_SCHEDULES, {})
-        if name in schedules:
-            schedule = schedules[name]
+        if schedule_type in schedules:
+            schedule = schedules[schedule_type]
             schedule_day = getattr(schedule, weekday)
             try:
                 schedule_day.set_state(
@@ -154,14 +155,14 @@ def async_setup_set_schedule_service(
                 )
             except ValueError as e:
                 raise HomeAssistantError(
-                    f"Error while trying to parse time interval for {name} schedule"
+                    f"Error while trying to parse time interval for {schedule_type} schedule"
                 ) from e
 
             schedule.commit()
             return
 
         raise HomeAssistantError(
-            f"{name} schedule is not supported by the device, check logs for more info"
+            f"{schedule_type} schedule is not supported by the device, check logs for more info"
         )
 
     hass.services.async_register(
