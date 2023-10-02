@@ -112,16 +112,18 @@ def async_setup_set_parameter_service(
         value = service_call.data[ATTR_VALUE]
         selected = async_extract_referenced_entity_ids(hass, service_call)
         devices = async_extract_referenced_devices(hass, connection, selected)
+
+        results: set[bool] = set()
         for device in devices:
             try:
-                if result := await device.set(name, value):
-                    return result
+                results.add(await device.set(name, value))
             except ParameterNotFoundError:
                 _LOGGER.exception("Requested parameter %s not found", name)
 
-        raise HomeAssistantError(
-            f"Couldn't set parameter '{name}', please check logs for more info"
-        )
+        if not any(results):
+            raise HomeAssistantError(
+                f"Couldn't set parameter '{name}', please check logs for more info"
+            )
 
     hass.services.async_register(
         DOMAIN,
