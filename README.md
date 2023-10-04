@@ -53,7 +53,7 @@ If you have an ecoNET 300 device, be sure to [check it out](https://github.com/p
 
 ## Installation
 ### HACS
-Click the following My button to install the integration via hacs:
+Click the following My button to install the integration via HACS:
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=denpamusic&repository=homeassistant-plum-ecomax&category=integration)
 
