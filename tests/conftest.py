@@ -624,7 +624,7 @@ def thermostats(ecomax_common: EcoMAX):
         "night_target_temp": ThermostatParameter(
             offset=0,
             device=ecomax_common,
-            value=160,
+            value=100,
             min_value=100,
             max_value=350,
             description=ThermostatParameterDescription(

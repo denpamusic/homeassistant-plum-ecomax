@@ -115,14 +115,13 @@ async def test_thermostat(
     frozen_time,
     caplog,
 ) -> None:
-    """Test indirect water heater."""
+    """Test thermostat."""
     await setup_integration(hass, config_entry)
     thermostat_entity_id = "climate.ecomax_thermostat"
     thermostat_state_key = "state"
     thermostat_contacts_key = "contacts"
     thermostat_current_temperature_key = "current_temp"
     thermostat_target_temperature_key = "target_temp"
-    thermostat_day_target_temperature_key = "day_target_temp"
     thermostat_night_target_temperature_key = "night_target_temp"
     thermostat_mode_key = "mode"
 
@@ -175,23 +174,23 @@ async def test_thermostat(
 
     # Dispatch new thermostat target temperature.
     await connection.device.thermostats[0].dispatch(
-        thermostat_day_target_temperature_key,
+        thermostat_night_target_temperature_key,
         ThermostatParameter(
             offset=0,
             device=connection.device,
-            value=160,
+            value=110,
             min_value=100,
             max_value=350,
             description=ThermostatParameterDescription(
-                thermostat_day_target_temperature_key, multiplier=10, size=2
+                thermostat_night_target_temperature_key, multiplier=10, size=2
             ),
         ),
     )
     await connection.device.thermostats[0].dispatch(
-        thermostat_target_temperature_key, 16
+        thermostat_target_temperature_key, 11
     )
     state = hass.states.get(thermostat_entity_id)
-    assert state.attributes[ATTR_TEMPERATURE] == 16
+    assert state.attributes[ATTR_TEMPERATURE] == 11
 
     # Test that thermostat preset mode can be set.
     with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
@@ -201,23 +200,6 @@ async def test_thermostat(
         thermostat_mode_key, HA_TO_EM_MODE[PRESET_COMFORT]
     )
     assert state.attributes[ATTR_PRESET_MODE] == PRESET_COMFORT
-
-    # Test that correct target temperature is being set depending on the preset.
-    for preset, temperature in HA_PRESET_TO_EM_TEMP.items():
-        with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
-            await async_set_preset_mode(hass, thermostat_entity_id, preset)
-            await async_set_temperature(hass, thermostat_entity_id, 19)
-
-        mock_set_nowait.assert_any_call(temperature, 19)
-
-        # Test that target temperature name doesn't change when
-        # in airing mode.
-        with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
-            await async_set_preset_mode(hass, thermostat_entity_id, PRESET_ECO)
-            await async_set_preset_mode(hass, thermostat_entity_id, PRESET_AIRING)
-            await async_set_temperature(hass, thermostat_entity_id, 19)
-
-        mock_set_nowait.assert_any_call(thermostat_night_target_temperature_key, 19)
 
     # Test without thermostat.
     await hass.config_entries.async_remove(config_entry.entry_id)
@@ -230,3 +212,71 @@ async def test_thermostat(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(thermostat_entity_id)
     assert not entry
+
+
+@pytest.mark.usefixtures("ecomax_p", "thermostats")
+async def test_thermostat_presets(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    async_set_preset_mode,
+    async_set_temperature,
+    caplog,
+) -> None:
+    """Test thermostat presets."""
+    await setup_integration(hass, config_entry)
+    thermostat_entity_id = "climate.ecomax_thermostat"
+    thermostat_target_temperature_key = "target_temp"
+    thermostat_day_target_temperature_key = "day_target_temp"
+    thermostat_night_target_temperature_key = "night_target_temp"
+
+    # Test that correct target temperature is being set depending on the preset.
+    for preset, temperature in HA_PRESET_TO_EM_TEMP.items():
+        with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+            await async_set_preset_mode(hass, thermostat_entity_id, preset)
+            await async_set_temperature(hass, thermostat_entity_id, 19)
+
+        mock_set_nowait.assert_any_call(temperature, 19)
+
+    # Test that target temperature name doesn't change when
+    # in airing mode.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        await async_set_preset_mode(hass, thermostat_entity_id, PRESET_ECO)
+        await async_set_preset_mode(hass, thermostat_entity_id, PRESET_AIRING)
+        await async_set_temperature(hass, thermostat_entity_id, 19)
+
+    mock_set_nowait.assert_any_call(thermostat_night_target_temperature_key, 19)
+
+    # Test that target temperature name is correct when
+    # in day mode (schedule).
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        await async_set_preset_mode(hass, thermostat_entity_id, PRESET_SCHEDULE)
+        await connection.device.thermostats[0].dispatch(
+            thermostat_target_temperature_key, 16
+        )
+        await async_set_temperature(hass, thermostat_entity_id, 17)
+
+    mock_set_nowait.assert_any_call(thermostat_day_target_temperature_key, 17)
+
+    # Test that target temperature name is correct when
+    # in night mode (schedule).
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        await async_set_preset_mode(hass, thermostat_entity_id, PRESET_SCHEDULE)
+        await connection.device.thermostats[0].dispatch(
+            thermostat_target_temperature_key, 10
+        )
+        await async_set_temperature(hass, thermostat_entity_id, 12)
+
+    mock_set_nowait.assert_any_call(thermostat_night_target_temperature_key, 12)
+
+    # Test that warning if target temperature name is unknown.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        await async_set_preset_mode(hass, thermostat_entity_id, PRESET_SCHEDULE)
+        await connection.device.thermostats[0].dispatch(
+            thermostat_target_temperature_key, 15
+        )
+        await async_set_temperature(hass, thermostat_entity_id, 15)
+
+    assert "Couldn't determine thermostat preset" in caplog.text
+    mock_set_nowait.assert_any_call(thermostat_day_target_temperature_key, 15)

@@ -152,6 +152,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
 
     async def async_update_target_temperature(self, value: float) -> None:
         """Update target temperature."""
+        await self._async_update_target_temperature_name(value)
         await self._async_update_target_temperature()
         self.async_write_ha_state()
 
@@ -197,18 +198,46 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         self.device.unsubscribe("current_temp", self.async_update)
         self.device.unsubscribe("target_temp", self.async_update_target_temperature)
 
-    async def _async_update_target_temperature_name(self) -> None:
-        """Get target temperature name."""
+    async def _async_update_target_temperature_name(
+        self, target_temp: float | None = None
+    ) -> None:
+        """Get target temperature parameter name."""
         if self.preset_mode == PRESET_AIRING:
             # Don't update temperature target name if mode is airing.
             return
 
-        preset_mode = self.preset_mode
-        if preset_mode == PRESET_SCHEDULE:
-            schedule = await self.device.get("schedule")
-            preset_mode = PRESET_ECO if schedule else PRESET_COMFORT
+        preset_mode = (
+            await self._async_get_current_schedule_preset(target_temp)
+            if self.preset_mode == PRESET_SCHEDULE
+            else self.preset_mode
+        )
 
         self._attr_target_temperature_name = HA_PRESET_TO_EM_TEMP[preset_mode]
+
+    async def _async_get_current_schedule_preset(
+        self, target_temp: float | None = None
+    ) -> str:
+        """Get current schedule preset."""
+        day_mode_temp = await self.device.get(HA_PRESET_TO_EM_TEMP[PRESET_COMFORT])
+        night_mode_temp = await self.device.get(HA_PRESET_TO_EM_TEMP[PRESET_ECO])
+        target_temp = (
+            target_temp
+            if target_temp is not None
+            else await self.device.get("target_temp")
+        )
+
+        if target_temp == day_mode_temp.value and target_temp != night_mode_temp.value:
+            return PRESET_COMFORT
+
+        if target_temp == night_mode_temp.value and target_temp != day_mode_temp.value:
+            return PRESET_ECO
+
+        _LOGGER.warning(
+            "Couldn't determine thermostat preset, "
+            + "while running in schedule mode. "
+            + "Defaulting to COMFORT (day) preset..."
+        )
+        return PRESET_COMFORT
 
     async def _async_update_target_temperature(self) -> None:
         """Update target temperature from the parameter related to the
