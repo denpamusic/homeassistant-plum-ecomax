@@ -73,8 +73,7 @@ git clone https://github.com/denpamusic/homeassistant-plum-ecomax
 cp -r ./homeassistant-plum-ecomax/custom_components ~/.homeassistant
 ```
 
-3. Add empty `plum_ecomax:` section to your `configuration.yaml` file.
-4. Restart Home Assistant.
+3. Restart Home Assistant.
 
 ## Configuration
 
