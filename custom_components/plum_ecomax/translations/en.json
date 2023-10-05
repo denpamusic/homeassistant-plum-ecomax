@@ -244,11 +244,11 @@
           "name": "State",
           "description": "State at scheduled time"
         },
-        "start_time": {
+        "start": {
           "name": "Start time",
           "description": "Time at which scheduled state will be set"
         },
-        "end_time": {
+        "end": {
           "name": "End time",
           "description": "Time at which scheduled state will be cleared"
         }

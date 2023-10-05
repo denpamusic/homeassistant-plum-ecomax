@@ -81,12 +81,12 @@ set_schedule:
       required: true
       selector:
         boolean:
-    start_time:
+    start:
       example: "00:00:00"
       required: false
       selector:
         time:
-    end_time:
+    end:
       example: "12:00:00"
       required: false
       selector:
