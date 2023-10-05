@@ -13,7 +13,6 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.util import dt as dt_util
 from pyplumio.const import AlertType
 from pyplumio.structures.alerts import Alert
@@ -123,7 +122,7 @@ async def test_setup_events(
         from_dt=dt_util.parse_datetime(DATE_FROM),
         to_dt=dt_util.parse_datetime(DATE_TO),
     )
-    mock_device_entry = Mock(spec=DeviceEntry)
+    mock_device_entry = Mock()
 
     with patch(
         "homeassistant.helpers.device_registry.DeviceRegistry.async_get_device",
