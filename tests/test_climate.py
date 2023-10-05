@@ -111,7 +111,6 @@ async def test_thermostat(
     config_entry: MockConfigEntry,
     setup_integration,
     async_set_preset_mode,
-    async_set_temperature,
     frozen_time,
     caplog,
 ) -> None:
