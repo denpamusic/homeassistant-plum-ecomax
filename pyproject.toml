@@ -1,5 +1,5 @@
 [tool.pylint.MASTER]
-py-version = "3.8"
+py-version = "3.11"
 ignore = [
     "tests",
 ]
@@ -26,7 +26,7 @@ disable = [
 ]
 
 [tool.black]
-target-version = ["py38"]
+target-version = ["py311"]
 
 [tool.isort]
 profile = "black"
