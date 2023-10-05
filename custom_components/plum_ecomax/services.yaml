@@ -1,3 +1,14 @@
+get_parameter:
+  target:
+    device:
+      integration: "plum_ecomax"
+  fields:
+    name:
+      example: "heating_target_temp"
+      required: true
+      selector:
+        text:
+
 set_parameter:
   target:
     device:
@@ -13,6 +24,32 @@ set_parameter:
       required: true
       selector:
         text:
+
+get_schedule:
+  fields:
+    type:
+      example: "heating"
+      required: true
+      selector:
+        select:
+          translation_key: "schedule_type"
+          options:
+            - "heating"
+            - "water_heater"
+    weekday:
+      example: "monday"
+      required: true
+      selector:
+        select:
+          translation_key: "weekday"
+          options:
+            - "monday"
+            - "tuesday"
+            - "wednesday"
+            - "thursday"
+            - "friday"
+            - "saturday"
+            - "sunday"
 
 set_schedule:
   fields:

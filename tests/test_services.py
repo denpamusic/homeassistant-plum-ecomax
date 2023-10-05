@@ -1,88 +1,67 @@
 """Test Plum ecoMAX services."""
 
-from typing import Final
+
 from unittest.mock import AsyncMock, Mock, patch
 
-from homeassistant.const import ATTR_DEVICE_ID, STATE_ON
-from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.const import ATTR_ENTITY_ID, ATTR_NAME, ATTR_STATE, STATE_ON
+from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceEntry
-from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.service import SelectedEntities
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.exceptions import ParameterNotFoundError
 from pyplumio.helpers.schedule import Schedule, ScheduleDay
 import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
-    ATTR_MIXERS,
+    ATTR_END,
+    ATTR_START,
     ATTR_TYPE,
     ATTR_VALUE,
+    ATTR_WEEKDAY,
+    DOMAIN,
     WEEKDAYS,
 )
 from custom_components.plum_ecomax.services import (
-    ATTR_END,
-    ATTR_NAME,
-    ATTR_START,
-    ATTR_STATE,
-    ATTR_WEEKDAY,
+    SCHEDULES,
+    SERVICE_GET_PARAMETER,
+    SERVICE_GET_SCHEDULE,
     SERVICE_SET_PARAMETER,
-    SERVICE_SET_PARAMETER_SCHEMA,
     SERVICE_SET_SCHEDULE,
-    async_extract_referenced_devices,
     async_extract_target_device,
-    async_setup_services,
 )
 
-DEVICE_ID: Final = "test-device"
+
+@pytest.fixture(autouse=True)
+def bypass_connection_setup():
+    """Mock async get current platform."""
+    with patch("custom_components.plum_ecomax.connection.EcomaxConnection.async_setup"):
+        yield
 
 
-async def test_setup_services(hass: HomeAssistant) -> None:
-    """Test services setup."""
-    with patch(
-        "homeassistant.core.ServiceRegistry.async_register"
-    ) as mock_async_register:
-        assert async_setup_services(hass, AsyncMock(spec=EcomaxConnection))
-
-    assert mock_async_register.call_count == 2
+@pytest.fixture(autouse=True)
+def bypass_async_migrate_entry():
+    """Bypass async migrate entry."""
+    with patch("custom_components.plum_ecomax.async_migrate_entry", return_value=True):
+        yield
 
 
-async def test_extract_target_device(hass: HomeAssistant) -> None:
-    """Test extracting target device."""
+@pytest.fixture(autouse=True)
+def set_connected(connected):
+    """Assume connected."""
+
+
+async def test_extract_missing_target_device(hass: HomeAssistant) -> None:
+    """Test extracting missing target device."""
     mock_connection = AsyncMock(spec=EcomaxConnection)
-    mock_device_entry = Mock(spec=DeviceEntry)
-    mock_device_entry.identifiers = {("test", DEVICE_ID)}
-
     with patch(
         "homeassistant.helpers.device_registry.DeviceRegistry.async_get",
-        return_value=mock_device_entry,
-    ):
-        device = async_extract_target_device(DEVICE_ID, hass, mock_connection)
-
-    assert device == mock_connection.device
+        return_value=False,
+    ), pytest.raises(HomeAssistantError):
+        async_extract_target_device("nonexistent", hass, mock_connection)
 
 
-@pytest.mark.usefixtures("mixers")
-async def test_extract_target_mixer_device(
-    hass: HomeAssistant, ecomax_p: EcoMAX
-) -> None:
-    """Test extracting target mixer device."""
-    mock_connection = AsyncMock(spec=EcomaxConnection)
-    mock_connection.device = ecomax_p
-    mock_device_entry = Mock(spec=DeviceEntry)
-    mock_device_entry.identifiers = {("test", "test-mixer-0")}
-
-    with patch(
-        "homeassistant.helpers.device_registry.DeviceRegistry.async_get",
-        return_value=mock_device_entry,
-    ):
-        device = async_extract_target_device("test-mixer-0", hass, mock_connection)
-
-    assert device == mock_connection.device.data[ATTR_MIXERS][0]
-
-
-@pytest.mark.usefixtures("mixers")
 async def test_extract_target_missing_mixer_device(
     hass: HomeAssistant, ecomax_p: EcoMAX
 ) -> None:
@@ -100,125 +79,287 @@ async def test_extract_target_missing_mixer_device(
     assert device == mock_connection.device
 
 
-async def test_extract_missing_target_device(hass: HomeAssistant) -> None:
-    """Test extracting missing target device."""
-    mock_connection = AsyncMock(spec=EcomaxConnection)
-    with patch(
-        "homeassistant.helpers.device_registry.DeviceRegistry.async_get",
-        return_value=False,
-    ), pytest.raises(HomeAssistantError):
-        async_extract_target_device(DEVICE_ID, hass, mock_connection)
+@pytest.mark.usefixtures("ecomax_p", "mixers")
+async def test_get_parameter_service(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    caplog,
+) -> None:
+    """Test get parameter service."""
+    await setup_integration(hass, config_entry)
+    heating_temperature_entity_id = "sensor.ecomax_heating_temperature"
 
-
-async def test_extract_referenced_devices(hass: HomeAssistant) -> None:
-    """Test extracting referenced devices."""
-    mock_connection = AsyncMock(spec=EcomaxConnection)
-    mock_connection.device = AsyncMock(spec=EcoMAX)
-    mock_selected_entities = Mock(spec=SelectedEntities)
-    mock_selected_entities.configure_mock(
-        referenced={DEVICE_ID}, indirectly_referenced={DEVICE_ID}
+    # Test getting parameter for EM device.
+    response = await hass.services.async_call(
+        DOMAIN,
+        SERVICE_GET_PARAMETER,
+        {
+            ATTR_ENTITY_ID: heating_temperature_entity_id,
+            ATTR_NAME: "heating_target_temp",
+        },
+        blocking=True,
+        return_response=True,
     )
-    mock_entity = Mock(spec=Entity)
-    mock_entity.device_id = DEVICE_ID
+    await hass.async_block_till_done()
 
-    with patch(
-        "homeassistant.helpers.entity_registry.EntityRegistry.async_get",
-        return_value=mock_entity,
-    ), patch(
-        "custom_components.plum_ecomax.services.async_extract_target_device",
-        return_value=mock_connection.device,
+    assert response == {
+        "parameters": [
+            {
+                "name": "heating_target_temp",
+                "value": 0.0,
+                "min_value": 0.0,
+                "max_value": 1.0,
+                "device_type": "ecomax",
+                "device_uid": "TEST",
+            }
+        ]
+    }
+
+    # Test getting parameter for mixer.
+    mixer_temperature_entity_id = "sensor.ecomax_mixer_1_mixer_temperature"
+    response = await hass.services.async_call(
+        DOMAIN,
+        SERVICE_GET_PARAMETER,
+        {
+            ATTR_ENTITY_ID: mixer_temperature_entity_id,
+            ATTR_NAME: "mixer_target_temp",
+        },
+        blocking=True,
+        return_response=True,
+    )
+    await hass.async_block_till_done()
+
+    assert response == {
+        "parameters": [
+            {
+                "name": "mixer_target_temp",
+                "value": 0.0,
+                "min_value": 0.0,
+                "max_value": 1.0,
+                "device_type": "mixer",
+                "device_uid": "TEST",
+                "device_index": 1,
+            }
+        ]
+    }
+
+    # Test getting nonexistent parameter.
+    with pytest.raises(HomeAssistantError), patch(
+        "pyplumio.devices.Device.get", side_effect=ParameterNotFoundError
     ):
-        devices = async_extract_referenced_devices(
-            hass, mock_connection, mock_selected_entities
+        await hass.services.async_call(
+            DOMAIN,
+            SERVICE_GET_PARAMETER,
+            {
+                ATTR_ENTITY_ID: heating_temperature_entity_id,
+                ATTR_NAME: "nonexistent",
+            },
+            blocking=True,
+            return_response=True,
         )
 
-    assert devices == {mock_connection.device}
+    assert "Requested parameter nonexistent not found" in caplog.text
 
 
-async def test_set_parameter_service(hass: HomeAssistant) -> None:
+@pytest.mark.usefixtures("ecomax_p", "mixers")
+async def test_set_parameter_service(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    caplog,
+) -> None:
     """Test set parameter service."""
-    mock_connection = AsyncMock(spec=EcomaxConnection)
-    mock_connection.device = AsyncMock(spec=EcoMAX)
+    await setup_integration(hass, config_entry)
+    heating_temperature_entity_id = "sensor.ecomax_heating_temperature"
 
-    with patch(
-        "homeassistant.core.ServiceRegistry.async_register"
-    ) as mock_async_register:
-        async_setup_services(hass, mock_connection)
+    # Test setting parameter for EM device.
+    with patch("pyplumio.devices.Device.set") as mock_set:
+        await hass.services.async_call(
+            DOMAIN,
+            SERVICE_SET_PARAMETER,
+            {
+                ATTR_ENTITY_ID: heating_temperature_entity_id,
+                ATTR_NAME: "heating_target_temp",
+                ATTR_VALUE: 0,
+            },
+            blocking=True,
+        )
+        await hass.async_block_till_done()
 
-    set_parameter_service_call = mock_async_register.call_args_list[0]
-    _, service, func, schema = set_parameter_service_call[0]
-    assert service == SERVICE_SET_PARAMETER
-    assert schema == SERVICE_SET_PARAMETER_SCHEMA
+    mock_set.assert_awaited_once_with("heating_target_temp", 0)
 
-    mock_service_call = AsyncMock(spec=ServiceCall)
-    mock_service_call.data = {
-        ATTR_NAME: "test_name",
-        ATTR_VALUE: 39,
-        ATTR_DEVICE_ID: DEVICE_ID,
-    }
-    with patch(
-        "homeassistant.helpers.service.async_extract_referenced_entity_ids",
-    ), patch(
-        "custom_components.plum_ecomax.services.async_extract_referenced_devices",
-        return_value={mock_connection.device},
-    ):
-        await func(mock_service_call)
+    # Test setting parameter for a mixer.
+    mixer_temperature_entity_id = "sensor.ecomax_mixer_1_mixer_temperature"
+    with patch("pyplumio.devices.Device.set") as mock_set:
+        await hass.services.async_call(
+            DOMAIN,
+            SERVICE_SET_PARAMETER,
+            {
+                ATTR_ENTITY_ID: mixer_temperature_entity_id,
+                ATTR_NAME: "mixer_target_temp",
+                ATTR_VALUE: 0,
+            },
+            blocking=True,
+        )
+        await hass.async_block_till_done()
 
-    mock_connection.device.set.assert_called_once_with("test_name", 39)
+    mock_set.assert_awaited_once_with("mixer_target_temp", 0)
 
-    # Check that error is raised if parameter not found.
-    mock_connection.device.set.side_effect = ParameterNotFoundError
-    with patch(
-        "homeassistant.helpers.service.async_extract_referenced_entity_ids",
-    ), patch(
-        "custom_components.plum_ecomax.services.async_extract_referenced_devices",
-        return_value={mock_connection.device},
-    ), pytest.raises(
-        HomeAssistantError
-    ):
-        await func(mock_service_call)
+    # Test setting parameter to an invalid value.
+    with pytest.raises(HomeAssistantError), patch(
+        "pyplumio.devices.Device.set", side_effect=ValueError
+    ) as mock_set:
+        await hass.services.async_call(
+            DOMAIN,
+            SERVICE_SET_PARAMETER,
+            {
+                ATTR_ENTITY_ID: heating_temperature_entity_id,
+                ATTR_NAME: "heating_target_temp",
+                ATTR_VALUE: 100,
+            },
+            blocking=True,
+        )
 
-    # Check for error when devices not found.
-    with patch(
-        "custom_components.plum_ecomax.services.async_extract_referenced_devices",
-        return_value=set(),
-    ), pytest.raises(HomeAssistantError):
-        await func(mock_service_call)
+    mock_set.assert_awaited_once_with("heating_target_temp", 100)
+
+    # Test setting parameter to nonexistent parameter.
+    with pytest.raises(HomeAssistantError), patch(
+        "pyplumio.devices.Device.set", side_effect=ParameterNotFoundError
+    ) as mock_set:
+        await hass.services.async_call(
+            DOMAIN,
+            SERVICE_SET_PARAMETER,
+            {
+                ATTR_ENTITY_ID: heating_temperature_entity_id,
+                ATTR_NAME: "nonexistent",
+                ATTR_VALUE: 0,
+            },
+            blocking=True,
+        )
+
+    assert "Requested parameter nonexistent not found" in caplog.text
 
 
-async def test_set_schedule_service(hass: HomeAssistant) -> None:
-    """Test set schedule service."""
+@pytest.mark.usefixtures("ecomax_p")
+async def test_get_schedule_service(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test get schedule service."""
+    await setup_integration(hass, config_entry)
+
     mock_schedule = Mock(spec=Schedule)
     mock_schedule.monday = Mock(spec=ScheduleDay)
-    mock_schedule.monday.set_state.side_effect = (True, ValueError)
-    mock_connection = AsyncMock(spec=EcomaxConnection)
-    mock_connection.device = AsyncMock(spec=EcoMAX)
-    mock_connection.device.get_nowait = Mock(return_value={"test_name": mock_schedule})
-    mock_service_call = AsyncMock(spec=ServiceCall)
-    with patch(
-        "homeassistant.core.ServiceRegistry.async_register"
-    ) as mock_async_register:
-        async_setup_services(hass, mock_connection)
+    mock_schedule.monday.intervals = [True, True, False, True]
+    schedules = {SCHEDULES[0]: mock_schedule}
 
-    set_schedule_service_call = mock_async_register.call_args_list[1]
-    _, service, func, _ = set_schedule_service_call[0]
-    assert service == SERVICE_SET_SCHEDULE
-    mock_service_call.data = {
-        ATTR_TYPE: "test_name",
-        ATTR_WEEKDAY: WEEKDAYS[0],
-        ATTR_STATE: True,
-        ATTR_START: "00:00:00",
-        ATTR_END: "10:00:00",
+    # Test getting schedule for EM device.
+    with patch("pyplumio.devices.Device.get_nowait", return_value=schedules):
+        response = await hass.services.async_call(
+            DOMAIN,
+            SERVICE_GET_SCHEDULE,
+            {ATTR_TYPE: SCHEDULES[0], ATTR_WEEKDAY: WEEKDAYS[0]},
+            blocking=True,
+            return_response=True,
+        )
+        await hass.async_block_till_done()
+
+    assert response == {
+        "schedule": {
+            "00:00": True,
+            "00:30": True,
+            "01:00": False,
+            "01:30": True,
+        }
     }
 
-    await func(mock_service_call)
+    # Test getting schedule with unknown schedule type.
+    with pytest.raises(HomeAssistantError), patch(
+        "pyplumio.devices.Device.get_nowait", return_value=schedules
+    ):
+        await hass.services.async_call(
+            DOMAIN,
+            SERVICE_GET_SCHEDULE,
+            {
+                ATTR_TYPE: SCHEDULES[1],
+                ATTR_WEEKDAY: WEEKDAYS[0],
+            },
+            blocking=True,
+            return_response=True,
+        )
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_set_schedule_service(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test set schedule service."""
+    await setup_integration(hass, config_entry)
+
+    mock_schedule = Mock(spec=Schedule)
+    mock_schedule.monday = Mock(spec=ScheduleDay)
+    mock_schedule.monday.set_state = Mock()
+    mock_schedule.commit = Mock()
+    schedules = {SCHEDULES[0]: mock_schedule}
+
+    # Test setting schedule for EM device.
+    with patch("pyplumio.devices.Device.get_nowait", return_value=schedules):
+        await hass.services.async_call(
+            DOMAIN,
+            SERVICE_SET_SCHEDULE,
+            {
+                ATTR_TYPE: SCHEDULES[0],
+                ATTR_WEEKDAY: WEEKDAYS[0],
+                ATTR_STATE: True,
+                ATTR_START: "00:00:00",
+                ATTR_END: "10:00:00",
+            },
+            blocking=True,
+        )
+        await hass.async_block_till_done()
+
     mock_schedule.monday.set_state.assert_called_once_with(STATE_ON, "00:00", "10:00")
+    mock_schedule.commit.assert_called_once()
 
-    # Check that hass error is raised from value error.
-    with pytest.raises(HomeAssistantError):
-        await func(mock_service_call)
+    # Test setting schedule with incorrect time interval.
+    mock_schedule.monday.set_state.side_effect = ValueError
+    with pytest.raises(HomeAssistantError), patch(
+        "pyplumio.devices.Device.get_nowait", return_value=schedules
+    ):
+        await hass.services.async_call(
+            DOMAIN,
+            SERVICE_SET_SCHEDULE,
+            {
+                ATTR_TYPE: SCHEDULES[0],
+                ATTR_WEEKDAY: WEEKDAYS[0],
+                ATTR_STATE: True,
+                ATTR_START: "00:00:00",
+                ATTR_END: "10:00:00",
+            },
+            blocking=True,
+        )
 
-    # Check that hass error is raised when ecomax data is empty.
-    mock_connection.device.get_nowait.return_value = {}
-    with pytest.raises(HomeAssistantError):
-        await func(mock_service_call)
+    # Test setting schedule with unknown schedule type.
+    with pytest.raises(HomeAssistantError), patch(
+        "pyplumio.devices.Device.get_nowait", return_value=schedules
+    ):
+        await hass.services.async_call(
+            DOMAIN,
+            SERVICE_SET_SCHEDULE,
+            {
+                ATTR_TYPE: SCHEDULES[1],
+                ATTR_WEEKDAY: WEEKDAYS[0],
+                ATTR_STATE: True,
+                ATTR_START: "00:00:00",
+                ATTR_END: "10:00:00",
+            },
+            blocking=True,
+        )

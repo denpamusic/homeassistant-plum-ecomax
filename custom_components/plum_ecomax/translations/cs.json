@@ -190,6 +190,16 @@
     }
   },
   "services": {
+    "get_parameter": {
+      "name": "Get parameter",
+      "description": "Gets device parameter.",
+      "fields": {
+        "name": {
+          "name": "Name",
+          "description": "Name of the parameter"
+        }
+      }
+    },
     "set_parameter": {
       "name": "Set parameter",
       "description": "Sets device parameter.",
@@ -201,6 +211,20 @@
         "value": {
           "name": "Value",
           "description": "A value that parameter will be set to"
+        }
+      }
+    },
+    "get_schedule": {
+      "name": "Get schedule",
+      "description": "Gets device schedule.",
+      "fields": {
+        "type": {
+          "name": "Type",
+          "description": "Type of the schedule"
+        },
+        "weekday": {
+          "name": "Weekday",
+          "description": "Weekday to get the schedule"
         }
       }
     },
