@@ -113,6 +113,7 @@ async def test_get_parameter_service(
                 "max_value": 1.0,
                 "device_type": "ecomax",
                 "device_uid": "TEST",
+                "device_index": 0,
             }
         ]
     }

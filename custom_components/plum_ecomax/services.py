@@ -124,6 +124,33 @@ def async_extract_referenced_devices(
     return devices
 
 
+async def async_get_device_parameter(
+    device: Device, name: str
+) -> dict[str, Any] | None:
+    """Get device parameter."""
+    try:
+        parameter = await device.get(name)
+    except (ParameterNotFoundError, TimeoutError):
+        _LOGGER.exception("Requested parameter %s not found", name)
+        return None
+
+    product = (
+        device.parent.get_nowait(ATTR_PRODUCT, default="unknown")
+        if hasattr(device, "parent")
+        else device.get_nowait(ATTR_PRODUCT, default="unknown")
+    )
+
+    return {
+        "name": name,
+        "value": parameter.value,
+        "min_value": parameter.min_value,
+        "max_value": parameter.max_value,
+        "device_type": device.__class__.__name__.lower(),
+        "device_uid": product.uid,
+        "device_index": device.index + 1 if hasattr(device, "index") else 0,
+    }
+
+
 @callback
 def async_setup_get_parameter_service(
     hass: HomeAssistant, connection: EcomaxConnection
@@ -136,32 +163,13 @@ def async_setup_get_parameter_service(
         selected = async_extract_referenced_entity_ids(hass, service_call)
         devices = async_extract_referenced_devices(hass, connection, selected)
 
-        parameters: list[dict[str, Any]] = []
-        for device in devices:
-            product = (
-                device.parent.get_nowait(ATTR_PRODUCT, default="unknown")
-                if hasattr(device, "parent")
-                else device.get_nowait(ATTR_PRODUCT, default="unknown")
-            )
-
-            try:
-                parameter = await device.get(name)
-                data = {
-                    "name": name,
-                    "value": parameter.value,
-                    "min_value": parameter.min_value,
-                    "max_value": parameter.max_value,
-                    "device_type": device.__class__.__name__.lower(),
-                    "device_uid": product.uid,
-                }
-
-                if hasattr(device, "index"):
-                    data["device_index"] = device.index + 1
-
-                parameters.append(data)
-
-            except (ParameterNotFoundError, TimeoutError):
-                _LOGGER.exception("Requested parameter %s not found", name)
+        parameters = [
+            parameters
+            for parameters in [
+                await async_get_device_parameter(device, name) for device in devices
+            ]
+            if parameters is not None
+        ]
 
         if not any(parameters):
             raise HomeAssistantError(
@@ -179,6 +187,18 @@ def async_setup_get_parameter_service(
     )
 
 
+async def async_set_device_parameter(device: Device, name: str, value: float) -> bool:
+    """Set device parameter."""
+    try:
+        return await device.set(name, value)
+    except (ParameterNotFoundError, TimeoutError):
+        _LOGGER.exception("Requested parameter %s not found", name)
+    except ValueError as e:
+        raise HomeAssistantError(f"Couldn't set parameter: {e}") from e
+
+    return False
+
+
 @callback
 def async_setup_set_parameter_service(
     hass: HomeAssistant, connection: EcomaxConnection
@@ -192,16 +212,12 @@ def async_setup_set_parameter_service(
         selected = async_extract_referenced_entity_ids(hass, service_call)
         devices = async_extract_referenced_devices(hass, connection, selected)
 
-        results: set[bool] = set()
-        for device in devices:
-            try:
-                results.add(await device.set(name, value))
-            except (ParameterNotFoundError, TimeoutError):
-                _LOGGER.exception("Requested parameter %s not found", name)
-            except ValueError as e:
-                raise HomeAssistantError(f"Couldn't set parameter: {e}") from e
-
-        if not any(results):
+        if not any(
+            {
+                await async_set_device_parameter(device, name, value)
+                for device in devices
+            }
+        ):
             raise HomeAssistantError(
                 f"Couldn't set parameter '{name}', please check logs for more info"
             )
