@@ -246,14 +246,14 @@ def async_setup_get_schedule_service(
             schedule = schedules[schedule_type]
             schedule_day = getattr(schedule, weekday)
             start_of_day_dt = dt.datetime.strptime(START_OF_DAY, TIME_FORMAT)
-            intervals = {
-                (start_of_day_dt + dt.timedelta(minutes=30 * index)).strftime(
-                    TIME_FORMAT
-                ): value
-                for index, value in enumerate(schedule_day.intervals)
+            return {
+                "schedule": {
+                    (start_of_day_dt + dt.timedelta(minutes=30 * index)).strftime(
+                        TIME_FORMAT
+                    ): value
+                    for index, value in enumerate(schedule_day.intervals)
+                }
             }
-
-            return {"schedule": intervals}
 
         raise HomeAssistantError(
             f"{schedule_type} schedule is not supported by the device, check logs for more info"
