@@ -218,11 +218,8 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         self, target_temp: float | None = None
     ) -> str:
         """Get current schedule preset."""
-        target_temp = (
-            target_temp
-            if target_temp is not None
-            else await self.device.get("target_temp")
-        )
+        if target_temp is None:
+            target_temp = await self.device.get("target_temp")
 
         comfort_temp = await self.device.get(HA_PRESET_TO_EM_TEMP[PRESET_COMFORT])
         eco_temp = await self.device.get(HA_PRESET_TO_EM_TEMP[PRESET_ECO])
