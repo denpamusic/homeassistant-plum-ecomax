@@ -163,6 +163,34 @@ async def test_get_parameter_service(
 
     assert "Requested parameter nonexistent not found" in caplog.text
 
+    # Test getting parameter with unknown device uid.
+    with patch("pyplumio.devices.Device.get_nowait", return_value=None):
+        response = await hass.services.async_call(
+            DOMAIN,
+            SERVICE_GET_PARAMETER,
+            {
+                ATTR_ENTITY_ID: heating_temperature_entity_id,
+                ATTR_NAME: "heating_target_temp",
+            },
+            blocking=True,
+            return_response=True,
+        )
+        await hass.async_block_till_done()
+
+    assert response == {
+        "parameters": [
+            {
+                "name": "heating_target_temp",
+                "value": 0.0,
+                "min_value": 0.0,
+                "max_value": 1.0,
+                "device_type": "ecomax",
+                "device_uid": "unknown",
+                "device_index": 0,
+            }
+        ]
+    }
+
 
 @pytest.mark.usefixtures("ecomax_p", "mixers")
 async def test_set_parameter_service(

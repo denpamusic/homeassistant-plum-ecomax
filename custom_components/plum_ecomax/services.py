@@ -134,11 +134,9 @@ async def async_get_device_parameter(
         _LOGGER.exception("Requested parameter %s not found", name)
         return None
 
-    product = (
-        device.parent.get_nowait(ATTR_PRODUCT, default="unknown")
-        if hasattr(device, "parent")
-        else device.get_nowait(ATTR_PRODUCT, default="unknown")
-    )
+    ecomax = device.parent if hasattr(device, "parent") else device
+    product = ecomax.get_nowait(ATTR_PRODUCT, default=None)
+    device_uid = product.uid if product is not None else "unknown"
 
     return {
         "name": name,
@@ -146,7 +144,7 @@ async def async_get_device_parameter(
         "min_value": parameter.min_value,
         "max_value": parameter.max_value,
         "device_type": device.__class__.__name__.lower(),
-        "device_uid": product.uid,
+        "device_uid": device_uid,
         "device_index": device.index + 1 if hasattr(device, "index") else 0,
     }
 
