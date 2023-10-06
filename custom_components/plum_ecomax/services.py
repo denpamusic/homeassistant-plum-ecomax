@@ -164,11 +164,11 @@ def async_setup_get_parameter_service(
         devices = async_extract_referenced_devices(hass, connection, selected)
 
         parameters = [
-            parameters
-            for parameters in [
+            parameter
+            for parameter in [
                 await async_get_device_parameter(device, name) for device in devices
             ]
-            if parameters is not None
+            if parameter is not None
         ]
 
         if not any(parameters):
