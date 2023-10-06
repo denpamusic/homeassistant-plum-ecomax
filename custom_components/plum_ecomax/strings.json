@@ -246,9 +246,9 @@
           "name": "Weekday",
           "description": "Weekday to set the schedule"
         },
-        "state": {
-          "name": "State",
-          "description": "State at scheduled time"
+        "preset": {
+          "name": "Preset",
+          "description": "Preset at scheduled time"
         },
         "start_time": {
           "name": "Start time",
