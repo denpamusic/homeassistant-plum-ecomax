@@ -316,6 +316,40 @@ This event is fired when ecoMAX controller issues an alert.
 ## Services
 This integration provides following services:
 
+### Get parameter
+Provides ability to get device/sub-device parameter by name. 
+
+#### Fields
+
+| Field | Type                | Description             |
+|-------|---------------------|-------------------------|
+| name  | string              | Name of the parameter.  |
+
+#### Targets
+
+| Device <sup>1</sup> | Description                             |
+|---------------------|-----------------------------------------|
+| ecoMAX              | Set parameter on the ecoMAX controller. |
+| Mixer               | Set parameter on the mixer sub-device.  |
+
+<small><sup>1</sup> Device can be targeted via any selector: area, device or entity.</small>
+
+#### Response
+
+| Field                     | Type   | Description                    | Example               |
+|---------------------------|--------|--------------------------------|-----------------------|
+| name                      | string | Name of the parameter.         | heating_target_temp   |
+| value                     | number | Value of the parameter.        | 65                    |
+| min_value                 | number | Minimum allowed value.         | 40                    |
+| max_value                 | number | Maximum allowed value.         | 80                    |
+| device_type               | string | Device type. ecomax or mixer.  | ecomax                |
+| device_uid                | string | UID of device.                 | N271PAKR2NCP31K8G05G0 |
+| device_index <sup>1</sup> | number | Connected device number.       | 0                     |
+
+<small><sup>1</sup> This will help identify which sub-device (mixer) this parameter belongs to.
+Root device (controller) is always 0, while connected mixers can have 1-5.</small>
+
+
 ### Set parameter
 Provides ability to set device/sub-device parameter by name. Any parameter that is supported by the device/sub-device can be used with this service. To get parameter names, please download and open diagnostics data.
 
@@ -335,6 +369,34 @@ Provides ability to set device/sub-device parameter by name. Any parameter that 
 
 <small><sup>1</sup> Device can be targeted via any selector: area, device or entity.</small>
 
+### Get schedule.
+Allows to get different schedules from the device.
+
+#### Fields
+
+| Field   | Type                      | Description              |
+|---------|---------------------------|--------------------------|
+| type    | "heating", "water_heater" | Type of the schedule.    |
+| weekday | "monday", "tuesday", ...  | Weekday of the schedule. |
+
+#### Response
+
+| Field                     | Type       | Description                        | Example                           |
+|---------------------------|------------|------------------------------------|-----------------------------------|
+| schedule                  | dictionary | Dictionary that contains schedule. | {"00:00": true, 00:30: true, ...} |
+
+### Set schedule.
+Allows to set different schedules on the device.
+
+#### Fields
+
+| Field   | Type                      | Description              |
+|---------|---------------------------|--------------------------|
+| type    | "heating", "water_heater" | Type of the schedule.    |
+| weekday | "monday", "tuesday", ...  | Weekday of the schedule. |
+| state   | boolean                   | State at scheduled time. |
+| start   | time                      | Time of schedule start.  |
+| end     | time                      | Time of schedule end.    |
 
 ### Calibrate meter
 Allows to set meter entity to a specific value.<br>
