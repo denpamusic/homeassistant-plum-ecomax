@@ -76,11 +76,15 @@ set_schedule:
             - "friday"
             - "saturday"
             - "sunday"
-    state:
-      example: false
+    preset:
+      example: "day"
       required: true
       selector:
-        boolean:
+        select:
+          translation_key: "preset"
+          options:
+            - "day"
+            - "night"
     start:
       example: "00:00:00"
       required: false

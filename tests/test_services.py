@@ -3,19 +3,20 @@
 
 from unittest.mock import AsyncMock, Mock, patch
 
-from homeassistant.const import ATTR_ENTITY_ID, ATTR_NAME, ATTR_STATE, STATE_ON
+from homeassistant.const import ATTR_ENTITY_ID, ATTR_NAME
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceEntry
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.exceptions import ParameterNotFoundError
-from pyplumio.helpers.schedule import Schedule, ScheduleDay
+from pyplumio.helpers.schedule import STATE_DAY, STATE_NIGHT, Schedule, ScheduleDay
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
     ATTR_END,
+    ATTR_PRESET,
     ATTR_START,
     ATTR_TYPE,
     ATTR_VALUE,
@@ -300,10 +301,10 @@ async def test_get_schedule_service(
 
     assert response == {
         "schedule": {
-            "00:00": True,
-            "00:30": True,
-            "01:00": False,
-            "01:30": True,
+            "00:00": STATE_DAY,
+            "00:30": STATE_DAY,
+            "01:00": STATE_NIGHT,
+            "01:30": STATE_DAY,
         }
     }
 
@@ -347,7 +348,7 @@ async def test_set_schedule_service(
             {
                 ATTR_TYPE: SCHEDULES[0],
                 ATTR_WEEKDAY: WEEKDAYS[0],
-                ATTR_STATE: True,
+                ATTR_PRESET: STATE_DAY,
                 ATTR_START: "00:00:00",
                 ATTR_END: "10:00:00",
             },
@@ -355,7 +356,7 @@ async def test_set_schedule_service(
         )
         await hass.async_block_till_done()
 
-    mock_schedule.monday.set_state.assert_called_once_with(STATE_ON, "00:00", "10:00")
+    mock_schedule.monday.set_state.assert_called_once_with(STATE_DAY, "00:00", "10:00")
     mock_schedule.commit.assert_called_once()
 
     # Test setting schedule with incorrect time interval.
@@ -369,7 +370,7 @@ async def test_set_schedule_service(
             {
                 ATTR_TYPE: SCHEDULES[0],
                 ATTR_WEEKDAY: WEEKDAYS[0],
-                ATTR_STATE: True,
+                ATTR_PRESET: STATE_DAY,
                 ATTR_START: "00:00:00",
                 ATTR_END: "10:00:00",
             },
@@ -386,7 +387,7 @@ async def test_set_schedule_service(
             {
                 ATTR_TYPE: SCHEDULES[1],
                 ATTR_WEEKDAY: WEEKDAYS[0],
-                ATTR_STATE: True,
+                ATTR_PRESET: STATE_DAY,
                 ATTR_START: "00:00:00",
                 ATTR_END: "10:00:00",
             },

@@ -187,6 +187,12 @@
         "saturday": "Saturday",
         "sunday": "Sunday"
       }
+    },
+    "preset": {
+      "options": {
+        "day": "Day",
+        "night": "Night"
+      }
     }
   },
   "services": {

@@ -5,7 +5,7 @@ import datetime as dt
 import logging
 from typing import Any, Final
 
-from homeassistant.const import ATTR_NAME, ATTR_STATE, STATE_OFF, STATE_ON
+from homeassistant.const import ATTR_NAME, STATE_OFF, STATE_ON
 from homeassistant.core import (
     HomeAssistant,
     ServiceCall,
@@ -23,13 +23,14 @@ from homeassistant.helpers.service import (
 )
 from pyplumio.devices import Device
 from pyplumio.exceptions import ParameterNotFoundError
-from pyplumio.helpers.schedule import START_OF_DAY, TIME_FORMAT
+from pyplumio.helpers.schedule import START_OF_DAY, STATE_DAY, STATE_NIGHT, TIME_FORMAT
 import voluptuous as vol
 
 from .connection import EcomaxConnection
 from .const import (
     ATTR_END,
     ATTR_MIXERS,
+    ATTR_PRESET,
     ATTR_PRODUCT,
     ATTR_SCHEDULES,
     ATTR_START,
@@ -43,6 +44,11 @@ from .const import (
 SCHEDULES: Final = (
     "heating",
     "water_heater",
+)
+
+PRESETS: Final = (
+    STATE_DAY,
+    STATE_NIGHT,
 )
 
 SERVICE_GET_PARAMETER = "get_parameter"
@@ -73,7 +79,7 @@ SERVICE_SET_SCHEDULE_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_TYPE): vol.All(str, vol.In(SCHEDULES)),
         vol.Required(ATTR_WEEKDAY): vol.All(str, vol.In(WEEKDAYS)),
-        vol.Required(ATTR_STATE): bool,
+        vol.Required(ATTR_PRESET): vol.All(str, vol.In(PRESETS)),
         vol.Optional(ATTR_START, default="00:00:00"): vol.Datetime("%H:%M:%S"),
         vol.Optional(ATTR_END, default="00:00:00"): vol.Datetime("%H:%M:%S"),
     }
@@ -248,7 +254,7 @@ def async_setup_get_schedule_service(
                 "schedule": {
                     (start_of_day_dt + dt.timedelta(minutes=30 * index)).strftime(
                         TIME_FORMAT
-                    ): value
+                    ): (STATE_DAY if value else STATE_NIGHT)
                     for index, value in enumerate(schedule_day.intervals)
                 }
             }
@@ -276,7 +282,7 @@ def async_setup_set_schedule_service(
         """Service to set a schedule."""
         schedule_type = service_call.data[ATTR_TYPE]
         weekday = service_call.data[ATTR_WEEKDAY]
-        state = service_call.data[ATTR_STATE]
+        preset = service_call.data[ATTR_PRESET]
         start_time = service_call.data[ATTR_START]
         end_time = service_call.data[ATTR_END]
 
@@ -285,9 +291,7 @@ def async_setup_set_schedule_service(
             schedule = schedules[schedule_type]
             schedule_day = getattr(schedule, weekday)
             try:
-                schedule_day.set_state(
-                    (STATE_ON if state else STATE_OFF), start_time[:-3], end_time[:-3]
-                )
+                schedule_day.set_state(preset, start_time[:-3], end_time[:-3])
             except ValueError as e:
                 raise HomeAssistantError(
                     f"Error while trying to parse time interval for {schedule_type} schedule"
