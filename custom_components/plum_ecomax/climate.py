@@ -142,7 +142,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         mode = HA_TO_EM_MODE[preset_mode]
         self.device.set_nowait(ATTR_MODE, mode)
         self._attr_preset_mode = preset_mode
-        await self._async_update_target_temperature_name()
+        await self._async_update_target_temperature_attributes()
         self.async_write_ha_state()
 
     async def async_update(self, value) -> None:
@@ -152,8 +152,8 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
 
     async def async_update_target_temperature(self, value: float) -> None:
         """Update target temperature."""
-        await self._async_update_target_temperature_name(value)
-        await self._async_update_target_temperature()
+        self._attr_target_temperature = value
+        await self._async_update_target_temperature_attributes(value)
         self.async_write_ha_state()
 
     async def async_update_preset_mode(self, value: int) -> None:
@@ -166,8 +166,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
             return
 
         self._attr_preset_mode = preset_mode
-        await self._async_update_target_temperature_name()
-        await self._async_update_target_temperature()
+        await self._async_update_target_temperature_attributes()
         self.async_write_ha_state()
 
     async def async_update_hvac_action(self, value: bool) -> None:
@@ -198,26 +197,37 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         self.device.unsubscribe("current_temp", self.async_update)
         self.device.unsubscribe("target_temp", self.async_update_target_temperature)
 
-    async def _async_update_target_temperature_name(
+    async def _async_update_target_temperature_attributes(
         self, target_temp: float | None = None
     ) -> None:
-        """Get target temperature parameter name."""
-        if self.preset_mode == PRESET_AIRING:
-            # Don't update temperature target name if mode is airing.
+        """Update target temperature parameter name and bounds."""
+        preset_mode = self.preset_mode
+
+        if preset_mode == PRESET_SCHEDULE:
+            preset_mode = await self._async_get_current_schedule_preset(target_temp)
+
+        if preset_mode == PRESET_AIRING or preset_mode is None:
+            # Don't update temperature target name if we couldn't
+            # identify preset in schedule mode or if preset is airing.
             return
 
-        preset_mode = (
-            await self._async_get_current_schedule_preset(target_temp)
-            if self.preset_mode == PRESET_SCHEDULE
-            else self.preset_mode
-        )
+        target_temperature_name = HA_PRESET_TO_EM_TEMP[preset_mode]
+        if self.target_temperature_name == target_temperature_name:
+            # Don't update bounds if target temperature parameter name
+            # is unchanged.
+            return
 
-        self._attr_target_temperature_name = HA_PRESET_TO_EM_TEMP[preset_mode]
+        self._attr_target_temperature_name = target_temperature_name
+        target_temperature_parameter = await self.device.get(
+            self.target_temperature_name
+        )
+        self._attr_max_temp = target_temperature_parameter.max_value
+        self._attr_min_temp = target_temperature_parameter.min_value
 
     async def _async_get_current_schedule_preset(
         self, target_temp: float | None = None
-    ) -> str:
-        """Get current schedule preset."""
+    ) -> str | None:
+        """Get current preset for schedule mode."""
         if target_temp is None:
             target_temp = await self.device.get("target_temp")
 
@@ -230,20 +240,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         if target_temp == eco_temp.value and target_temp != comfort_temp.value:
             return PRESET_ECO
 
-        _LOGGER.warning(
-            "Couldn't determine thermostat preset, "
-            + "while running in schedule mode. "
-            + "Defaulting to COMFORT (day) preset..."
-        )
-        return PRESET_COMFORT
-
-    async def _async_update_target_temperature(self) -> None:
-        """Update target temperature from the parameter related to the
-        current state."""
-        target_temp = await self.device.get(self.target_temperature_name)
-        self._attr_max_temp = target_temp.max_value
-        self._attr_min_temp = target_temp.min_value
-        self._attr_target_temperature = target_temp.value
+        return None
 
     @property
     def device(self) -> Thermostat:

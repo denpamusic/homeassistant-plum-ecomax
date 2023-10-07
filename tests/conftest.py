@@ -611,6 +611,36 @@ def thermostats(ecomax_common: EcoMAX):
             max_value=50,
             description=ThermostatParameterDescription("hysteresis", multiplier=10),
         ),
+        "party_target_temp": ThermostatParameter(
+            offset=0,
+            device=ecomax_common,
+            value=100,
+            min_value=100,
+            max_value=350,
+            description=ThermostatParameterDescription(
+                "party_target_temp", multiplier=10, size=2
+            ),
+        ),
+        "holidays_target_temp": ThermostatParameter(
+            offset=0,
+            device=ecomax_common,
+            value=70,
+            min_value=0,
+            max_value=600,
+            description=ThermostatParameterDescription(
+                "holidays_target_temp", multiplier=10, size=2
+            ),
+        ),
+        "antifreeze_target_temp": ThermostatParameter(
+            offset=0,
+            device=ecomax_common,
+            value=90,
+            min_value=50,
+            max_value=300,
+            description=ThermostatParameterDescription(
+                "antifreeze_target_temp", multiplier=10, size=2
+            ),
+        ),
         "day_target_temp": ThermostatParameter(
             offset=0,
             device=ecomax_common,
@@ -626,7 +656,7 @@ def thermostats(ecomax_common: EcoMAX):
             device=ecomax_common,
             value=100,
             min_value=100,
-            max_value=350,
+            max_value=200,
             description=ThermostatParameterDescription(
                 "night_target_temp", multiplier=10, size=2
             ),

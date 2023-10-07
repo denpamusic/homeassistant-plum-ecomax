@@ -269,13 +269,13 @@ async def test_thermostat_presets(
 
     mock_set_nowait.assert_any_call(thermostat_night_target_temperature_key, 12)
 
-    # Test that warning if target temperature name is unknown.
+    # Test that target temperature name doesn't change when
+    # changing only target temperature.
     with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
         await async_set_preset_mode(hass, thermostat_entity_id, PRESET_SCHEDULE)
         await connection.device.thermostats[0].dispatch(
-            thermostat_target_temperature_key, 15
+            thermostat_target_temperature_key, 21
         )
-        await async_set_temperature(hass, thermostat_entity_id, 15)
+        await async_set_temperature(hass, thermostat_entity_id, 10)
 
-    assert "Couldn't determine thermostat preset" in caplog.text
-    mock_set_nowait.assert_any_call(thermostat_day_target_temperature_key, 15)
+    mock_set_nowait.assert_any_call(thermostat_night_target_temperature_key, 10)
