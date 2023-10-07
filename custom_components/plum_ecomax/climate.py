@@ -41,6 +41,7 @@ PRESET_AIRING: Final = "airing"
 PRESET_PARTY: Final = "party"
 PRESET_HOLIDAYS: Final = "holidays"
 PRESET_ANTIFREEZE: Final = "antifreeze"
+PRESET_UNKNOWN: Final = "unknown"
 
 EM_TO_HA_MODE: Final[dict[int, str]] = {
     0: PRESET_SCHEDULE,
@@ -206,7 +207,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         if preset_mode == PRESET_SCHEDULE:
             preset_mode = await self._async_get_current_schedule_preset(target_temp)
 
-        if preset_mode == PRESET_AIRING or preset_mode is None:
+        if preset_mode in (PRESET_AIRING, PRESET_UNKNOWN):
             # Don't update temperature target name if we couldn't
             # identify preset in schedule mode or if preset is airing.
             return
@@ -226,7 +227,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
 
     async def _async_get_current_schedule_preset(
         self, target_temp: float | None = None
-    ) -> str | None:
+    ) -> str:
         """Get current preset for schedule mode."""
         if target_temp is None:
             target_temp = await self.device.get("target_temp")
@@ -240,7 +241,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         if target_temp == eco_temp.value and target_temp != comfort_temp.value:
             return PRESET_ECO
 
-        return None
+        return PRESET_UNKNOWN
 
     @property
     def device(self) -> Thermostat:
