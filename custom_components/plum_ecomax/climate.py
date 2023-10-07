@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import Final
+from typing import Final, Literal
 
 from homeassistant.components.climate import (
     PRESET_AWAY,
@@ -227,7 +227,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
 
     async def _async_get_current_schedule_preset(
         self, target_temp: float | None = None
-    ) -> str:
+    ) -> Literal["comfort", "eco", "unknown"]:
         """Get current preset for schedule mode."""
         if target_temp is None:
             target_temp = await self.device.get("target_temp")
