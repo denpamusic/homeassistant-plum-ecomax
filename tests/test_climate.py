@@ -267,6 +267,25 @@ async def test_thermostat_presets(
     state = hass.states.get(thermostat_entity_id)
     assert state.attributes[ATTR_PRESET_MODE] == PRESET_AIRING
 
+    # Test that exiting airing mode works.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        await connection.device.thermostats[0].dispatch(
+            thermostat_mode_key,
+            ThermostatParameter(
+                offset=0,
+                device=connection.device,
+                value=0,
+                min_value=0,
+                max_value=7,
+                description=ThermostatParameterDescription(
+                    thermostat_mode_key, multiplier=1, size=2
+                ),
+            ),
+        )
+
+    state = hass.states.get(thermostat_entity_id)
+    assert state.attributes[ATTR_PRESET_MODE] == PRESET_SCHEDULE
+
     # Test that target temperature name is correct when
     # in day mode (schedule).
     with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
