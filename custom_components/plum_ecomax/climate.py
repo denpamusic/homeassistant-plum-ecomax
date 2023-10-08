@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import Final, Literal
+from typing import Final, Literal, overload
 
 from homeassistant.components.climate import (
     PRESET_AWAY,
@@ -27,6 +27,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from pyplumio.devices.thermostat import Thermostat
 from pyplumio.filters import on_change, throttle
+from pyplumio.helpers.parameter import Parameter
 
 from .connection import EcomaxConnection
 from .const import DOMAIN
@@ -157,8 +158,19 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         await self._async_update_target_temperature_attributes(value)
         self.async_write_ha_state()
 
+    @overload
     async def async_update_preset_mode(self, value: int) -> None:
+        """Update preset mode from the state."""
+
+    @overload
+    async def async_update_preset_mode(self, value: Parameter) -> None:
+        """Update preset mode from the parameter."""
+
+    async def async_update_preset_mode(self, value) -> None:
         """Update preset mode."""
+        if hasattr(value, "value"):
+            value = value.value
+
         try:
             preset_mode = EM_TO_HA_MODE[value]
         except KeyError:
@@ -170,14 +182,6 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         await self._async_update_target_temperature_attributes()
         self.async_write_ha_state()
 
-    async def async_handle_timed_modes(self, mode) -> None:
-        """Handle timed modes.
-
-        Timed modes only change mode parameter but not state sensor,
-        so we update preset mode here as well.
-        """
-        await self.async_update_preset_mode(int(mode.value))
-
     async def async_update_hvac_action(self, value: bool) -> None:
         """Update HVAC action."""
         self._attr_hvac_action = HVACAction.HEATING if value else HVACAction.IDLE
@@ -186,7 +190,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
     async def async_added_to_hass(self):
         """Called when an entity has their entity_id assigned."""
         callbacks = {
-            "mode": on_change(self.async_handle_timed_modes),
+            "mode": on_change(self.async_update_preset_mode),
             "state": on_change(self.async_update_preset_mode),
             "contacts": on_change(self.async_update_hvac_action),
             "current_temp": throttle(on_change(self.async_update), seconds=10),
@@ -202,7 +206,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
 
     async def async_will_remove_from_hass(self):
         """Called when an entity is about to be removed."""
-        self.device.unsubscribe("mode", self.async_handle_timed_modes)
+        self.device.unsubscribe("mode", self.async_update_preset_mode)
         self.device.unsubscribe("state", self.async_update_preset_mode)
         self.device.unsubscribe("contacts", self.async_update_hvac_action)
         self.device.unsubscribe("current_temp", self.async_update)
