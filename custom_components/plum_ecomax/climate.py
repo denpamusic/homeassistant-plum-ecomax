@@ -157,13 +157,13 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         await self._async_update_target_temperature_attributes(value)
         self.async_write_ha_state()
 
-    async def async_update_preset_mode(self, value: int) -> None:
+    async def async_update_preset_mode(self, mode) -> None:
         """Update preset mode."""
         try:
-            preset_mode = EM_TO_HA_MODE[value]
+            preset_mode = EM_TO_HA_MODE[mode.value]
         except KeyError:
             # Ignore unknown preset and warn about it in the log.
-            _LOGGER.error("Unknown climate preset %d.", value)
+            _LOGGER.error("Unknown climate preset %d.", mode.value)
             return
 
         self._attr_preset_mode = preset_mode
@@ -178,7 +178,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
     async def async_added_to_hass(self):
         """Called when an entity has their entity_id assigned."""
         callbacks = {
-            "state": on_change(self.async_update_preset_mode),
+            "mode": on_change(self.async_update_preset_mode),
             "contacts": on_change(self.async_update_hvac_action),
             "current_temp": throttle(on_change(self.async_update), seconds=10),
             "target_temp": on_change(self.async_update_target_temperature),
@@ -193,7 +193,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
 
     async def async_will_remove_from_hass(self):
         """Called when an entity is about to be removed."""
-        self.device.unsubscribe("state", self.async_update_preset_mode)
+        self.device.unsubscribe("mode", self.async_update_preset_mode)
         self.device.unsubscribe("contacts", self.async_update_hvac_action)
         self.device.unsubscribe("current_temp", self.async_update)
         self.device.unsubscribe("target_temp", self.async_update_target_temperature)

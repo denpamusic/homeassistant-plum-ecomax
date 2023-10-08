@@ -117,7 +117,7 @@ async def test_thermostat(
     """Test thermostat."""
     await setup_integration(hass, config_entry)
     thermostat_entity_id = "climate.ecomax_thermostat"
-    thermostat_state_key = "state"
+    thermostat_mode_key = "mode"
     thermostat_contacts_key = "contacts"
     thermostat_current_temperature_key = "current_temp"
     thermostat_target_temperature_key = "target_temp"
@@ -157,13 +157,35 @@ async def test_thermostat(
 
     # Dispatch new thermostat state.
     await connection.device.thermostats[0].dispatch(
-        thermostat_state_key, HA_TO_EM_MODE[PRESET_ECO]
+        thermostat_mode_key,
+        ThermostatParameter(
+            offset=0,
+            device=connection.device,
+            value=HA_TO_EM_MODE[PRESET_ECO],
+            min_value=0,
+            max_value=7,
+            description=ThermostatParameterDescription(
+                thermostat_mode_key, multiplier=1, size=2
+            ),
+        ),
     )
     state = hass.states.get(thermostat_entity_id)
     assert state.attributes[ATTR_PRESET_MODE] == PRESET_ECO
 
     # Dispatch unknown thermostat state and check for log message.
-    await connection.device.thermostats[0].dispatch(thermostat_state_key, 99)
+    await connection.device.thermostats[0].dispatch(
+        thermostat_mode_key,
+        ThermostatParameter(
+            offset=0,
+            device=connection.device,
+            value=99,
+            min_value=0,
+            max_value=7,
+            description=ThermostatParameterDescription(
+                thermostat_mode_key, multiplier=1, size=2
+            ),
+        ),
+    )
     assert "Unknown climate preset 99" in caplog.text
 
     # Dispatch new thermostat contacts state.
