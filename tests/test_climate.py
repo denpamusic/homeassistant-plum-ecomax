@@ -226,6 +226,7 @@ async def test_thermostat_presets(
     """Test thermostat presets."""
     await setup_integration(hass, config_entry)
     thermostat_entity_id = "climate.ecomax_thermostat"
+    thermostat_mode_key = "mode"
     thermostat_target_temperature_key = "target_temp"
     thermostat_day_target_temperature_key = "day_target_temp"
     thermostat_night_target_temperature_key = "night_target_temp"
@@ -246,6 +247,25 @@ async def test_thermostat_presets(
         await async_set_temperature(hass, thermostat_entity_id, 19)
 
     mock_set_nowait.assert_any_call(thermostat_night_target_temperature_key, 19)
+
+    # Test that airing mode is correctly set.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        await connection.device.thermostats[0].dispatch(
+            thermostat_mode_key,
+            ThermostatParameter(
+                offset=0,
+                device=connection.device,
+                value=4,
+                min_value=0,
+                max_value=7,
+                description=ThermostatParameterDescription(
+                    thermostat_mode_key, multiplier=1, size=2
+                ),
+            ),
+        )
+
+    state = hass.states.get(thermostat_entity_id)
+    assert state.attributes[ATTR_PRESET_MODE] == PRESET_AIRING
 
     # Test that target temperature name is correct when
     # in day mode (schedule).

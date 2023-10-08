@@ -170,6 +170,13 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         await self._async_update_target_temperature_attributes()
         self.async_write_ha_state()
 
+    async def async_handle_airing_mode(self, mode) -> None:
+        """Handle airing mode update."""
+
+        if mode.value == HA_TO_EM_MODE[PRESET_AIRING]:
+            self._attr_preset_mode = PRESET_AIRING
+            self.async_write_ha_state()
+
     async def async_update_hvac_action(self, value: bool) -> None:
         """Update HVAC action."""
         self._attr_hvac_action = HVACAction.HEATING if value else HVACAction.IDLE
@@ -178,6 +185,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
     async def async_added_to_hass(self):
         """Called when an entity has their entity_id assigned."""
         callbacks = {
+            "mode": on_change(self.async_handle_airing_mode),
             "state": on_change(self.async_update_preset_mode),
             "contacts": on_change(self.async_update_hvac_action),
             "current_temp": throttle(on_change(self.async_update), seconds=10),
@@ -193,6 +201,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
 
     async def async_will_remove_from_hass(self):
         """Called when an entity is about to be removed."""
+        self.device.unsubscribe("mode", self.async_handle_airing_mode)
         self.device.unsubscribe("state", self.async_update_preset_mode)
         self.device.unsubscribe("contacts", self.async_update_hvac_action)
         self.device.unsubscribe("current_temp", self.async_update)
