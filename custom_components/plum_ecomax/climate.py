@@ -168,8 +168,8 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
 
     async def async_update_preset_mode(self, mode) -> None:
         """Update preset mode."""
-        if hasattr(mode, "value"):
-            mode = mode.value
+        if isinstance(mode, Parameter):
+            mode = int(mode.value)
 
         try:
             preset_mode = EM_TO_HA_MODE[mode]
@@ -233,7 +233,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
             return
 
         self._attr_target_temperature_name = target_temperature_name
-        target_temperature_parameter = await self.device.get(
+        target_temperature_parameter: Parameter = await self.device.get(
             self.target_temperature_name
         )
         self._attr_max_temp = target_temperature_parameter.max_value
@@ -246,8 +246,10 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         if target_temp is None:
             target_temp = await self.device.get("target_temp")
 
-        comfort_temp = await self.device.get(HA_PRESET_TO_EM_TEMP[PRESET_COMFORT])
-        eco_temp = await self.device.get(HA_PRESET_TO_EM_TEMP[PRESET_ECO])
+        comfort_temp: Parameter = await self.device.get(
+            HA_PRESET_TO_EM_TEMP[PRESET_COMFORT]
+        )
+        eco_temp: Parameter = await self.device.get(HA_PRESET_TO_EM_TEMP[PRESET_ECO])
 
         if target_temp == comfort_temp.value and target_temp != eco_temp.value:
             return PRESET_COMFORT
