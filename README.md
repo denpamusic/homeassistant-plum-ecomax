@@ -390,13 +390,13 @@ Allows to set different schedules on the device.
 
 #### Fields
 
-| Field   | Type                      | Description              |
-|---------|---------------------------|--------------------------|
-| type    | "heating", "water_heater" | Type of the schedule.    |
-| weekday | "monday", "tuesday", ...  | Weekday of the schedule. |
-| state   | boolean                   | State at scheduled time. |
-| start   | time                      | Time of schedule start.  |
-| end     | time                      | Time of schedule end.    |
+| Field   | Type                      | Description               |
+|---------|---------------------------|---------------------------|
+| type    | "heating", "water_heater" | Type of the schedule.     |
+| weekday | "monday", "tuesday", ...  | Weekday of the schedule.  |
+| preset  | "day", "night"            | Preset at scheduled time. |
+| start   | time                      | Time of schedule start.   |
+| end     | time                      | Time of schedule end.     |
 
 ### Calibrate meter
 Allows to set meter entity to a specific value.<br>
