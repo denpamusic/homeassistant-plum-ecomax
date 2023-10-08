@@ -169,11 +169,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_device(self, user_input=None) -> FlowResult:
         """Wait until the device is available."""
 
-        async def _wait_for_device():
+        async def _wait_for_device() -> None:
             try:
-                self.device: Addressable = await self.connection.get(
-                    ECOMAX, timeout=DEFAULT_TIMEOUT
-                )
+                assert isinstance(self.connection, Connection)
+                self.device = await self.connection.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
             finally:
                 self.hass.async_create_task(
                     self.hass.config_entries.flow.async_configure(flow_id=self.flow_id)
@@ -199,8 +198,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_identify(self, user_input=None) -> FlowResult:
         """Identify the device."""
 
-        async def _identify_device():
+        async def _identify_device() -> None:
             try:
+                assert isinstance(self.device, Addressable)
                 product: ProductInfo = await self.device.get(
                     ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT
                 )
@@ -244,8 +244,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_discover(self, user_input=None) -> FlowResult:
         """Detect modules connected to the device."""
 
-        async def _discover_modules():
+        async def _discover_modules() -> None:
             try:
+                assert isinstance(self.device, Addressable)
                 modules: ConnectedModules = await self.device.get(
                     ATTR_MODULES, timeout=DEFAULT_TIMEOUT
                 )
