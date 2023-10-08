@@ -159,23 +159,23 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         self.async_write_ha_state()
 
     @overload
-    async def async_update_preset_mode(self, value: int) -> None:
+    async def async_update_preset_mode(self, mode: int) -> None:
         """Update preset mode from the state."""
 
     @overload
-    async def async_update_preset_mode(self, value: Parameter) -> None:
+    async def async_update_preset_mode(self, mode: Parameter) -> None:
         """Update preset mode from the parameter."""
 
-    async def async_update_preset_mode(self, value) -> None:
+    async def async_update_preset_mode(self, mode) -> None:
         """Update preset mode."""
-        if hasattr(value, "value"):
-            value = value.value
+        if hasattr(mode, "value"):
+            mode = mode.value
 
         try:
-            preset_mode = EM_TO_HA_MODE[value]
+            preset_mode = EM_TO_HA_MODE[mode]
         except KeyError:
             # Ignore unknown preset and warn about it in the log.
-            _LOGGER.error("Unknown climate preset %d.", value)
+            _LOGGER.error("Unknown climate preset %d.", mode)
             return
 
         self._attr_preset_mode = preset_mode
