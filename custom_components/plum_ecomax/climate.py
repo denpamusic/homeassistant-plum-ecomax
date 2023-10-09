@@ -27,7 +27,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from pyplumio.devices.thermostat import Thermostat
 from pyplumio.filters import on_change, throttle
-from pyplumio.helpers.parameter import Parameter
+from pyplumio.structures.thermostat_parameters import ThermostatParameter
 
 from .connection import EcomaxConnection
 from .const import DOMAIN
@@ -163,12 +163,12 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         """Update preset mode from the state."""
 
     @overload
-    async def async_update_preset_mode(self, mode: Parameter) -> None:
+    async def async_update_preset_mode(self, mode: ThermostatParameter) -> None:
         """Update preset mode from the parameter."""
 
     async def async_update_preset_mode(self, mode) -> None:
         """Update preset mode."""
-        if isinstance(mode, Parameter):
+        if isinstance(mode, ThermostatParameter):
             mode = int(mode.value)
 
         try:
@@ -233,7 +233,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
             return
 
         self._attr_target_temperature_name = target_temperature_name
-        target_temperature_parameter: Parameter = await self.device.get(
+        target_temperature_parameter: ThermostatParameter = await self.device.get(
             self.target_temperature_name
         )
         self._attr_max_temp = target_temperature_parameter.max_value
@@ -246,10 +246,12 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         if target_temp is None:
             target_temp = await self.device.get("target_temp")
 
-        comfort_temp: Parameter = await self.device.get(
+        comfort_temp: ThermostatParameter = await self.device.get(
             HA_PRESET_TO_EM_TEMP[PRESET_COMFORT]
         )
-        eco_temp: Parameter = await self.device.get(HA_PRESET_TO_EM_TEMP[PRESET_ECO])
+        eco_temp: ThermostatParameter = await self.device.get(
+            HA_PRESET_TO_EM_TEMP[PRESET_ECO]
+        )
 
         if target_temp == comfort_temp.value and target_temp != eco_temp.value:
             return PRESET_COMFORT
