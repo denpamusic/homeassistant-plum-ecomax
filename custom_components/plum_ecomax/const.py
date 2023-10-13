@@ -109,4 +109,9 @@ DEVICE_CLASS_METER: Final = "plum_ecomax__meter"
 class ProductId(IntEnum):
     """Contains known product ids."""
 
+    ECOMAX_850I = 0
+    ECOMAX_850P2_C = 4
+    ECOMAXX_800R3 = 36
+    ECOMAX_860D3_HB = 48
     ECOMAX_860P3_O = 51
+    ECOMAX_350P2_ZF = 90
