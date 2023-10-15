@@ -118,7 +118,7 @@
         "name": "Tryb",
         "state": {
           "off": "Wyłączony",
-          "fanning": "Stabilizacja",
+          "stabilization": "Stabilizacja",
           "kindling": "Rozpalanie",
           "heating": "Praca",
           "paused": "Nadzór",

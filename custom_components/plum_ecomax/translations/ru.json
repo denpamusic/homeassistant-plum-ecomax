@@ -118,7 +118,7 @@
         "name": "Режим",
         "state": {
           "off": "Выключено",
-          "fanning": "Раздув",
+          "stabilization": "Раздув",
           "kindling": "Розжиг",
           "heating": "Нагрев",
           "paused": "Поддержание",

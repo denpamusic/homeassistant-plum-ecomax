@@ -118,7 +118,7 @@
         "name": "State",
         "state": {
           "off": "Off",
-          "fanning": "Fanning",
+          "stabilization": "Stabilization",
           "kindling": "Kindling",
           "heating": "Heating",
           "paused": "Paused",

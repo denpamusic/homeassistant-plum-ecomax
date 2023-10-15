@@ -118,7 +118,7 @@
         "name": "State",
         "state": {
           "off": "[%key:common::state::off%]",
-          "fanning": "Fanning",
+          "stabilization": "Stabilization",
           "kindling": "Kindling",
           "heating": "Heating",
           "paused": "[%key:common::state::paused%]",

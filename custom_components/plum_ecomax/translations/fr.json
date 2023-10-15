@@ -118,7 +118,7 @@
         "name": "State",
         "state": {
           "off": "Off",
-          "fanning": "Ventilation",
+          "stabilization": "Ventilation",
           "kindling": "Allumage",
           "heating": "Chauffe",
           "paused": "Pause",

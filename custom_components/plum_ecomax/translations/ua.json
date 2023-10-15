@@ -118,7 +118,7 @@
         "name": "State",
         "state": {
           "off": "Вимкнено",
-          "fanning": "Роздув",
+          "stabilization": "Роздув",
           "kindling": "Розпалювання",
           "heating": "Нагрів",
           "paused": "Підтримка",

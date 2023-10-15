@@ -32,7 +32,7 @@ from homeassistant.helpers.entity_platform import (
     async_get_current_platform,
 )
 from homeassistant.helpers.typing import ConfigType, StateType
-from pyplumio.const import ProductType
+from pyplumio.const import DeviceState, ProductType
 from pyplumio.filters import aggregate, on_change, throttle
 from pyplumio.structures.modules import ConnectedModules
 from pyplumio.structures.regulator_data import RegulatorData
@@ -55,24 +55,23 @@ from .entity import EcomaxEntity, MixerEntity
 SERVICE_RESET_METER: Final = "reset_meter"
 SERVICE_CALIBRATE_METER: Final = "calibrate_meter"
 
-STATE_FANNING: Final = "fanning"
+STATE_STABILIZATION: Final = "stabilization"
 STATE_KINDLING: Final = "kindling"
 STATE_HEATING: Final = "heating"
 STATE_BURNING_OFF: Final = "burning_off"
 STATE_ALERT: Final = "alert"
 STATE_UNKNOWN: Final = "unknown"
 
-EM_TO_HA_STATE: dict[int, str] = {
-    0: STATE_OFF,
-    1: STATE_FANNING,
-    2: STATE_KINDLING,
-    3: STATE_HEATING,
-    4: STATE_PAUSED,
-    5: STATE_IDLE,
-    6: STATE_STANDBY,
-    7: STATE_BURNING_OFF,
-    8: STATE_ALERT,
-    23: STATE_FANNING,
+EM_TO_HA_STATE: dict[DeviceState, str] = {
+    DeviceState.OFF: STATE_OFF,
+    DeviceState.STABILIZATION: STATE_STABILIZATION,
+    DeviceState.KINDLING: STATE_KINDLING,
+    DeviceState.WORKING: STATE_HEATING,
+    DeviceState.SUPERVISION: STATE_PAUSED,
+    DeviceState.PAUSED: STATE_IDLE,
+    DeviceState.STANDBY: STATE_STANDBY,
+    DeviceState.BURNING_OFF: STATE_BURNING_OFF,
+    DeviceState.ALERT: STATE_ALERT,
 }
 
 _LOGGER = logging.getLogger(__name__)
