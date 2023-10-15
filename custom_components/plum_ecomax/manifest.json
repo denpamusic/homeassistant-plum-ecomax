@@ -16,7 +16,7 @@
     "pyplumio"
   ],
   "requirements": [
-    "pyplumio==0.4.9"
+    "pyplumio==0.4.10"
   ],
   "version": "0.3.13"
 }
