@@ -36,12 +36,13 @@ get_schedule:
           options:
             - "heating"
             - "water_heater"
-    weekday:
+    weekdays:
       example: "monday"
       required: true
       selector:
         select:
-          translation_key: "weekday"
+          translation_key: "weekdays"
+          multiple: true
           options:
             - "monday"
             - "tuesday"
@@ -62,12 +63,13 @@ set_schedule:
           options:
             - "heating"
             - "water_heater"
-    weekday:
+    weekdays:
       example: "monday"
       required: true
       selector:
         select:
-          translation_key: "weekday"
+          translation_key: "weekdays"
+          multiple: true
           options:
             - "monday"
             - "tuesday"

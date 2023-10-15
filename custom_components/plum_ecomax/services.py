@@ -23,7 +23,13 @@ from homeassistant.helpers.service import (
 )
 from pyplumio.devices import Device
 from pyplumio.exceptions import ParameterNotFoundError
-from pyplumio.helpers.schedule import START_OF_DAY, STATE_DAY, STATE_NIGHT, TIME_FORMAT
+from pyplumio.helpers.schedule import (
+    START_OF_DAY,
+    STATE_DAY,
+    STATE_NIGHT,
+    TIME_FORMAT,
+    ScheduleDay,
+)
 import voluptuous as vol
 
 from .connection import EcomaxConnection
@@ -36,7 +42,7 @@ from .const import (
     ATTR_START,
     ATTR_TYPE,
     ATTR_VALUE,
-    ATTR_WEEKDAY,
+    ATTR_WEEKDAYS,
     DOMAIN,
     WEEKDAYS,
 )
@@ -70,7 +76,7 @@ SERVICE_GET_SCHEDULE = "get_schedule"
 SERVICE_GET_SCHEDULE_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_TYPE): vol.All(str, vol.In(SCHEDULES)),
-        vol.Required(ATTR_WEEKDAY): vol.All(str, vol.In(WEEKDAYS)),
+        vol.Required(ATTR_WEEKDAYS): vol.All(cv.ensure_list, [vol.In(WEEKDAYS)]),
     }
 )
 
@@ -78,12 +84,14 @@ SERVICE_SET_SCHEDULE = "set_schedule"
 SERVICE_SET_SCHEDULE_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_TYPE): vol.All(str, vol.In(SCHEDULES)),
-        vol.Required(ATTR_WEEKDAY): vol.All(str, vol.In(WEEKDAYS)),
+        vol.Required(ATTR_WEEKDAYS): vol.All(cv.ensure_list, [vol.In(WEEKDAYS)]),
         vol.Required(ATTR_PRESET): vol.All(str, vol.In(PRESETS)),
         vol.Optional(ATTR_START, default="00:00:00"): vol.Datetime("%H:%M:%S"),
         vol.Optional(ATTR_END, default="00:00:00"): vol.Datetime("%H:%M:%S"),
     }
 )
+
+START_OF_DAY_DT = dt.datetime.strptime(START_OF_DAY, TIME_FORMAT)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -234,6 +242,16 @@ def async_setup_set_parameter_service(
     )
 
 
+def async_schedule_day_to_dict(schedule_day: ScheduleDay):
+    """Format schedule day as dictionary."""
+    return {
+        (START_OF_DAY_DT + dt.timedelta(minutes=30 * index)).strftime(TIME_FORMAT): (
+            STATE_DAY if value else STATE_NIGHT
+        )
+        for index, value in enumerate(schedule_day.intervals)
+    }
+
+
 @callback
 def async_setup_get_schedule_service(
     hass: HomeAssistant, connection: EcomaxConnection
@@ -243,25 +261,21 @@ def async_setup_get_schedule_service(
     async def async_get_schedule_service(service_call: ServiceCall) -> ServiceResponse:
         """Service to get a schedule."""
         schedule_type = service_call.data[ATTR_TYPE]
-        weekday = service_call.data[ATTR_WEEKDAY]
+        weekdays = service_call.data[ATTR_WEEKDAYS]
 
         schedules = connection.device.get_nowait(ATTR_SCHEDULES, {})
-        if schedule_type in schedules:
-            schedule = schedules[schedule_type]
-            schedule_day = getattr(schedule, weekday)
-            start_of_day_dt = dt.datetime.strptime(START_OF_DAY, TIME_FORMAT)
-            return {
-                "schedule": {
-                    (start_of_day_dt + dt.timedelta(minutes=30 * index)).strftime(
-                        TIME_FORMAT
-                    ): (STATE_DAY if value else STATE_NIGHT)
-                    for index, value in enumerate(schedule_day.intervals)
-                }
-            }
+        if schedule_type not in schedules:
+            raise HomeAssistantError(
+                f"{schedule_type} schedule is not supported by the device, check logs for more info"
+            )
 
-        raise HomeAssistantError(
-            f"{schedule_type} schedule is not supported by the device, check logs for more info"
-        )
+        schedule = schedules[schedule_type]
+        return {
+            "schedule": {
+                weekday: async_schedule_day_to_dict(getattr(schedule, weekday))
+                for weekday in weekdays
+            }
+        }
 
     hass.services.async_register(
         DOMAIN,
@@ -281,14 +295,19 @@ def async_setup_set_schedule_service(
     async def async_set_schedule_service(service_call: ServiceCall) -> None:
         """Service to set a schedule."""
         schedule_type = service_call.data[ATTR_TYPE]
-        weekday = service_call.data[ATTR_WEEKDAY]
+        weekdays = service_call.data[ATTR_WEEKDAYS]
         preset = service_call.data[ATTR_PRESET]
         start_time = service_call.data[ATTR_START]
         end_time = service_call.data[ATTR_END]
 
         schedules = connection.device.get_nowait(ATTR_SCHEDULES, {})
-        if schedule_type in schedules:
-            schedule = schedules[schedule_type]
+        if schedule_type not in schedules:
+            raise HomeAssistantError(
+                f"{schedule_type} schedule is not supported by the device, check logs for more info"
+            )
+
+        schedule = schedules[schedule_type]
+        for weekday in weekdays:
             schedule_day = getattr(schedule, weekday)
             try:
                 schedule_day.set_state(preset, start_time[:-3], end_time[:-3])
@@ -297,12 +316,7 @@ def async_setup_set_schedule_service(
                     f"Error while trying to parse time interval for {schedule_type} schedule"
                 ) from e
 
-            schedule.commit()
-            return
-
-        raise HomeAssistantError(
-            f"{schedule_type} schedule is not supported by the device, check logs for more info"
-        )
+        schedule.commit()
 
     hass.services.async_register(
         DOMAIN,

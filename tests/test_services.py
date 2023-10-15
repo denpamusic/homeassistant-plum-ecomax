@@ -20,7 +20,7 @@ from custom_components.plum_ecomax.const import (
     ATTR_START,
     ATTR_TYPE,
     ATTR_VALUE,
-    ATTR_WEEKDAY,
+    ATTR_WEEKDAYS,
     DOMAIN,
     WEEKDAYS,
 )
@@ -286,6 +286,8 @@ async def test_get_schedule_service(
     mock_schedule = Mock(spec=Schedule)
     mock_schedule.monday = Mock(spec=ScheduleDay)
     mock_schedule.monday.intervals = [True, True, False, True]
+    mock_schedule.tuesday = Mock(spec=ScheduleDay)
+    mock_schedule.tuesday.intervals = [True, True, True, True]
     schedules = {SCHEDULES[0]: mock_schedule}
 
     # Test getting schedule for EM device.
@@ -293,7 +295,7 @@ async def test_get_schedule_service(
         response = await hass.services.async_call(
             DOMAIN,
             SERVICE_GET_SCHEDULE,
-            {ATTR_TYPE: SCHEDULES[0], ATTR_WEEKDAY: WEEKDAYS[0]},
+            {ATTR_TYPE: SCHEDULES[0], ATTR_WEEKDAYS: [WEEKDAYS[0], WEEKDAYS[1]]},
             blocking=True,
             return_response=True,
         )
@@ -301,10 +303,18 @@ async def test_get_schedule_service(
 
     assert response == {
         "schedule": {
-            "00:00": STATE_DAY,
-            "00:30": STATE_DAY,
-            "01:00": STATE_NIGHT,
-            "01:30": STATE_DAY,
+            "monday": {
+                "00:00": STATE_DAY,
+                "00:30": STATE_DAY,
+                "01:00": STATE_NIGHT,
+                "01:30": STATE_DAY,
+            },
+            "tuesday": {
+                "00:00": STATE_DAY,
+                "00:30": STATE_DAY,
+                "01:00": STATE_DAY,
+                "01:30": STATE_DAY,
+            },
         }
     }
 
@@ -317,7 +327,7 @@ async def test_get_schedule_service(
             SERVICE_GET_SCHEDULE,
             {
                 ATTR_TYPE: SCHEDULES[1],
-                ATTR_WEEKDAY: WEEKDAYS[0],
+                ATTR_WEEKDAYS: WEEKDAYS[0],
             },
             blocking=True,
             return_response=True,
@@ -337,6 +347,8 @@ async def test_set_schedule_service(
     mock_schedule = Mock(spec=Schedule)
     mock_schedule.monday = Mock(spec=ScheduleDay)
     mock_schedule.monday.set_state = Mock()
+    mock_schedule.tuesday = Mock(spec=ScheduleDay)
+    mock_schedule.tuesday.set_state = Mock()
     mock_schedule.commit = Mock()
     schedules = {SCHEDULES[0]: mock_schedule}
 
@@ -347,7 +359,7 @@ async def test_set_schedule_service(
             SERVICE_SET_SCHEDULE,
             {
                 ATTR_TYPE: SCHEDULES[0],
-                ATTR_WEEKDAY: WEEKDAYS[0],
+                ATTR_WEEKDAYS: [WEEKDAYS[0], WEEKDAYS[1]],
                 ATTR_PRESET: STATE_DAY,
                 ATTR_START: "00:00:00",
                 ATTR_END: "10:00:00",
@@ -357,6 +369,7 @@ async def test_set_schedule_service(
         await hass.async_block_till_done()
 
     mock_schedule.monday.set_state.assert_called_once_with(STATE_DAY, "00:00", "10:00")
+    mock_schedule.tuesday.set_state.assert_called_once_with(STATE_DAY, "00:00", "10:00")
     mock_schedule.commit.assert_called_once()
 
     # Test setting schedule with incorrect time interval.
@@ -369,7 +382,7 @@ async def test_set_schedule_service(
             SERVICE_SET_SCHEDULE,
             {
                 ATTR_TYPE: SCHEDULES[0],
-                ATTR_WEEKDAY: WEEKDAYS[0],
+                ATTR_WEEKDAYS: WEEKDAYS[0],
                 ATTR_PRESET: STATE_DAY,
                 ATTR_START: "00:00:00",
                 ATTR_END: "10:00:00",
@@ -386,7 +399,7 @@ async def test_set_schedule_service(
             SERVICE_SET_SCHEDULE,
             {
                 ATTR_TYPE: SCHEDULES[1],
-                ATTR_WEEKDAY: WEEKDAYS[0],
+                ATTR_WEEKDAYS: WEEKDAYS[0],
                 ATTR_PRESET: STATE_DAY,
                 ATTR_START: "00:00:00",
                 ATTR_END: "10:00:00",

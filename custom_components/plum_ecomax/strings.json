@@ -177,7 +177,7 @@
         "water_heater": "Water heater"
       }
     },
-    "weekday": {
+    "weekdays": {
       "options": {
         "monday": "Monday",
         "tuesday": "Tuesday",
@@ -228,9 +228,9 @@
           "name": "Type",
           "description": "Type of the schedule"
         },
-        "weekday": {
-          "name": "Weekday",
-          "description": "Weekday to get the schedule"
+        "weekdays": {
+          "name": "Weekdays",
+          "description": "Weekdays to get the schedule"
         }
       }
     },
@@ -242,9 +242,9 @@
           "name": "Type",
           "description": "Type of the schedule"
         },
-        "weekday": {
-          "name": "Weekday",
-          "description": "Weekday to set the schedule"
+        "weekdays": {
+          "name": "Weekdays",
+          "description": "Weekdays to set the schedule"
         },
         "preset": {
           "name": "Preset",
