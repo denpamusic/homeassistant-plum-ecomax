@@ -17,7 +17,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry
-from pyplumio.filters import delta
+from pyplumio.filters import custom, delta
 from pyplumio.structures.alerts import Alert
 
 from .connection import (
@@ -126,7 +126,9 @@ def async_setup_events(hass: HomeAssistant, connection: EcomaxConnection) -> boo
 
             hass.bus.async_fire(EVENT_PLUM_ECOMAX_ALERT, event_data)
 
-    connection.device.subscribe(ATTR_ALERTS, delta(async_dispatch_alert_events))
+    connection.device.subscribe(
+        ATTR_ALERTS, custom(delta(async_dispatch_alert_events), bool)
+    )
     return True
 
 
