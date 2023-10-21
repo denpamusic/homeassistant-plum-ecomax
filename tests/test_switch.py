@@ -18,6 +18,7 @@ from pyplumio.structures.ecomax_parameters import (
 )
 from pyplumio.structures.mixer_parameters import (
     MixerBinaryParameter,
+    MixerParameter,
     MixerParameterDescription,
 )
 import pytest
@@ -727,7 +728,7 @@ async def test_circuit_enable_circuit_switch(
     # Dispatch new value.
     await connection.device.mixers[0].dispatch(
         enable_circuit_key,
-        MixerBinaryParameter(
+        MixerParameter(
             device=connection.device,
             value=1,
             min_value=0,
@@ -743,12 +744,28 @@ async def test_circuit_enable_circuit_switch(
     with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
         state = await async_turn_off(hass, enable_circuit_entity_id)
 
-    mock_set_nowait.assert_called_once_with(enable_circuit_key, STATE_OFF)
+    mock_set_nowait.assert_called_once_with(enable_circuit_key, 0)
     assert state.state == STATE_OFF
 
     # Turn on.
     with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
         state = await async_turn_on(hass, enable_circuit_entity_id)
 
-    mock_set_nowait.assert_called_once_with(enable_circuit_key, STATE_ON)
+    mock_set_nowait.assert_called_once_with(enable_circuit_key, 1)
     assert state.state == STATE_ON
+
+
+@pytest.mark.usefixtures("ecomax_i", "mixers")
+async def test_circuit_enable_circuit_switch_is_unavailable_for_second_circuit(
+    hass: HomeAssistant,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test enable circuit switch is not available for second circuit."""
+    await setup_integration(hass, config_entry)
+    enable_circuit_entity_id = "switch.ecomax_circuit_2_enable_circuit"
+
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(enable_circuit_entity_id)
+    assert not entry

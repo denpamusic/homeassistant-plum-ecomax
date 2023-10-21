@@ -155,11 +155,11 @@ async def test_mixer_work_mode_select(
     options = state.attributes[ATTR_OPTIONS]
 
     # Dispatch new value.
-    await connection.device.dispatch(
+    await connection.device.mixers[0].dispatch(
         work_mode_select_key,
         MixerParameter(
             device=connection.device,
-            value=1,
+            value=0,
             min_value=0,
             max_value=2,
             description=MixerParameterDescription(work_mode_select_key),
@@ -176,3 +176,73 @@ async def test_mixer_work_mode_select(
         work_mode_select_key, options.index(STATE_HEATING)
     )
     assert state.state == STATE_HEATING
+
+
+@pytest.mark.usefixtures("ecomax_i", "mixers")
+async def test_circuit_work_mode_select(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    async_select_option,
+) -> None:
+    """Test circuit support select."""
+    await setup_integration(hass, config_entry)
+    work_mode_entity_id = "select.ecomax_circuit_2_work_mode"
+    work_mode_select_key = "support"
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(work_mode_entity_id)
+    assert entry
+    assert entry.translation_key == "mixer_work_mode"
+
+    # Get initial value.
+    state = hass.states.get(work_mode_entity_id)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Circuit 2 Work mode"
+    assert state.attributes[ATTR_OPTIONS] == [
+        STATE_OFF,
+        STATE_HEATING,
+        STATE_HEATED_FLOOR,
+    ]
+    options = state.attributes[ATTR_OPTIONS]
+
+    # Dispatch new value.
+    await connection.device.mixers[1].dispatch(
+        work_mode_select_key,
+        MixerParameter(
+            device=connection.device,
+            value=0,
+            min_value=0,
+            max_value=2,
+            description=MixerParameterDescription(work_mode_select_key),
+        ),
+    )
+    state = hass.states.get(work_mode_entity_id)
+    assert state.state == STATE_OFF
+
+    # Select an option.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_select_option(hass, work_mode_entity_id, STATE_HEATING)
+
+    mock_set_nowait.assert_called_once_with(
+        work_mode_select_key, options.index(STATE_HEATING)
+    )
+    assert state.state == STATE_HEATING
+
+
+@pytest.mark.usefixtures("ecomax_i", "mixers")
+async def test_circuit_work_mode_select_is_unavailable_for_first_circuit(
+    hass: HomeAssistant,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test circuit support select is not available for first circuit."""
+    await setup_integration(hass, config_entry)
+    work_mode_entity_id = "select.ecomax_circuit_1_work_mode"
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(work_mode_entity_id)
+    assert not entry

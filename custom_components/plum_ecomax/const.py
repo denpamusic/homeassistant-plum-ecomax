@@ -6,6 +6,9 @@ from typing import Final
 DOMAIN = "plum_ecomax"
 MANUFACTURER: Final = "Plum Sp. z o.o."
 
+# Generic constants.
+ALL: Final = "all"
+
 # Generic attributes.
 ATTR_ALERTS: Final = "alerts"
 ATTR_ECOMAX_CONTROL: Final = "ecomax_control"

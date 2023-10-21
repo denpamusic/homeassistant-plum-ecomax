@@ -490,8 +490,8 @@ def water_heater(ecomax_common: EcoMAX):
 @pytest.fixture
 def mixers(ecomax_common: EcoMAX):
     """Inject mixer data."""
-    mixer = Mixer(queue=Mock(spec=asyncio.Queue), parent=ecomax_common)
-    mixer.data = {
+    mixer_0 = Mixer(queue=Mock(spec=asyncio.Queue), parent=ecomax_common)
+    mixer_0.data = {
         "pump": False,
         "current_temp": 0.0,
         "target_temp": 0,
@@ -558,7 +558,7 @@ def mixers(ecomax_common: EcoMAX):
             max_value=1,
             description=MixerParameterDescription("summer_work"),
         ),
-        "support": MixerBinaryParameter(
+        "support": MixerParameter(
             device=ecomax_common,
             value=0,
             min_value=0,
@@ -567,12 +567,26 @@ def mixers(ecomax_common: EcoMAX):
         ),
     }
 
+    mixer_1 = Mixer(queue=Mock(spec=asyncio.Queue), parent=ecomax_common)
+    mixer_1.data = {
+        "support": MixerParameter(
+            device=ecomax_common,
+            value=0,
+            min_value=0,
+            max_value=2,
+            description=MixerParameterDescription("support"),
+        ),
+    }
+
     ecomax_common.data.update(
         {
             "mixer_sensors": True,
             "mixer_parameters": True,
-            "mixer_count": 1,
-            "mixers": {0: mixer},
+            "mixer_count": 2,
+            "mixers": {
+                0: mixer_0,
+                1: mixer_1,
+            },
         }
     )
 

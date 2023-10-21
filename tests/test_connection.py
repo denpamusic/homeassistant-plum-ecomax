@@ -89,7 +89,7 @@ async def test_async_get_sub_devices(ecomax_p: EcoMAX, caplog) -> None:
         ATTR_WATER_HEATER,
     ]
 
-    assert "Detected 1 mixer" in caplog.text
+    assert "Detected 2 mixers" in caplog.text
     assert "Detected 1 thermostat" in caplog.text
     assert "Detected indirect water heater" in caplog.text
 

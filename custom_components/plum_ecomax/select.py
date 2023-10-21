@@ -4,7 +4,7 @@ from __future__ import annotations
 from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass
 import logging
-from typing import Any, Final
+from typing import Any, Final, Literal
 
 from homeassistant.components.select import (
     EntityDescription,
@@ -19,7 +19,7 @@ from pyplumio.const import ProductType
 from pyplumio.filters import on_change
 
 from .connection import EcomaxConnection
-from .const import DOMAIN, MODULE_A
+from .const import ALL, DOMAIN, MODULE_A
 from .entity import EcomaxEntity, MixerEntity
 
 STATE_AUTO: Final = "auto"
@@ -73,6 +73,7 @@ class EcomaxSelect(EcomaxEntity, SelectEntity):
 
     async def async_update(self, value) -> None:
         """Retrieve latest state."""
+        print(value)
         self._attr_current_option = self.entity_description.options[int(value)]
         self.async_write_ha_state()
 
@@ -81,13 +82,22 @@ class EcomaxSelect(EcomaxEntity, SelectEntity):
 class EcomaxMixerSelectEntityDescription(EcomaxSelectEntityDescription):
     """Describes mixer select entity."""
 
+    indexes: set[int] | Literal["all"] = ALL
+
 
 MIXER_SELECT_TYPES: tuple[EcomaxMixerSelectEntityDescription, ...] = (
-    EcomaxSelectEntityDescription(
+    EcomaxMixerSelectEntityDescription(
         key="work_mode",
         translation_key="mixer_work_mode",
         options=[STATE_OFF, STATE_HEATING, STATE_HEATED_FLOOR, STATE_PUMP_ONLY],
         product_types={ProductType.ECOMAX_P},
+    ),
+    EcomaxMixerSelectEntityDescription(
+        key="support",
+        translation_key="mixer_work_mode",
+        options=[STATE_OFF, STATE_HEATING, STATE_HEATED_FLOOR],
+        product_types={ProductType.ECOMAX_I},
+        indexes={1, 2},
     ),
 )
 
@@ -125,6 +135,15 @@ def get_by_modules(
             yield description
 
 
+def get_by_index(
+    index, descriptions: Iterable[EcomaxMixerSelectEntityDescription]
+) -> Generator[EcomaxMixerSelectEntityDescription, None, None]:
+    """Filter mixer/circuit descriptions by indexes."""
+    for description in descriptions:
+        if description.indexes == ALL or index in description.indexes:
+            yield description
+
+
 def async_setup_ecomax_selects(connection: EcomaxConnection) -> list[EcomaxSelect]:
     """Setup ecoMAX selects."""
     return [
@@ -143,9 +162,12 @@ def async_setup_mixer_selects(connection: EcomaxConnection) -> list[MixerSelect]
     for index in connection.device.mixers.keys():
         entities.extend(
             MixerSelect(connection, description, index)
-            for description in get_by_modules(
-                connection.device.modules,
-                get_by_product_type(connection.product_type, MIXER_SELECT_TYPES),
+            for description in get_by_index(
+                index,
+                get_by_modules(
+                    connection.device.modules,
+                    get_by_product_type(connection.product_type, MIXER_SELECT_TYPES),
+                ),
             )
         )
 

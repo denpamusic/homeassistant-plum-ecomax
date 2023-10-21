@@ -4,7 +4,7 @@ from __future__ import annotations
 from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass
 import logging
-from typing import Any
+from typing import Any, Literal
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.const import STATE_OFF, STATE_ON
@@ -18,7 +18,7 @@ from pyplumio.helpers.parameter import Parameter
 from pyplumio.helpers.typing import ParameterValueType
 
 from .connection import EcomaxConnection
-from .const import DOMAIN, MODULE_A
+from .const import ALL, DOMAIN, MODULE_A
 from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -123,6 +123,8 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
 class MixerSwitchEntityDescription(EcomaxSwitchEntityDescription):
     """Describes ecoMAX mixer switch entity."""
 
+    indexes: set[int] | Literal["all"] = ALL
+
 
 MIXER_SWITCH_TYPES: tuple[MixerSwitchEntityDescription, ...] = (
     MixerSwitchEntityDescription(
@@ -140,10 +142,13 @@ MIXER_SWITCH_TYPES: tuple[MixerSwitchEntityDescription, ...] = (
         translation_key="disable_pump_on_thermostat",
         product_types={ProductType.ECOMAX_P},
     ),
-    EcomaxSwitchEntityDescription(
+    MixerSwitchEntityDescription(
         key="support",
         translation_key="enable_circuit",
         product_types={ProductType.ECOMAX_I},
+        state_off=0,
+        state_on=1,
+        indexes={0},
     ),
 )
 
@@ -181,6 +186,15 @@ def get_by_modules(
             yield description
 
 
+def get_by_index(
+    index, descriptions: Iterable[MixerSwitchEntityDescription]
+) -> Generator[EcomaxSwitchEntityDescription, None, None]:
+    """Filter mixer/circuit descriptions by indexes."""
+    for description in descriptions:
+        if description.indexes == ALL or index in description.indexes:
+            yield description
+
+
 def async_setup_ecomax_switch(connection: EcomaxConnection) -> list[EcomaxSwitch]:
     """Setup ecoMAX switches."""
     return [
@@ -199,9 +213,12 @@ def async_setup_mixer_switch(connection: EcomaxConnection) -> list[MixerSwitch]:
     for index in connection.device.mixers.keys():
         entities.extend(
             MixerSwitch(connection, description, index)
-            for description in get_by_modules(
-                connection.device.modules,
-                get_by_product_type(connection.product_type, MIXER_SWITCH_TYPES),
+            for description in get_by_index(
+                index,
+                get_by_modules(
+                    connection.device.modules,
+                    get_by_product_type(connection.product_type, MIXER_SWITCH_TYPES),
+                ),
             )
         )
 
