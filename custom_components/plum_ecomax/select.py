@@ -97,7 +97,7 @@ MIXER_SELECT_TYPES: tuple[EcomaxMixerSelectEntityDescription, ...] = (
         translation_key="mixer_work_mode",
         options=[STATE_OFF, STATE_HEATING, STATE_HEATED_FLOOR],
         product_types={ProductType.ECOMAX_I},
-        indexes={1, 2},
+        indexes={2, 3},
     ),
 )
 
@@ -139,6 +139,7 @@ def get_by_index(
     index, descriptions: Iterable[EcomaxMixerSelectEntityDescription]
 ) -> Generator[EcomaxMixerSelectEntityDescription, None, None]:
     """Filter mixer/circuit descriptions by indexes."""
+    index += 1
     for description in descriptions:
         if description.indexes == ALL or index in description.indexes:
             yield description

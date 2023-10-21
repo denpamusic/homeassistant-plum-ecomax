@@ -148,7 +148,7 @@ MIXER_SWITCH_TYPES: tuple[MixerSwitchEntityDescription, ...] = (
         product_types={ProductType.ECOMAX_I},
         state_off=0,
         state_on=1,
-        indexes={0},
+        indexes={1},
     ),
 )
 
@@ -190,6 +190,7 @@ def get_by_index(
     index, descriptions: Iterable[MixerSwitchEntityDescription]
 ) -> Generator[EcomaxSwitchEntityDescription, None, None]:
     """Filter mixer/circuit descriptions by indexes."""
+    index += 1
     for description in descriptions:
         if description.indexes == ALL or index in description.indexes:
             yield description
