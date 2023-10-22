@@ -509,20 +509,6 @@ def mixers(ecomax_common: EcoMAX):
             max_value=1,
             description=MixerParameterDescription("mixer_target_temp"),
         ),
-        "day_target_temp": MixerParameter(
-            device=ecomax_common,
-            value=0,
-            min_value=0,
-            max_value=1,
-            description=MixerParameterDescription("day_target_temp"),
-        ),
-        "night_target_temp": MixerParameter(
-            device=ecomax_common,
-            value=0,
-            min_value=0,
-            max_value=1,
-            description=MixerParameterDescription("night_target_temp"),
-        ),
         "min_target_temp": EcomaxParameter(
             device=ecomax_common,
             value=0,
@@ -575,6 +561,34 @@ def mixers(ecomax_common: EcoMAX):
             min_value=0,
             max_value=2,
             description=MixerParameterDescription("support"),
+        ),
+        "day_target_temp": MixerParameter(
+            device=ecomax_common,
+            value=0,
+            min_value=0,
+            max_value=1,
+            description=MixerParameterDescription("day_target_temp"),
+        ),
+        "night_target_temp": MixerParameter(
+            device=ecomax_common,
+            value=0,
+            min_value=0,
+            max_value=1,
+            description=MixerParameterDescription("night_target_temp"),
+        ),
+        "min_target_temp": EcomaxParameter(
+            device=ecomax_common,
+            value=0,
+            min_value=0,
+            max_value=1,
+            description=EcomaxParameterDescription("min_target_temp"),
+        ),
+        "max_target_temp": EcomaxParameter(
+            device=ecomax_common,
+            value=0,
+            min_value=0,
+            max_value=1,
+            description=EcomaxParameterDescription("max_target_temp"),
         ),
     }
 

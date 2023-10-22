@@ -683,7 +683,7 @@ async def test_circuit_minimum_circuit_temperature_number(
     """Test circuit minimum circuit temperature number."""
     await setup_integration(hass, config_entry)
     minimum_circuit_temperature_entity_id = (
-        "number.ecomax_circuit_1_minimum_circuit_temperature"
+        "number.ecomax_circuit_2_minimum_circuit_temperature"
     )
     minimum_circuit_temperature_key = "min_target_temp"
 
@@ -698,7 +698,7 @@ async def test_circuit_minimum_circuit_temperature_number(
     assert state.state == "0.0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
-        == "ecoMAX Circuit 1 Minimum circuit temperature"
+        == "ecoMAX Circuit 2 Minimum circuit temperature"
     )
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0
@@ -707,7 +707,7 @@ async def test_circuit_minimum_circuit_temperature_number(
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
 
     # Dispatch new state.
-    await connection.device.mixers[0].dispatch(
+    await connection.device.mixers[1].dispatch(
         minimum_circuit_temperature_key,
         EcomaxParameter(
             device=connection.device,
@@ -741,7 +741,7 @@ async def test_circuit_maximum_circuit_temperature_number(
     """Test circuit maximum circuit temperature number."""
     await setup_integration(hass, config_entry)
     maximum_circuit_temperature_entity_id = (
-        "number.ecomax_circuit_1_maximum_circuit_temperature"
+        "number.ecomax_circuit_2_maximum_circuit_temperature"
     )
     maximum_circuit_temperature_key = "max_target_temp"
 
@@ -756,7 +756,7 @@ async def test_circuit_maximum_circuit_temperature_number(
     assert state.state == "0.0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
-        == "ecoMAX Circuit 1 Maximum circuit temperature"
+        == "ecoMAX Circuit 2 Maximum circuit temperature"
     )
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0
@@ -765,7 +765,7 @@ async def test_circuit_maximum_circuit_temperature_number(
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
 
     # Dispatch new state.
-    await connection.device.mixers[0].dispatch(
+    await connection.device.mixers[1].dispatch(
         maximum_circuit_temperature_key,
         EcomaxParameter(
             device=connection.device,
@@ -799,7 +799,7 @@ async def test_circuit_day_target_circuit_temperature_number(
     """Test cicuit day target circuit temperature number."""
     await setup_integration(hass, config_entry)
     day_target_circuit_temperature_entity_id = (
-        "number.ecomax_circuit_1_day_target_circuit_temperature"
+        "number.ecomax_circuit_2_day_target_circuit_temperature"
     )
     day_target_circuit_temperature_key = "day_target_temp"
 
@@ -814,7 +814,7 @@ async def test_circuit_day_target_circuit_temperature_number(
     assert state.state == "0.0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
-        == "ecoMAX Circuit 1 Day target circuit temperature"
+        == "ecoMAX Circuit 2 Day target circuit temperature"
     )
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0
@@ -823,7 +823,7 @@ async def test_circuit_day_target_circuit_temperature_number(
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
 
     # Dispatch new state.
-    await connection.device.mixers[0].dispatch(
+    await connection.device.mixers[1].dispatch(
         day_target_circuit_temperature_key,
         EcomaxParameter(
             device=connection.device,
@@ -859,7 +859,7 @@ async def test_circuit_night_target_circuit_temperature_number(
     """Test cicuit night target circuit temperature number."""
     await setup_integration(hass, config_entry)
     night_target_circuit_temperature_entity_id = (
-        "number.ecomax_circuit_1_night_target_circuit_temperature"
+        "number.ecomax_circuit_2_night_target_circuit_temperature"
     )
     night_target_circuit_temperature_key = "night_target_temp"
 
@@ -874,7 +874,7 @@ async def test_circuit_night_target_circuit_temperature_number(
     assert state.state == "0.0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
-        == "ecoMAX Circuit 1 Night target circuit temperature"
+        == "ecoMAX Circuit 2 Night target circuit temperature"
     )
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0
@@ -883,7 +883,7 @@ async def test_circuit_night_target_circuit_temperature_number(
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
 
     # Dispatch new state.
-    await connection.device.mixers[0].dispatch(
+    await connection.device.mixers[1].dispatch(
         night_target_circuit_temperature_key,
         EcomaxParameter(
             device=connection.device,

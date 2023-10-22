@@ -4,7 +4,7 @@ from __future__ import annotations
 from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass
 import logging
-from typing import Any
+from typing import Any, Literal
 
 from homeassistant.components.number import (
     EntityDescription,
@@ -21,7 +21,7 @@ from pyplumio.filters import on_change
 from pyplumio.helpers.parameter import Parameter
 
 from .connection import EcomaxConnection
-from .const import CALORIFIC_KWH_KG, DOMAIN, MODULE_A
+from .const import ALL, CALORIFIC_KWH_KG, DOMAIN, MODULE_A
 from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -130,6 +130,8 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
 class EcomaxMixerNumberEntityDescription(EcomaxNumberEntityDescription):
     """Describes ecoMAX mixer entity."""
 
+    indexes: set[int] | Literal["all"] = ALL
+
 
 MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
     EcomaxMixerNumberEntityDescription(
@@ -166,6 +168,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
+        indexes={2, 3},
     ),
     EcomaxMixerNumberEntityDescription(
         key="max_target_temp",
@@ -173,6 +176,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
+        indexes={2, 3},
     ),
     EcomaxMixerNumberEntityDescription(
         key="day_target_temp",
@@ -180,6 +184,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
+        indexes={2, 3},
     ),
     EcomaxMixerNumberEntityDescription(
         key="night_target_temp",
@@ -187,6 +192,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
+        indexes={2, 3},
     ),
 )
 
@@ -224,6 +230,16 @@ def get_by_modules(
             yield description
 
 
+def get_by_index(
+    index, descriptions: Iterable[EcomaxMixerNumberEntityDescription]
+) -> Generator[EcomaxMixerNumberEntityDescription, None, None]:
+    """Filter mixer/circuit descriptions by indexes."""
+    index += 1
+    for description in descriptions:
+        if description.indexes == ALL or index in description.indexes:
+            yield description
+
+
 def async_setup_ecomax_numbers(connection: EcomaxConnection) -> list[EcomaxNumber]:
     """Setup ecoMAX numbers."""
     return [
@@ -242,9 +258,12 @@ def async_setup_mixer_numbers(connection: EcomaxConnection) -> list[MixerNumber]
     for index in connection.device.mixers.keys():
         entities.extend(
             MixerNumber(connection, description, index)
-            for description in get_by_modules(
-                connection.device.modules,
-                get_by_product_type(connection.product_type, MIXER_NUMBER_TYPES),
+            for description in get_by_index(
+                index,
+                get_by_modules(
+                    connection.device.modules,
+                    get_by_product_type(connection.product_type, MIXER_NUMBER_TYPES),
+                ),
             )
         )
 
