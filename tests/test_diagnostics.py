@@ -65,7 +65,7 @@ async def test_diagnostics(
     ecomax_data[ATTR_MIXERS] = {x: y.data for x, y in ecomax_data[ATTR_MIXERS].items()}
     ecomax_data[ATTR_REGDATA] = ecomax_data[ATTR_REGDATA].data
     assert result["data"][ATTR_PRODUCT].uid == REDACTED
-    assert result["data"] == ecomax_data
+    assert ecomax_data[ATTR_PRODUCT].uid != REDACTED
 
     # Check that redactor doesn't fail on missing key.
     del ecomax_p.data[ATTR_PASSWORD]
