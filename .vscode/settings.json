@@ -1,9 +1,6 @@
 {
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
-    },
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
         "source.organizeImports": true
@@ -12,13 +9,17 @@
         "--profile",
         "black"
     ],
-    "python.linting.flake8Enabled": true,
-    "python.linting.mypyEnabled": true,
-    "python.linting.pylintEnabled": true,
     "editor.rulers": [
         72,
         88
     ],
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.tabSize": 4
+    },
+    "[json]": {
+        "editor.tabSize": 2
+    },
     "files.associations": {
         "*.yaml": "home-assistant"
     },
