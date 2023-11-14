@@ -2,8 +2,8 @@
   "config": {
     "abort": {
       "unsupported_product": "Nieobsługiwany produkt",
-      "discovery_failed": "Zjišťování modulu nelze dokončit",
-      "no_devices_found": "V síti nebyla nalezena žádná zařízení",
+      "discovery_failed": "Nie można zakończyć wykrywania modułu",
+      "no_devices_found": "Nie znaleziono żadnych urządzeń w sieci",
       "already_configured": "Urządzenie jest już skonfigurowane"
     },
     "error": {
@@ -43,18 +43,18 @@
       "water_heater_pump": { "name": "Pompa CWU" },
       "circulation_pump": { "name": "Pompa cyrkulacyjna" },
       "alert": { "name": "Alarm" },
-      "connection_status": { "name": "Connection status" },
+      "connection_status": { "name": "Status połączenia" },
       "fan": { "name": "Wentylator" },
       "exhaust_fan": { "name": "Wentylator wyciągowy" },
-      "feeder": { "name": "Podajnika" },
-      "lighter": { "name": "Lighter" },
+      "feeder": { "name": "Podajnik" },
+      "lighter": { "name": "Palnik" },
       "solar_pump": { "name": "Pompa solarna" },
       "fireplace_pump": { "name": "Pompa kominkowa" },
       "mixer_pump": { "name": "Pompa mieszacza" },
-      "circuit_pump": { "name": "Pompa obiega" }
+      "circuit_pump": { "name": "Pompa obiegowa" }
     },
     "button": {
-      "detect_sub_devices": { "name": "Detect sub-devices" }
+      "detect_sub_devices": { "name": "Wykryj urządzenia podrzędne" }
     },
     "climate": {
       "ecomax_climate": {
@@ -64,7 +64,7 @@
             "state": {
               "schedule": "Harmonogram",
               "airing": "Wietrzenie",
-              "party": "Party",
+              "party": "Impreza",
               "holidays": "Wakacje",
               "antifreeze": "Przeciwzamarzanie"
             }
@@ -83,27 +83,27 @@
       "target_mixer_temp": { "name": "Temperatura zadana mieszacza" },
       "min_mixer_temp": { "name": "Min. temperatura mieszacza" },
       "max_mixer_temp": { "name": "Max. temperatura  mieszacza" },
-      "target_circuit_temp": { "name": "Temperatura zadana obiega" },
-      "min_circuit_temp": { "name": "Min. temperatura obiega" },
-      "max_circuit_temp": { "name": "Max. temperatura obiega" },
+      "target_circuit_temp": { "name": "Temperatura zadana obiegu" },
+      "min_circuit_temp": { "name": "Min. temperatura obiegu" },
+      "max_circuit_temp": { "name": "Max. temperatura obiegu" },
       "day_target_circuit_temp": { "name": "Temperatura zadana dzień" },
       "night_target_circuit_temp": { "name": "Temperatura zadana noc" }
     },
     "select": {
       "summer_mode": {
-        "name": "Tryb LATO",
+        "name": "Tryb letni",
         "state": {
-          "on": "On",
-          "off": "Off",
+          "on": "Włączony",
+          "off": "Wyłączony",
           "auto": "Auto"
         }
       },
       "mixer_work_mode": {
         "name": "Obsługa mieszacza",
         "state": {
-          "off": "Wyłączona",
-          "heating": "Włączana CO",
-          "heated_floor": "Włączona podłog",
+          "off": "Wyłączony",
+          "heating": "Grzanie CO",
+          "heated_floor": "Grzanie podłogowe",
           "pump_only": "Tylko pompa"
         }
       }
@@ -122,21 +122,21 @@
           "kindling": "Rozpalanie",
           "heating": "Praca",
           "paused": "Nadzór",
-          "idle": "Postój",
-          "standby": "Wygaszanie na żądanie",
+          "idle": "Bezczynny",
+          "standby": "Czuwanie",
           "burning_off": "Wygaszanie",
           "alert": "Alarm",
           "unknown": "Nieznany"
         }
       },
-      "service_password": { "name": "Hasło specjalne" },
+      "service_password": { "name": "Hasło serwisowe" },
       "software_version": { "name": "Wersja oprogramowania" },
       "uid": { "name": "UID" },
       "oxygen_level": { "name": "Poziom tlenu" },
       "power": { "name": "Moc" },
       "fuel_level": { "name": "Poziom paliwa" },
       "fuel_consumption": { "name": "Zużycie paliwa" },
-      "load": { "name": "Poziom mocy kotła" },
+      "load": { "name": "Poziom obciążenia kotła" },
       "fan_power": { "name": "Moc wentylatora" },
       "flame_intensity": { "name": "Intensywność płomienia" },
       "feeder_temp": { "name": "Temperatura podajnika" },
@@ -149,22 +149,22 @@
       "fireplace_temp": { "name": "Temperatura kominkowa" },
       "mixer_temp": { "name": "Temperatura mieszacza" },
       "mixer_target_temp": { "name": "Temperatura zadana mieszacza" },
-      "circuit_temp": { "name": "Temperatura obiega" },
-      "circuit_target_temp": { "name": "Temperatura zadana obiega" },
+      "circuit_temp": { "name": "Temperatura obiegu" },
+      "circuit_target_temp": { "name": "Temperatura zadana obiegu" },
       "total_fuel_burned": { "name": "Spalone paliwo" },
-      "ash_pan_full": { "name": "Popielnik" }
+      "ash_pan_full": { "name": "Popielnik pełny" }
     },
     "switch": {
       "controller_switch": { "name": "Przełącznik regulatora" },
       "water_heater_disinfection_switch": { "name": "Dezynfekcja zasobnika CWU" },
-      "water_heater_pump_switch": { "name": "Przełącznik CWU pompy" },
+      "water_heater_pump_switch": { "name": "Przełącznik pompy CWU" },
       "weather_control_switch": { "name": "Sterowanie pogodowe" },
       "fuzzy_logic_switch": { "name": "Przełącznik Fuzzy Logic" },
       "heating_schedule_switch": { "name": "Harmonogram CO" },
       "water_heater_schedule_switch": { "name": "Harmonogram CWU" },
-      "enable_in_summer_mode": { "name": "Praca w LATO" },
+      "enable_in_summer_mode": { "name": "Praca w trybie letnim" },
       "disable_pump_on_thermostat": { "name": "Blokada pompy od termostatu" },
-      "enable_circuit": { "name": "Obsługa obiega" }
+      "enable_circuit": { "name": "Obsługa obiegu" }
     },
     "water_heater": {
       "indirect_water_heater": { "name": "CWU" }
@@ -173,104 +173,104 @@
   "selector": {
     "schedule_type": {
       "options": {
-        "heating": "Heating",
-        "water_heater": "Water heater"
+        "heating": "Grzanie CO",
+        "water_heater": "Grzanie CWU"
       }
     },
     "weekdays": {
       "options": {
-        "monday": "Monday",
-        "tuesday": "Tuesday",
-        "wednesday": "Wednesday",
-        "thursday": "Thursday",
-        "friday": "Friday",
-        "saturday": "Saturday",
-        "sunday": "Sunday"
+        "monday": "Poniedziałek",
+        "tuesday": "Wtorek",
+        "wednesday": "Środa",
+        "thursday": "Czwartek",
+        "friday": "Piątek",
+        "saturday": "Sobota",
+        "sunday": "Niedziela"
       }
     },
     "preset": {
       "options": {
-        "day": "Day",
-        "night": "Night"
+        "day": "Dzień",
+        "night": "Noc"
       }
     }
   },
   "services": {
     "get_parameter": {
-      "name": "Get parameter",
-      "description": "Gets device parameter.",
+      "name": "Pobierz parametr",
+      "description": "Pobiera parametry urządzenia.",
       "fields": {
         "name": {
-          "name": "Name",
-          "description": "Name of the parameter"
+          "name": "Nazwa",
+          "description": "Nazwa parametru"
         }
       }
     },
     "set_parameter": {
-      "name": "Set parameter",
-      "description": "Sets device parameter.",
+      "name": "Ustaw parametr",
+      "description": "Ustawia parametry urządzenia.",
       "fields": {
         "name": {
-          "name": "Name",
-          "description": "Name of the parameter"
+          "name": "Nazwa",
+          "description": "Nazwa parametru"
         },
         "value": {
-          "name": "Value",
-          "description": "A value that parameter will be set to"
+          "name": "Wartość",
+          "description": "Zadana wartość parametru"
         }
       }
     },
     "get_schedule": {
-      "name": "Get schedule",
-      "description": "Gets device schedule.",
+      "name": "Pobierz harmonogram",
+      "description": "Pobierz harmonogram urządzenia.",
       "fields": {
         "type": {
-          "name": "Type",
-          "description": "Type of the schedule"
+          "name": "Typ",
+          "description": "Typ harmonogramu"
         },
         "weekdays": {
-          "name": "Weekdays",
-          "description": "Weekdays for which to get the schedules"
+          "name": "Dni tygodnia",
+          "description": "Dni tygodnia dla których pobrać harmonogram"
         }
       }
     },
     "set_schedule": {
-      "name": "Set schedule",
-      "description": "Sets device schedule.",
+      "name": "Ustaw harmonogram",
+      "description": "Ustaw harmonogram urządzenia.",
       "fields": {
         "type": {
-          "name": "Type",
-          "description": "Type of the schedule"
+          "name": "Typ",
+          "description": "Typ harmonogramu"
         },
         "weekdays": {
-          "name": "Weekdays",
-          "description": "Weekdays for which to set the schedules"
+          "name": "Dni tygodnia",
+          "description": "Dni tygodnia dla których ustawić harmonogram"
         },
         "preset": {
-          "name": "Preset",
-          "description": "Preset at scheduled time"
+          "name": "Nastaw",
+          "description": "Nastaw na zaplanowany czas"
         },
         "start": {
-          "name": "Start time",
-          "description": "Time at which scheduled state will be set"
+          "name": "Czas startu",
+          "description": "Czas w których nastaw ma zostać rozpoczęty"
         },
         "end": {
-          "name": "End time",
-          "description": "Time at which scheduled state will be cleared"
+          "name": "Czas zakończenia",
+          "description": "Czas w których nastaw ma zostać zakończony"
         }
       }
     },
     "reset_meter": {
-      "name": "Reset meter",
-      "description": "Resets meter value."
+      "name": "Reset licznika",
+      "description": "Resetuje licznik."
     },
     "calibrate_meter": {
-      "name": "Calibrate meter",
-      "description": "Allows to calibrate meter by pre-setting it's value.",
+      "name": "Kalibracja licznika",
+      "description": "Umożliwia kalibrację licznika poprzez wstępne ustawienie jego wartości.",
       "fields": {
         "value": {
-          "name": "Value",
-          "description": "Sets meter to this value."
+          "name": "Wartość",
+          "description": "Ustaw licznik do zadanej wartości."
         }
       }
     }
