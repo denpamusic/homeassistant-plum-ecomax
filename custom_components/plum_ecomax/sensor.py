@@ -494,7 +494,7 @@ class RegdataSensorEntityDescription(EcomaxSensorEntityDescription):
     """Describes RegData sensor entity."""
 
     key: int
-    product_models: set[str]
+    product_models: set[ProductModel]
 
 
 REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
@@ -522,7 +522,7 @@ class RegdataSensor(EcomaxSensor):
 
 
 def get_by_product_model(
-    product_model: ProductModel, descriptions: Iterable[RegdataSensorEntityDescription]
+    product_model: str, descriptions: Iterable[RegdataSensorEntityDescription]
 ) -> Generator[RegdataSensorEntityDescription, None, None]:
     """Get descriptions by product model."""
     for description in descriptions:
