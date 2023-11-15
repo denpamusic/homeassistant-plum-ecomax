@@ -119,4 +119,4 @@ class ProductModel(StrEnum):
     ECOMAX_860D3_HB = "ecoMAX 860D3-HB"
     ECOMAX_860P3_O = "ecoMAX 860P3-O"
     ECOMAX_860P3_S_LITE = "ecoMAX 860P3-S LITE"
-    ECOMAX_920P1_O = "ecoMAX920 P1-O"
+    ECOMAX_920P1_O = "ecoMAX 920P1-O"
