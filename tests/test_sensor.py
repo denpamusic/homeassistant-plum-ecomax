@@ -1189,7 +1189,7 @@ async def test_total_fuel_burned_sensor(
 
 
 @pytest.mark.usefixtures("ecomax_860p3_o")
-async def test_ash_pan_full_sensor(
+async def test_ash_pan_full_sensor_ecomax_860p3_o(
     hass: HomeAssistant,
     connection: EcomaxConnection,
     config_entry: MockConfigEntry,
@@ -1209,6 +1209,38 @@ async def test_ash_pan_full_sensor(
     # Get initial value.
     state = hass.states.get(ash_pan_full_entity_id)
     assert state.state == "49"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Ash pan full"
+    assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
+    assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
+    assert state.attributes[ATTR_ICON] == "mdi:tray-alert"
+
+    # Dispatch new value.
+    await connection.device.regdata.dispatch(ash_pan_full_key, 55)
+    state = hass.states.get(ash_pan_full_entity_id)
+    assert state.state == "55"
+
+
+@pytest.mark.usefixtures("ecomax_860p3_s_lite")
+async def test_ash_pan_full_sensor_ecomax_860p3_s_lite(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test ash pan sensor for ecoMAX 860P3-S LITE."""
+    await setup_integration(hass, config_entry)
+    ash_pan_full_entity_id = "sensor.ecomax_ash_pan_full"
+    ash_pan_full_key = 215
+
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(ash_pan_full_entity_id)
+    assert entry
+    assert entry.translation_key == "ash_pan_full"
+
+    # Get initial value.
+    state = hass.states.get(ash_pan_full_entity_id)
+    assert state.state == "8"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Ash pan full"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT

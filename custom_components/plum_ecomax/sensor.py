@@ -509,6 +509,17 @@ REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
         suggested_display_precision=0,
         value_fn=lambda x: x,
     ),
+    RegdataSensorEntityDescription(
+        key=215,
+        translation_key="ash_pan_full",
+        icon="mdi:tray-alert",
+        native_unit_of_measurement=PERCENTAGE,
+        product_types={ProductType.ECOMAX_P},
+        product_models={ProductModel.ECOMAX_860P3_S_LITE},
+        state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
+        value_fn=lambda x: x,
+    ),
 )
 
 
