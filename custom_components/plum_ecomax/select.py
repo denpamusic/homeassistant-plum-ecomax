@@ -73,7 +73,6 @@ class EcomaxSelect(EcomaxEntity, SelectEntity):
 
     async def async_update(self, value) -> None:
         """Retrieve latest state."""
-        print(value)
         self._attr_current_option = self.entity_description.options[int(value)]
         self.async_write_ha_state()
 
