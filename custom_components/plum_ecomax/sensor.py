@@ -48,7 +48,7 @@ from .const import (
     ECOLAMBDA,
     FLOW_KGH,
     MODULE_A,
-    ProductId,
+    ProductModel,
 )
 from .entity import EcomaxEntity, MixerEntity
 
@@ -494,7 +494,7 @@ class RegdataSensorEntityDescription(EcomaxSensorEntityDescription):
     """Describes RegData sensor entity."""
 
     key: int
-    product_ids: set[int]
+    product_models: set[str]
 
 
 REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
@@ -503,8 +503,8 @@ REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
         translation_key="ash_pan_full",
         icon="mdi:tray-alert",
         native_unit_of_measurement=PERCENTAGE,
-        product_ids={ProductId.ECOMAX_860P3_O},
         product_types={ProductType.ECOMAX_P},
+        product_models={ProductModel.ECOMAX_860P3_O},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=0,
         value_fn=lambda x: x,
@@ -521,12 +521,12 @@ class RegdataSensor(EcomaxSensor):
         return self.connection.device.regdata
 
 
-def get_by_product_id(
-    product_id: int, descriptions: Iterable[RegdataSensorEntityDescription]
+def get_by_product_model(
+    product_model: ProductModel, descriptions: Iterable[RegdataSensorEntityDescription]
 ) -> Generator[RegdataSensorEntityDescription, None, None]:
-    """Get descriptions by product id."""
+    """Get descriptions by product model."""
     for description in descriptions:
-        if product_id in description.product_ids:
+        if product_model in description.product_models:
             yield description
 
 
@@ -579,7 +579,7 @@ def async_setup_regdata_sensors(connection: EcomaxConnection) -> list[RegdataSen
             connection.device.modules,
             get_by_product_type(
                 connection.product_type,
-                get_by_product_id(connection.product_id, REGDATA_SENSOR_TYPES),
+                get_by_product_model(connection.model, REGDATA_SENSOR_TYPES),
             ),
         )
     ]

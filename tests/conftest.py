@@ -53,7 +53,7 @@ from custom_components.plum_ecomax.const import (
     DEFAULT_DEVICE,
     DEFAULT_PORT,
     DOMAIN,
-    ProductId,
+    ProductModel,
 )
 from tests.common import load_regdata_fixture
 
@@ -405,9 +405,8 @@ def ecomax_860p3_o(ecomax_p: EcoMAX):
     """Inject data for ecoMAX 860P3-O.
     (product_type: 0, product_id: 51)
     """
-    model = "ecoMAX860P3-O"
-    product_id = ProductId.ECOMAX_860P3_O
     product_type = ProductType.ECOMAX_P
+    product_model = ProductModel.ECOMAX_860P3_O
 
     regulator_data = RegulatorData()
     regulator_data.data = load_regdata_fixture("regdata__ecomax_860p3_o.json")
@@ -416,19 +415,19 @@ def ecomax_860p3_o(ecomax_p: EcoMAX):
         {
             "product": ProductInfo(
                 type=product_type,
-                id=product_id,
+                id=51,
                 uid="TEST",
                 logo=13056,
                 image=2816,
-                model=model,
+                model=product_model,
             ),
             "regdata": regulator_data,
         }
     )
 
     with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.product_id",
-        product_id,
+        "custom_components.plum_ecomax.connection.EcomaxConnection.model",
+        product_model,
     ):
         yield ecomax_p
 

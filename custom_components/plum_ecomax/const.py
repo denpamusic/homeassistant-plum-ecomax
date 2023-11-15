@@ -1,6 +1,6 @@
 """Constants for the Plum ecoMAX integration."""
 
-from enum import IntEnum, unique
+from enum import StrEnum, unique
 from typing import Final
 
 DOMAIN = "plum_ecomax"
@@ -107,14 +107,16 @@ DEVICE_CLASS_STATE: Final = "plum_ecomax__state"
 DEVICE_CLASS_METER: Final = "plum_ecomax__meter"
 
 
-# Device ids enum.
+# Device models.
 @unique
-class ProductId(IntEnum):
-    """Contains known product ids."""
+class ProductModel(StrEnum):
+    """Contains known device models."""
 
-    ECOMAX_850I = 0
-    ECOMAX_850P2_C = 4
-    ECOMAXX_800R3 = 36
-    ECOMAX_860D3_HB = 48
-    ECOMAX_860P3_O = 51
-    ECOMAX_350P2_ZF = 90
+    ECOMAX_350P2_ZF = "ecoMAX 350P2-ZF"
+    ECOMAX_850I = "ecoMAX 850i"
+    ECOMAX_850P2_C = "ecoMAX 850P2-C"
+    ECOMAXX_800R3 = "ecoMAXX 800R3"
+    ECOMAX_860D3_HB = "ecoMAX 860D3-HB"
+    ECOMAX_860P3_O = "ecoMAX 860P3-O"
+    ECOMAX_860P3_S_LITE = "ecoMAX 860P3-S LITE"
+    ECOMAX_920P1_O = "ecoMAX920 P1-O"
