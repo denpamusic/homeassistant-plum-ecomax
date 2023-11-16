@@ -28,7 +28,7 @@ _LOGGER = logging.getLogger(__name__)
 class EcomaxSwitchEntityDescription(SwitchEntityDescription):
     """Describes ecoMAX switch entity."""
 
-    product_types: set[ProductType]
+    product_types: set[ProductType] | Literal["all"] = ALL
     filter_fn: Callable[[Any], Any] = on_change
     module: str = MODULE_A
     state_off: ParameterValueType = STATE_OFF
@@ -39,17 +39,14 @@ SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     EcomaxSwitchEntityDescription(
         key="ecomax_control",
         translation_key="controller_switch",
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
     EcomaxSwitchEntityDescription(
         key="water_heater_disinfection",
         translation_key="water_heater_disinfection_switch",
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
     ),
     EcomaxSwitchEntityDescription(
         key="water_heater_work_mode",
         translation_key="water_heater_pump_switch",
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         state_off=0,
         state_on=2,
     ),
@@ -173,7 +170,10 @@ def get_by_product_type(
 ) -> Generator[EcomaxSwitchEntityDescription, None, None]:
     """Filter descriptions by product type."""
     for description in descriptions:
-        if product_type in description.product_types:
+        if (
+            description.product_types == ALL
+            or product_type in description.product_types
+        ):
             yield description
 
 

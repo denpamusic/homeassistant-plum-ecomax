@@ -31,7 +31,7 @@ _LOGGER = logging.getLogger(__name__)
 class EcomaxNumberEntityDescription(NumberEntityDescription):
     """Describes ecoMAX number entity."""
 
-    product_types: set[ProductType]
+    product_types: set[ProductType] | Literal["all"] = ALL
     filter_fn: Callable[[Any], Any] = on_change
     mode: NumberMode = NumberMode.AUTO
     module: str = MODULE_A
@@ -217,7 +217,10 @@ def get_by_product_type(
 ) -> Generator[EcomaxNumberEntityDescription, None, None]:
     """Filter descriptions by product type."""
     for description in descriptions:
-        if product_type in description.product_types:
+        if (
+            description.product_types == ALL
+            or product_type in description.product_types
+        ):
             yield description
 
 

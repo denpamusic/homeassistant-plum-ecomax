@@ -4,7 +4,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 import logging
-from typing import Any, Generator, Iterable
+from typing import Any, Generator, Iterable, Literal
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -19,7 +19,7 @@ from pyplumio.const import ProductType
 from pyplumio.filters import on_change
 
 from .connection import EcomaxConnection
-from .const import DOMAIN, MODULE_A
+from .const import ALL, DOMAIN, MODULE_A
 from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -29,8 +29,8 @@ _LOGGER = logging.getLogger(__name__)
 class EcomaxBinarySensorEntityDescription(BinarySensorEntityDescription):
     """Describes ecoMAX binary sensor entity."""
 
-    product_types: set[ProductType]
     value_fn: Callable[[Any], Any]
+    product_types: set[ProductType] | Literal["all"] = ALL
     always_available: bool = False
     filter_fn: Callable[[Any], Any] = on_change
     icon_off: str | None = None
@@ -44,7 +44,6 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:pump",
         icon_off="mdi:pump-off",
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
@@ -53,7 +52,6 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:pump",
         icon_off="mdi:pump-off",
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
@@ -62,7 +60,6 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         device_class=BinarySensorDeviceClass.RUNNING,
         icon="mdi:pump",
         icon_off="mdi:pump-off",
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
@@ -70,7 +67,6 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         translation_key="alert",
         device_class=BinarySensorDeviceClass.PROBLEM,
         entity_category=EntityCategory.DIAGNOSTIC,
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         value_fn=lambda x: x > 0,
     ),
     EcomaxBinarySensorEntityDescription(
@@ -79,7 +75,6 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         device_class=BinarySensorDeviceClass.CONNECTIVITY,
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda x: x,
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         always_available=True,
     ),
     EcomaxBinarySensorEntityDescription(
@@ -213,7 +208,10 @@ def get_by_product_type(
 ) -> Generator[EcomaxBinarySensorEntityDescription, None, None]:
     """Filter descriptions by product type."""
     for description in descriptions:
-        if product_type in description.product_types:
+        if (
+            description.product_types == ALL
+            or product_type in description.product_types
+        ):
             yield description
 
 

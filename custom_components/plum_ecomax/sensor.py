@@ -5,7 +5,7 @@ from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass
 from datetime import date, datetime
 import logging
-from typing import Any, Final
+from typing import Any, Final, Literal
 
 from homeassistant.components.sensor import (
     RestoreSensor,
@@ -40,6 +40,7 @@ import voluptuous as vol
 
 from .connection import EcomaxConnection
 from .const import (
+    ALL,
     ATTR_NUMERIC,
     ATTR_VALUE,
     DEVICE_CLASS_METER,
@@ -81,7 +82,7 @@ _LOGGER = logging.getLogger(__name__)
 class EcomaxSensorEntityDescription(SensorEntityDescription):
     """Describes ecoMAX sensor entity."""
 
-    product_types: set[ProductType]
+    product_types: set[ProductType] | Literal["all"] = ALL
     value_fn: Callable[[Any], Any]
     always_available: bool = False
     filter_fn: Callable[[Any], Any] = on_change
@@ -95,7 +96,6 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
         value_fn=lambda x: x,
@@ -106,7 +106,6 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
         value_fn=lambda x: x,
@@ -117,7 +116,6 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         filter_fn=lambda x: throttle(on_change(x), seconds=10),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
         value_fn=lambda x: x,
@@ -127,7 +125,6 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         translation_key="heating_target",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
         value_fn=lambda x: x,
@@ -137,7 +134,6 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         translation_key="water_heater_target",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
         value_fn=lambda x: x,
@@ -146,7 +142,6 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         key="state",
         translation_key="ecomax_state",
         device_class=DEVICE_CLASS_STATE,
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         value_fn=lambda x: EM_TO_HA_STATE[x] if x in EM_TO_HA_STATE else STATE_UNKNOWN,
     ),
     EcomaxSensorEntityDescription(
@@ -154,21 +149,18 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         translation_key="service_password",
         entity_category=EntityCategory.DIAGNOSTIC,
         icon="mdi:form-textbox-password",
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="modules",
         translation_key="software_version",
         entity_category=EntityCategory.DIAGNOSTIC,
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         value_fn=lambda x: x.module_a,
     ),
     EcomaxSensorEntityDescription(
         key="product",
         translation_key="uid",
         entity_category=EntityCategory.DIAGNOSTIC,
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         value_fn=lambda x: x.uid,
     ),
     EcomaxSensorEntityDescription(
@@ -178,7 +170,6 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         icon="mdi:weather-windy-variant",
         module=ECOLAMBDA,
         native_unit_of_measurement=PERCENTAGE,
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
         value_fn=lambda x: x,
@@ -503,7 +494,6 @@ REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
         translation_key="ash_pan_full",
         icon="mdi:tray-alert",
         native_unit_of_measurement=PERCENTAGE,
-        product_types={ProductType.ECOMAX_P},
         product_models={ProductModel.ECOMAX_860P3_O},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=0,
@@ -514,7 +504,6 @@ REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
         translation_key="ash_pan_full",
         icon="mdi:tray-alert",
         native_unit_of_measurement=PERCENTAGE,
-        product_types={ProductType.ECOMAX_P},
         product_models={ProductModel.ECOMAX_860P3_S_LITE},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=0,
@@ -546,7 +535,10 @@ def get_by_product_type(
 ) -> Generator[EcomaxSensorEntityDescription, None, None]:
     """Get descriptions by product type."""
     for description in descriptions:
-        if product_type in description.product_types:
+        if (
+            description.product_types == ALL
+            or product_type in description.product_types
+        ):
             yield description
 
 

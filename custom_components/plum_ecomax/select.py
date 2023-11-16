@@ -34,7 +34,7 @@ _LOGGER = logging.getLogger(__name__)
 class EcomaxSelectEntityDescription(SelectEntityDescription):
     """Describes ecoMAX select entity."""
 
-    product_types: set[ProductType]
+    product_types: set[ProductType] | Literal["all"] = ALL
     filter_fn: Callable[[Any], Any] = on_change
     module: str = MODULE_A
 
@@ -44,7 +44,6 @@ SELECT_TYPES: tuple[EcomaxSelectEntityDescription, ...] = (
         key="summer_mode",
         translation_key="summer_mode",
         options=[STATE_OFF, STATE_AUTO, STATE_ON],
-        product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
         icon="mdi:weather-sunny",
     ),
 )
@@ -121,7 +120,10 @@ def get_by_product_type(
 ) -> Generator[EcomaxSelectEntityDescription, None, None]:
     """Filter descriptions by product type."""
     for description in descriptions:
-        if product_type in description.product_types:
+        if (
+            description.product_types == ALL
+            or product_type in description.product_types
+        ):
             yield description
 
 
