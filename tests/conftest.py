@@ -13,6 +13,7 @@ from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
 from pyplumio.structures.ecomax_parameters import (
     EcomaxBinaryParameter,
+    EcomaxBinaryParameterDescription,
     EcomaxParameter,
     EcomaxParameterDescription,
 )
@@ -234,9 +235,7 @@ def ecomax_control(ecomax_common: EcoMAX):
                 value=STATE_OFF,
                 min_value=STATE_OFF,
                 max_value=STATE_ON,
-                description=EcomaxParameterDescription(
-                    ATTR_ECOMAX_CONTROL, cls=EcomaxBinaryParameter
-                ),
+                description=EcomaxBinaryParameterDescription(ATTR_ECOMAX_CONTROL),
             )
         }
     )
@@ -254,7 +253,7 @@ def fixture_ecomax_p(ecomax_common: EcoMAX):
                 uid="TEST",
                 logo=1024,
                 image=2816,
-                model="ecoMAX850P2-C",
+                model="ecoMAX 850P2-C",
             ),
             "modules": ConnectedModules(
                 module_a="6.10.32.K1",
@@ -326,7 +325,7 @@ def fixture_ecomax_p(ecomax_common: EcoMAX):
                 min_value=0,
                 max_value=1,
                 description=EcomaxParameterDescription(
-                    "fuel_calorific_value_kwh_kg", multiplier=10
+                    "fuel_calorific_value_kwh_kg", multiplier=0.1
                 ),
             ),
             "heating_weather_control": EcomaxBinaryParameter(
@@ -498,8 +497,8 @@ def water_heater(ecomax_common: EcoMAX):
                 value=0,
                 min_value=0,
                 max_value=1,
-                description=EcomaxParameterDescription(
-                    "water_heater_disinfection", cls=EcomaxBinaryParameter
+                description=EcomaxBinaryParameterDescription(
+                    "water_heater_disinfection"
                 ),
             ),
             "water_heater_schedule_switch": EcomaxBinaryParameter(
@@ -561,12 +560,12 @@ def mixers(ecomax_common: EcoMAX):
             max_value=1,
             description=MixerParameterDescription("weather_control"),
         ),
-        "off_therm_pump": MixerBinaryParameter(
+        "thermostat_disable_pump": MixerBinaryParameter(
             device=ecomax_common,
             value=0,
             min_value=0,
             max_value=1,
-            description=MixerParameterDescription("off_therm_pump"),
+            description=MixerParameterDescription("thermostat_disable_pump"),
         ),
         "summer_work": MixerBinaryParameter(
             device=ecomax_common,
@@ -575,23 +574,23 @@ def mixers(ecomax_common: EcoMAX):
             max_value=1,
             description=MixerParameterDescription("summer_work"),
         ),
-        "support": MixerParameter(
+        "enable_circuit": MixerParameter(
             device=ecomax_common,
             value=0,
             min_value=0,
             max_value=1,
-            description=MixerParameterDescription("support"),
+            description=MixerParameterDescription("enable_circuit"),
         ),
     }
 
     mixer_1 = Mixer(queue=Mock(spec=asyncio.Queue), parent=ecomax_common)
     mixer_1.data = {
-        "support": MixerParameter(
+        "enable_circuit": MixerParameter(
             device=ecomax_common,
             value=0,
             min_value=0,
             max_value=2,
-            description=MixerParameterDescription("support"),
+            description=MixerParameterDescription("enable_circuit"),
         ),
         "day_target_temp": MixerParameter(
             device=ecomax_common,
@@ -627,7 +626,8 @@ def mixers(ecomax_common: EcoMAX):
         {
             "mixer_sensors": True,
             "mixer_parameters": True,
-            "mixer_count": 2,
+            "mixers_available": 2,
+            "mixers_connected": 2,
             "mixers": {
                 0: mixer_0,
                 1: mixer_1,
@@ -668,7 +668,7 @@ def thermostats(ecomax_common: EcoMAX):
             value=5,
             min_value=0,
             max_value=50,
-            description=ThermostatParameterDescription("hysteresis", multiplier=10),
+            description=ThermostatParameterDescription("hysteresis", multiplier=0.1),
         ),
         "party_target_temp": ThermostatParameter(
             offset=0,
@@ -677,7 +677,7 @@ def thermostats(ecomax_common: EcoMAX):
             min_value=100,
             max_value=350,
             description=ThermostatParameterDescription(
-                "party_target_temp", multiplier=10, size=2
+                "party_target_temp", multiplier=0.1, size=2
             ),
         ),
         "holidays_target_temp": ThermostatParameter(
@@ -687,7 +687,7 @@ def thermostats(ecomax_common: EcoMAX):
             min_value=0,
             max_value=600,
             description=ThermostatParameterDescription(
-                "holidays_target_temp", multiplier=10, size=2
+                "holidays_target_temp", multiplier=0.1, size=2
             ),
         ),
         "antifreeze_target_temp": ThermostatParameter(
@@ -697,7 +697,7 @@ def thermostats(ecomax_common: EcoMAX):
             min_value=50,
             max_value=300,
             description=ThermostatParameterDescription(
-                "antifreeze_target_temp", multiplier=10, size=2
+                "antifreeze_target_temp", multiplier=0.1, size=2
             ),
         ),
         "day_target_temp": ThermostatParameter(
@@ -707,7 +707,7 @@ def thermostats(ecomax_common: EcoMAX):
             min_value=100,
             max_value=350,
             description=ThermostatParameterDescription(
-                "day_target_temp", multiplier=10, size=2
+                "day_target_temp", multiplier=0.1, size=2
             ),
         ),
         "night_target_temp": ThermostatParameter(
@@ -717,7 +717,7 @@ def thermostats(ecomax_common: EcoMAX):
             min_value=100,
             max_value=200,
             description=ThermostatParameterDescription(
-                "night_target_temp", multiplier=10, size=2
+                "night_target_temp", multiplier=0.1, size=2
             ),
         ),
     }
@@ -726,7 +726,8 @@ def thermostats(ecomax_common: EcoMAX):
         {
             "thermostat_sensors": True,
             "thermostat_parameters": True,
-            "thermostat_count": 1,
+            "thermostats_available": 1,
+            "thermostats_connected": 1,
             "thermostats": {0: thermostat},
         }
     )

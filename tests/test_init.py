@@ -24,14 +24,12 @@ from custom_components.plum_ecomax import (
     async_setup_entry,
     async_setup_events,
     async_unload_entry,
-    format_model_name,
 )
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
     ATTR_FROM,
     ATTR_TO,
     CONF_CAPABILITIES,
-    CONF_MODEL,
     CONF_PRODUCT_ID,
     CONF_SUB_DEVICES,
     DOMAIN,
@@ -157,11 +155,10 @@ async def test_migrate_entry_v1_2_to_v7(
     """Test migrating entry from version 1 or 2 to version 6."""
     config_entry.version = 1
     data = dict(config_entry.data)
-    data.update({CONF_MODEL: "ecoMAX850P2-C", CONF_CAPABILITIES: {"test_capability"}})
+    data.update({CONF_CAPABILITIES: {"test_capability"}})
     hass.config_entries.async_update_entry(config_entry, data=data)
     assert await async_migrate_entry(hass, config_entry)
     data = dict(config_entry.data)
-    assert data[CONF_MODEL] == "ecoMAX 850P2-C"
     assert CONF_CAPABILITIES not in data
     assert CONF_SUB_DEVICES in data
     assert config_entry.version == 7
@@ -175,11 +172,9 @@ async def test_migrate_entry_v3_to_v7(
     """Test migrating entry from version 3 to version 7."""
     config_entry.version = 3
     data = dict(config_entry.data)
-    data[CONF_MODEL] = "ecoMAX850P2-C"
     hass.config_entries.async_update_entry(config_entry, data=data)
     assert await async_migrate_entry(hass, config_entry)
     data = dict(config_entry.data)
-    assert data[CONF_MODEL] == "ecoMAX 850P2-C"
     assert config_entry.version == 7
     assert "Migration to version 7 successful" in caplog.text
 
@@ -227,20 +222,3 @@ async def test_migrate_entry_with_timeout(
         assert not await async_migrate_entry(hass, config_entry)
 
     assert "Migration failed" in caplog.text
-
-
-@pytest.mark.parametrize(
-    "model_name,formatted",
-    [
-        ("EM350P2-ZF", "ecoMAX 350P2-ZF"),
-        ("ecoMAXX800R3", "ecoMAXX 800R3"),
-        ("ecoMAX 850i", "ecoMAX 850i"),
-        ("ecoMAX850P2-C", "ecoMAX 850P2-C"),
-        ("ecoMAX920P1-O", "ecoMAX 920P1-O"),
-        ("ecoMAX860D3-HB", "ecoMAX 860D3-HB"),
-        ("ignore", "ignore"),
-    ],
-)
-async def test_format_model_name(model_name: str, formatted: str) -> None:
-    """Test model name formatter."""
-    assert format_model_name(model_name) == formatted

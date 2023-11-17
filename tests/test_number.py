@@ -88,7 +88,7 @@ async def test_target_heating_temperature_number(
 
     # Get initial state.
     state = hass.states.get(target_heating_temperature_entity_id)
-    assert state.state == "0.0"
+    assert state.state == "0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Target heating temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0
@@ -108,7 +108,7 @@ async def test_target_heating_temperature_number(
         ),
     )
     state = hass.states.get(target_heating_temperature_entity_id)
-    assert state.state == "65.0"
+    assert state.state == "65"
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 80
 
@@ -141,7 +141,7 @@ async def test_minimum_heating_temperature_number(
 
     # Get initial state.
     state = hass.states.get(minimum_heating_temperature_entity_id)
-    assert state.state == "0.0"
+    assert state.state == "0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Minimum heating temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0
@@ -161,7 +161,7 @@ async def test_minimum_heating_temperature_number(
         ),
     )
     state = hass.states.get(minimum_heating_temperature_entity_id)
-    assert state.state == "30.0"
+    assert state.state == "30"
     assert state.attributes[ATTR_MIN] == 10
     assert state.attributes[ATTR_MAX] == 40
 
@@ -194,7 +194,7 @@ async def test_maximum_heating_temperature_number(
 
     # Get initial state.
     state = hass.states.get(maximum_heating_temperature_entity_id)
-    assert state.state == "0.0"
+    assert state.state == "0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Maximum heating temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0
@@ -214,7 +214,7 @@ async def test_maximum_heating_temperature_number(
         ),
     )
     state = hass.states.get(maximum_heating_temperature_entity_id)
-    assert state.state == "90.0"
+    assert state.state == "90"
     assert state.attributes[ATTR_MIN] == 60
     assert state.attributes[ATTR_MAX] == 90
 
@@ -247,7 +247,7 @@ async def test_grate_mode_temperature_number(
 
     # Get initial state.
     state = hass.states.get(grate_mode_temperature_entity_id)
-    assert state.state == "0.0"
+    assert state.state == "0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Grate mode temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 0
@@ -267,7 +267,7 @@ async def test_grate_mode_temperature_number(
         ),
     )
     state = hass.states.get(grate_mode_temperature_entity_id)
-    assert state.state == "65.0"
+    assert state.state == "65"
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 80
 
@@ -300,7 +300,7 @@ async def test_fuzzy_logic_minimum_power_number(
 
     # Get initial state.
     state = hass.states.get(fuzzy_logic_minimum_power_entity_id)
-    assert state.state == "0.0"
+    assert state.state == "0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fuzzy logic minimum power"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
     assert state.attributes[ATTR_MIN] == 0
@@ -320,7 +320,7 @@ async def test_fuzzy_logic_minimum_power_number(
         ),
     )
     state = hass.states.get(fuzzy_logic_minimum_power_entity_id)
-    assert state.state == "30.0"
+    assert state.state == "30"
     assert state.attributes[ATTR_MIN] == 0
     assert state.attributes[ATTR_MAX] == 50
 
@@ -353,7 +353,7 @@ async def test_fuzzy_logic_maximum_power_number(
 
     # Get initial state.
     state = hass.states.get(fuzzy_logic_maximum_power_entity_id)
-    assert state.state == "0.0"
+    assert state.state == "0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fuzzy logic maximum power"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
     assert state.attributes[ATTR_MIN] == 0
@@ -373,7 +373,7 @@ async def test_fuzzy_logic_maximum_power_number(
         ),
     )
     state = hass.states.get(fuzzy_logic_maximum_power_entity_id)
-    assert state.state == "50.0"
+    assert state.state == "50"
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 100
 
@@ -423,7 +423,7 @@ async def test_fuel_calorific_value_number(
             min_value=40,
             max_value=50,
             description=EcomaxParameterDescription(
-                fuel_calorific_value_key, multiplier=10
+                fuel_calorific_value_key, multiplier=0.1
             ),
         ),
     )
@@ -463,7 +463,7 @@ async def test_mixer_target_mixer_temperature_number(
 
     # Get initial state.
     state = hass.states.get(target_mixer_temperature_entity_id)
-    assert state.state == "0.0"
+    assert state.state == "0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
         == "ecoMAX Mixer 1 Target mixer temperature"
@@ -486,7 +486,7 @@ async def test_mixer_target_mixer_temperature_number(
         ),
     )
     state = hass.states.get(target_mixer_temperature_entity_id)
-    assert state.state == "65.0"
+    assert state.state == "65"
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 80
 
@@ -521,7 +521,7 @@ async def test_mixer_minimum_mixer_temperature_number(
 
     # Get initial state.
     state = hass.states.get(minimum_mixer_temperature_entity_id)
-    assert state.state == "0.0"
+    assert state.state == "0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
         == "ecoMAX Mixer 1 Minimum mixer temperature"
@@ -544,7 +544,7 @@ async def test_mixer_minimum_mixer_temperature_number(
         ),
     )
     state = hass.states.get(minimum_mixer_temperature_entity_id)
-    assert state.state == "30.0"
+    assert state.state == "30"
     assert state.attributes[ATTR_MIN] == 10
     assert state.attributes[ATTR_MAX] == 40
 
@@ -579,7 +579,7 @@ async def test_mixer_maximum_mixer_temperature_number(
 
     # Get initial state.
     state = hass.states.get(maximum_mixer_temperature_entity_id)
-    assert state.state == "0.0"
+    assert state.state == "0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
         == "ecoMAX Mixer 1 Maximum mixer temperature"
@@ -602,7 +602,7 @@ async def test_mixer_maximum_mixer_temperature_number(
         ),
     )
     state = hass.states.get(maximum_mixer_temperature_entity_id)
-    assert state.state == "90.0"
+    assert state.state == "90"
     assert state.attributes[ATTR_MIN] == 60
     assert state.attributes[ATTR_MAX] == 90
 
@@ -637,7 +637,7 @@ async def test_circuit_target_circuit_temperature_number(
 
     # Get initial state.
     state = hass.states.get(target_circuit_temperature_entity_id)
-    assert state.state == "0.0"
+    assert state.state == "0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
         == "ecoMAX Circuit 1 Target circuit temperature"
@@ -660,7 +660,7 @@ async def test_circuit_target_circuit_temperature_number(
         ),
     )
     state = hass.states.get(target_circuit_temperature_entity_id)
-    assert state.state == "65.0"
+    assert state.state == "65"
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 80
 
@@ -695,7 +695,7 @@ async def test_circuit_minimum_circuit_temperature_number(
 
     # Get initial state.
     state = hass.states.get(minimum_circuit_temperature_entity_id)
-    assert state.state == "0.0"
+    assert state.state == "0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
         == "ecoMAX Circuit 2 Minimum circuit temperature"
@@ -718,7 +718,7 @@ async def test_circuit_minimum_circuit_temperature_number(
         ),
     )
     state = hass.states.get(minimum_circuit_temperature_entity_id)
-    assert state.state == "30.0"
+    assert state.state == "30"
     assert state.attributes[ATTR_MIN] == 10
     assert state.attributes[ATTR_MAX] == 40
 
@@ -753,7 +753,7 @@ async def test_circuit_maximum_circuit_temperature_number(
 
     # Get initial state.
     state = hass.states.get(maximum_circuit_temperature_entity_id)
-    assert state.state == "0.0"
+    assert state.state == "0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
         == "ecoMAX Circuit 2 Maximum circuit temperature"
@@ -776,7 +776,7 @@ async def test_circuit_maximum_circuit_temperature_number(
         ),
     )
     state = hass.states.get(maximum_circuit_temperature_entity_id)
-    assert state.state == "90.0"
+    assert state.state == "90"
     assert state.attributes[ATTR_MIN] == 60
     assert state.attributes[ATTR_MAX] == 90
 
@@ -811,7 +811,7 @@ async def test_circuit_day_target_circuit_temperature_number(
 
     # Get initial state.
     state = hass.states.get(day_target_circuit_temperature_entity_id)
-    assert state.state == "0.0"
+    assert state.state == "0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
         == "ecoMAX Circuit 2 Day target circuit temperature"
@@ -834,7 +834,7 @@ async def test_circuit_day_target_circuit_temperature_number(
         ),
     )
     state = hass.states.get(day_target_circuit_temperature_entity_id)
-    assert state.state == "65.0"
+    assert state.state == "65"
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 80
 
@@ -871,7 +871,7 @@ async def test_circuit_night_target_circuit_temperature_number(
 
     # Get initial state.
     state = hass.states.get(night_target_circuit_temperature_entity_id)
-    assert state.state == "0.0"
+    assert state.state == "0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
         == "ecoMAX Circuit 2 Night target circuit temperature"
@@ -896,7 +896,7 @@ async def test_circuit_night_target_circuit_temperature_number(
         ),
     )
     state = hass.states.get(night_target_circuit_temperature_entity_id)
-    assert state.state == "65.0"
+    assert state.state == "65"
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 80
 

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import re
 from typing import Final
 
 from homeassistant.config_entries import ConfigEntry
@@ -33,7 +32,6 @@ from .const import (
     ATTR_TO,
     CONF_CAPABILITIES,
     CONF_CONNECTION_TYPE,
-    CONF_MODEL,
     CONF_PRODUCT_ID,
     CONF_PRODUCT_TYPE,
     CONF_SUB_DEVICES,
@@ -58,16 +56,6 @@ PLATFORMS: list[Platform] = [
 DATE_STR_FORMAT: Final = "%Y-%m-%d %H:%M:%S"
 
 _LOGGER = logging.getLogger(__name__)
-
-
-def format_model_name(model_name: str) -> str:
-    """Format the device model."""
-    if m := re.match(r"^([A-Z]+)\s{0,}([0-9]{3,})(.+)$", model_name, re.IGNORECASE):
-        model_device, model_number, model_suffix = m.groups()
-        model_device = "ecoMAX" if model_device == "EM" else model_device
-        return f"{model_device} {model_number}{model_suffix}"
-
-    return model_name
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -168,11 +156,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             data[CONF_PRODUCT_TYPE] = product.type
             config_entry.version = 3
 
-        if config_entry.version == 3:
-            data[CONF_MODEL] = format_model_name(data[CONF_MODEL])
-            config_entry.version = 4
-
-        if config_entry.version in (4, 5):
+        if config_entry.version in (3, 4, 5):
             try:
                 del data[CONF_CAPABILITIES]
             except KeyError:

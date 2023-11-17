@@ -13,6 +13,7 @@ from homeassistant.helpers import entity_registry as er
 from pyplumio.structures.ecomax_parameters import (
     ATTR_ECOMAX_CONTROL,
     EcomaxBinaryParameter,
+    EcomaxBinaryParameterDescription,
     EcomaxParameter,
     EcomaxParameterDescription,
 )
@@ -169,8 +170,8 @@ async def test_water_heater_disinfection_switch(
             value=1,
             min_value=0,
             max_value=1,
-            description=EcomaxParameterDescription(
-                water_heater_disinfection_switch_key, cls=EcomaxBinaryParameter
+            description=EcomaxBinaryParameterDescription(
+                water_heater_disinfection_switch_key
             ),
         ),
     )
@@ -654,7 +655,7 @@ async def test_mixer_disable_pump_on_thermostat_switch(
     disable_pump_on_thermostat_entity_id = (
         "switch.ecomax_mixer_1_disable_pump_on_thermostat"
     )
-    disable_pump_on_thermostat_key = "off_therm_pump"
+    disable_pump_on_thermostat_key = "thermostat_disable_pump"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -712,7 +713,7 @@ async def test_circuit_enable_circuit_switch(
     """Test enable circuit switch."""
     await setup_integration(hass, config_entry)
     enable_circuit_entity_id = "switch.ecomax_circuit_1_enable_circuit"
-    enable_circuit_key = "support"
+    enable_circuit_key = "enable_circuit"
 
     # Check entry.
     entity_registry = er.async_get(hass)

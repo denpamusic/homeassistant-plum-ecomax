@@ -20,7 +20,6 @@ from pyplumio.structures.modules import ConnectedModules
 from pyplumio.structures.product_info import ProductInfo
 import voluptuous as vol
 
-from . import format_model_name
 from .connection import (
     DEFAULT_TIMEOUT,
     async_get_connection_handler,
@@ -213,7 +212,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self.init_info.update(
                     {
                         CONF_UID: product.uid,
-                        CONF_MODEL: format_model_name(product.model),
+                        CONF_MODEL: product.model,
                         CONF_PRODUCT_TYPE: product_type,
                         CONF_PRODUCT_ID: product.id,
                     }

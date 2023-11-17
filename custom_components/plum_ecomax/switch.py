@@ -135,12 +135,12 @@ MIXER_SWITCH_TYPES: tuple[MixerSwitchEntityDescription, ...] = (
         product_types={ProductType.ECOMAX_P},
     ),
     MixerSwitchEntityDescription(
-        key="off_therm_pump",
+        key="thermostat_disable_pump",
         translation_key="disable_pump_on_thermostat",
         product_types={ProductType.ECOMAX_P},
     ),
     MixerSwitchEntityDescription(
-        key="support",
+        key="enable_circuit",
         translation_key="enable_circuit",
         product_types={ProductType.ECOMAX_I},
         state_off=0,

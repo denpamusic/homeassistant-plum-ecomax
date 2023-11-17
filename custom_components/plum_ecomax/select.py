@@ -91,7 +91,7 @@ MIXER_SELECT_TYPES: tuple[EcomaxMixerSelectEntityDescription, ...] = (
         product_types={ProductType.ECOMAX_P},
     ),
     EcomaxMixerSelectEntityDescription(
-        key="support",
+        key="enable_circuit",
         translation_key="mixer_work_mode",
         options=[STATE_OFF, STATE_HEATING, STATE_HEATED_FLOOR],
         product_types={ProductType.ECOMAX_I},

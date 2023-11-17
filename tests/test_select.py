@@ -189,7 +189,7 @@ async def test_circuit_work_mode_select(
     """Test circuit support select."""
     await setup_integration(hass, config_entry)
     work_mode_entity_id = "select.ecomax_circuit_2_work_mode"
-    work_mode_select_key = "support"
+    work_mode_select_key = "enable_circuit"
 
     # Test entry.
     entity_registry = er.async_get(hass)
