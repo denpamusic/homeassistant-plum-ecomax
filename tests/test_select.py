@@ -17,6 +17,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+from pyplumio.helpers.parameter import ParameterValues
 from pyplumio.structures.ecomax_parameters import (
     EcomaxParameter,
     EcomaxParameterDescription,
@@ -104,9 +105,7 @@ async def test_summer_mode_select(
         summer_mode_select_key,
         EcomaxParameter(
             device=connection.device,
-            value=1,
-            min_value=0,
-            max_value=2,
+            values=ParameterValues(value=1, min_value=0, max_value=2),
             description=EcomaxParameterDescription(summer_mode_select_key),
         ),
     )
@@ -159,9 +158,7 @@ async def test_mixer_work_mode_select(
         work_mode_select_key,
         MixerParameter(
             device=connection.device,
-            value=0,
-            min_value=0,
-            max_value=2,
+            values=ParameterValues(value=0, min_value=0, max_value=2),
             description=MixerParameterDescription(work_mode_select_key),
         ),
     )
@@ -213,9 +210,7 @@ async def test_circuit_work_mode_select(
         work_mode_select_key,
         MixerParameter(
             device=connection.device,
-            value=0,
-            min_value=0,
-            max_value=2,
+            values=ParameterValues(value=0, min_value=0, max_value=2),
             description=MixerParameterDescription(work_mode_select_key),
         ),
     )

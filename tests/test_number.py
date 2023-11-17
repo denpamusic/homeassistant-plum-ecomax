@@ -21,6 +21,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+from pyplumio.helpers.parameter import ParameterValues
 from pyplumio.structures.ecomax_parameters import (
     EcomaxParameter,
     EcomaxParameterDescription,
@@ -101,9 +102,7 @@ async def test_target_heating_temperature_number(
         target_heating_temperature_key,
         EcomaxParameter(
             device=connection.device,
-            value=65,
-            min_value=30,
-            max_value=80,
+            values=ParameterValues(value=65, min_value=30, max_value=80),
             description=EcomaxParameterDescription(target_heating_temperature_key),
         ),
     )
@@ -154,9 +153,7 @@ async def test_minimum_heating_temperature_number(
         minimum_heating_temperature_key,
         EcomaxParameter(
             device=connection.device,
-            value=30,
-            min_value=10,
-            max_value=40,
+            values=ParameterValues(value=30, min_value=10, max_value=40),
             description=EcomaxParameterDescription(minimum_heating_temperature_key),
         ),
     )
@@ -207,9 +204,7 @@ async def test_maximum_heating_temperature_number(
         maximum_heating_temperature_key,
         EcomaxParameter(
             device=connection.device,
-            value=90,
-            min_value=60,
-            max_value=90,
+            values=ParameterValues(value=90, min_value=60, max_value=90),
             description=EcomaxParameterDescription(maximum_heating_temperature_key),
         ),
     )
@@ -237,7 +232,7 @@ async def test_grate_mode_temperature_number(
     """Test grate mode temperature number."""
     await setup_integration(hass, config_entry)
     grate_mode_temperature_entity_id = "number.ecomax_grate_mode_temperature"
-    grate_mode_temperature_key = "heating_temp_grate"
+    grate_mode_temperature_key = "grate_heating_temp"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -260,9 +255,7 @@ async def test_grate_mode_temperature_number(
         grate_mode_temperature_key,
         EcomaxParameter(
             device=connection.device,
-            value=65,
-            min_value=30,
-            max_value=80,
+            values=ParameterValues(value=65, min_value=30, max_value=80),
             description=EcomaxParameterDescription(grate_mode_temperature_key),
         ),
     )
@@ -313,9 +306,7 @@ async def test_fuzzy_logic_minimum_power_number(
         fuzzy_logic_minimum_power_key,
         EcomaxParameter(
             device=connection.device,
-            value=30,
-            min_value=0,
-            max_value=50,
+            values=ParameterValues(value=30, min_value=0, max_value=50),
             description=EcomaxParameterDescription(fuzzy_logic_minimum_power_key),
         ),
     )
@@ -366,9 +357,7 @@ async def test_fuzzy_logic_maximum_power_number(
         fuzzy_logic_maximum_power_key,
         EcomaxParameter(
             device=connection.device,
-            value=50,
-            min_value=30,
-            max_value=100,
+            values=ParameterValues(value=50, min_value=30, max_value=100),
             description=EcomaxParameterDescription(fuzzy_logic_maximum_power_key),
         ),
     )
@@ -396,7 +385,7 @@ async def test_fuel_calorific_value_number(
     """Test fuel calorific value number."""
     await setup_integration(hass, config_entry)
     fuel_calorific_value_entity_id = "number.ecomax_fuel_calorific_value"
-    fuel_calorific_value_key = "fuel_calorific_value_kwh_kg"
+    fuel_calorific_value_key = "fuel_calorific_value"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -419,9 +408,7 @@ async def test_fuel_calorific_value_number(
         fuel_calorific_value_key,
         EcomaxParameter(
             device=connection.device,
-            value=47,
-            min_value=40,
-            max_value=50,
+            values=ParameterValues(value=47, min_value=40, max_value=50),
             description=EcomaxParameterDescription(
                 fuel_calorific_value_key, multiplier=0.1
             ),
@@ -479,9 +466,7 @@ async def test_mixer_target_mixer_temperature_number(
         target_mixer_temperature_key,
         EcomaxParameter(
             device=connection.device,
-            value=65,
-            min_value=30,
-            max_value=80,
+            values=ParameterValues(value=65, min_value=30, max_value=80),
             description=EcomaxParameterDescription(target_mixer_temperature_key),
         ),
     )
@@ -537,9 +522,7 @@ async def test_mixer_minimum_mixer_temperature_number(
         minimum_mixer_temperature_key,
         EcomaxParameter(
             device=connection.device,
-            value=30,
-            min_value=10,
-            max_value=40,
+            values=ParameterValues(value=30, min_value=10, max_value=40),
             description=EcomaxParameterDescription(minimum_mixer_temperature_key),
         ),
     )
@@ -595,9 +578,7 @@ async def test_mixer_maximum_mixer_temperature_number(
         maximum_mixer_temperature_key,
         EcomaxParameter(
             device=connection.device,
-            value=90,
-            min_value=60,
-            max_value=90,
+            values=ParameterValues(value=90, min_value=60, max_value=90),
             description=EcomaxParameterDescription(maximum_mixer_temperature_key),
         ),
     )
@@ -627,7 +608,7 @@ async def test_circuit_target_circuit_temperature_number(
     target_circuit_temperature_entity_id = (
         "number.ecomax_circuit_1_target_circuit_temperature"
     )
-    target_circuit_temperature_key = "mixer_target_temp"
+    target_circuit_temperature_key = "circuit_target_temp"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -653,9 +634,7 @@ async def test_circuit_target_circuit_temperature_number(
         target_circuit_temperature_key,
         EcomaxParameter(
             device=connection.device,
-            value=65,
-            min_value=30,
-            max_value=80,
+            values=ParameterValues(value=65, min_value=30, max_value=80),
             description=EcomaxParameterDescription(target_circuit_temperature_key),
         ),
     )
@@ -711,9 +690,7 @@ async def test_circuit_minimum_circuit_temperature_number(
         minimum_circuit_temperature_key,
         EcomaxParameter(
             device=connection.device,
-            value=30,
-            min_value=10,
-            max_value=40,
+            values=ParameterValues(value=30, min_value=10, max_value=40),
             description=EcomaxParameterDescription(minimum_circuit_temperature_key),
         ),
     )
@@ -769,9 +746,7 @@ async def test_circuit_maximum_circuit_temperature_number(
         maximum_circuit_temperature_key,
         EcomaxParameter(
             device=connection.device,
-            value=90,
-            min_value=60,
-            max_value=90,
+            values=ParameterValues(value=90, min_value=60, max_value=90),
             description=EcomaxParameterDescription(maximum_circuit_temperature_key),
         ),
     )
@@ -827,9 +802,7 @@ async def test_circuit_day_target_circuit_temperature_number(
         day_target_circuit_temperature_key,
         EcomaxParameter(
             device=connection.device,
-            value=65,
-            min_value=30,
-            max_value=80,
+            values=ParameterValues(value=65, min_value=30, max_value=80),
             description=EcomaxParameterDescription(day_target_circuit_temperature_key),
         ),
     )
@@ -887,9 +860,7 @@ async def test_circuit_night_target_circuit_temperature_number(
         night_target_circuit_temperature_key,
         EcomaxParameter(
             device=connection.device,
-            value=65,
-            min_value=30,
-            max_value=80,
+            values=ParameterValues(value=65, min_value=30, max_value=80),
             description=EcomaxParameterDescription(
                 night_target_circuit_temperature_key
             ),

@@ -32,13 +32,13 @@ from pyplumio.const import (
     ProductType,
 )
 from pyplumio.devices.ecomax import ATTR_FUEL_BURNED
+from pyplumio.structures.boiler_load import ATTR_BOILER_LOAD
+from pyplumio.structures.boiler_power import ATTR_BOILER_POWER
 from pyplumio.structures.fan_power import ATTR_FAN_POWER
 from pyplumio.structures.fuel_consumption import ATTR_FUEL_CONSUMPTION
 from pyplumio.structures.fuel_level import ATTR_FUEL_LEVEL
 from pyplumio.structures.lambda_sensor import ATTR_LAMBDA_LEVEL
-from pyplumio.structures.load import ATTR_LOAD
 from pyplumio.structures.modules import ATTR_MODULES, ConnectedModules
-from pyplumio.structures.power import ATTR_POWER
 from pyplumio.structures.product_info import ATTR_PRODUCT, ProductInfo
 from pyplumio.structures.statuses import ATTR_HEATING_TARGET, ATTR_WATER_HEATER_TARGET
 from pyplumio.structures.temperatures import (
@@ -511,37 +511,37 @@ async def test_oxygen_level_sensor(
 
 
 @pytest.mark.usefixtures("ecomax_p")
-async def test_power_sensor(
+async def test_boiler_power_sensor(
     hass: HomeAssistant,
     connection: EcomaxConnection,
     config_entry: MockConfigEntry,
     setup_integration,
     frozen_time,
 ) -> None:
-    """Test power sensor."""
+    """Test boiler power sensor."""
     await setup_integration(hass, config_entry)
-    power_entity_id = "sensor.ecomax_power"
+    boiler_power_entity_id = "sensor.ecomax_boiler_power"
 
     # Check entry.
     entity_registry = er.async_get(hass)
-    entry = entity_registry.async_get(power_entity_id)
+    entry = entity_registry.async_get(boiler_power_entity_id)
     assert entry
-    assert entry.translation_key == "power"
+    assert entry.translation_key == "boiler_power"
     options = entry.options["sensor"]
     assert options["suggested_display_precision"] == 1
 
     # Get initial value.
-    state = hass.states.get(power_entity_id)
+    state = hass.states.get(boiler_power_entity_id)
     assert state.state == "0.0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Power"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Boiler power"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfPower.KILO_WATT
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
     assert state.attributes[ATTR_ICON] == "mdi:radiator"
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
-    await connection.device.dispatch(ATTR_POWER, 16)
-    state = hass.states.get(power_entity_id)
+    await connection.device.dispatch(ATTR_BOILER_POWER, 16)
+    state = hass.states.get(boiler_power_entity_id)
     assert state.state == "16"
 
 
@@ -615,33 +615,33 @@ async def test_fuel_consumption_sensor(
 
 
 @pytest.mark.usefixtures("ecomax_p")
-async def test_load_sensor(
+async def test_boiler_load_sensor(
     hass: HomeAssistant,
     connection: EcomaxConnection,
     config_entry: MockConfigEntry,
     setup_integration,
 ) -> None:
-    """Test load sensor."""
+    """Test boiler load sensor."""
     await setup_integration(hass, config_entry)
-    load_entity_id = "sensor.ecomax_load"
+    boiler_load_entity_id = "sensor.ecomax_boiler_load"
 
     # Check entry.
     entity_registry = er.async_get(hass)
-    entry = entity_registry.async_get(load_entity_id)
+    entry = entity_registry.async_get(boiler_load_entity_id)
     assert entry
-    assert entry.translation_key == "load"
+    assert entry.translation_key == "boiler_load"
 
     # Get initial value.
-    state = hass.states.get(load_entity_id)
+    state = hass.states.get(boiler_load_entity_id)
     assert state.state == "0"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Load"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Boiler load"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
     assert state.attributes[ATTR_ICON] == "mdi:gauge"
 
     # Dispatch new value.
-    await connection.device.dispatch(ATTR_LOAD, 50)
-    state = hass.states.get(load_entity_id)
+    await connection.device.dispatch(ATTR_BOILER_LOAD, 50)
+    state = hass.states.get(boiler_load_entity_id)
     assert state.state == "50"
 
 

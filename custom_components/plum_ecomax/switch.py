@@ -51,7 +51,7 @@ SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
         state_on=2,
     ),
     EcomaxSwitchEntityDescription(
-        key="heating_weather_control",
+        key="weather_control",
         translation_key="weather_control_switch",
         product_types={ProductType.ECOMAX_P},
     ),
@@ -135,7 +135,7 @@ MIXER_SWITCH_TYPES: tuple[MixerSwitchEntityDescription, ...] = (
         product_types={ProductType.ECOMAX_P},
     ),
     MixerSwitchEntityDescription(
-        key="thermostat_disable_pump",
+        key="disable_pump_on_thermostat",
         translation_key="disable_pump_on_thermostat",
         product_types={ProductType.ECOMAX_P},
     ),

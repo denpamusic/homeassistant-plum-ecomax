@@ -10,6 +10,7 @@ from homeassistant.components.switch import (
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_FRIENDLY_NAME, STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+from pyplumio.helpers.parameter import ParameterValues
 from pyplumio.structures.ecomax_parameters import (
     ATTR_ECOMAX_CONTROL,
     EcomaxBinaryParameter,
@@ -108,9 +109,7 @@ async def test_ecomax_control_switch(
         ATTR_ECOMAX_CONTROL,
         EcomaxBinaryParameter(
             device=connection.device,
-            value=STATE_ON,
-            min_value=STATE_OFF,
-            max_value=STATE_ON,
+            values=ParameterValues(value=1, min_value=0, max_value=1),
             description=EcomaxParameterDescription(ATTR_ECOMAX_CONTROL),
         ),
     )
@@ -167,9 +166,7 @@ async def test_water_heater_disinfection_switch(
         water_heater_disinfection_switch_key,
         EcomaxBinaryParameter(
             device=connection.device,
-            value=1,
-            min_value=0,
-            max_value=1,
+            values=ParameterValues(value=1, min_value=0, max_value=1),
             description=EcomaxBinaryParameterDescription(
                 water_heater_disinfection_switch_key
             ),
@@ -227,9 +224,7 @@ async def test_water_heater_pump_switch(
         water_heater_pump_switch_key,
         EcomaxParameter(
             device=connection.device,
-            value=2,
-            min_value=0,
-            max_value=2,
+            values=ParameterValues(value=2, min_value=0, max_value=2),
             description=EcomaxParameterDescription(water_heater_pump_switch_key),
         ),
     )
@@ -263,7 +258,7 @@ async def test_weather_control_switch(
     """Test weather control switch."""
     await setup_integration(hass, config_entry)
     weather_control_switch_entity_id = "switch.ecomax_weather_control_switch"
-    weather_control_switch_key = "heating_weather_control"
+    weather_control_switch_key = "weather_control"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -281,9 +276,7 @@ async def test_weather_control_switch(
         weather_control_switch_key,
         EcomaxBinaryParameter(
             device=connection.device,
-            value=1,
-            min_value=0,
-            max_value=1,
+            values=ParameterValues(value=1, min_value=0, max_value=1),
             description=EcomaxParameterDescription(weather_control_switch_key),
         ),
     )
@@ -335,9 +328,7 @@ async def test_fuzzy_logic_switch(
         fuzzy_logic_switch_key,
         EcomaxBinaryParameter(
             device=connection.device,
-            value=1,
-            min_value=0,
-            max_value=1,
+            values=ParameterValues(value=1, min_value=0, max_value=1),
             description=EcomaxParameterDescription(fuzzy_logic_switch_key),
         ),
     )
@@ -389,9 +380,7 @@ async def test_heating_schedule_switch(
         heating_schedule_switch_key,
         EcomaxBinaryParameter(
             device=connection.device,
-            value=1,
-            min_value=0,
-            max_value=1,
+            values=ParameterValues(value=1, min_value=0, max_value=1),
             description=EcomaxParameterDescription(heating_schedule_switch_key),
         ),
     )
@@ -445,9 +434,7 @@ async def test_water_heater_schedule_switch(
         water_heater_schedule_switch_key,
         EcomaxBinaryParameter(
             device=connection.device,
-            value=1,
-            min_value=0,
-            max_value=1,
+            values=ParameterValues(value=1, min_value=0, max_value=1),
             description=EcomaxParameterDescription(water_heater_schedule_switch_key),
         ),
     )
@@ -501,9 +488,7 @@ async def test_mixer_enable_in_summer_mode_switch(
         enable_in_summer_mode_key,
         MixerBinaryParameter(
             device=connection.device,
-            value=1,
-            min_value=0,
-            max_value=1,
+            values=ParameterValues(value=1, min_value=0, max_value=1),
             description=MixerParameterDescription(enable_in_summer_mode_key),
         ),
     )
@@ -558,9 +543,7 @@ async def test_circuit_enable_in_summer_mode_switch(
         enable_in_summer_mode_key,
         MixerBinaryParameter(
             device=connection.device,
-            value=1,
-            min_value=0,
-            max_value=1,
+            values=ParameterValues(value=1, min_value=0, max_value=1),
             description=MixerParameterDescription(enable_in_summer_mode_key),
         ),
     )
@@ -617,9 +600,7 @@ async def test_mixer_weather_control_switch(
         mixer_weather_control_switch_key,
         MixerBinaryParameter(
             device=connection.device,
-            value=1,
-            min_value=0,
-            max_value=1,
+            values=ParameterValues(value=1, min_value=0, max_value=1),
             description=MixerParameterDescription(mixer_weather_control_switch_key),
         ),
     )
@@ -655,7 +636,7 @@ async def test_mixer_disable_pump_on_thermostat_switch(
     disable_pump_on_thermostat_entity_id = (
         "switch.ecomax_mixer_1_disable_pump_on_thermostat"
     )
-    disable_pump_on_thermostat_key = "thermostat_disable_pump"
+    disable_pump_on_thermostat_key = "disable_pump_on_thermostat"
 
     # Check entry.
     entity_registry = er.async_get(hass)
@@ -676,9 +657,7 @@ async def test_mixer_disable_pump_on_thermostat_switch(
         disable_pump_on_thermostat_key,
         MixerBinaryParameter(
             device=connection.device,
-            value=1,
-            min_value=0,
-            max_value=1,
+            values=ParameterValues(value=1, min_value=0, max_value=1),
             description=MixerParameterDescription(disable_pump_on_thermostat_key),
         ),
     )
@@ -731,9 +710,7 @@ async def test_circuit_enable_circuit_switch(
         enable_circuit_key,
         MixerParameter(
             device=connection.device,
-            value=1,
-            min_value=0,
-            max_value=1,
+            values=ParameterValues(value=1, min_value=0, max_value=1),
             description=MixerParameterDescription(enable_circuit_key),
         ),
     )

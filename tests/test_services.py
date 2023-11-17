@@ -109,9 +109,10 @@ async def test_get_parameter_service(
         "parameters": [
             {
                 "name": "heating_target_temp",
-                "value": 0.0,
-                "min_value": 0.0,
-                "max_value": 1.0,
+                "value": 0,
+                "min_value": 0,
+                "max_value": 1,
+                "unit_of_measurement": "°C",
                 "device_type": "ecomax",
                 "device_uid": "TEST",
                 "device_index": 0,
@@ -137,9 +138,10 @@ async def test_get_parameter_service(
         "parameters": [
             {
                 "name": "mixer_target_temp",
-                "value": 0.0,
-                "min_value": 0.0,
-                "max_value": 1.0,
+                "value": 0,
+                "min_value": 0,
+                "max_value": 1,
+                "unit_of_measurement": "°C",
                 "device_type": "mixer",
                 "device_uid": "TEST",
                 "device_index": 1,
@@ -182,9 +184,10 @@ async def test_get_parameter_service(
         "parameters": [
             {
                 "name": "heating_target_temp",
-                "value": 0.0,
-                "min_value": 0.0,
-                "max_value": 1.0,
+                "value": 0,
+                "min_value": 0,
+                "max_value": 1,
+                "unit_of_measurement": "°C",
                 "device_type": "ecomax",
                 "device_uid": "unknown",
                 "device_index": 0,

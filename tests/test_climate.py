@@ -25,6 +25,7 @@ from homeassistant.components.climate import (
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_FRIENDLY_NAME
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+from pyplumio.helpers.parameter import ParameterValues
 from pyplumio.structures.thermostat_parameters import (
     ThermostatParameter,
     ThermostatParameterDescription,
@@ -177,9 +178,7 @@ async def test_thermostat(
         ThermostatParameter(
             offset=0,
             device=connection.device,
-            value=110,
-            min_value=100,
-            max_value=350,
+            values=ParameterValues(value=110, min_value=100, max_value=350),
             description=ThermostatParameterDescription(
                 thermostat_night_target_temperature_key, multiplier=10, size=2
             ),
@@ -255,9 +254,7 @@ async def test_thermostat_presets(
             ThermostatParameter(
                 offset=0,
                 device=connection.device,
-                value=4,
-                min_value=0,
-                max_value=7,
+                values=ParameterValues(value=4, min_value=0, max_value=7),
                 description=ThermostatParameterDescription(
                     thermostat_mode_key, multiplier=1, size=2
                 ),
@@ -274,9 +271,7 @@ async def test_thermostat_presets(
             ThermostatParameter(
                 offset=0,
                 device=connection.device,
-                value=0,
-                min_value=0,
-                max_value=7,
+                values=ParameterValues(value=0, min_value=0, max_value=7),
                 description=ThermostatParameterDescription(
                     thermostat_mode_key, multiplier=1, size=2
                 ),

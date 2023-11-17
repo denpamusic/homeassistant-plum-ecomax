@@ -60,7 +60,7 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         product_types={ProductType.ECOMAX_P},
     ),
     EcomaxNumberEntityDescription(
-        key="heating_temp_grate",
+        key="grate_heating_temp",
         translation_key="grate_mode_temp",
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
@@ -81,7 +81,7 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         product_types={ProductType.ECOMAX_P},
     ),
     EcomaxNumberEntityDescription(
-        key="fuel_calorific_value_kwh_kg",
+        key="fuel_calorific_value",
         translation_key="fuel_calorific_value",
         mode=NumberMode.BOX,
         native_step=0.1,
@@ -156,7 +156,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         product_types={ProductType.ECOMAX_P},
     ),
     EcomaxMixerNumberEntityDescription(
-        key="mixer_target_temp",
+        key="circuit_target_temp",
         translation_key="target_circuit_temp",
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,

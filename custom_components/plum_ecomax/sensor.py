@@ -175,8 +175,8 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
-        key="power",
-        translation_key="power",
+        key="boiler_power",
+        translation_key="boiler_power",
         device_class=SensorDeviceClass.POWER,
         icon="mdi:radiator",
         native_unit_of_measurement=UnitOfPower.KILO_WATT,
@@ -206,8 +206,8 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
-        key="load",
-        translation_key="load",
+        key="boiler_load",
+        translation_key="boiler_load",
         icon="mdi:gauge",
         native_unit_of_measurement=PERCENTAGE,
         product_types={ProductType.ECOMAX_P},

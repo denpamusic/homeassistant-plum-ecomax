@@ -21,8 +21,10 @@ from homeassistant.helpers.service import (
     SelectedEntities,
     async_extract_referenced_entity_ids,
 )
+from pyplumio.const import UnitOfMeasurement
 from pyplumio.devices import Device
 from pyplumio.exceptions import ParameterNotFoundError
+from pyplumio.helpers.parameter import Parameter
 from pyplumio.helpers.schedule import (
     START_OF_DAY,
     STATE_DAY,
@@ -143,7 +145,7 @@ async def async_get_device_parameter(
 ) -> dict[str, Any] | None:
     """Get device parameter."""
     try:
-        parameter = await device.get(name)
+        parameter: Parameter = await device.get(name)
     except (ParameterNotFoundError, TimeoutError):
         _LOGGER.exception("Requested parameter %s not found", name)
         return None
@@ -157,6 +159,9 @@ async def async_get_device_parameter(
         "value": parameter.value,
         "min_value": parameter.min_value,
         "max_value": parameter.max_value,
+        "unit_of_measurement": parameter.unit_of_measurement.value
+        if isinstance(parameter.unit_of_measurement, UnitOfMeasurement)
+        else parameter.unit_of_measurement,
         "device_type": device.__class__.__name__.lower(),
         "device_uid": device_uid,
         "device_index": device.index + 1 if hasattr(device, "index") else 0,

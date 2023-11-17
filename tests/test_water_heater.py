@@ -22,6 +22,7 @@ from homeassistant.components.water_heater import (
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_FRIENDLY_NAME, STATE_OFF
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+from pyplumio.helpers.parameter import ParameterValues
 from pyplumio.structures.ecomax_parameters import (
     EcomaxParameter,
     EcomaxParameterDescription,
@@ -152,9 +153,7 @@ async def test_indirect_water_heater(
         water_heater_target_temperature_key,
         EcomaxParameter(
             device=connection.device,
-            value=55,
-            min_value=10,
-            max_value=80,
+            values=ParameterValues(value=55, min_value=10, max_value=80),
             description=EcomaxParameterDescription(water_heater_target_temperature_key),
         ),
     )
@@ -167,9 +166,7 @@ async def test_indirect_water_heater(
         water_heater_operation_mode_key,
         EcomaxParameter(
             device=connection.device,
-            value=1,
-            min_value=0,
-            max_value=2,
+            values=ParameterValues(value=1, min_value=0, max_value=2),
             description=EcomaxParameterDescription(water_heater_operation_mode_key),
         ),
     )
@@ -182,9 +179,7 @@ async def test_indirect_water_heater(
         water_heater_hysteresis_key,
         EcomaxParameter(
             device=connection.device,
-            value=10,
-            min_value=0,
-            max_value=15,
+            values=ParameterValues(value=10, min_value=0, max_value=15),
             description=EcomaxParameterDescription(water_heater_hysteresis_key),
         ),
     )
