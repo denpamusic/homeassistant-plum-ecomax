@@ -62,7 +62,7 @@ async def test_async_get_connection_handler(
     async_get_source_ip,
 ) -> None:
     """Test helper function to get connection handler."""
-    with patch("pyplumio.ethernet_parameters") as mock_ethernet_parameters:
+    with patch("pyplumio.EthernetParameters") as mock_ethernet_parameters:
         connection: Connection = await async_get_connection_handler(
             CONNECTION_TYPE_TCP, hass, tcp_config_data
         )
@@ -199,7 +199,7 @@ async def test_async_setup_regdata(
     assert "Timed out while trying to setup regulator data" in caplog.text
     mock_device.request.assert_any_await(
         ATTR_REGDATA,
-        FrameType.REQUEST_DATA_SCHEMA,
+        FrameType.REQUEST_REGULATOR_DATA_SCHEMA,
         retries=5,
         timeout=DEFAULT_TIMEOUT,
     )

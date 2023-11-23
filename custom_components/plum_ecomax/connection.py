@@ -14,7 +14,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.entity import DeviceInfo
 import pyplumio
 from pyplumio.const import FrameType, ProductType
-from pyplumio.devices import Addressable
+from pyplumio.devices import AddressableDevice
 
 from .const import (
     ATTR_ECOMAX_PARAMETERS,
@@ -59,7 +59,7 @@ async def async_get_connection_handler(
     _LOGGER.debug("Getting connection handler for type: %s...", connection_type)
 
     public_ip = await async_get_source_ip(hass, target_ip=IPV4_BROADCAST_ADDR)
-    ethernet = pyplumio.ethernet_parameters(ip=public_ip)
+    ethernet = pyplumio.EthernetParameters(ip=public_ip)
 
     if connection_type == CONNECTION_TYPE_TCP:
         return pyplumio.TcpConnection(
@@ -75,7 +75,7 @@ async def async_get_connection_handler(
     )
 
 
-async def async_get_sub_devices(device: Addressable) -> list[str]:
+async def async_get_sub_devices(device: AddressableDevice) -> list[str]:
     """Return device subdevices."""
     _LOGGER.debug("Checking connected sub-devices...")
 
@@ -113,7 +113,7 @@ class EcomaxConnection:
     """Represents the ecoMAX connection."""
 
     _connection: pyplumio.Connection
-    _device: Addressable | None
+    _device: AddressableDevice | None
     _hass: HomeAssistant
     entry: ConfigEntry
 
@@ -136,7 +136,7 @@ class EcomaxConnection:
     async def async_setup(self) -> None:
         """Setup connection and add hass stop handler."""
         await self.connect()
-        device: Addressable = await self.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
+        device: AddressableDevice = await self.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
         await device.wait_for(ATTR_LOADED, timeout=DEFAULT_TIMEOUT)
         await device.wait_for(ATTR_SENSORS, timeout=DEFAULT_TIMEOUT)
         await device.wait_for(ATTR_ECOMAX_PARAMETERS, timeout=DEFAULT_TIMEOUT)
@@ -173,7 +173,7 @@ class EcomaxConnection:
         try:
             return await self.device.request(
                 ATTR_REGDATA,
-                FrameType.REQUEST_DATA_SCHEMA,
+                FrameType.REQUEST_REGULATOR_DATA_SCHEMA,
                 retries=5,
                 timeout=DEFAULT_TIMEOUT,
             )
@@ -205,7 +205,7 @@ class EcomaxConnection:
         return ATTR_MIXERS in self.entry.data.get(CONF_SUB_DEVICES, [])
 
     @property
-    def device(self) -> Addressable:
+    def device(self) -> AddressableDevice:
         """Return connection state."""
         if self._device is None:
             raise ConfigEntryNotReady("Device not ready")

@@ -76,7 +76,7 @@ class EcomaxSelect(EcomaxEntity, SelectEntity):
         self.async_write_ha_state()
 
 
-@dataclass(slots=True)
+@dataclass(kw_only=True, slots=True)
 class EcomaxMixerSelectEntityDescription(EcomaxSelectEntityDescription):
     """Describes mixer select entity."""
 

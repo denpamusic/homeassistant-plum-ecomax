@@ -14,7 +14,7 @@ from homeassistant.exceptions import HomeAssistantError
 import homeassistant.helpers.config_validation as cv
 from pyplumio.connection import Connection
 from pyplumio.const import ProductType
-from pyplumio.devices import Addressable
+from pyplumio.devices import AddressableDevice
 from pyplumio.exceptions import ConnectionFailedError
 from pyplumio.structures.modules import ConnectedModules
 from pyplumio.structures.product_info import ProductInfo
@@ -92,7 +92,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     def __init__(self) -> None:
         self.connection: Connection | None = None
-        self.device: Addressable | None = None
+        self.device: AddressableDevice | None = None
         self.device_task: asyncio.Task | None = None
         self.identify_task: asyncio.Task | None = None
         self.modules_task: asyncio.Task | None = None
@@ -199,7 +199,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         async def _identify_device() -> None:
             try:
-                assert isinstance(self.device, Addressable)
+                assert isinstance(self.device, AddressableDevice)
                 product: ProductInfo = await self.device.get(
                     ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT
                 )
@@ -245,7 +245,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         async def _discover_modules() -> None:
             try:
-                assert isinstance(self.device, Addressable)
+                assert isinstance(self.device, AddressableDevice)
                 modules: ConnectedModules = await self.device.get(
                     ATTR_MODULES, timeout=DEFAULT_TIMEOUT
                 )
