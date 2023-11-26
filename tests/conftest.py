@@ -5,7 +5,7 @@ from typing import Final
 from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.core import HomeAssistant
-from pyplumio import Connection
+from pyplumio.connection import Connection
 from pyplumio.const import DeviceState, ProductType, UnitOfMeasurement
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.devices.mixer import Mixer
@@ -25,7 +25,6 @@ from pyplumio.structures.mixer_parameters import (
 from pyplumio.structures.modules import ConnectedModules
 from pyplumio.structures.network_info import NetworkInfo
 from pyplumio.structures.product_info import ProductInfo
-from pyplumio.structures.regulator_data import RegulatorData
 from pyplumio.structures.thermostat_parameters import (
     ThermostatParameter,
     ThermostatParameterDescription,
@@ -37,6 +36,8 @@ from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
     ATTR_ECOMAX_CONTROL,
     ATTR_MIXERS,
+    ATTR_PRODUCT,
+    ATTR_REGDATA,
     CONF_BAUDRATE,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
@@ -401,12 +402,9 @@ def ecomax_860p3_o(ecomax_p: EcoMAX):
     product_type = ProductType.ECOMAX_P
     product_model = ProductModel.ECOMAX_860P3_O
 
-    regulator_data = RegulatorData()
-    regulator_data.data = load_regdata_fixture("regdata__ecomax_860p3_o.json")
-
     ecomax_p.data.update(
         {
-            "product": ProductInfo(
+            ATTR_PRODUCT: ProductInfo(
                 type=product_type,
                 id=51,
                 uid="TEST",
@@ -414,7 +412,7 @@ def ecomax_860p3_o(ecomax_p: EcoMAX):
                 image=2816,
                 model=product_model,
             ),
-            "regdata": regulator_data,
+            ATTR_REGDATA: load_regdata_fixture("regdata__ecomax_860p3_o.json"),
         }
     )
 
@@ -433,12 +431,9 @@ def ecomax_860p3_s_lite(ecomax_p: EcoMAX):
     product_type = ProductType.ECOMAX_P
     product_model = ProductModel.ECOMAX_860P3_S_LITE
 
-    regulator_data = RegulatorData()
-    regulator_data.data = load_regdata_fixture("regdata__ecomax_860p3_s_lite.json")
-
     ecomax_p.data.update(
         {
-            "product": ProductInfo(
+            ATTR_PRODUCT: ProductInfo(
                 type=product_type,
                 id=51,
                 uid="TEST",
@@ -446,7 +441,7 @@ def ecomax_860p3_s_lite(ecomax_p: EcoMAX):
                 image=2816,
                 model=product_model,
             ),
-            "regdata": regulator_data,
+            ATTR_REGDATA: load_regdata_fixture("regdata__ecomax_860p3_s_lite.json"),
         }
     )
 

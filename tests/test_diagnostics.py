@@ -14,7 +14,6 @@ from custom_components.plum_ecomax.const import (
     ATTR_MIXERS,
     ATTR_PASSWORD,
     ATTR_PRODUCT,
-    ATTR_REGDATA,
     CONF_CONNECTION_TYPE,
     CONF_HOST,
     CONF_MODEL,
@@ -63,7 +62,6 @@ async def test_diagnostics(
     ecomax_data = dict(ecomax_p.data)
     ecomax_data[ATTR_PASSWORD] = REDACTED
     ecomax_data[ATTR_MIXERS] = {x: y.data for x, y in ecomax_data[ATTR_MIXERS].items()}
-    ecomax_data[ATTR_REGDATA] = ecomax_data[ATTR_REGDATA].data
     assert result["data"][ATTR_PRODUCT].uid == REDACTED
     assert ecomax_data[ATTR_PRODUCT].uid != REDACTED
 

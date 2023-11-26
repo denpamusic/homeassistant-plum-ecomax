@@ -8,7 +8,6 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceEntry
 from pyplumio.devices.ecomax import EcoMAX
-from pyplumio.exceptions import ParameterNotFoundError
 from pyplumio.helpers.schedule import STATE_DAY, STATE_NIGHT, Schedule, ScheduleDay
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -151,7 +150,7 @@ async def test_get_parameter_service(
 
     # Test getting nonexistent parameter.
     with pytest.raises(HomeAssistantError), patch(
-        "pyplumio.devices.Device.get", side_effect=ParameterNotFoundError
+        "pyplumio.devices.Device.get", side_effect=TypeError
     ):
         await hass.services.async_call(
             DOMAIN,
@@ -260,7 +259,7 @@ async def test_set_parameter_service(
 
     # Test setting parameter to nonexistent parameter.
     with pytest.raises(HomeAssistantError), patch(
-        "pyplumio.devices.Device.set", side_effect=ParameterNotFoundError
+        "pyplumio.devices.Device.set", side_effect=TypeError
     ) as mock_set:
         await hass.services.async_call(
             DOMAIN,

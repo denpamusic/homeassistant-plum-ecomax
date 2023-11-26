@@ -23,7 +23,6 @@ from homeassistant.helpers.service import (
 )
 from pyplumio.const import UnitOfMeasurement
 from pyplumio.devices import Device
-from pyplumio.exceptions import ParameterNotFoundError
 from pyplumio.helpers.parameter import Parameter
 from pyplumio.helpers.schedule import (
     START_OF_DAY,
@@ -146,7 +145,7 @@ async def async_get_device_parameter(
     """Get device parameter."""
     try:
         parameter: Parameter = await device.get(name)
-    except (ParameterNotFoundError, TimeoutError):
+    except (TypeError, TimeoutError):
         _LOGGER.exception("Requested parameter %s not found", name)
         return None
 
@@ -208,7 +207,7 @@ async def async_set_device_parameter(device: Device, name: str, value: float) ->
     """Set device parameter."""
     try:
         return await device.set(name, value)
-    except (ParameterNotFoundError, TimeoutError):
+    except (TypeError, TimeoutError):
         _LOGGER.exception("Requested parameter %s not found", name)
     except ValueError as e:
         raise HomeAssistantError(f"Couldn't set parameter: {e}") from e

@@ -35,13 +35,13 @@ from homeassistant.helpers.typing import ConfigType, StateType
 from pyplumio.const import DeviceState, ProductType
 from pyplumio.filters import aggregate, on_change, throttle
 from pyplumio.structures.modules import ConnectedModules
-from pyplumio.structures.regulator_data import RegulatorData
 import voluptuous as vol
 
 from .connection import EcomaxConnection
 from .const import (
     ALL,
     ATTR_NUMERIC,
+    ATTR_REGDATA,
     ATTR_VALUE,
     DEVICE_CLASS_METER,
     DEVICE_CLASS_STATE,
@@ -515,10 +515,38 @@ REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
 class RegdataSensor(EcomaxSensor):
     """Represents RegData sensor platform."""
 
+    async def async_update(self, value: dict[str, Any]) -> None:
+        """Update entity state."""
+        self._attr_native_value = (
+            self.entity_description.value_fn(value[self.entity_description.key])
+            if self.entity_description.key in value
+            else None
+        )
+        self.async_write_ha_state()
+
+    async def async_added_to_hass(self):
+        """Called when an entity has their entity_id assigned."""
+
+        async def async_set_available(regdata: dict[str, Any]) -> None:
+            if self.entity_description.key in regdata:
+                self._attr_available = True
+
+        func = self.entity_description.filter_fn(self.async_update)
+        self.device.subscribe_once(ATTR_REGDATA, async_set_available)
+        self.device.subscribe(ATTR_REGDATA, func)
+
+        if ATTR_REGDATA in self.device.data:
+            await async_set_available(self.device.data[ATTR_REGDATA])
+            await func(self.device.data[ATTR_REGDATA])
+
+    async def async_will_remove_from_hass(self):
+        """Called when an entity is about to be removed."""
+        self.device.unsubscribe(ATTR_REGDATA, self.async_update)
+
     @property
-    def device(self) -> RegulatorData:
-        """Return device object."""
-        return self.connection.device.regdata
+    def entity_registry_enabled_default(self) -> bool:
+        """Indicate if the entity should be enabled when first added."""
+        return self.entity_description.key in self.device.data.get(ATTR_REGDATA, {})
 
 
 def get_by_product_model(

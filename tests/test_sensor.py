@@ -61,6 +61,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
     ATTR_NUMERIC,
+    ATTR_REGDATA,
     ATTR_VALUE,
     DEVICE_CLASS_METER,
     DEVICE_CLASS_STATE,
@@ -1215,7 +1216,7 @@ async def test_ash_pan_full_sensor_ecomax_860p3_o(
     assert state.attributes[ATTR_ICON] == "mdi:tray-alert"
 
     # Dispatch new value.
-    await connection.device.regdata.dispatch(ash_pan_full_key, 55)
+    await connection.device.dispatch(ATTR_REGDATA, {ash_pan_full_key: 55})
     state = hass.states.get(ash_pan_full_entity_id)
     assert state.state == "55"
 
@@ -1247,6 +1248,6 @@ async def test_ash_pan_full_sensor_ecomax_860p3_s_lite(
     assert state.attributes[ATTR_ICON] == "mdi:tray-alert"
 
     # Dispatch new value.
-    await connection.device.regdata.dispatch(ash_pan_full_key, 55)
+    await connection.device.dispatch(ATTR_REGDATA, {ash_pan_full_key: 55})
     state = hass.states.get(ash_pan_full_entity_id)
     assert state.state == "55"

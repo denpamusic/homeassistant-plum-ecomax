@@ -24,7 +24,7 @@ class EcomaxEntity(ABC):
     async def async_added_to_hass(self):
         """Called when an entity has their entity_id assigned."""
 
-        async def async_set_available(value=None):
+        async def async_set_available(_=None) -> None:
             self._attr_available = True
 
         func = self.entity_description.filter_fn(self.async_update)
