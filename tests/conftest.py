@@ -5,7 +5,7 @@ from typing import Final
 from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.core import HomeAssistant
-from pyplumio.connection import Connection
+from pyplumio import Connection
 from pyplumio.const import DeviceState, ProductType, UnitOfMeasurement
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.devices.mixer import Mixer
