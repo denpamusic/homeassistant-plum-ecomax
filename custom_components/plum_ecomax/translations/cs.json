@@ -127,6 +127,9 @@
           "burning_off": "Spalování",
           "alert": "Výstraha",
           "unknown": "Neznámý"
+        },
+        "state_attributes": {
+          "numeric_state": { "name": "Numeric state" }
         }
       },
       "service_password": { "name": "Service password" },
@@ -151,7 +154,12 @@
       "mixer_target_temp": { "name": "Mixer target temperature" },
       "circuit_temp": { "name": "Circuit temperature" },
       "circuit_target_temp": { "name": "Circuit target temperature" },
-      "total_fuel_burned": { "name": "Total fuel burned" },
+      "total_fuel_burned": {
+        "name": "Total fuel burned",
+        "state_attributes": {
+          "burned_since_last_update": { "name": "Burned since last update" }
+        }
+      },
       "ash_pan_full": { "name": "Ash pan full" }
     },
     "switch": {

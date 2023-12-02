@@ -40,7 +40,8 @@ import voluptuous as vol
 from .connection import EcomaxConnection
 from .const import (
     ALL,
-    ATTR_NUMERIC,
+    ATTR_BURNED_SINCE_LAST_UPDATE,
+    ATTR_NUMERIC_STATE,
     ATTR_REGDATA,
     ATTR_VALUE,
     DEVICE_CLASS_METER,
@@ -349,7 +350,7 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
         if self.entity_description.device_class == DEVICE_CLASS_STATE:
             # Include raw numeric value as an extra attribute for the
             # device state.
-            self._attr_extra_state_attributes = {ATTR_NUMERIC: int(value)}
+            self._attr_extra_state_attributes = {ATTR_NUMERIC_STATE: int(value)}
 
         self.async_write_ha_state()
 
@@ -447,6 +448,8 @@ METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
 class EcomaxMeter(RestoreSensor, EcomaxSensor):
     """Represents ecoMAX sensor that restores previous value."""
 
+    _unrecorded_attributes: frozenset[str] = frozenset({ATTR_BURNED_SINCE_LAST_UPDATE})
+
     async def async_added_to_hass(self):
         """Called when an entity has their entity_id assigned."""
         await super().async_added_to_hass()
@@ -471,6 +474,9 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
     async def async_update(self, value=None) -> None:
         """Update meter state."""
         if value is not None:
+            self._attr_extra_state_attributes = {
+                ATTR_BURNED_SINCE_LAST_UPDATE: round(value, 6)
+            }
             self._attr_native_value += value
             self.async_write_ha_state()
 

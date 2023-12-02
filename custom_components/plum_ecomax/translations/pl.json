@@ -127,6 +127,9 @@
           "burning_off": "Wygaszanie",
           "alert": "Alarm",
           "unknown": "Nieznany"
+        },
+        "state_attributes": {
+          "numeric_state": { "name": "Numeric state" }
         }
       },
       "service_password": { "name": "Hasło serwisowe" },
@@ -151,7 +154,12 @@
       "mixer_target_temp": { "name": "Temperatura zadana mieszacza" },
       "circuit_temp": { "name": "Temperatura obiegu" },
       "circuit_target_temp": { "name": "Temperatura zadana obiegu" },
-      "total_fuel_burned": { "name": "Spalone paliwo" },
+      "total_fuel_burned": {
+        "name": "Spalone paliwo",
+        "state_attributes": {
+          "burned_since_last_update": { "name": "Burned since last update" }
+        }
+      },
       "ash_pan_full": { "name": "Popielnik pełny" }
     },
     "switch": {

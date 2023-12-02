@@ -60,7 +60,8 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
-    ATTR_NUMERIC,
+    ATTR_BURNED_SINCE_LAST_UPDATE,
+    ATTR_NUMERIC_STATE,
     ATTR_REGDATA,
     ATTR_VALUE,
     DEVICE_CLASS_METER,
@@ -365,7 +366,7 @@ async def test_state_sensor(
     assert state.state == "off"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX State"
     assert state.attributes[ATTR_DEVICE_CLASS] == DEVICE_CLASS_STATE
-    assert state.attributes[ATTR_NUMERIC] == 0
+    assert state.attributes[ATTR_NUMERIC_STATE] == 0
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_STATE, DeviceState.ALERT)
@@ -1171,6 +1172,7 @@ async def test_total_fuel_burned_sensor(
     await connection.device.dispatch(ATTR_FUEL_BURNED, 0.2)
     state = hass.states.get(fuel_burned_entity_id)
     assert state.state == "0.3"
+    assert state.attributes[ATTR_BURNED_SINCE_LAST_UPDATE] == 0.3
 
     # Test that value is restored after HASS restart.
     await hass.async_stop()
