@@ -129,7 +129,7 @@
           "unknown": "Неизвестно"
         },
         "state_attributes": {
-          "numeric_state": { "name": "Numeric state" }
+          "numeric_state": { "name": "Числовое значение" }
         }
       },
       "service_password": { "name": "Сервисный пароль" },
@@ -157,7 +157,7 @@
       "total_fuel_burned": {
         "name": "Сожжено топлива",
         "state_attributes": {
-          "burned_since_last_update": { "name": "Burned since last update" }
+          "burned_since_last_update": { "name": "Сожжено с последнего обновления" }
         }
       },
       "ash_pan_full": { "name": "Заполненность зольного ящика" }
@@ -181,104 +181,104 @@
   "selector": {
     "schedule_type": {
       "options": {
-        "heating": "Heating",
-        "water_heater": "Water heater"
+        "heating": "Отопление",
+        "water_heater": "Водонагреватель"
       }
     },
     "weekdays": {
       "options": {
-        "monday": "Monday",
-        "tuesday": "Tuesday",
-        "wednesday": "Wednesday",
-        "thursday": "Thursday",
-        "friday": "Friday",
-        "saturday": "Saturday",
-        "sunday": "Sunday"
+        "monday": "Понедельник",
+        "tuesday": "Вторник",
+        "wednesday": "Среда",
+        "thursday": "Четверг",
+        "friday": "Пятница",
+        "saturday": "Суббота",
+        "sunday": "Воскресенье"
       }
     },
     "preset": {
       "options": {
-        "day": "Day",
-        "night": "Night"
+        "day": "День",
+        "night": "Ночь"
       }
     }
   },
   "services": {
     "get_parameter": {
-      "name": "Get parameter",
-      "description": "Gets device parameter.",
+      "name": "Получить значение параметра",
+      "description": "Получает значение параметра устройства.",
       "fields": {
         "name": {
-          "name": "Name",
-          "description": "Name of the parameter"
+          "name": "Название",
+          "description": "Название параметра."
         }
       }
     },
     "set_parameter": {
-      "name": "Set parameter",
-      "description": "Sets device parameter.",
+      "name": "Установить значение параметра",
+      "description": "Устанавливает значение параметра устройства.",
       "fields": {
         "name": {
-          "name": "Name",
-          "description": "Name of the parameter"
+          "name": "Название",
+          "description": "Название параметра."
         },
         "value": {
-          "name": "Value",
-          "description": "A value that parameter will be set to"
+          "name": "Значение",
+          "description": "Новое значение параметра."
         }
       }
     },
     "get_schedule": {
-      "name": "Get schedule",
-      "description": "Gets device schedule.",
+      "name": "Получить расписание",
+      "description": "Получает расписание работы устройства.",
       "fields": {
         "type": {
-          "name": "Type",
-          "description": "Type of the schedule"
+          "name": "Тип",
+          "description": "Тип расписания."
         },
         "weekdays": {
-          "name": "Weekdays",
-          "description": "Weekdays for which to get the schedules"
+          "name": "Дни недели",
+          "description": "Дни недели, для которых требуется получить расписание."
         }
       }
     },
     "set_schedule": {
-      "name": "Set schedule",
-      "description": "Sets device schedule.",
+      "name": "Установить расписание",
+      "description": "Устанавливает расписание работы устройства.",
       "fields": {
         "type": {
-          "name": "Type",
-          "description": "Type of the schedule"
+          "name": "Тип",
+          "description": "Тип расписания."
         },
         "weekdays": {
-          "name": "Weekdays",
-          "description": "Weekdays for which to set the schedules"
+          "name": "Дни недели",
+          "description": "Дни недели, для которых требуется установить расписание."
         },
         "preset": {
-          "name": "Preset",
-          "description": "Preset at scheduled time"
+          "name": "Состояние",
+          "description": "Состояние устройства в заданный интервал времени."
         },
         "start": {
-          "name": "Start time",
-          "description": "Time at which scheduled state will be set"
+          "name": "Начало",
+          "description": "Заданное состояние будет установлено начиная с этого времени."
         },
         "end": {
-          "name": "End time",
-          "description": "Time at which scheduled state will be cleared"
+          "name": "Конец",
+          "description": "Заданое состояние будет сброшено начиная с этого времени."
         }
       }
     },
     "reset_meter": {
-      "name": "Reset meter",
-      "description": "Resets meter value."
+      "name": "Сбросить счетчик",
+      "description": "Сбрасывает значение счетчика."
     },
     "calibrate_meter": {
-      "name": "Calibrate meter",
-      "description": "Allows to calibrate meter by pre-setting it's value.",
+      "name": "Калибровать счетчик",
+      "description": "Позволяет устанавливать текущее значение счетчика.",
       "fields": {
         "value": {
-          "name": "Value",
-          "description": "Sets meter to this value."
+          "name": "Значение",
+          "description": "Значение на каторое будет установлен счетчик."
         }
       }
     }

@@ -210,7 +210,7 @@
       "fields": {
         "name": {
           "name": "Name",
-          "description": "Name of the parameter"
+          "description": "Name of the parameter."
         }
       }
     },
@@ -220,11 +220,11 @@
       "fields": {
         "name": {
           "name": "Name",
-          "description": "Name of the parameter"
+          "description": "Name of the parameter."
         },
         "value": {
           "name": "Value",
-          "description": "A value that parameter will be set to"
+          "description": "A value that parameter will be set to."
         }
       }
     },
@@ -234,11 +234,11 @@
       "fields": {
         "type": {
           "name": "Type",
-          "description": "Type of the schedule"
+          "description": "Type of the schedule."
         },
         "weekdays": {
           "name": "Weekdays",
-          "description": "Weekdays to get the schedule"
+          "description": "Weekdays to get the schedule."
         }
       }
     },
@@ -248,23 +248,23 @@
       "fields": {
         "type": {
           "name": "Type",
-          "description": "Type of the schedule"
+          "description": "Type of the schedule."
         },
         "weekdays": {
           "name": "Weekdays",
-          "description": "Weekdays to set the schedule"
+          "description": "Weekdays to set the schedule."
         },
         "preset": {
           "name": "Preset",
-          "description": "Preset at scheduled time"
+          "description": "Preset at scheduled time."
         },
         "start_time": {
           "name": "Start time",
-          "description": "Time at which scheduled state will be set"
+          "description": "Time at which scheduled state will be set."
         },
         "end_time": {
           "name": "End time",
-          "description": "Time at which scheduled state will be cleared"
+          "description": "Time at which scheduled state will be cleared."
         }
       }
     },

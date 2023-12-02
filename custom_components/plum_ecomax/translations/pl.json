@@ -210,7 +210,7 @@
       "fields": {
         "name": {
           "name": "Nazwa",
-          "description": "Nazwa parametru"
+          "description": "Nazwa parametru."
         }
       }
     },
@@ -220,11 +220,11 @@
       "fields": {
         "name": {
           "name": "Nazwa",
-          "description": "Nazwa parametru"
+          "description": "Nazwa parametru."
         },
         "value": {
           "name": "Wartość",
-          "description": "Zadana wartość parametru"
+          "description": "Zadana wartość parametru."
         }
       }
     },
@@ -234,11 +234,11 @@
       "fields": {
         "type": {
           "name": "Typ",
-          "description": "Typ harmonogramu"
+          "description": "Typ harmonogramu."
         },
         "weekdays": {
           "name": "Dni tygodnia",
-          "description": "Dni tygodnia dla których pobrać harmonogram"
+          "description": "Dni tygodnia dla których pobrać harmonogram."
         }
       }
     },
@@ -248,23 +248,23 @@
       "fields": {
         "type": {
           "name": "Typ",
-          "description": "Typ harmonogramu"
+          "description": "Typ harmonogramu."
         },
         "weekdays": {
           "name": "Dni tygodnia",
-          "description": "Dni tygodnia dla których ustawić harmonogram"
+          "description": "Dni tygodnia dla których ustawić harmonogram."
         },
         "preset": {
           "name": "Nastaw",
-          "description": "Nastaw na zaplanowany czas"
+          "description": "Nastaw na zaplanowany czas."
         },
         "start": {
           "name": "Czas startu",
-          "description": "Czas w których nastaw ma zostać rozpoczęty"
+          "description": "Czas w których nastaw ma zostać rozpoczęty."
         },
         "end": {
           "name": "Czas zakończenia",
-          "description": "Czas w których nastaw ma zostać zakończony"
+          "description": "Czas w których nastaw ma zostać zakończony."
         }
       }
     },
