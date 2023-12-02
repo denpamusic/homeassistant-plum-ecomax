@@ -439,7 +439,7 @@ METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfMass.KILOGRAMS,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.TOTAL_INCREASING,
-        suggested_display_precision=2,
+        suggested_display_precision=3,
         value_fn=lambda x: x,
     ),
 )
@@ -474,9 +474,7 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
     async def async_update(self, value=None) -> None:
         """Update meter state."""
         if value is not None:
-            self._attr_extra_state_attributes = {
-                ATTR_BURNED_SINCE_LAST_UPDATE: round(value, 6)
-            }
+            self._attr_extra_state_attributes = {ATTR_BURNED_SINCE_LAST_UPDATE: value}
             self._attr_native_value += value
             self.async_write_ha_state()
 
