@@ -1155,7 +1155,7 @@ async def test_total_fuel_burned_sensor(
     assert entry
     assert entry.translation_key == "total_fuel_burned"
     options = entry.options["sensor"]
-    assert options["suggested_display_precision"] == 2
+    assert options["suggested_display_precision"] == 3
 
     # Get initial value.
     state = hass.states.get(fuel_burned_entity_id)
