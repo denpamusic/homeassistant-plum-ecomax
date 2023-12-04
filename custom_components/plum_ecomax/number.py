@@ -29,7 +29,7 @@ _LOGGER = logging.getLogger(__name__)
 
 @dataclass(kw_only=True, slots=True)
 class EcomaxNumberEntityDescription(NumberEntityDescription):
-    """Describes ecoMAX number entity."""
+    """Describes an ecoMAX number."""
 
     product_types: set[ProductType] | Literal["all"] = ALL
     filter_fn: Callable[[Any], Any] = on_change
@@ -92,7 +92,7 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
 
 
 class EcomaxNumber(EcomaxEntity, NumberEntity):
-    """Represents ecoMAX number platform."""
+    """Represents an ecoMAX number."""
 
     _attr_mode: NumberMode = NumberMode.AUTO
     _attr_native_max_value: float | None
@@ -104,6 +104,7 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
     def __init__(
         self, connection: EcomaxConnection, description: EcomaxNumberEntityDescription
     ):
+        """Initialize a new ecoMAX number."""
         self._attr_available = False
         self._attr_mode = description.mode
         self._attr_native_max_value = None
@@ -128,7 +129,7 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
 
 @dataclass(slots=True)
 class EcomaxMixerNumberEntityDescription(EcomaxNumberEntityDescription):
-    """Describes ecoMAX mixer entity."""
+    """Describes a mixer number."""
 
     indexes: set[int] | Literal["all"] = ALL
 
@@ -198,7 +199,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
 
 
 class MixerNumber(MixerEntity, EcomaxNumber):
-    """Represents mixer number platform."""
+    """Represents a mixer number."""
 
     def __init__(
         self,
@@ -206,7 +207,7 @@ class MixerNumber(MixerEntity, EcomaxNumber):
         description: EcomaxNumberEntityDescription,
         index: int,
     ):
-        """Initialize mixer number object."""
+        """Initialize a new mixer number."""
         self.index = index
         super().__init__(connection, description)
 
@@ -215,7 +216,7 @@ def get_by_product_type(
     product_type: ProductType,
     descriptions: Iterable[EcomaxNumberEntityDescription],
 ) -> Generator[EcomaxNumberEntityDescription, None, None]:
-    """Filter descriptions by product type."""
+    """Filter descriptions by the product type."""
     for description in descriptions:
         if (
             description.product_types == ALL
@@ -227,16 +228,16 @@ def get_by_product_type(
 def get_by_modules(
     connected_modules, descriptions: Iterable[EcomaxNumberEntityDescription]
 ) -> Generator[EcomaxNumberEntityDescription, None, None]:
-    """Filter descriptions by modules."""
+    """Filter descriptions by connected modules."""
     for description in descriptions:
         if getattr(connected_modules, description.module, None) is not None:
             yield description
 
 
 def get_by_index(
-    index, descriptions: Iterable[EcomaxMixerNumberEntityDescription]
+    index: int, descriptions: Iterable[EcomaxMixerNumberEntityDescription]
 ) -> Generator[EcomaxMixerNumberEntityDescription, None, None]:
-    """Filter mixer/circuit descriptions by indexes."""
+    """Filter mixer/circuit descriptions by the index."""
     index += 1
     for description in descriptions:
         if description.indexes == ALL or index in description.indexes:
@@ -244,7 +245,7 @@ def get_by_index(
 
 
 def async_setup_ecomax_numbers(connection: EcomaxConnection) -> list[EcomaxNumber]:
-    """Setup ecoMAX numbers."""
+    """Set up the ecoMAX numbers."""
     return [
         EcomaxNumber(connection, description)
         for description in get_by_modules(
@@ -255,7 +256,7 @@ def async_setup_ecomax_numbers(connection: EcomaxConnection) -> list[EcomaxNumbe
 
 
 def async_setup_mixer_numbers(connection: EcomaxConnection) -> list[MixerNumber]:
-    """Setup mixer numbers."""
+    """Set up the mixer numbers."""
     entities: list[MixerNumber] = []
 
     for index in connection.device.mixers.keys():

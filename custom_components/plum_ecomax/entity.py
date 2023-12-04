@@ -1,4 +1,4 @@
-"""Base ecoMAX entity class."""
+"""Base ecoMAX entity for Plum ecoMAX."""
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -14,7 +14,7 @@ from .const import ATTR_MIXERS, DOMAIN, MANUFACTURER
 
 
 class EcomaxEntity(ABC):
-    """Represents base ecoMAX entity."""
+    """Represents an ecoMAX entity."""
 
     _attr_available: bool
     _attr_entity_registry_enabled_default: bool
@@ -41,17 +41,17 @@ class EcomaxEntity(ABC):
 
     @property
     def device(self) -> EventManager:
-        """Return device object."""
+        """Return the device handler."""
         return self.connection.device
 
     @property
     def device_info(self) -> DeviceInfo:
-        """Return device info."""
+        """Return the device info."""
         return self.connection.device_info
 
     @property
     def available(self) -> bool:
-        """Indicates whether the entity is available."""
+        """Return True if entity is available."""
         if getattr(self.entity_description, "always_available", False):
             return True
 
@@ -59,7 +59,10 @@ class EcomaxEntity(ABC):
 
     @property
     def entity_registry_enabled_default(self) -> bool:
-        """Indicate if the entity should be enabled when first added."""
+        """Return if the entity should be enabled when first added.
+
+        This only applies when fist added to the entity registry.
+        """
         if hasattr(self, "_attr_entity_registry_enabled_default"):
             return self._attr_entity_registry_enabled_default
 
@@ -67,37 +70,42 @@ class EcomaxEntity(ABC):
 
     @property
     def unique_id(self) -> str:
-        """A unique identifier for this entity."""
+        """Return a unique ID."""
         return f"{self.connection.uid}-{self.entity_description.key}"
 
     @property
     def connection(self) -> EcomaxConnection:
-        """ecoMAX connection instance."""
+        """Return the connection handler."""
         return self._connection
 
     @property
     def should_poll(self) -> bool:
-        """Should hass check with the entity for an updated state."""
+        """Return True if entity has to be polled for state.
+
+        False if entity pushes its state to HA.
+        """
         return False
 
     @property
     def has_entity_name(self) -> bool:
-        """Return if the name of the entity is describing only the entity itself."""
+        """Return if the name of the entity is describing only the
+        entity itself.
+        """
         return True
 
     @abstractmethod
     async def async_update(self, value) -> None:
-        """Retrieve latest state."""
+        """Update entity state."""
 
 
 class MixerEntity(EcomaxEntity):
-    """Represents base mixer entity."""
+    """Represents a mixer entity."""
 
     index: int
 
     @property
     def unique_id(self) -> str:
-        """A unique identifier for this entity."""
+        """Return a unique ID."""
         return (
             f"{self.connection.uid}-mixer-"
             + f"{self.index}-{self.entity_description.key}"
@@ -105,7 +113,7 @@ class MixerEntity(EcomaxEntity):
 
     @property
     def device_name(self) -> str:
-        """Name of the device."""
+        """Return the device name."""
         return (
             "Circuit"
             if self.connection.product_type == ProductType.ECOMAX_I
@@ -114,7 +122,7 @@ class MixerEntity(EcomaxEntity):
 
     @property
     def device_info(self) -> DeviceInfo:
-        """Return device info."""
+        """Return the device info."""
         return DeviceInfo(
             name=f"{self.connection.name} {self.device_name} {self.index + 1}",
             identifiers={(DOMAIN, f"{self.connection.uid}-mixer-{self.index}")},
@@ -127,5 +135,5 @@ class MixerEntity(EcomaxEntity):
     @final
     @property
     def device(self) -> Mixer:
-        """Return mixer object."""
+        """Return the mixer handler."""
         return self.connection.device.data[ATTR_MIXERS][self.index]

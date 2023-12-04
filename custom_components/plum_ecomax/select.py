@@ -32,7 +32,7 @@ _LOGGER = logging.getLogger(__name__)
 
 @dataclass(kw_only=True, slots=True)
 class EcomaxSelectEntityDescription(SelectEntityDescription):
-    """Describes ecoMAX select entity."""
+    """Describes an ecoMAX select."""
 
     product_types: set[ProductType] | Literal["all"] = ALL
     filter_fn: Callable[[Any], Any] = on_change
@@ -50,7 +50,7 @@ SELECT_TYPES: tuple[EcomaxSelectEntityDescription, ...] = (
 
 
 class EcomaxSelect(EcomaxEntity, SelectEntity):
-    """Represents ecoMAX select platform."""
+    """Represents an ecoMAX select."""
 
     _attr_current_option: str | None
     _connection: EcomaxConnection
@@ -59,6 +59,7 @@ class EcomaxSelect(EcomaxEntity, SelectEntity):
     def __init__(
         self, connection: EcomaxConnection, description: EcomaxSelectEntityDescription
     ):
+        """Initialize a new ecoMAX select."""
         self._attr_current_option = None
         self._connection = connection
         self.entity_description = description
@@ -71,14 +72,14 @@ class EcomaxSelect(EcomaxEntity, SelectEntity):
         self.async_write_ha_state()
 
     async def async_update(self, value) -> None:
-        """Retrieve latest state."""
+        """Update entity state."""
         self._attr_current_option = self.entity_description.options[int(value)]
         self.async_write_ha_state()
 
 
 @dataclass(kw_only=True, slots=True)
 class EcomaxMixerSelectEntityDescription(EcomaxSelectEntityDescription):
-    """Describes mixer select entity."""
+    """Describes a mixer select."""
 
     indexes: set[int] | Literal["all"] = ALL
 
@@ -101,7 +102,7 @@ MIXER_SELECT_TYPES: tuple[EcomaxMixerSelectEntityDescription, ...] = (
 
 
 class MixerSelect(MixerEntity, EcomaxSelect):
-    """Represents mixer select platform."""
+    """Represents a mixer select."""
 
     def __init__(
         self,
@@ -109,7 +110,7 @@ class MixerSelect(MixerEntity, EcomaxSelect):
         description: EcomaxSelectEntityDescription,
         index: int,
     ):
-        """Initialize mixer select object."""
+        """Initialize a new mixer select."""
         self.index = index
         super().__init__(connection, description)
 
@@ -118,7 +119,7 @@ def get_by_product_type(
     product_type: ProductType,
     descriptions: Iterable[EcomaxSelectEntityDescription],
 ) -> Generator[EcomaxSelectEntityDescription, None, None]:
-    """Filter descriptions by product type."""
+    """Filter descriptions by the product type."""
     for description in descriptions:
         if (
             description.product_types == ALL
@@ -130,16 +131,16 @@ def get_by_product_type(
 def get_by_modules(
     connected_modules, descriptions: Iterable[EcomaxSelectEntityDescription]
 ) -> Generator[EcomaxSelectEntityDescription, None, None]:
-    """Filter descriptions by modules."""
+    """Filter descriptions by connected modules."""
     for description in descriptions:
         if getattr(connected_modules, description.module, None) is not None:
             yield description
 
 
 def get_by_index(
-    index, descriptions: Iterable[EcomaxMixerSelectEntityDescription]
+    index: int, descriptions: Iterable[EcomaxMixerSelectEntityDescription]
 ) -> Generator[EcomaxMixerSelectEntityDescription, None, None]:
-    """Filter mixer/circuit descriptions by indexes."""
+    """Filter mixer/circuit descriptions by the index."""
     index += 1
     for description in descriptions:
         if description.indexes == ALL or index in description.indexes:
@@ -147,7 +148,7 @@ def get_by_index(
 
 
 def async_setup_ecomax_selects(connection: EcomaxConnection) -> list[EcomaxSelect]:
-    """Setup ecoMAX selects."""
+    """Set up the ecoMAX selects."""
     return [
         EcomaxSelect(connection, description)
         for description in get_by_modules(
@@ -158,7 +159,7 @@ def async_setup_ecomax_selects(connection: EcomaxConnection) -> list[EcomaxSelec
 
 
 def async_setup_mixer_selects(connection: EcomaxConnection) -> list[MixerSelect]:
-    """Setup mixer selects."""
+    """Set up the mixer selects."""
     entities: list[MixerSelect] = []
 
     for index in connection.device.mixers.keys():

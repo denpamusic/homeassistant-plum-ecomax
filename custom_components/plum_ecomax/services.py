@@ -102,7 +102,7 @@ _LOGGER = logging.getLogger(__name__)
 def async_extract_target_device(
     device_id: str, hass: HomeAssistant, connection: EcomaxConnection
 ) -> Device:
-    """Get target device by device id."""
+    """Get target device by the device id."""
     dr = device_registry.async_get(hass)
     device = dr.async_get(device_id)
     if not device:
@@ -184,10 +184,10 @@ async def async_get_device_parameter(
 def async_setup_get_parameter_service(
     hass: HomeAssistant, connection: EcomaxConnection
 ) -> None:
-    """Setup service to get a parameter."""
+    """Set up service to get a device parameter."""
 
     async def async_get_parameter_service(service_call: ServiceCall) -> ServiceResponse:
-        """Service to get a parameter."""
+        """Service to get a device parameter."""
         name = service_call.data[ATTR_NAME]
         selected = async_extract_referenced_entity_ids(hass, service_call)
         devices = async_extract_referenced_devices(hass, connection, selected)
@@ -242,10 +242,10 @@ async def async_set_device_parameter(device: Device, name: str, value: float) ->
 def async_setup_set_parameter_service(
     hass: HomeAssistant, connection: EcomaxConnection
 ) -> None:
-    """Setup service to set a parameter."""
+    """Set up the service to set a device parameter."""
 
     async def async_set_parameter_service(service_call: ServiceCall) -> None:
-        """Service to set a parameter."""
+        """Service to set a device parameter."""
         name = service_call.data[ATTR_NAME]
         value = service_call.data[ATTR_VALUE]
         selected = async_extract_referenced_entity_ids(hass, service_call)
@@ -272,7 +272,7 @@ def async_setup_set_parameter_service(
 
 
 def async_schedule_day_to_dict(schedule_day: ScheduleDay):
-    """Format schedule day as dictionary."""
+    """Format the schedule day as a dictionary."""
     return {
         (START_OF_DAY_DT + dt.timedelta(minutes=30 * index)).strftime(TIME_FORMAT): (
             STATE_DAY if value else STATE_NIGHT
@@ -285,7 +285,7 @@ def async_schedule_day_to_dict(schedule_day: ScheduleDay):
 def async_setup_get_schedule_service(
     hass: HomeAssistant, connection: EcomaxConnection
 ) -> None:
-    """Setup service to get a schedule."""
+    """Set up the service to get a schedule."""
 
     async def async_get_schedule_service(service_call: ServiceCall) -> ServiceResponse:
         """Service to get a schedule."""
@@ -321,7 +321,7 @@ def async_setup_get_schedule_service(
 def async_setup_set_schedule_service(
     hass: HomeAssistant, connection: EcomaxConnection
 ) -> None:
-    """Setup service to set a schedule."""
+    """Set up the service to set a schedule."""
 
     async def async_set_schedule_service(service_call: ServiceCall) -> None:
         """Service to set a schedule."""
@@ -368,7 +368,7 @@ def async_setup_set_schedule_service(
 
 @callback
 def async_setup_services(hass: HomeAssistant, connection: EcomaxConnection) -> bool:
-    """Setup ecoMAX services."""
+    """Set up the ecoMAX services."""
     _LOGGER.debug("Starting setup of services...")
 
     async_setup_get_parameter_service(hass, connection)

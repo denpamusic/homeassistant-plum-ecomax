@@ -99,7 +99,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self.init_info: MutableMapping[str, Any] = {}
 
     async def async_step_user(self, user_input=None) -> FlowResult:
-        """Handle the initial step."""
+        """Handle initial step."""
         return self.async_show_menu(
             step_id="user",
             menu_options=["tcp", "serial"],
@@ -108,7 +108,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_tcp(
         self, user_input: MutableMapping[str, Any] | None = None
     ) -> FlowResult:
-        """Handle the TCP connection setup."""
+        """Handle TCP connection setup."""
         if user_input is None:
             return self.async_show_form(step_id="tcp", data_schema=STEP_TCP_DATA_SCHEMA)
 
@@ -137,7 +137,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_serial(
         self, user_input: MutableMapping[str, Any] | None = None
     ) -> FlowResult:
-        """Handle the serial connection setup."""
+        """Handle serial connection setup."""
         if user_input is None:
             return self.async_show_form(
                 step_id="serial", data_schema=STEP_SERIAL_DATA_SCHEMA
@@ -241,7 +241,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_progress_done(next_step_id="discover")
 
     async def async_step_discover(self, user_input=None) -> FlowResult:
-        """Detect modules connected to the device."""
+        """Discover connected modules."""
 
         async def _discover_modules() -> None:
             try:

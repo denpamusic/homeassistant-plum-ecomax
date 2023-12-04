@@ -81,7 +81,7 @@ _LOGGER = logging.getLogger(__name__)
 
 @dataclass(kw_only=True, slots=True)
 class EcomaxSensorEntityDescription(SensorEntityDescription):
-    """Describes ecoMAX sensor entity."""
+    """Describes an ecoMAX sensor."""
 
     product_types: set[ProductType] | Literal["all"] = ALL
     value_fn: Callable[[Any], Any]
@@ -328,7 +328,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
 
 
 class EcomaxSensor(EcomaxEntity, SensorEntity):
-    """Represents ecoMAX sensor platform."""
+    """Represents an ecoMAX sensor."""
 
     _attr_native_value: StateType | date | datetime
     _connection: EcomaxConnection
@@ -337,7 +337,7 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
     def __init__(
         self, connection: EcomaxConnection, description: EcomaxSensorEntityDescription
     ):
-        """Initialize ecoMAX sensor object."""
+        """Initialize a new ecoMAX sensor."""
         self._attr_available = False
         self._attr_native_value = None
         self._connection = connection
@@ -362,7 +362,7 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
 
 @dataclass(slots=True)
 class MixerSensorEntityDescription(EcomaxSensorEntityDescription):
-    """Describes ecoMAX mixer sensor entity."""
+    """Describes a mixer sensor."""
 
 
 MIXER_SENSOR_TYPES: tuple[MixerSensorEntityDescription, ...] = (
@@ -414,7 +414,7 @@ MIXER_SENSOR_TYPES: tuple[MixerSensorEntityDescription, ...] = (
 
 
 class MixerSensor(MixerEntity, EcomaxSensor):
-    """Represents mixer sensor platform."""
+    """Represents a mixer sensor."""
 
     def __init__(
         self,
@@ -422,14 +422,14 @@ class MixerSensor(MixerEntity, EcomaxSensor):
         description: MixerSensorEntityDescription,
         index: int,
     ):
-        """Initialize mixer sensor object."""
+        """Initialize a new mixer sensor."""
         self.index = index
         super().__init__(connection, description)
 
 
 @dataclass(slots=True)
 class EcomaxMeterEntityDescription(EcomaxSensorEntityDescription):
-    """Describes ecoMAX meter entity."""
+    """Describes an ecoMAX meter entity."""
 
     device_class: str = DEVICE_CLASS_METER
 
@@ -451,7 +451,7 @@ METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
 
 
 class EcomaxMeter(RestoreSensor, EcomaxSensor):
-    """Represents ecoMAX sensor that restores previous value."""
+    """Represents an ecoMAX sensor that restores previous value."""
 
     _unrecorded_attributes: frozenset[str] = frozenset({ATTR_BURNED_SINCE_LAST_UPDATE})
 
@@ -491,7 +491,7 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
 
 @dataclass(kw_only=True, slots=True)
 class RegdataSensorEntityDescription(EcomaxSensorEntityDescription):
-    """Describes RegData sensor entity."""
+    """Describes a regulator data sensor."""
 
     key: int
     product_models: set[ProductModel]
@@ -522,7 +522,7 @@ REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
 
 
 class RegdataSensor(EcomaxSensor):
-    """Represents RegData sensor platform."""
+    """Represents a regulator data sensor."""
 
     async def async_update(self, value: dict[str, Any]) -> None:
         """Update entity state."""
@@ -554,14 +554,17 @@ class RegdataSensor(EcomaxSensor):
 
     @property
     def entity_registry_enabled_default(self) -> bool:
-        """Indicate if the entity should be enabled when first added."""
+        """Return if the entity should be enabled when first added.
+
+        This only applies when fist added to the entity registry.
+        """
         return self.entity_description.key in self.device.data.get(ATTR_REGDATA, {})
 
 
 def get_by_product_model(
     product_model: str, descriptions: Iterable[RegdataSensorEntityDescription]
 ) -> Generator[RegdataSensorEntityDescription, None, None]:
-    """Get descriptions by product model."""
+    """Get descriptions by the product model."""
     for description in descriptions:
         if product_model in description.product_models:
             yield description
@@ -570,7 +573,7 @@ def get_by_product_model(
 def get_by_product_type(
     product_type: ProductType, descriptions: Iterable[EcomaxSensorEntityDescription]
 ) -> Generator[EcomaxSensorEntityDescription, None, None]:
-    """Get descriptions by product type."""
+    """Get descriptions by the product type."""
     for description in descriptions:
         if (
             description.product_types == ALL
@@ -583,14 +586,14 @@ def get_by_modules(
     connected_modules: ConnectedModules,
     descriptions: Iterable[EcomaxSensorEntityDescription],
 ) -> Generator[EcomaxSensorEntityDescription, None, None]:
-    """Get descriptions by modules."""
+    """Get descriptions by connected modules."""
     for description in descriptions:
         if getattr(connected_modules, description.module, None) is not None:
             yield description
 
 
 def async_setup_ecomax_sensors(connection: EcomaxConnection) -> list[EcomaxSensor]:
-    """Setup ecoMAX sensors."""
+    """Set up the ecoMAX sensors."""
     return [
         EcomaxSensor(connection, description)
         for description in get_by_modules(
@@ -601,7 +604,7 @@ def async_setup_ecomax_sensors(connection: EcomaxConnection) -> list[EcomaxSenso
 
 
 def async_setup_ecomax_meters(connection: EcomaxConnection) -> list[EcomaxMeter]:
-    """Setup ecoMAX meters."""
+    """Set up the ecoMAX meters."""
     return [
         EcomaxMeter(connection, description)
         for description in get_by_modules(
@@ -612,7 +615,7 @@ def async_setup_ecomax_meters(connection: EcomaxConnection) -> list[EcomaxMeter]
 
 
 def async_setup_regdata_sensors(connection: EcomaxConnection) -> list[RegdataSensor]:
-    """Setup RegData sensors."""
+    """Set up the regulator data sensors."""
     return [
         RegdataSensor(connection, description)
         for description in get_by_modules(
@@ -626,7 +629,7 @@ def async_setup_regdata_sensors(connection: EcomaxConnection) -> list[RegdataSen
 
 
 def async_setup_mixer_sensors(connection: EcomaxConnection) -> list[MixerSensor]:
-    """Setup mixer sensors."""
+    """Set up the mixer sensors."""
     entities: list[MixerSensor] = []
 
     for index in connection.device.mixers.keys():
@@ -655,11 +658,11 @@ async def async_setup_entry(
     # Add ecoMAX sensors.
     entities.extend(async_setup_ecomax_sensors(connection))
 
-    # Add device-specific sensors.
+    # Add regulator data (device-specific) sensors.
     if (
         regdata := async_setup_regdata_sensors(connection)
     ) and await connection.async_setup_regdata():
-        # If there are device-specific sensors, setup regulator data.
+        # Set up the regulator data sensors, if there are any.
         entities.extend(regdata)
 
     # Add mixer/circuit sensors.

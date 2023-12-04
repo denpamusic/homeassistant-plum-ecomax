@@ -28,7 +28,7 @@ def _value_as_dict(value):
 
 
 def _data_as_dict(data: dict[str, Any]) -> dict[str, Any]:
-    """Return data as dictionary."""
+    """Return data as a dictionary."""
     for key, value in data.items():
         data[key] = (
             _data_as_dict(dict(value))
@@ -40,7 +40,7 @@ def _data_as_dict(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def _redact_device_data(data: dict[str, Any]) -> dict[str, Any]:
-    """Redact sensitive information in the device data."""
+    """Redact sensitive information from device data."""
     sensitive: tuple[tuple[str, str | None], ...] = (
         (ATTR_PRODUCT, "uid"),
         (ATTR_PASSWORD, None),
@@ -60,7 +60,7 @@ def _redact_device_data(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def _redact_entry_data(data: dict[str, Any]) -> dict[str, Any]:
-    """Redact sensitive information in the config entry data."""
+    """Redact sensitive information from config entry data."""
     for field in (CONF_UID, CONF_HOST):
         if field in data:
             data[field] = REDACTED

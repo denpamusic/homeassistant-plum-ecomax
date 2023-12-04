@@ -81,13 +81,13 @@ _LOGGER = logging.getLogger(__name__)
 
 @dataclass(kw_only=True, slots=True)
 class EcomaxClimateEntityDescription(ClimateEntityDescription):
-    """Describes ecoMAX climate entity."""
+    """Describes an ecoMAX climate entity."""
 
     index: int
 
 
 class EcomaxClimate(EcomaxEntity, ClimateEntity):
-    """Represents ecoMAX climate platform."""
+    """Represents an ecoMAX climate entity."""
 
     _attr_current_temperature: float | None = None
     _attr_entity_registry_enabled_default: bool
@@ -108,6 +108,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
     entity_description: EntityDescription
 
     def __init__(self, connection: EcomaxConnection, thermostat: Thermostat):
+        """Initialize a new ecoMAX climate entity."""
         self._attr_current_temperature = None
         self._attr_entity_registry_enabled_default = True
         self._attr_hvac_action = None
@@ -160,11 +161,11 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
 
     @overload
     async def async_update_preset_mode(self, mode: int) -> None:
-        """Update preset mode from the state."""
+        """Update preset mode from the state sensor."""
 
     @overload
     async def async_update_preset_mode(self, mode: ThermostatParameter) -> None:
-        """Update preset mode from the parameter."""
+        """Update preset mode from the mode parameter."""
 
     async def async_update_preset_mode(self, mode) -> None:
         """Update preset mode."""
@@ -215,21 +216,20 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
     async def _async_update_target_temperature_attributes(
         self, target_temp: float | None = None
     ) -> None:
-        """Update target temperature parameter name and bounds."""
+        """Update target temperature parameter name and boundaries."""
         preset_mode = self.preset_mode
 
         if preset_mode == PRESET_SCHEDULE:
             preset_mode = await self._async_get_current_schedule_preset(target_temp)
 
         if preset_mode in (PRESET_AIRING, PRESET_UNKNOWN):
-            # Don't update temperature target name if we couldn't
-            # identify preset in schedule mode or if preset is airing.
+            # Couldn't identify preset in schedule mode or
+            # preset is airing.
             return
 
         target_temperature_name = HA_PRESET_TO_EM_TEMP[preset_mode]
         if self.target_temperature_name == target_temperature_name:
-            # Don't update bounds if target temperature parameter name
-            # is unchanged.
+            # Target temperature parameter name is unchanged.
             return
 
         self._attr_target_temperature_name = target_temperature_name
@@ -242,7 +242,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
     async def _async_get_current_schedule_preset(
         self, target_temp: float | None = None
     ) -> Literal["comfort", "eco", "unknown"]:
-        """Get current preset for schedule mode."""
+        """Get current preset for the schedule mode."""
         if target_temp is None:
             target_temp = await self.device.get("target_temp")
 
@@ -263,14 +263,14 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
 
     @property
     def device(self) -> Thermostat:
-        """Return thermostat object."""
+        """Return the thermostat object."""
         return self.connection.device.data[ATTR_THERMOSTATS][
             self.entity_description.index
         ]
 
     @property
     def target_temperature_name(self) -> str | None:
-        """Return target temperature name."""
+        """Return the target temperature name."""
         return self._attr_target_temperature_name
 
 

@@ -20,7 +20,7 @@ from custom_components.plum_ecomax.entity import EcomaxEntity
 
 @dataclass(kw_only=True, slots=True)
 class EcomaxButtonEntityDescription(ButtonEntityDescription):
-    """Describes ecoMAX button entity."""
+    """Describes an ecoMAX button."""
 
     press_fn: str
 
@@ -38,7 +38,7 @@ BUTTON_TYPES: tuple[EcomaxButtonEntityDescription, ...] = (
 
 
 class EcomaxButton(EcomaxEntity, ButtonEntity):
-    """Represents ecoMAX sensor platform."""
+    """Represents an ecoMAX button."""
 
     _connection: EcomaxConnection
     entity_description: EntityDescription
@@ -46,7 +46,7 @@ class EcomaxButton(EcomaxEntity, ButtonEntity):
     def __init__(
         self, connection: EcomaxConnection, description: EcomaxButtonEntityDescription
     ):
-        """Initialize ecoMAX sensor object."""
+        """Initialize a new ecoMAX button."""
         self._connection = connection
         self.entity_description = description
 
@@ -57,11 +57,14 @@ class EcomaxButton(EcomaxEntity, ButtonEntity):
 
     @property
     def entity_registry_enabled_default(self) -> bool:
-        """Indicate if the entity should be enabled when first added."""
+        """Return if the entity should be enabled when first added.
+
+        This only applies when fist added to the entity registry.
+        """
         return self.entity_description.entity_registry_enabled_default
 
-    async def async_update(self, value) -> None:
-        """Retrieve latest state."""
+    async def async_update(self, _) -> None:
+        """Update entity state."""
 
     async def async_added_to_hass(self):
         """Called when an entity has their entity_id assigned."""
@@ -75,7 +78,7 @@ async def async_setup_entry(
     config_entry: ConfigType,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
-    """Set up the sensor platform."""
+    """Set up the button platform."""
     connection = hass.data[DOMAIN][config_entry.entry_id]
     return async_add_entities(
         EcomaxButton(connection, description) for description in BUTTON_TYPES

@@ -27,7 +27,7 @@ _LOGGER = logging.getLogger(__name__)
 
 @dataclass(kw_only=True, slots=True)
 class EcomaxBinarySensorEntityDescription(BinarySensorEntityDescription):
-    """Describes ecoMAX binary sensor entity."""
+    """Describes an ecoMAX binary sensor."""
 
     value_fn: Callable[[Any], Any]
     product_types: set[ProductType] | Literal["all"] = ALL
@@ -134,13 +134,14 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
 
 
 class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
-    """Representation of ecoMAX binary sensor."""
+    """Represents an ecoMAX binary sensor."""
 
     def __init__(
         self,
         connection: EcomaxConnection,
         description: EcomaxBinarySensorEntityDescription,
     ):
+        """Initialize a new ecoMAX binary sensor."""
         self._connection = connection
         self.entity_description = description
         self._attr_available = False
@@ -163,7 +164,7 @@ class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
 
 @dataclass(slots=True)
 class MixerBinarySensorEntityDescription(EcomaxBinarySensorEntityDescription):
-    """Describes ecoMAX mixer binary sensor entity."""
+    """Describes a mixer binary sensor."""
 
 
 MIXER_BINARY_SENSOR_TYPES: tuple[MixerBinarySensorEntityDescription, ...] = (
@@ -189,7 +190,7 @@ MIXER_BINARY_SENSOR_TYPES: tuple[MixerBinarySensorEntityDescription, ...] = (
 
 
 class MixerBinarySensor(MixerEntity, EcomaxBinarySensor):
-    """Represents mixer binary sensor platform."""
+    """Represents a mixer binary sensor."""
 
     def __init__(
         self,
@@ -197,7 +198,7 @@ class MixerBinarySensor(MixerEntity, EcomaxBinarySensor):
         description: MixerBinarySensorEntityDescription,
         index: int,
     ):
-        """Initialize mixer binary sensor object."""
+        """Initialize a new mixer binary sensor."""
         self.index = index
         super().__init__(connection, description)
 
@@ -206,7 +207,7 @@ def get_by_product_type(
     product_type: ProductType,
     descriptions: Iterable[EcomaxBinarySensorEntityDescription],
 ) -> Generator[EcomaxBinarySensorEntityDescription, None, None]:
-    """Filter descriptions by product type."""
+    """Filter descriptions by the product type."""
     for description in descriptions:
         if (
             description.product_types == ALL
@@ -218,7 +219,7 @@ def get_by_product_type(
 def get_by_modules(
     connected_modules, descriptions: Iterable[EcomaxBinarySensorEntityDescription]
 ) -> Generator[EcomaxBinarySensorEntityDescription, None, None]:
-    """Filter descriptions by modules."""
+    """Filter descriptions by connected modules."""
     for description in descriptions:
         if getattr(connected_modules, description.module, None) is not None:
             yield description
@@ -227,7 +228,7 @@ def get_by_modules(
 def async_setup_ecomax_binary_sensors(
     connection: EcomaxConnection,
 ) -> list[EcomaxBinarySensor]:
-    """Setup ecoMAX binary sensors."""
+    """Set up the ecoMAX binary sensors."""
     return [
         EcomaxBinarySensor(connection, description)
         for description in get_by_modules(
@@ -240,7 +241,7 @@ def async_setup_ecomax_binary_sensors(
 def async_setup_mixer_binary_sensors(
     connection: EcomaxConnection,
 ) -> list[MixerBinarySensor]:
-    """Setup mixer binary sensors."""
+    """Set up the mixer binary sensors."""
     entities: list[MixerBinarySensor] = []
 
     for index in connection.device.mixers.keys():

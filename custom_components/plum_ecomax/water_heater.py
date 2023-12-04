@@ -39,11 +39,11 @@ _LOGGER = logging.getLogger(__name__)
 
 @dataclass(slots=True)
 class EcomaxWaterHeaterEntityDescription(WaterHeaterEntityEntityDescription):
-    """Describes ecoMAX water heater entity."""
+    """Describes an ecoMAX water heater."""
 
 
 class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
-    """Represents ecoMAX water heater platform."""
+    """Represents an ecoMAX water heater."""
 
     _attr_current_operation: str | None
     _attr_current_temperature: float | None
@@ -65,6 +65,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         self,
         connection: EcomaxConnection,
     ):
+        """Initialize a new ecoMAX water heater."""
         self._attr_current_operation = None
         self._attr_current_temperature = None
         self._attr_entity_registry_enabled_default = True
@@ -159,7 +160,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
 
     @property
     def hysteresis(self) -> int:
-        """Return temperature hysteresis."""
+        """Return the temperature hysteresis."""
         return self._attr_hysteresis
 
 

@@ -1,4 +1,4 @@
-"""Contains the Plum ecoMAX connection."""
+"""Connection handler for Plum ecoMAX."""
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -55,7 +55,7 @@ _LOGGER = logging.getLogger(__name__)
 async def async_get_connection_handler(
     connection_type: str, hass: HomeAssistant, data: Mapping[str, Any]
 ) -> pyplumio.Connection:
-    """Return connection handler object."""
+    """Return the connection handler."""
     _LOGGER.debug("Getting connection handler for type: %s...", connection_type)
 
     public_ip = await async_get_source_ip(hass, target_ip=IPV4_BROADCAST_ADDR)
@@ -76,7 +76,7 @@ async def async_get_connection_handler(
 
 
 async def async_get_sub_devices(device: AddressableDevice) -> list[str]:
-    """Return device subdevices."""
+    """Return the sub-devices."""
     _LOGGER.debug("Checking connected sub-devices...")
 
     sub_devices: list[str] = []
@@ -110,7 +110,7 @@ async def async_get_sub_devices(device: AddressableDevice) -> list[str]:
 
 
 class EcomaxConnection:
-    """Represents the ecoMAX connection."""
+    """Represents an ecoMAX connection."""
 
     _connection: pyplumio.Connection
     _device: AddressableDevice | None
@@ -120,7 +120,7 @@ class EcomaxConnection:
     def __init__(
         self, hass: HomeAssistant, entry: ConfigEntry, connection: pyplumio.Connection
     ):
-        """Initialize new ecoMAX connection object."""
+        """Initialize a new ecoMAX connection."""
         self._connection = connection
         self._device = None
         self._hass = hass
@@ -143,7 +143,7 @@ class EcomaxConnection:
         self._device = device
 
     async def async_setup_thermostats(self) -> bool:
-        """Setup thermostats."""
+        """Set up the thermostats."""
         try:
             return await self.device.request(
                 ATTR_THERMOSTAT_PARAMETERS,
@@ -156,7 +156,7 @@ class EcomaxConnection:
             return False
 
     async def async_setup_mixers(self) -> bool:
-        """Setup mixers."""
+        """Set up the mixers."""
         try:
             return await self.device.request(
                 ATTR_MIXER_PARAMETERS,
@@ -169,7 +169,7 @@ class EcomaxConnection:
             return False
 
     async def async_setup_regdata(self) -> bool:
-        """Setup regdata."""
+        """Setup regulator data."""
         try:
             return await self.device.request(
                 ATTR_REGDATA,
@@ -191,22 +191,22 @@ class EcomaxConnection:
 
     @property
     def has_water_heater(self) -> bool:
-        """Does device has attached water heater."""
+        """Return if device has attached water heater."""
         return ATTR_WATER_HEATER in self.entry.data.get(CONF_SUB_DEVICES, [])
 
     @property
     def has_thermostats(self) -> bool:
-        """Does device has attached thermostats."""
+        """Return if device has attached thermostats."""
         return ATTR_THERMOSTATS in self.entry.data.get(CONF_SUB_DEVICES, [])
 
     @property
     def has_mixers(self) -> bool:
-        """Does device has attached mixers."""
+        """Return if device has attached mixers."""
         return ATTR_MIXERS in self.entry.data.get(CONF_SUB_DEVICES, [])
 
     @property
     def device(self) -> AddressableDevice:
-        """Return connection state."""
+        """Return the device handler."""
         if self._device is None:
             raise ConfigEntryNotReady("Device not ready")
 
@@ -244,7 +244,7 @@ class EcomaxConnection:
 
     @property
     def connection(self) -> pyplumio.Connection:
-        """Return the connection handler instance."""
+        """Return the connection handler."""
         return self._connection
 
     @property

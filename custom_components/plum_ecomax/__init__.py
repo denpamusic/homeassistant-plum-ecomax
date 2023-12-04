@@ -59,7 +59,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Plum ecoMAX from a config entry."""
+    """Set up the Plum ecoMAX from a config entry."""
     connection_type = entry.data.get(CONF_CONNECTION_TYPE, DEFAULT_CONNECTION_TYPE)
     connection = EcomaxConnection(
         hass,
@@ -68,7 +68,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     async def async_close_connection(event=None):
-        """Close ecoMAX connection on HA Stop."""
+        """Close the ecoMAX connection on HA Stop."""
         await connection.close()
 
     entry.async_on_unload(
@@ -91,7 +91,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 @callback
 def async_setup_events(hass: HomeAssistant, connection: EcomaxConnection) -> bool:
-    """Setup ecoMAX events."""
+    """Set up the ecoMAX events."""
 
     dr = device_registry.async_get(hass)
 
