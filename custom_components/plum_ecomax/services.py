@@ -1,6 +1,7 @@
 """Contains Plum ecoMAX services."""
 from __future__ import annotations
 
+import asyncio
 import datetime as dt
 import logging
 from typing import Any, Final
@@ -13,7 +14,7 @@ from homeassistant.core import (
     SupportsResponse,
     callback,
 )
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import device_registry, entity_registry
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.config_validation import make_entity_service_schema
@@ -33,7 +34,7 @@ from pyplumio.helpers.schedule import (
 )
 import voluptuous as vol
 
-from .connection import EcomaxConnection
+from .connection import DEFAULT_TIMEOUT, EcomaxConnection
 from .const import (
     ATTR_END,
     ATTR_MIXERS,
@@ -106,7 +107,9 @@ def async_extract_target_device(
     device = dr.async_get(device_id)
     if not device:
         raise HomeAssistantError(
-            f"Selected device '{device_id}' was not found, please try again"
+            translation_domain=DOMAIN,
+            translation_key="device_not_found",
+            translation_placeholders={"target": device_id},
         )
 
     identifier = list(device.identifiers)[0][1]
@@ -144,10 +147,20 @@ async def async_get_device_parameter(
 ) -> dict[str, Any] | None:
     """Get device parameter."""
     try:
-        parameter: Parameter = await device.get(name)
-    except (TypeError, TimeoutError):
-        _LOGGER.exception("Requested parameter %s not found", name)
-        return None
+        parameter = await device.get(name, timeout=DEFAULT_TIMEOUT)
+    except asyncio.TimeoutError as e:
+        raise HomeAssistantError(
+            translation_domain=DOMAIN,
+            translation_key="get_parameter_timeout",
+            translation_placeholders={"name": name},
+        ) from e
+
+    if not isinstance(parameter, Parameter):
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="invalid_parameter",
+            translation_placeholders={"name": name},
+        )
 
     ecomax = device.parent if hasattr(device, "parent") else device
     product = ecomax.get_nowait(ATTR_PRODUCT, default=None)
@@ -179,20 +192,15 @@ def async_setup_get_parameter_service(
         selected = async_extract_referenced_entity_ids(hass, service_call)
         devices = async_extract_referenced_devices(hass, connection, selected)
 
-        parameters = [
-            parameter
-            for parameter in [
-                await async_get_device_parameter(device, name) for device in devices
+        return {
+            "parameters": [
+                parameter
+                for parameter in [
+                    await async_get_device_parameter(device, name) for device in devices
+                ]
+                if parameter is not None
             ]
-            if parameter is not None
-        ]
-
-        if not any(parameters):
-            raise HomeAssistantError(
-                f"Couldn't get {name} parameter, check logs for more info",
-            )
-
-        return {"parameters": parameters}
+        }
 
     hass.services.async_register(
         DOMAIN,
@@ -206,13 +214,28 @@ def async_setup_get_parameter_service(
 async def async_set_device_parameter(device: Device, name: str, value: float) -> bool:
     """Set device parameter."""
     try:
-        return await device.set(name, value)
-    except (TypeError, TimeoutError):
-        _LOGGER.exception("Requested parameter %s not found", name)
+        return await device.set(name, value, timeout=DEFAULT_TIMEOUT)
+    except TypeError as e:
+        raise ServiceValidationError(
+            str(e),
+            translation_domain=DOMAIN,
+            translation_key="invalid_parameter",
+            translation_placeholders={"name": name},
+        ) from e
     except ValueError as e:
-        raise HomeAssistantError(f"Couldn't set parameter: {e}") from e
-
-    return False
+        raise ServiceValidationError(
+            str(e),
+            translation_domain=DOMAIN,
+            translation_key="invalid_parameter_value",
+            translation_placeholders={"name": name, "value": value},
+        ) from e
+    except asyncio.TimeoutError as e:
+        raise HomeAssistantError(
+            str(e),
+            translation_domain=DOMAIN,
+            translation_key="set_parameter_timeout",
+            translation_placeholders={"name": name},
+        ) from e
 
 
 @callback
@@ -235,7 +258,9 @@ def async_setup_set_parameter_service(
             }
         ):
             raise HomeAssistantError(
-                f"Couldn't set parameter '{name}', please check logs for more info"
+                translation_domain=DOMAIN,
+                translation_key="set_parameter_failed",
+                translation_placeholders={"name": name},
             )
 
     hass.services.async_register(
@@ -269,8 +294,10 @@ def async_setup_get_schedule_service(
 
         schedules = connection.device.get_nowait(ATTR_SCHEDULES, {})
         if schedule_type not in schedules:
-            raise HomeAssistantError(
-                f"{schedule_type} schedule is not supported by the device, check logs for more info"
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_schedule",
+                translation_placeholders={"schedule": schedule_type},
             )
 
         schedule = schedules[schedule_type]
@@ -306,18 +333,27 @@ def async_setup_set_schedule_service(
 
         schedules = connection.device.get_nowait(ATTR_SCHEDULES, {})
         if schedule_type not in schedules:
-            raise HomeAssistantError(
-                f"{schedule_type} schedule is not supported by the device, check logs for more info"
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_schedule",
+                translation_placeholders={"schedule": schedule_type},
             )
 
         schedule = schedules[schedule_type]
         for weekday in weekdays:
-            schedule_day = getattr(schedule, weekday)
+            schedule_day: ScheduleDay = getattr(schedule, weekday)
             try:
                 schedule_day.set_state(preset, start_time[:-3], end_time[:-3])
             except ValueError as e:
-                raise HomeAssistantError(
-                    f"Error while trying to parse time interval for {schedule_type} schedule"
+                raise ServiceValidationError(
+                    str(e),
+                    translation_domain=DOMAIN,
+                    translation_key="invalid_schedule_interval",
+                    translation_placeholders={
+                        "schedule": schedule_type,
+                        "start": start_time[:-3],
+                        "end": end_time[:-3],
+                    },
                 ) from e
 
         schedule.commit()

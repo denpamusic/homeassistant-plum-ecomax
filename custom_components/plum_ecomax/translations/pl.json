@@ -178,6 +178,35 @@
       "indirect_water_heater": { "name": "CWU" }
     }
   },
+  "exceptions": {
+    "invalid_parameter": {
+      "message": "Invalid parameter selected ({name})"
+    },
+    "invalid_parameter_value": {
+      "message": "Invalid value {value} for the {name} parameter"
+    },
+    "set_parameter_failed": {
+      "message": "Request to set a parameter failed ({name})"
+    },
+    "set_parameter_timeout": {
+      "message": "Request to set a parameter timed out ({name})"
+    },
+    "get_parameter_timeout": {
+      "message": "Request to get a parameter timed out ({name})"
+    },
+    "parameter_not_found": {
+      "message": "Requested parameter not found ({name])"
+    },
+    "schedule_not_found": {
+      "message": "Requested schedule not found ({schedule})"
+    },
+    "invalid_schedule_interval": {
+      "message": "Invalid interval selected for {schedule}. Got {start} to {end}."
+    },
+    "device_not_found": {
+      "message": "Requested device not found ({target})"
+    }
+  },
   "selector": {
     "schedule_type": {
       "options": {
