@@ -1176,7 +1176,7 @@ async def test_total_fuel_burned_sensor(
     await connection.device.dispatch(ATTR_FUEL_BURNED, 0.2)
     state = hass.states.get(fuel_burned_entity_id)
     assert state.state == "0.3"
-    assert round(state.attributes[ATTR_BURNED_SINCE_LAST_UPDATE], 1) == 0.3
+    assert round(state.attributes[ATTR_BURNED_SINCE_LAST_UPDATE]) == 300
 
     # Test that value is restored after HASS restart.
     await hass.async_stop()

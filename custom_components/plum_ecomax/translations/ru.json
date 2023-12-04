@@ -167,7 +167,7 @@
       "total_fuel_burned": {
         "name": "Сожжено топлива",
         "state_attributes": {
-          "burned_since_last_update": { "name": "Сожжено с последнего обновления" }
+          "burned_since_last_update": { "name": "Сожжено с последнего обновления, г" }
         }
       },
       "ash_pan_full": { "name": "Заполненность зольного ящика" }

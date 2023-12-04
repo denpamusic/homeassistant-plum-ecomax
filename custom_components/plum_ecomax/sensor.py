@@ -479,7 +479,9 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
     async def async_update(self, value=None) -> None:
         """Update meter state."""
         if value is not None:
-            self._attr_extra_state_attributes = {ATTR_BURNED_SINCE_LAST_UPDATE: value}
+            self._attr_extra_state_attributes = {
+                ATTR_BURNED_SINCE_LAST_UPDATE: value * 1000
+            }
             self._attr_native_value += value
             self.async_write_ha_state()
 
