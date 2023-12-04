@@ -163,8 +163,9 @@ async def test_get_parameter_service(
             blocking=True,
             return_response=True,
         )
-        assert exc_info.value.translation_key == "get_parameter_timeout"
-        assert exc_info.value.translation_placeholders == {"name": "nonexistent"}
+
+    assert exc_info.value.translation_key == "get_parameter_timeout"
+    assert exc_info.value.translation_placeholders == {"name": "nonexistent"}
 
     # Test getting an invalid parameter.
     with pytest.raises(ServiceValidationError) as exc_info, patch(
@@ -180,8 +181,9 @@ async def test_get_parameter_service(
             blocking=True,
             return_response=True,
         )
-        assert exc_info.value.translation_key == "invalid_parameter"
-        assert exc_info.value.translation_placeholders == {"name": "nonexistent"}
+
+    assert exc_info.value.translation_key == "invalid_parameter"
+    assert exc_info.value.translation_placeholders == {"name": "nonexistent"}
 
     # Test getting parameter with unknown device uid.
     with patch("pyplumio.devices.Device.get_nowait", return_value=None):
@@ -272,12 +274,13 @@ async def test_set_parameter_service(
             },
             blocking=True,
         )
-        mock_set.assert_awaited_once_with("heating_target_temp", 100, timeout=15)
-        assert exc_info.value.translation_key == "invalid_parameter_value"
-        assert exc_info.value.translation_placeholders == {
-            "name": "heating_target_temp",
-            "value": 100,
-        }
+
+    mock_set.assert_awaited_once_with("heating_target_temp", 100, timeout=15)
+    assert exc_info.value.translation_key == "invalid_parameter_value"
+    assert exc_info.value.translation_placeholders == {
+        "name": "heating_target_temp",
+        "value": 100,
+    }
 
     # Test setting an invalid parameter.
     with pytest.raises(ServiceValidationError) as exc_info, patch(
@@ -293,8 +296,9 @@ async def test_set_parameter_service(
             },
             blocking=True,
         )
-        assert exc_info.value.translation_key == "invalid_parameter"
-        assert exc_info.value.translation_placeholders == {"name": "nonexistent"}
+
+    assert exc_info.value.translation_key == "invalid_parameter"
+    assert exc_info.value.translation_placeholders == {"name": "nonexistent"}
 
     # Test timing out while trying to set a parameter.
     with pytest.raises(HomeAssistantError) as exc_info, patch(
@@ -310,8 +314,9 @@ async def test_set_parameter_service(
             },
             blocking=True,
         )
-        assert exc_info.value.translation_key == "set_parameter_timeout"
-        assert exc_info.value.translation_placeholders == {"name": "nonexistent"}
+
+    assert exc_info.value.translation_key == "set_parameter_timeout"
+    assert exc_info.value.translation_placeholders == {"name": "nonexistent"}
 
     # Test failure while trying to set a parameter.
     with pytest.raises(HomeAssistantError) as exc_info, patch(
@@ -327,8 +332,9 @@ async def test_set_parameter_service(
             },
             blocking=True,
         )
-        assert exc_info.value.translation_key == "set_parameter_failed"
-        assert exc_info.value.translation_placeholders == {"name": "nonexistent"}
+
+    assert exc_info.value.translation_key == "set_parameter_failed"
+    assert exc_info.value.translation_placeholders == {"name": "nonexistent"}
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -390,8 +396,9 @@ async def test_get_schedule_service(
             blocking=True,
             return_response=True,
         )
-        assert exc_info.value.translation_key == "invalid_schedule"
-        assert exc_info.value.translation_placeholders == {"schedule": "water_heater"}
+
+    assert exc_info.value.translation_key == "invalid_schedule"
+    assert exc_info.value.translation_placeholders == {"schedule": "water_heater"}
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -449,11 +456,13 @@ async def test_set_schedule_service(
             },
             blocking=True,
         )
-        assert exc_info.value.translation_key == "invalid_schedule_interval"
-        assert exc_info.value.translation_placeholders == {
-            "from": "00:00",
-            "to": "10:00",
-        }
+
+    assert exc_info.value.translation_key == "invalid_schedule_interval"
+    assert exc_info.value.translation_placeholders == {
+        "schedule": "heating",
+        "start": "00:00",
+        "end": "10:00",
+    }
 
     # Test setting an invalid schedule.
     with pytest.raises(ServiceValidationError) as exc_info, patch(
@@ -471,5 +480,6 @@ async def test_set_schedule_service(
             },
             blocking=True,
         )
-        assert exc_info.value.translation_key == "invalid_schedule"
-        assert exc_info.value.translation_placeholders == {"schedule": "water_heater"}
+
+    assert exc_info.value.translation_key == "invalid_schedule"
+    assert exc_info.value.translation_placeholders == {"schedule": "water_heater"}
