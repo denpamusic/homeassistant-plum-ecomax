@@ -201,7 +201,7 @@
       "message": "Requested schedule not found ({schedule})"
     },
     "invalid_schedule_interval": {
-      "message": "Invalid interval selected for {schedule}. Got {start} to {end}."
+      "message": "Invalid interval selected for {schedule}. Got {start} to {end}"
     },
     "device_not_found": {
       "message": "Requested device not found ({target})"
