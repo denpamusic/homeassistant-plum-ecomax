@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Generator, Iterable
-from dataclasses import dataclass
+from dataclasses import asdict, astuple, dataclass
 from datetime import date, datetime
 import logging
 from typing import Any, Final, Literal
@@ -154,9 +154,9 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
     EcomaxSensorEntityDescription(
         key="modules",
-        translation_key="software_version",
+        translation_key="connected_modules",
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda x: x.module_a,
+        value_fn=lambda x: len([value for value in astuple(x) if value is not None]),
     ),
     EcomaxSensorEntityDescription(
         key="product",
@@ -351,6 +351,11 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
             # Include raw numeric value as an extra attribute for the
             # device state.
             self._attr_extra_state_attributes = {ATTR_NUMERIC_STATE: int(value)}
+
+        if isinstance(value, ConnectedModules):
+            self._attr_extra_state_attributes = {
+                key: value for key, value in asdict(value).items() if value is not None
+            }
 
         self.async_write_ha_state()
 

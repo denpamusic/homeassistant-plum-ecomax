@@ -409,33 +409,37 @@ async def test_service_password_sensor(
 
 
 @pytest.mark.usefixtures("ecomax_p")
-async def test_software_version_sensor(
+async def test_connected_modules_sensor(
     hass: HomeAssistant,
     connection: EcomaxConnection,
     config_entry: MockConfigEntry,
     setup_integration,
 ) -> None:
-    """Test software version sensor."""
+    """Test connected_modules sensor."""
     await setup_integration(hass, config_entry)
-    software_version_entity_id = "sensor.ecomax_software_version"
+    connected_modules_entity_id = "sensor.ecomax_connected_modules"
 
     # Check entry.
     entity_registry = er.async_get(hass)
-    entry = entity_registry.async_get(software_version_entity_id)
+    entry = entity_registry.async_get(connected_modules_entity_id)
     assert entry
-    assert entry.translation_key == "software_version"
+    assert entry.translation_key == "connected_modules"
 
     # Get initial value.
-    state = hass.states.get(software_version_entity_id)
-    assert state.state == "6.10.32.K1"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Software version"
+    state = hass.states.get(connected_modules_entity_id)
+    assert state.state == "3"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Connected modules"
+    assert state.attributes["module_a"] == "6.10.32.K1"
+    assert state.attributes["ecolambda"] == "0.8.0"
+    assert state.attributes["panel"] == "6.30.36"
 
     # Dispatch new value.
     await connection.device.dispatch(
         ATTR_MODULES, ConnectedModules(module_a="1.0.0.T0")
     )
-    state = hass.states.get(software_version_entity_id)
-    assert state.state == "1.0.0.T0"
+    state = hass.states.get(connected_modules_entity_id)
+    assert state.state == "1"
+    assert state.attributes["module_a"] == "1.0.0.T0"
 
 
 @pytest.mark.usefixtures("ecomax_p")

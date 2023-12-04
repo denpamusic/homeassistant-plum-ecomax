@@ -133,7 +133,17 @@
         }
       },
       "service_password": { "name": "Сервисный пароль" },
-      "software_version": { "name": "Версия ПО" },
+      "connected_modules": {
+        "name": "Connected modules",
+        "state_attributes": {
+          "panel": { "name": "Panel software version" },
+          "module_a": { "name": "Module A software version" },
+          "module_b": { "name": "Module B software version" },
+          "module_c": { "name": "Module C software version" },
+          "ecoster": { "name": "ecoSTER software version" },
+          "ecolambda": { "name": "ecoLAMBDA software version" }
+        }
+      },
       "uid": { "name": "UID" },
       "oxygen_level": { "name": "Содержание кислорода" },
       "boiler_power": { "name": "Мощность" },

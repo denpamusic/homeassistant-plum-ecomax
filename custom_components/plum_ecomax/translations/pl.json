@@ -133,7 +133,17 @@
         }
       },
       "service_password": { "name": "Hasło serwisowe" },
-      "software_version": { "name": "Wersja oprogramowania" },
+      "connected_modules": {
+        "name": "Connected modules",
+        "state_attributes": {
+          "panel": { "name": "Wersja oprogramowania Panel" },
+          "module_a": { "name": "Wersja oprogramowania Module A" },
+          "module_b": { "name": "Wersja oprogramowania Module B" },
+          "module_c": { "name": "Wersja oprogramowania Module C" },
+          "ecoster": { "name": "Wersja oprogramowania ecoSTER" },
+          "ecolambda": { "name": "Wersja oprogramowania ecoLAMBDA" }
+        }
+      },
       "uid": { "name": "UID" },
       "oxygen_level": { "name": "Poziom tlenu" },
       "boiler_power": { "name": "Moc kotła" },
