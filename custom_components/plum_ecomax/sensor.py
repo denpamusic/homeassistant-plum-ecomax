@@ -156,6 +156,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         key="modules",
         translation_key="connected_modules",
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:raspberry-pi",
         value_fn=lambda x: len([value for value in astuple(x) if value is not None]),
     ),
     EcomaxSensorEntityDescription(
