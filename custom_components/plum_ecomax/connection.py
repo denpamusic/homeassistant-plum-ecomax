@@ -65,13 +65,13 @@ async def async_get_connection_handler(
         return pyplumio.TcpConnection(
             data[CONF_HOST],
             data.get(CONF_PORT, DEFAULT_PORT),
-            ethernet_parameters=ethernet,
+            protocol=pyplumio.AsyncProtocol(ethernet_parameters=ethernet),
         )
 
     return pyplumio.SerialConnection(
         data.get(CONF_DEVICE, DEFAULT_DEVICE),
         int(data.get(CONF_BAUDRATE, DEFAULT_BAUDRATE)),
-        ethernet_parameters=ethernet,
+        protocol=pyplumio.AsyncProtocol(ethernet_parameters=ethernet),
     )
 
 
