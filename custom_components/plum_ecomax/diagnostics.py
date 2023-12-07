@@ -8,7 +8,6 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from pyplumio import __version__ as pyplumio_version
 from pyplumio.devices import Device
-from pyplumio.helpers.event_manager import EventManager
 from pyplumio.structures.product_info import ProductInfo
 
 from .const import ATTR_PASSWORD, ATTR_PRODUCT, CONF_HOST, CONF_UID, DOMAIN
@@ -18,7 +17,7 @@ REDACTED: Final = "**REDACTED**"
 
 def _value_as_dict(value):
     """Return value as a dictionary."""
-    if isinstance(value, EventManager):
+    if isinstance(value, Device):
         return dict(value.data)
 
     if isinstance(value, ProductInfo):

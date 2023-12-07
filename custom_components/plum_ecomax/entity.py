@@ -6,8 +6,8 @@ from typing import final
 
 from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 from pyplumio.const import ProductType
+from pyplumio.devices import Device
 from pyplumio.devices.mixer import Mixer
-from pyplumio.helpers.event_manager import EventManager
 
 from .connection import EcomaxConnection
 from .const import ATTR_MIXERS, DOMAIN, MANUFACTURER
@@ -40,7 +40,7 @@ class EcomaxEntity(ABC):
         self.device.unsubscribe(self.entity_description.key, self.async_update)
 
     @property
-    def device(self) -> EventManager:
+    def device(self) -> Device:
         """Return the device handler."""
         return self.connection.device
 
