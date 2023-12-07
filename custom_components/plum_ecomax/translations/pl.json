@@ -47,7 +47,7 @@
       "fan": { "name": "Wentylator" },
       "exhaust_fan": { "name": "Wentylator wyciągowy" },
       "feeder": { "name": "Podajnik" },
-      "lighter": { "name": "Palnik" },
+      "lighter": { "name": "Zapalarka" },
       "solar_pump": { "name": "Pompa solarna" },
       "fireplace_pump": { "name": "Pompa kominkowa" },
       "mixer_pump": { "name": "Pompa mieszacza" },
