@@ -47,9 +47,10 @@ Adapter ->  ecoMAX
 ```
 
 ### ecoNET 300
-While this integration is built on top of PyPlumIO library, which from the start was intended as ecoNET 300 alternative, **Patryk B** is currently developing awesome HASS integration that communicates with ecoMAX controller via ecoNET 300 device.
+While this integration is built on top of PyPlumIO library, which from the start was intended as ecoNET 300 alternative, **Patryk B** has originaly developed awesome HASS integration that communicates with ecoMAX controller via ecoNET 300 device.
 
-If you have an ecoNET 300 device, be sure to [check it out](https://github.com/pblxptr/ecoNET-300-Home-Assistant-Integration)!
+Development of this integration has recently been picked up by @jontofront, so it's getting regular updates and fixes again!
+If you have an ecoNET 300 device, be sure to [check it out](https://github.com/jontofront/ecoNET-300-Home-Assistant-Integration)!
 
 ## Installation
 ### HACS
