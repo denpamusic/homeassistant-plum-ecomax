@@ -59,19 +59,21 @@ async def async_get_connection_handler(
     _LOGGER.debug("Getting connection handler for type: %s...", connection_type)
 
     public_ip = await async_get_source_ip(hass, target_ip=IPV4_BROADCAST_ADDR)
-    ethernet = pyplumio.EthernetParameters(ip=public_ip)
+    protocol = pyplumio.AsyncProtocol(
+        ethernet_parameters=pyplumio.EthernetParameters(ip=public_ip)
+    )
 
     if connection_type == CONNECTION_TYPE_TCP:
         return pyplumio.TcpConnection(
             data[CONF_HOST],
             data.get(CONF_PORT, DEFAULT_PORT),
-            protocol=pyplumio.AsyncProtocol(ethernet_parameters=ethernet),
+            protocol=protocol,
         )
 
     return pyplumio.SerialConnection(
         data.get(CONF_DEVICE, DEFAULT_DEVICE),
         int(data.get(CONF_BAUDRATE, DEFAULT_BAUDRATE)),
-        protocol=pyplumio.AsyncProtocol(ethernet_parameters=ethernet),
+        protocol=protocol,
     )
 
 
