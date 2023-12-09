@@ -215,6 +215,7 @@ class EcomaxConnection:
             raise ConfigEntryNotReady(
                 translation_domain=DOMAIN,
                 translation_key="device_not_ready",
+                translation_placeholders={"device": self.model},
             )
 
         return self._device

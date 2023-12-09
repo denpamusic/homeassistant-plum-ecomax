@@ -190,37 +190,37 @@
   },
   "exceptions": {
     "invalid_parameter": {
-      "message": "Invalid parameter selected ({name})"
+      "message": "Invalid parameter selected ({parameter})"
     },
     "invalid_parameter_value": {
-      "message": "Invalid value {value} for the {name} parameter"
+      "message": "Invalid value {value} for the {parameter} parameter"
     },
     "set_parameter_failed": {
-      "message": "Request to set a parameter failed ({name})"
+      "message": "Request to set a parameter failed ({parameter})"
     },
     "set_parameter_timeout": {
-      "message": "Request to set a parameter timed out ({name})"
+      "message": "Request to set a parameter timed out ({parameter})"
     },
     "get_parameter_timeout": {
-      "message": "Request to get a parameter timed out ({name})"
+      "message": "Request to get a parameter timed out ({parameter})"
     },
     "parameter_not_found": {
-      "message": "Requested parameter not found ({name])"
+      "message": "Requested parameter not found ({parameter})"
     },
     "schedule_not_found": {
       "message": "Requested schedule not found ({schedule})"
     },
     "invalid_schedule_interval": {
-      "message": "Invalid interval selected for {schedule}. Got {start} to {end}"
+      "message": "Invalid interval selected for {schedule}. Got {start} to {end}."
     },
     "device_not_found": {
-      "message": "Requested device not found ({target})"
+      "message": "Requested device not found ({device})"
     },
     "device_not_ready": {
-      "message": "Device not ready"
+      "message": "Device not ready ({device})"
     },
     "connection_timeout": {
-      "message": "Timed out while trying to connect ({name})"
+      "message": "Timed out while trying to connect ({connection})"
     }
   },
   "selector": {

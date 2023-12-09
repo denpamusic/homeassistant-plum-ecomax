@@ -80,7 +80,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         raise ConfigEntryNotReady(
             translation_domain=DOMAIN,
             translation_key="connection_timeout",
-            translation_placeholders={"name": connection.name},
+            translation_placeholders={"connection": connection.name},
         ) from e
 
     async_setup_services(hass, connection)

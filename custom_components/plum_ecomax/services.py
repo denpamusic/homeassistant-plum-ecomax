@@ -109,7 +109,7 @@ def async_extract_target_device(
         raise HomeAssistantError(
             translation_domain=DOMAIN,
             translation_key="device_not_found",
-            translation_placeholders={"target": device_id},
+            translation_placeholders={"device": device_id},
         )
 
     identifier = list(device.identifiers)[0][1]
@@ -152,14 +152,14 @@ async def async_get_device_parameter(
         raise HomeAssistantError(
             translation_domain=DOMAIN,
             translation_key="get_parameter_timeout",
-            translation_placeholders={"name": name},
+            translation_placeholders={"parameter": name},
         ) from e
 
     if not isinstance(parameter, Parameter):
         raise ServiceValidationError(
             translation_domain=DOMAIN,
             translation_key="invalid_parameter",
-            translation_placeholders={"name": name},
+            translation_placeholders={"parameter": name},
         )
 
     ecomax = device.parent if hasattr(device, "parent") else device
@@ -220,21 +220,21 @@ async def async_set_device_parameter(device: Device, name: str, value: float) ->
             str(e),
             translation_domain=DOMAIN,
             translation_key="invalid_parameter",
-            translation_placeholders={"name": name},
+            translation_placeholders={"parameter": name},
         ) from e
     except ValueError as e:
         raise ServiceValidationError(
             str(e),
             translation_domain=DOMAIN,
             translation_key="invalid_parameter_value",
-            translation_placeholders={"name": name, "value": value},
+            translation_placeholders={"parameter": name, "value": value},
         ) from e
     except asyncio.TimeoutError as e:
         raise HomeAssistantError(
             str(e),
             translation_domain=DOMAIN,
             translation_key="set_parameter_timeout",
-            translation_placeholders={"name": name},
+            translation_placeholders={"parameter": name},
         ) from e
 
 
@@ -260,7 +260,7 @@ def async_setup_set_parameter_service(
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
                 translation_key="set_parameter_failed",
-                translation_placeholders={"name": name},
+                translation_placeholders={"parameter": name},
             )
 
     hass.services.async_register(
@@ -296,7 +296,7 @@ def async_setup_get_schedule_service(
         if schedule_type not in schedules:
             raise ServiceValidationError(
                 translation_domain=DOMAIN,
-                translation_key="invalid_schedule",
+                translation_key="schedule_not_found",
                 translation_placeholders={"schedule": schedule_type},
             )
 
@@ -335,7 +335,7 @@ def async_setup_set_schedule_service(
         if schedule_type not in schedules:
             raise ServiceValidationError(
                 translation_domain=DOMAIN,
-                translation_key="invalid_schedule",
+                translation_key="schedule_not_found",
                 translation_placeholders={"schedule": schedule_type},
             )
 

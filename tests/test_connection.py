@@ -114,6 +114,7 @@ async def test_async_setup(
         assert connection.device is None
 
     assert exc_info.value.translation_key == "device_not_ready"
+    assert exc_info.value.translation_placeholders == {"device": "ecoMAX 850P2-C"}
     await connection.async_setup()
     mock_connection.connect.assert_awaited_once()
     mock_connection.get.assert_awaited_once_with(ECOMAX, timeout=DEFAULT_TIMEOUT)
