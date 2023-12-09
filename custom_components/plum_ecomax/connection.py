@@ -210,7 +210,10 @@ class EcomaxConnection:
     def device(self) -> AddressableDevice:
         """Return the device handler."""
         if self._device is None:
-            raise ConfigEntryNotReady("Device not ready")
+            raise ConfigEntryNotReady(
+                translation_domain=DOMAIN,
+                translation_key="device_not_ready",
+            )
 
         return self._device
 

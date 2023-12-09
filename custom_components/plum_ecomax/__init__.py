@@ -79,7 +79,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await connection.async_setup()
     except asyncio.TimeoutError as e:
         raise ConfigEntryNotReady(
-            f"Timed out while connecting to {connection.name}"
+            translation_domain=DOMAIN,
+            translation_key="connection_timeout",
+            translation_placeholders={"name": connection.name},
         ) from e
 
     async_setup_services(hass, connection)

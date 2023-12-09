@@ -78,8 +78,10 @@ async def test_setup_and_unload_entry(
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.async_setup",
         side_effect=asyncio.TimeoutError,
-    ), pytest.raises(ConfigEntryNotReady):
+    ), pytest.raises(ConfigEntryNotReady) as exc_info:
         await async_setup_entry(hass, config_entry)
+
+    assert exc_info.value.translation_key == "connection_timeout"
 
     # Send HA stop event and check that connection was closed.
     hass.bus.async_fire(EVENT_HOMEASSISTANT_STOP)

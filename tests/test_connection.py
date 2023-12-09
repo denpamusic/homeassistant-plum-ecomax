@@ -110,9 +110,10 @@ async def test_async_setup(
     connection = EcomaxConnection(hass, config_entry, mock_connection)
 
     # Test config not ready when device property is not set.
-    with pytest.raises(ConfigEntryNotReady):
+    with pytest.raises(ConfigEntryNotReady) as exc_info:
         assert connection.device is None
 
+    assert exc_info.value.translation_key == "device_not_ready"
     await connection.async_setup()
     mock_connection.connect.assert_awaited_once()
     mock_connection.get.assert_awaited_once_with(ECOMAX, timeout=DEFAULT_TIMEOUT)
