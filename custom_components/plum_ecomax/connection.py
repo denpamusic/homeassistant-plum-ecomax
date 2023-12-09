@@ -15,20 +15,20 @@ from homeassistant.helpers.entity import DeviceInfo
 import pyplumio
 from pyplumio.const import FrameType, ProductType
 from pyplumio.devices import AddressableDevice
+from pyplumio.structures.ecomax_parameters import ATTR_ECOMAX_PARAMETERS
+from pyplumio.structures.mixer_parameters import ATTR_MIXER_PARAMETERS
 from pyplumio.structures.mixer_sensors import ATTR_MIXERS_CONNECTED
+from pyplumio.structures.temperatures import ATTR_WATER_HEATER_TEMP
+from pyplumio.structures.thermostat_parameters import ATTR_THERMOSTAT_PARAMETERS
 from pyplumio.structures.thermostat_sensors import ATTR_THERMOSTATS_CONNECTED
 
 from .const import (
-    ATTR_ECOMAX_PARAMETERS,
     ATTR_LOADED,
-    ATTR_MIXER_PARAMETERS,
     ATTR_MIXERS,
     ATTR_REGDATA,
     ATTR_SENSORS,
-    ATTR_THERMOSTAT_PARAMETERS,
     ATTR_THERMOSTATS,
     ATTR_WATER_HEATER,
-    ATTR_WATER_HEATER_TEMP,
     CONF_BAUDRATE,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,

@@ -12,6 +12,7 @@ from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
 from pyplumio.helpers.parameter import ParameterValues
 from pyplumio.structures.ecomax_parameters import (
+    ATTR_ECOMAX_CONTROL,
     EcomaxBinaryParameter,
     EcomaxBinaryParameterDescription,
     EcomaxParameter,
@@ -34,7 +35,6 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
-    ATTR_ECOMAX_CONTROL,
     ATTR_MIXERS,
     ATTR_PRODUCT,
     ATTR_REGDATA,

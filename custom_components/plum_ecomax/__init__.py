@@ -17,7 +17,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry
 from pyplumio.filters import custom, delta
-from pyplumio.structures.alerts import Alert
+from pyplumio.structures.alerts import ATTR_ALERTS, Alert
 
 from .connection import (
     DEFAULT_TIMEOUT,
@@ -26,7 +26,6 @@ from .connection import (
     async_get_sub_devices,
 )
 from .const import (
-    ATTR_ALERTS,
     ATTR_FROM,
     ATTR_PRODUCT,
     ATTR_TO,

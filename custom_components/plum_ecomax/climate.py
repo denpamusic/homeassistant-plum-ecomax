@@ -30,10 +30,8 @@ from pyplumio.filters import on_change, throttle
 from pyplumio.structures.thermostat_parameters import ThermostatParameter
 
 from .connection import EcomaxConnection
-from .const import DOMAIN
+from .const import ATTR_THERMOSTATS, DOMAIN
 from .entity import EcomaxEntity
-
-ATTR_THERMOSTATS: Final = "thermostats"
 
 TEMPERATURE_STEP: Final = 0.1
 

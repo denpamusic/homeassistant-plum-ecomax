@@ -13,6 +13,8 @@ from homeassistant.helpers.entity import DeviceInfo
 from pyplumio import Connection, SerialConnection, TcpConnection
 from pyplumio.const import FrameType
 from pyplumio.devices.ecomax import EcoMAX
+from pyplumio.structures.mixer_parameters import ATTR_MIXER_PARAMETERS
+from pyplumio.structures.thermostat_parameters import ATTR_THERMOSTAT_PARAMETERS
 import pytest
 
 from custom_components.plum_ecomax.climate import ATTR_THERMOSTATS
@@ -23,10 +25,8 @@ from custom_components.plum_ecomax.connection import (
     async_get_sub_devices,
 )
 from custom_components.plum_ecomax.const import (
-    ATTR_MIXER_PARAMETERS,
     ATTR_MIXERS,
     ATTR_REGDATA,
-    ATTR_THERMOSTAT_PARAMETERS,
     ATTR_WATER_HEATER,
     CONF_HOST,
     CONF_MODEL,

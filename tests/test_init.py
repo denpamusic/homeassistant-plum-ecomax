@@ -15,11 +15,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.util import dt as dt_util
 from pyplumio.const import AlertType
-from pyplumio.structures.alerts import Alert
+from pyplumio.structures.alerts import ATTR_ALERTS, Alert
 import pytest
 
 from custom_components.plum_ecomax import (
-    ATTR_ALERTS,
     async_migrate_entry,
     async_setup_entry,
     async_setup_events,
