@@ -15,6 +15,8 @@ from homeassistant.helpers.entity import DeviceInfo
 import pyplumio
 from pyplumio.const import FrameType, ProductType
 from pyplumio.devices import AddressableDevice
+from pyplumio.structures.mixer_sensors import ATTR_MIXERS_CONNECTED
+from pyplumio.structures.thermostat_sensors import ATTR_THERMOSTATS_CONNECTED
 
 from .const import (
     ATTR_ECOMAX_PARAMETERS,
@@ -83,22 +85,22 @@ async def async_get_sub_devices(device: AddressableDevice) -> list[str]:
 
     sub_devices: list[str] = []
 
-    # Wait until sensors become available.
+    # Wait until sensors are available.
     await device.wait_for(ATTR_SENSORS, timeout=DEFAULT_TIMEOUT)
 
-    if ATTR_MIXERS in device.data:
-        mixer_count = len(device.data[ATTR_MIXERS])
+    if (mixers_connected := device.get_nowait(ATTR_MIXERS_CONNECTED, 0)) > 0:
         _LOGGER.info(
-            "Detected %d mixer%s.", mixer_count, "s" if mixer_count > 1 else ""
+            "Detected %d mixer%s.",
+            mixers_connected,
+            "s" if mixers_connected > 1 else "",
         )
         sub_devices.append(ATTR_MIXERS)
 
-    if ATTR_THERMOSTATS in device.data:
-        thermostat_count = len(device.data[ATTR_THERMOSTATS])
+    if (thermostats_connected := device.get_nowait(ATTR_THERMOSTATS_CONNECTED, 0)) > 0:
         _LOGGER.info(
             "Detected %d thermostat%s.",
-            thermostat_count,
-            "s" if thermostat_count > 1 else "",
+            thermostats_connected,
+            "s" if thermostats_connected > 1 else "",
         )
         sub_devices.append(ATTR_THERMOSTATS)
 
