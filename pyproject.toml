@@ -19,7 +19,7 @@ packages = ["custom_components"]
 target-version = ["py311"]
 
 [tool.codespell]
-skip = ".git,.mypy_cache,.pytest_cache,.ruff_cache,.tox,.vscode,build,translations"
+skip = ".git,.mypy_cache,.pytest_cache,.ruff_cache,.tox,.vscode,build,*/translations/*.json"
 ignore-words-list = "hass"
 
 [tool.mypy]
