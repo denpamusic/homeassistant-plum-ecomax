@@ -186,20 +186,19 @@ exclude_lines = [
 [tool.tox]
 legacy_tox_ini = """
     [tox]
-    envlist = lint, type, py311
+    envlist = py311, lint, type
     isolated_build = True
     skip_missing_interpreters = True
     ignore_basepython_conflict = True
 
     [gh-actions]
     python =
-        3.11: lint, type, py311
+        3.11: py311, lint, type
 
     [testenv]
     deps =
         -r{toxinidir}/requirements.txt
         -r{toxinidir}/requirements_test.txt
-        coverage
 
     commands =
         coverage run --source=custom_components/plum_ecomax -m pytest tests/
@@ -208,9 +207,7 @@ legacy_tox_ini = """
     [testenv:lint]
     deps =
         -r{toxinidir}/requirements.txt
-        codespell
-        ruff
-        black
+        -r{toxinidir}/requirements_test.txt
 
     commands =
         codespell
@@ -228,7 +225,7 @@ legacy_tox_ini = """
     [testenv:type]
     deps =
         -r{toxinidir}/requirements.txt
-        mypy
+        -r{toxinidir}/requirements_test.txt
 
     commands =
         mypy .
