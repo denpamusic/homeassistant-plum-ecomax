@@ -1,10 +1,10 @@
 """Platform for binary sensor integration."""
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass
 import logging
-from typing import Any, Generator, Iterable, Literal
+from typing import Any, Literal
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
