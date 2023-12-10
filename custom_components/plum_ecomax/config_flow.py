@@ -85,7 +85,7 @@ async def validate_input(
     return connection
 
 
-class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
     """Handle a config flow for Plum ecoMAX integration."""
 
     VERSION = 7

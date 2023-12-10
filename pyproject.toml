@@ -23,6 +23,7 @@ skip = ".git,.mypy_cache,.pytest_cache,.ruff_cache,.tox,.vscode,build,*/translat
 ignore-words-list = "hass"
 
 [tool.mypy]
+python_version = "3.11"
 ignore_missing_imports = true
 exclude = [
     ".git",
@@ -36,13 +37,25 @@ exclude = [
     "tests"
 ]
 
-# Avoid unexpected keyword argument error in config_flow.py
-disable_error_code = "call-arg"
-
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 
 [tool.ruff]
+exclude = [
+    ".git",
+    ".github",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".tox",
+    ".vscode",
+    "build"
+]
+line-length = 88
+indent-width = 4
+target-version = "py311"
+
+[tool.ruff.lint]
 select = [
     "B002", # Python does not support the unary prefix increment
     "B007", # Loop control variable {name} not used within loop body
