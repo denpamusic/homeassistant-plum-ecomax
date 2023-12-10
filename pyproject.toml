@@ -1,45 +1,39 @@
-[tool.pylint.MASTER]
-py-version = "3.11"
-ignore = [
-    "tests",
+[project]
+name = "homeassistant-plum-ecomax"
+authors = [
+    {name = "Denis Paavilainen", email = "denpa@denpa.pro"}
 ]
-jobs = 2
+description = "Plum ecoMAX boiler controller integration for Home Assistant."
+license = {text = "MIT License"}
+version = "0" # Only used by tox
 
-[tool.pylint.BASIC]
-good-names = [
-    "_",
-    "i",
-    "e",
-    "j",
-    "k",
-    "m",
-    "v",
-    "ip",
-    "dr",
-]
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
 
-[tool.pylint."MESSAGES CONTROL"]
-disable = [
-    "unused-argument",
-    "too-many-instance-attributes",
-    "duplicate-code",
-]
+[tool.setuptools]
+platforms = ["any"]
+packages = ["custom_components"]
 
 [tool.black]
 target-version = ["py311"]
 
-[tool.isort]
-profile = "black"
-force_sort_within_sections = true
-combine_as_imports = true
+[tool.codespell]
+skip = ".git,.mypy_cache,.pytest_cache,.ruff_cache,.tox,.vscode,build,translations"
+ignore-words-list = "hass"
 
 [tool.mypy]
 ignore_missing_imports = true
 exclude = [
-    '^.github/',
-    '^.git/',
-    '^images/',
-    '^tests/',
+    ".git",
+    ".github",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".tox",
+    ".vscode",
+    "build",
+    "tests"
 ]
 
 # Avoid unexpected keyword argument error in config_flow.py
@@ -48,14 +42,181 @@ disable_error_code = "call-arg"
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 
-[tool.flake8]
-exclude = ".git,.mypy_cache"
-max-complexity = 25
-ignore = [
-    "E501",
-    "W503",
-    "E203",
-    "D202",
-    "W504",
+[tool.ruff]
+select = [
+    "B002", # Python does not support the unary prefix increment
+    "B007", # Loop control variable {name} not used within loop body
+    "B014", # Exception handler with duplicate exception
+    "B023", # Function definition does not bind loop variable {name}
+    "B026", # Star-arg unpacking after a keyword argument is strongly discouraged
+    "C",  # complexity
+    "COM818", # Trailing comma on bare tuple prohibited
+    "D",  # docstrings
+    "DTZ003",  # Use datetime.now(tz=) instead of datetime.utcnow()
+    "DTZ004",  # Use datetime.fromtimestamp(ts, tz=) instead of datetime.utcfromtimestamp(ts)
+    "E",  # pycodestyle
+    "F",  # pyflakes/autoflake
+    "G", # flake8-logging-format
+    "I",  # isort
+    "ICN001", # import concentions; {name} should be imported as {asname}
+    "ISC001", # Implicitly concatenated string literals on one line
+    "N804", # First argument of a class method should be named cls
+    "N805", # First argument of a method should be named self
+    "N815", # Variable {name} in class scope should not be mixedCase
+    "PGH001", # No builtin eval() allowed
+    "PGH004",  # Use specific rule codes when using noqa
+    "PLC0414", # Useless import alias. Import alias does not rename original package.
+    "PLC", # pylint
+    "PLE", # pylint
+    "PLR", # pylint
+    "PLW", # pylint
+    "Q000", # Double quotes found but single quotes preferred
+    "RUF006", # Store a reference to the return value of asyncio.create_task
+    "S102", # Use of exec detected
+    "S103",  # bad-file-permissions
+    "S108",  # hardcoded-temp-file
+    "S306",  # suspicious-mktemp-usage
+    "S307",  # suspicious-eval-usage
+    "S313",  # suspicious-xmlc-element-tree-usage
+    "S314",  # suspicious-xml-element-tree-usage
+    "S315",  # suspicious-xml-expat-reader-usage
+    "S316",  # suspicious-xml-expat-builder-usage
+    "S317",  # suspicious-xml-sax-usage
+    "S318",  # suspicious-xml-mini-dom-usage
+    "S319",  # suspicious-xml-pull-dom-usage
+    "S320",  # suspicious-xmle-tree-usage
+    "S601",  # paramiko-call
+    "S602",  # subprocess-popen-with-shell-equals-true
+    "S604",  # call-with-shell-equals-true
+    "S608",  # hardcoded-sql-expression
+    "S609",  # unix-command-wildcard-injection
+    "SIM105", # Use contextlib.suppress({exception}) instead of try-except-pass
+    "SIM117", # Merge with-statements that use the same scope
+    "SIM118", # Use {key} in {dict} instead of {key} in {dict}.keys()
+    "SIM201", # Use {left} != {right} instead of not {left} == {right}
+    "SIM208", # Use {expr} instead of not (not {expr})
+    "SIM212", # Use {a} if {a} else {b} instead of {b} if not {a} else {a}
+    "SIM300", # Yoda conditions. Use 'age == 42' instead of '42 == age'.
+    "SIM401", # Use get from dict with default instead of an if block
+    "T100", # Trace found: {name} used
+    "T20",  # flake8-print
+    "TID251", # Banned imports
+    "TRY004", # Prefer TypeError exception for invalid type
+    "TRY200", # Use raise from to specify exception cause
+    "TRY302", # Remove exception handler; error is immediately re-raised
+    "UP",  # pyupgrade
+    "W",  # pycodestyle
 ]
-noqa-require-code = true
+
+ignore = [
+    "D202",  # No blank lines allowed after function docstring
+    "D203",  # 1 blank line required before class docstring
+    "D213",  # Multi-line docstring summary should start at the second line
+    "D406",  # Section name should end with a newline
+    "D407",  # Section name underlining
+    "E501",  # line too long
+    "E731",  # do not assign a lambda expression, use a def
+
+    # Ignore ignored, as the rule is now back in preview/nursery, which cannot
+    # be ignored anymore without warnings.
+    # https://github.com/astral-sh/ruff/issues/7491
+    # "PLC1901", # Lots of false positives
+
+    # False positives https://github.com/astral-sh/ruff/issues/5386
+    "PLC0208", # Use a sequence type instead of a `set` when iterating over values
+    "PLR0911", # Too many return statements ({returns} > {max_returns})
+    "PLR0912", # Too many branches ({branches} > {max_branches})
+    "PLR0913", # Too many arguments to function call ({c_args} > {max_args})
+    "PLR0915", # Too many statements ({statements} > {max_statements})
+    "PLR2004",  # Magic value used in comparison, consider replacing {value} with a constant variable
+    "PLW2901", # Outer {outer_kind} variable {name} overwritten by inner {inner_kind} target
+    "UP006", # keep type annotation style as is
+    "UP007", # keep type annotation style as is
+    # Ignored due to performance: https://github.com/charliermarsh/ruff/issues/2923
+    "UP038", # Use `X | Y` in `isinstance` call instead of `(X, Y)`
+
+]
+
+[tool.ruff.flake8-import-conventions.extend-aliases]
+voluptuous = "vol"
+"homeassistant.helpers.area_registry" = "ar"
+"homeassistant.helpers.config_validation" = "cv"
+"homeassistant.helpers.device_registry" = "dr"
+"homeassistant.helpers.entity_registry" = "er"
+"homeassistant.helpers.issue_registry" = "ir"
+"homeassistant.util.dt" = "dt_util"
+
+[tool.ruff.flake8-pytest-style]
+fixture-parentheses = false
+
+[tool.ruff.flake8-tidy-imports.banned-api]
+"async_timeout".msg = "use asyncio.timeout instead"
+"pytz".msg = "use zoneinfo instead"
+
+[tool.ruff.isort]
+force-sort-within-sections = true
+known-first-party = [
+    "custom_components.plum_ecomax",
+]
+combine-as-imports = true
+split-on-trailing-comma = false
+
+[tool.ruff.mccabe]
+max-complexity = 25
+
+[tool.coverage.report]
+exclude_lines = [
+    "if TYPE_CHECKING:",
+    "@overload"
+]
+
+[tool.tox]
+legacy_tox_ini = """
+    [tox]
+    envlist = lint, type, py311
+    isolated_build = True
+    skip_missing_interpreters = True
+    ignore_basepython_conflict = True
+
+    [gh-actions]
+    python =
+        3.11: lint, type, py311
+
+    [testenv]
+    deps =
+        -r{toxinidir}/requirements.txt
+        -r{toxinidir}/requirements_test.txt
+        coverage
+
+    commands =
+        coverage run --source=custom_components/plum_ecomax -m pytest tests/
+        coverage report -m
+
+    [testenv:lint]
+    deps =
+        -r{toxinidir}/requirements.txt
+        codespell
+        ruff
+        black
+
+    commands =
+        codespell
+        black --check --quiet .
+        ruff .
+
+    [testenv:test]
+    deps =
+        -r{toxinidir}/requirements.txt
+        -r{toxinidir}/requirements_test.txt
+
+    commands =
+        pytest
+
+    [testenv:type]
+    deps =
+        -r{toxinidir}/requirements.txt
+        mypy
+
+    commands =
+        mypy .
+"""

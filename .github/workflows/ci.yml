@@ -19,22 +19,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install pyplumio==0.5.10 pytest-homeassistant-custom-component psutil-home-assistant fnv-hash-fast aiohttp_cors mypy pylint flake8 flake8-pyproject black
+          python -m pip install tox tox-gh-actions coverage
 
-      - name: Check typing
-        run: |
-          mypy .
-
-      - name: Lint
-        run: |
-          black --check custom_components/plum_ecomax
-          pylint custom_components/plum_ecomax
-          flake8 .
-
-      - name: Run tests
-        run: |
-          coverage run -m pytest tests/
-          coverage report -m
+      - name: Test with tox
+        run: tox
 
       - if: github.event_name != 'pull_request'
         uses: paambaati/codeclimate-action@v5.0.0

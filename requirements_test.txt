@@ -1,0 +1,6 @@
+pytest-homeassistant-custom-component
+psutil-home-assistant
+fnv-hash-fast
+aiohttp_cors
+pytest
+pytest-asyncio
