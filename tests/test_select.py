@@ -59,7 +59,7 @@ def set_connected(connected):
 
 @pytest.fixture(name="async_select_option")
 async def fixture_async_select_option():
-    """Selects the option."""
+    """Select the option."""
 
     async def async_select_option(hass: HomeAssistant, entity_id: str, option: str):
         await hass.services.async_call(

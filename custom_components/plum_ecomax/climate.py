@@ -159,11 +159,11 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
 
     @overload
     async def async_update_preset_mode(self, mode: int) -> None:
-        """Update preset mode from the state sensor."""
+        ...
 
     @overload
     async def async_update_preset_mode(self, mode: ThermostatParameter) -> None:
-        """Update preset mode from the mode parameter."""
+        ...
 
     async def async_update_preset_mode(self, mode) -> None:
         """Update preset mode."""
@@ -187,7 +187,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         self.async_write_ha_state()
 
     async def async_added_to_hass(self):
-        """Called when an entity has their entity_id assigned."""
+        """Subscribe to thermostat events."""
         callbacks = {
             "mode": on_change(self.async_update_preset_mode),
             "state": on_change(self.async_update_preset_mode),
@@ -204,7 +204,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
             self.device.subscribe(name, func)
 
     async def async_will_remove_from_hass(self):
-        """Called when an entity is about to be removed."""
+        """Unsubscribe from thermostat events."""
         self.device.unsubscribe("mode", self.async_update_preset_mode)
         self.device.unsubscribe("state", self.async_update_preset_mode)
         self.device.unsubscribe("contacts", self.async_update_hvac_action)

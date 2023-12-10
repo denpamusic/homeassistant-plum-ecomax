@@ -50,7 +50,7 @@ def set_connected(connected):
 
 @pytest.fixture(name="async_turn_on")
 async def fixture_async_turn_on():
-    """Turns switch on."""
+    """Turn switch on."""
 
     async def async_turn_on(hass: HomeAssistant, entity_id: str):
         await hass.services.async_call(
@@ -66,7 +66,7 @@ async def fixture_async_turn_on():
 
 @pytest.fixture(name="async_turn_off")
 async def fixture_async_turn_off():
-    """Turns switch off."""
+    """Turn switch off."""
 
     async def async_turn_off(hass: HomeAssistant, entity_id: str):
         await hass.services.async_call(

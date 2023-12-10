@@ -134,7 +134,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         self.async_write_ha_state()
 
     async def async_added_to_hass(self):
-        """Called when an entity has their entity_id assigned."""
+        """Subscribe to water heater events."""
         key = self.entity_description.key
         callbacks = {
             f"{key}_temp": throttle(on_change(self.async_update), seconds=10),
@@ -151,7 +151,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
             self.device.subscribe(name, func)
 
     async def async_will_remove_from_hass(self):
-        """Called when an entity is about to be removed."""
+        """Unsubscribe to water heater events."""
         key = self.entity_description.key
         self.device.unsubscribe(f"{key}_temp", self.async_update)
         self.device.unsubscribe(f"{key}_target_temp", self.async_update_target_temp)

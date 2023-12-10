@@ -91,6 +91,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 7
 
     def __init__(self) -> None:
+        """Initialize a new config flow."""
         self.connection: Connection | None = None
         self.device: AddressableDevice | None = None
         self.device_task: asyncio.Task | None = None
@@ -314,9 +315,7 @@ class CannotConnect(HomeAssistantError):
 
 
 class TimeoutConnect(HomeAssistantError):
-    """Error to indicate that we established connection but
-    failed to see expected response in time.
-    """
+    """Error to indicate that connection timed out."""
 
 
 class UnsupportedProduct(HomeAssistantError):

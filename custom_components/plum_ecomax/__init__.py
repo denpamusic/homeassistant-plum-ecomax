@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+from contextlib import suppress
 import logging
 from typing import Final
 
@@ -15,7 +16,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers import device_registry
+from homeassistant.helpers import device_registry as dr
 from pyplumio.filters import custom, delta
 from pyplumio.structures.alerts import ATTR_ALERTS, Alert
 
@@ -94,12 +95,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 def async_setup_events(hass: HomeAssistant, connection: EcomaxConnection) -> bool:
     """Set up the ecoMAX events."""
 
-    dr = device_registry.async_get(hass)
+    device_registry = dr.async_get(hass)
 
     @callback
     async def async_dispatch_alert_events(alerts: list[Alert]) -> None:
         """Handle ecoMAX alert events."""
-        if (device := dr.async_get_device({(DOMAIN, connection.uid)})) is None:
+        if (
+            device := device_registry.async_get_device({(DOMAIN, connection.uid)})
+        ) is None:
             _LOGGER.error("Device not found. uid: %s", connection.uid)
             return
 
@@ -158,10 +161,8 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             config_entry.version = 3
 
         if config_entry.version in (3, 4, 5):
-            try:
+            with suppress(KeyError):
                 del data[CONF_CAPABILITIES]
-            except KeyError:
-                pass
 
             data[CONF_SUB_DEVICES] = await async_get_sub_devices(device)
             config_entry.version = 6

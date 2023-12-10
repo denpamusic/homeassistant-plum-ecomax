@@ -258,8 +258,7 @@ def async_setup_ecomax_numbers(connection: EcomaxConnection) -> list[EcomaxNumbe
 def async_setup_mixer_numbers(connection: EcomaxConnection) -> list[MixerNumber]:
     """Set up the mixer numbers."""
     entities: list[MixerNumber] = []
-
-    for index in connection.device.mixers.keys():
+    for index in connection.device.mixers:
         entities.extend(
             MixerNumber(connection, description, index)
             for description in get_by_index(

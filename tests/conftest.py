@@ -138,7 +138,7 @@ def fixture_serial_config_data(serial_user_input, config_data):
 
 @pytest.fixture
 async def setup_integration():
-    """Setup the integration."""
+    """Set up the integration."""
 
     async def setup_entry(hass: HomeAssistant, config_entry: MockConfigEntry):
         config_entry.add_to_hass(hass)
@@ -185,7 +185,7 @@ def connected():
 
 @pytest.fixture(name="ecomax_base")
 def fixture_ecomax_base() -> EcoMAX:
-    """Basic ecoMAX device with no data."""
+    """Return base ecoMAX device with no data."""
     ecomax = EcoMAX(queue=Mock(), network=NetworkInfo())
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.device", ecomax
@@ -226,7 +226,7 @@ def fixture_ecomax_common(ecomax_base: EcoMAX):
 
 @pytest.fixture
 def ecomax_control(ecomax_common: EcoMAX):
-    """Inject ecomax control parameter"""
+    """Inject ecomax control parameter."""
     ecomax_common.data.update(
         {
             ATTR_ECOMAX_CONTROL: EcomaxBinaryParameter(
@@ -397,6 +397,7 @@ def fixture_ecomax_i(ecomax_common: EcoMAX):
 @pytest.fixture()
 def ecomax_860p3_o(ecomax_p: EcoMAX):
     """Inject data for ecoMAX 860P3-O.
+
     (product_type: 0, product_id: 51)
     """
     product_type = ProductType.ECOMAX_P
@@ -426,6 +427,7 @@ def ecomax_860p3_o(ecomax_p: EcoMAX):
 @pytest.fixture()
 def ecomax_860p3_s_lite(ecomax_p: EcoMAX):
     """Inject data for ecoMAX 860P3-S Lite.
+
     (product_type: 0, product_id: 51)
     """
     product_type = ProductType.ECOMAX_P

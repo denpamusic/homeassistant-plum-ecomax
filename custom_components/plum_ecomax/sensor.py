@@ -457,7 +457,7 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
     _unrecorded_attributes: frozenset[str] = frozenset({ATTR_BURNED_SINCE_LAST_UPDATE})
 
     async def async_added_to_hass(self):
-        """Called when an entity has their entity_id assigned."""
+        """Restore native value."""
         await super().async_added_to_hass()
         if (last_sensor_data := await self.async_get_last_sensor_data()) is not None:
             self._attr_native_value = last_sensor_data.native_value
@@ -537,7 +537,7 @@ class RegdataSensor(EcomaxSensor):
         self.async_write_ha_state()
 
     async def async_added_to_hass(self):
-        """Called when an entity has their entity_id assigned."""
+        """Subscribe to regdata event."""
 
         async def async_set_available(regdata: dict[str, Any]) -> None:
             if self.entity_description.key in regdata:
@@ -552,7 +552,7 @@ class RegdataSensor(EcomaxSensor):
             await func(self.device.data[ATTR_REGDATA])
 
     async def async_will_remove_from_hass(self):
-        """Called when an entity is about to be removed."""
+        """Unsubscribe from regdata event."""
         self.device.unsubscribe(ATTR_REGDATA, self.async_update)
 
     @property
@@ -633,9 +633,9 @@ def async_setup_regdata_sensors(connection: EcomaxConnection) -> list[RegdataSen
 
 def async_setup_mixer_sensors(connection: EcomaxConnection) -> list[MixerSensor]:
     """Set up the mixer sensors."""
+    """Set up the mixer sensors."""
     entities: list[MixerSensor] = []
-
-    for index in connection.device.mixers.keys():
+    for index in connection.device.mixers:
         entities.extend(
             MixerSensor(connection, description, index)
             for description in get_by_modules(

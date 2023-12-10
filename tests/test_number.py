@@ -54,7 +54,7 @@ def set_connected(connected):
 
 @pytest.fixture(name="async_set_value")
 async def fixture_async_set_value():
-    """Sets the value."""
+    """Set the value."""
 
     async def async_set_value(hass: HomeAssistant, entity_id: str, value: float):
         await hass.services.async_call(

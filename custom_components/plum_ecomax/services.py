@@ -15,7 +15,7 @@ from homeassistant.core import (
     callback,
 )
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
-from homeassistant.helpers import device_registry, entity_registry
+from homeassistant.helpers import device_registry as dr, entity_registry as er
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.config_validation import make_entity_service_schema
 from homeassistant.helpers.service import (
@@ -103,8 +103,8 @@ def async_extract_target_device(
     device_id: str, hass: HomeAssistant, connection: EcomaxConnection
 ) -> Device:
     """Get target device by the device id."""
-    dr = device_registry.async_get(hass)
-    device = dr.async_get(device_id)
+    device_registry = dr.async_get(hass)
+    device = device_registry.async_get(device_id)
     if not device:
         raise HomeAssistantError(
             translation_domain=DOMAIN,
@@ -131,10 +131,10 @@ def async_extract_referenced_devices(
     """Extract referenced devices from the selected entities."""
     devices: set[Device] = set()
     extracted: set[str] = set()
-    ent_reg = entity_registry.async_get(hass)
+    entity_registry = er.async_get(hass)
     referenced = selected.referenced | selected.indirectly_referenced
     for entity_id in referenced:
-        entity = ent_reg.async_get(entity_id)
+        entity = entity_registry.async_get(entity_id)
         if entity.device_id not in extracted:
             devices.add(async_extract_target_device(entity.device_id, hass, connection))
             extracted.add(entity.device_id)

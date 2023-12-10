@@ -47,7 +47,7 @@ Adapter ->  ecoMAX
 ```
 
 ### ecoNET 300
-While this integration is built on top of PyPlumIO library, which from the start was intended as ecoNET 300 alternative, **Patryk B** has originaly developed awesome HASS integration that communicates with ecoMAX controller via ecoNET 300 device.
+While this integration is built on top of PyPlumIO library, which from the start was intended as ecoNET 300 alternative, **Patryk B** has originally developed awesome HASS integration that communicates with ecoMAX controller via ecoNET 300 device.
 
 Development of this integration has recently been picked up by @jontofront, so it's getting regular updates and fixes again!
 If you have an ecoNET 300 device, be sure to [check it out](https://github.com/jontofront/ecoNET-300-Home-Assistant-Integration)!
@@ -172,7 +172,7 @@ Binary sensors have two states (on/off, running/not running, etc.).
 | Exhaust fan state       | :white_check_mark: | :x:                 |
 
 #### Selects
-Select entites can have multiple options to choose from.
+Select entities can have multiple options to choose from.
 
 | Name        | Options         | ecoMAX pellet      | ecoMAX installation |
 |-------------|:---------------:|:------------------:|:-------------------:|

@@ -67,10 +67,10 @@ class EcomaxButton(EcomaxEntity, ButtonEntity):
         """Update entity state."""
 
     async def async_added_to_hass(self):
-        """Called when an entity has their entity_id assigned."""
+        """Subscribe to the events."""
 
     async def async_will_remove_from_hass(self):
-        """Called when an entity is about to be removed."""
+        """Unsubscribe from the events."""
 
 
 async def async_setup_entry(

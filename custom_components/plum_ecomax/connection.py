@@ -138,16 +138,16 @@ class EcomaxConnection:
         raise AttributeError
 
     async def async_setup(self) -> None:
-        """Setup connection and add hass stop handler."""
+        """Set up ecoMAX connection."""
         await self.connect()
         device: AddressableDevice = await self.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
-        await device.wait_for(ATTR_LOADED, timeout=DEFAULT_TIMEOUT)
-        await device.wait_for(ATTR_SENSORS, timeout=DEFAULT_TIMEOUT)
-        await device.wait_for(ATTR_ECOMAX_PARAMETERS, timeout=DEFAULT_TIMEOUT)
+        for required in (ATTR_LOADED, ATTR_SENSORS, ATTR_ECOMAX_PARAMETERS):
+            await device.wait_for(required, timeout=DEFAULT_TIMEOUT)
+
         self._device = device
 
     async def async_setup_thermostats(self) -> bool:
-        """Set up the thermostats."""
+        """Set up thermostats."""
         try:
             return await self.device.request(
                 ATTR_THERMOSTAT_PARAMETERS,
@@ -160,7 +160,7 @@ class EcomaxConnection:
             return False
 
     async def async_setup_mixers(self) -> bool:
-        """Set up the mixers."""
+        """Set up mixers."""
         try:
             return await self.device.request(
                 ATTR_MIXER_PARAMETERS,
@@ -173,7 +173,7 @@ class EcomaxConnection:
             return False
 
     async def async_setup_regdata(self) -> bool:
-        """Setup regulator data."""
+        """Set up regulator data."""
         try:
             return await self.device.request(
                 ATTR_REGDATA,

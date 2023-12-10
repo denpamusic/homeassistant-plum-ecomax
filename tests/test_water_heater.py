@@ -65,7 +65,7 @@ def fixture_frozen_time():
 
 @pytest.fixture(name="async_set_operation_mode")
 async def fixture_async_set_operation_mode():
-    """Sets the water heater operation mode."""
+    """Set the water heater operation mode."""
 
     async def async_set_operation_mode(
         hass: HomeAssistant, entity_id: str, operation_mode: str
@@ -83,7 +83,7 @@ async def fixture_async_set_operation_mode():
 
 @pytest.fixture(name="async_set_temperature")
 async def fixture_async_set_temperature():
-    """Sets the water heater temperature."""
+    """Set the water heater temperature."""
 
     async def async_set_temperature(
         hass: HomeAssistant, entity_id: str, temperature: float

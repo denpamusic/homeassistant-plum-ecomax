@@ -22,7 +22,7 @@ class EcomaxEntity(ABC):
     entity_description: EntityDescription
 
     async def async_added_to_hass(self):
-        """Called when an entity has their entity_id assigned."""
+        """Subscribe to events."""
 
         async def async_set_available(_=None) -> None:
             self._attr_available = True
@@ -36,7 +36,7 @@ class EcomaxEntity(ABC):
             await func(self.device.get_nowait(self.entity_description.key, None))
 
     async def async_will_remove_from_hass(self):
-        """Called when an entity is about to be removed."""
+        """Unsubscribe from events."""
         self.device.unsubscribe(self.entity_description.key, self.async_update)
 
     @property
@@ -88,9 +88,7 @@ class EcomaxEntity(ABC):
 
     @property
     def has_entity_name(self) -> bool:
-        """Return if the name of the entity is describing only the
-        entity itself.
-        """
+        """Return if the name of the entity is describing only the entity itself."""
         return True
 
     @abstractmethod

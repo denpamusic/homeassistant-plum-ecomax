@@ -71,7 +71,7 @@ def fixture_frozen_time():
 
 @pytest.fixture(name="async_set_preset_mode")
 async def fixture_async_set_preset_mode():
-    """Sets the climate preset mode."""
+    """Set the climate preset mode."""
 
     async def async_set_preset_mode(
         hass: HomeAssistant, entity_id: str, preset_mode: str
@@ -89,7 +89,7 @@ async def fixture_async_set_preset_mode():
 
 @pytest.fixture(name="async_set_temperature")
 async def fixture_async_set_temperature():
-    """Sets the climate temperature."""
+    """Set the climate temperature."""
 
     async def async_set_temperature(
         hass: HomeAssistant, entity_id: str, temperature: float

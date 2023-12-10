@@ -244,7 +244,7 @@ def async_setup_mixer_binary_sensors(
     """Set up the mixer binary sensors."""
     entities: list[MixerBinarySensor] = []
 
-    for index in connection.device.mixers.keys():
+    for index in connection.device.mixers:
         entities.extend(
             MixerBinarySensor(connection, description, index)
             for description in get_by_modules(
