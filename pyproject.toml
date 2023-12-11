@@ -1,3 +1,5 @@
+# https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
+
 [project]
 name = "homeassistant-plum-ecomax"
 authors = [
