@@ -5,15 +5,6 @@ authors = [
 ]
 description = "Plum ecoMAX boiler controller integration for Home Assistant."
 license = {text = "MIT License"}
-version = "0" # Only used by tox
-
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-platforms = ["any"]
-packages = ["custom_components"]
 
 [tool.black]
 target-version = ["py311"]
@@ -32,9 +23,7 @@ exclude = [
     ".pytest_cache",
     ".ruff_cache",
     ".tox",
-    ".vscode",
-    "build",
-    "tests"
+    ".vscode"
 ]
 
 [tool.pytest.ini_options]
@@ -48,8 +37,7 @@ exclude = [
     ".pytest_cache",
     ".ruff_cache",
     ".tox",
-    ".vscode",
-    "build"
+    ".vscode"
 ]
 line-length = 88
 indent-width = 4
@@ -190,6 +178,7 @@ legacy_tox_ini = """
     isolated_build = True
     skip_missing_interpreters = True
     ignore_basepython_conflict = True
+    no_package = True
 
     [gh-actions]
     python =
