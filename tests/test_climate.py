@@ -177,7 +177,7 @@ async def test_thermostat(
         thermostat_night_target_temperature_key,
         ThermostatParameter(
             offset=0,
-            device=connection.device,
+            device=connection.device.thermostats[0],
             values=ParameterValues(value=110, min_value=100, max_value=350),
             description=ThermostatParameterDescription(
                 thermostat_night_target_temperature_key, multiplier=10, size=2
@@ -253,7 +253,7 @@ async def test_thermostat_presets(
             thermostat_mode_key,
             ThermostatParameter(
                 offset=0,
-                device=connection.device,
+                device=connection.device.thermostats[0],
                 values=ParameterValues(value=4, min_value=0, max_value=7),
                 description=ThermostatParameterDescription(
                     thermostat_mode_key, multiplier=1, size=2
@@ -270,7 +270,7 @@ async def test_thermostat_presets(
             thermostat_mode_key,
             ThermostatParameter(
                 offset=0,
-                device=connection.device,
+                device=connection.device.thermostats[0],
                 values=ParameterValues(value=0, min_value=0, max_value=7),
                 description=ThermostatParameterDescription(
                     thermostat_mode_key, multiplier=1, size=2

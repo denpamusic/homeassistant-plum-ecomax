@@ -1,11 +1,12 @@
 """Fixtures for the test suite."""
 
 import asyncio
+from collections.abc import Generator
 from typing import Final
 from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.core import HomeAssistant
-from pyplumio import Connection
+from pyplumio.connection import Connection
 from pyplumio.const import DeviceState, ProductType, UnitOfMeasurement
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.devices.mixer import Mixer
@@ -184,7 +185,7 @@ def connected():
 
 
 @pytest.fixture(name="ecomax_base")
-def fixture_ecomax_base() -> EcoMAX:
+def fixture_ecomax_base() -> Generator[EcoMAX, None, None]:
     """Return base ecoMAX device with no data."""
     ecomax = EcoMAX(queue=Mock(), network=NetworkInfo())
     with patch(
@@ -638,13 +639,13 @@ def thermostats(ecomax_common: EcoMAX):
         "schedule": False,
         "mode": ThermostatParameter(
             offset=0,
-            device=ecomax_common,
+            device=thermostat,
             values=ParameterValues(value=0, min_value=0, max_value=7),
             description=ThermostatParameterDescription("mode"),
         ),
         "hysteresis": ThermostatParameter(
             offset=0,
-            device=ecomax_common,
+            device=thermostat,
             values=ParameterValues(value=5, min_value=0, max_value=50),
             description=ThermostatParameterDescription(
                 "hysteresis",
@@ -654,7 +655,7 @@ def thermostats(ecomax_common: EcoMAX):
         ),
         "party_target_temp": ThermostatParameter(
             offset=0,
-            device=ecomax_common,
+            device=thermostat,
             values=ParameterValues(value=100, min_value=100, max_value=350),
             description=ThermostatParameterDescription(
                 "party_target_temp",
@@ -665,7 +666,7 @@ def thermostats(ecomax_common: EcoMAX):
         ),
         "holidays_target_temp": ThermostatParameter(
             offset=0,
-            device=ecomax_common,
+            device=thermostat,
             values=ParameterValues(value=70, min_value=0, max_value=600),
             description=ThermostatParameterDescription(
                 "holidays_target_temp",
@@ -676,7 +677,7 @@ def thermostats(ecomax_common: EcoMAX):
         ),
         "antifreeze_target_temp": ThermostatParameter(
             offset=0,
-            device=ecomax_common,
+            device=thermostat,
             values=ParameterValues(value=90, min_value=50, max_value=300),
             description=ThermostatParameterDescription(
                 "antifreeze_target_temp",
@@ -687,7 +688,7 @@ def thermostats(ecomax_common: EcoMAX):
         ),
         "day_target_temp": ThermostatParameter(
             offset=0,
-            device=ecomax_common,
+            device=thermostat,
             values=ParameterValues(value=160, min_value=100, max_value=350),
             description=ThermostatParameterDescription(
                 "day_target_temp",
@@ -698,7 +699,7 @@ def thermostats(ecomax_common: EcoMAX):
         ),
         "night_target_temp": ThermostatParameter(
             offset=0,
-            device=ecomax_common,
+            device=thermostat,
             values=ParameterValues(value=100, min_value=100, max_value=200),
             description=ThermostatParameterDescription(
                 "night_target_temp",

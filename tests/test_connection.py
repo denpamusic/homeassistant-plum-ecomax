@@ -10,7 +10,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.entity import DeviceInfo
-from pyplumio import Connection, SerialConnection, TcpConnection
+from pyplumio.connection import Connection, SerialConnection, TcpConnection
 from pyplumio.const import FrameType
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.structures.mixer_parameters import ATTR_MIXER_PARAMETERS

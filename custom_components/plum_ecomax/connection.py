@@ -13,6 +13,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.entity import DeviceInfo
 import pyplumio
+from pyplumio.connection import Connection
 from pyplumio.const import FrameType, ProductType
 from pyplumio.devices import AddressableDevice
 from pyplumio.structures.ecomax_parameters import ATTR_ECOMAX_PARAMETERS
@@ -56,7 +57,7 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_get_connection_handler(
     connection_type: str, hass: HomeAssistant, data: Mapping[str, Any]
-) -> pyplumio.Connection:
+) -> Connection:
     """Return the connection handler."""
     _LOGGER.debug("Getting connection handler for type: %s...", connection_type)
 
@@ -116,14 +117,12 @@ async def async_get_sub_devices(device: AddressableDevice) -> list[str]:
 class EcomaxConnection:
     """Represents an ecoMAX connection."""
 
-    _connection: pyplumio.Connection
+    _connection: Connection
     _device: AddressableDevice | None
     _hass: HomeAssistant
     entry: ConfigEntry
 
-    def __init__(
-        self, hass: HomeAssistant, entry: ConfigEntry, connection: pyplumio.Connection
-    ):
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, connection: Connection):
         """Initialize a new ecoMAX connection."""
         self._connection = connection
         self._device = None
@@ -251,7 +250,7 @@ class EcomaxConnection:
         return self.entry.title
 
     @property
-    def connection(self) -> pyplumio.Connection:
+    def connection(self) -> Connection:
         """Return the connection handler."""
         return self._connection
 

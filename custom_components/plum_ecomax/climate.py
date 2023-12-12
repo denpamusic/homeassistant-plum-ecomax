@@ -230,10 +230,10 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
             # Target temperature parameter name is unchanged.
             return
 
-        self._attr_target_temperature_name = target_temperature_name
         target_temperature_parameter: ThermostatParameter = await self.device.get(
-            self.target_temperature_name
+            target_temperature_name
         )
+        self._attr_target_temperature_name = target_temperature_name
         self._attr_max_temp = target_temperature_parameter.max_value
         self._attr_min_temp = target_temperature_parameter.min_value
 

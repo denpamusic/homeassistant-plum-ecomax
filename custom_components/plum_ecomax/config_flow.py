@@ -12,7 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 import homeassistant.helpers.config_validation as cv
-from pyplumio import Connection
+from pyplumio.connection import Connection
 from pyplumio.const import ProductType
 from pyplumio.devices import AddressableDevice
 from pyplumio.exceptions import ConnectionFailedError

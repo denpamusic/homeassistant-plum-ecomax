@@ -4,7 +4,7 @@ from __future__ import annotations
 from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass
 import logging
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from homeassistant.components.number import (
     EntityDescription,
@@ -121,9 +121,9 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
 
     async def async_update(self, value: Parameter) -> None:
         """Update entity state."""
-        self._attr_native_value = value.value
-        self._attr_native_min_value = value.min_value
-        self._attr_native_max_value = value.max_value
+        self._attr_native_value = cast(float, value.value)
+        self._attr_native_min_value = cast(float, value.min_value)
+        self._attr_native_max_value = cast(float, value.max_value)
         self.async_write_ha_state()
 
 
