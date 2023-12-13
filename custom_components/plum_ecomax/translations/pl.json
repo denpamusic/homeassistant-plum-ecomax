@@ -162,6 +162,7 @@
       "fireplace_temp": { "name": "Temperatura kominkowa" },
       "mixer_temp": { "name": "Temperatura mieszacza" },
       "mixer_target_temp": { "name": "Temperatura zadana mieszacza" },
+      "mixer_valve_opening_percentage": { "name": "Otwarcie zaworu mieszacza" },
       "circuit_temp": { "name": "Temperatura obiegu" },
       "circuit_target_temp": { "name": "Temperatura zadana obiegu" },
       "total_fuel_burned": {

@@ -521,6 +521,15 @@ REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
         suggested_display_precision=0,
         value_fn=lambda x: x,
     ),
+    RegdataSensorEntityDescription(
+        key=134,
+        translation_key="mixer_valve_opening_percentage",
+        native_unit_of_measurement=PERCENTAGE,
+        product_models={ProductModel.ECOMAX_860P6_O},
+        state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
+        value_fn=lambda x: x,
+    ),
 )
 
 

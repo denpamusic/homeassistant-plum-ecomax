@@ -1228,6 +1228,43 @@ async def test_ash_pan_full_sensor_ecomax_860p3_o(
     assert state.state == "55"
 
 
+@pytest.mark.usefixtures("ecomax_860p6_o")
+async def test_mixer_valve_opening_percentage_sensor_ecomax_860p6_o(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test mixer valve opening percentage sensor for ecoMAX 860P6-O."""
+    await setup_integration(hass, config_entry)
+    mixer_valve_opening_percentage_entity_id = (
+        "sensor.ecomax_mixer_valve_opening_percentage"
+    )
+    mixer_valve_opening_percentage_key = 134
+
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(mixer_valve_opening_percentage_entity_id)
+    assert entry
+    assert entry.translation_key == "mixer_valve_opening_percentage"
+
+    # Get initial value.
+    state = hass.states.get(mixer_valve_opening_percentage_entity_id)
+    assert state.state == "35"
+    assert (
+        state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Mixer valve opening percentage"
+    )
+    assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
+    assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
+
+    # Dispatch new value.
+    await connection.device.dispatch(
+        ATTR_REGDATA, {mixer_valve_opening_percentage_key: 55}
+    )
+    state = hass.states.get(mixer_valve_opening_percentage_entity_id)
+    assert state.state == "55"
+
+
 @pytest.mark.usefixtures("ecomax_860p3_s_lite")
 async def test_ash_pan_full_sensor_ecomax_860p3_s_lite(
     hass: HomeAssistant,

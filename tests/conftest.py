@@ -426,6 +426,36 @@ def ecomax_860p3_o(ecomax_p: EcoMAX):
 
 
 @pytest.fixture()
+def ecomax_860p6_o(ecomax_p: EcoMAX):
+    """Inject data for ecoMAX 860P6-O.
+
+    (product_type: 0, product_id: 51)
+    """
+    product_type = ProductType.ECOMAX_P
+    product_model = ProductModel.ECOMAX_860P6_O
+
+    ecomax_p.data.update(
+        {
+            ATTR_PRODUCT: ProductInfo(
+                type=product_type,
+                id=51,
+                uid="TEST",
+                logo=2,
+                image=51,
+                model=product_model,
+            ),
+            ATTR_REGDATA: load_regdata_fixture("regdata__ecomax_860p6_o.json"),
+        }
+    )
+
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.model",
+        product_model,
+    ):
+        yield ecomax_p
+
+
+@pytest.fixture()
 def ecomax_860p3_s_lite(ecomax_p: EcoMAX):
     """Inject data for ecoMAX 860P3-S Lite.
 

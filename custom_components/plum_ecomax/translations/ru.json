@@ -162,6 +162,7 @@
       "fireplace_temp": { "name": "Температура камина" },
       "mixer_temp": { "name": "Температура миксера" },
       "mixer_target_temp": { "name": "Заданная температура миксера" },
+      "mixer_valve_opening_percentage": { "name": "Mixer valve opening percentage" },
       "circuit_temp": { "name": "Температура контура" },
       "circuit_target_temp": { "name": "Заданная температура контура" },
       "total_fuel_burned": {

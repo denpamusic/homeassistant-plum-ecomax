@@ -162,6 +162,7 @@
       "fireplace_temp": { "name": "Fireplace temperature" },
       "mixer_temp": { "name": "Mixer temperature" },
       "mixer_target_temp": { "name": "Mixer target temperature" },
+      "mixer_valve_opening_percentage": { "name": "Mixer valve opening percentage" },
       "circuit_temp": { "name": "Circuit temperature" },
       "circuit_target_temp": { "name": "Circuit target temperature" },
       "total_fuel_burned": {
