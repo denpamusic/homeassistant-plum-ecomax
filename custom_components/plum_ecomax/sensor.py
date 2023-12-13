@@ -143,7 +143,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         key="state",
         translation_key="ecomax_state",
         device_class=DEVICE_CLASS_STATE,
-        value_fn=lambda x: EM_TO_HA_STATE[x] if x in EM_TO_HA_STATE else STATE_UNKNOWN,
+        value_fn=lambda x: EM_TO_HA_STATE.get(x, STATE_UNKNOWN),
     ),
     EcomaxSensorEntityDescription(
         key="password",
@@ -500,6 +500,15 @@ class RegdataSensorEntityDescription(EcomaxSensorEntityDescription):
     product_models: set[ProductModel]
 
 
+STATE_CLOSING: Final = "closing"
+STATE_OPENING: Final = "opening"
+
+EM_TO_HA_MIXER_VALVE_STATE: dict[int, str] = {
+    0: STATE_OFF,
+    1: STATE_CLOSING,
+    2: STATE_OPENING,
+}
+
 REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
     RegdataSensorEntityDescription(
         key=227,
@@ -529,6 +538,13 @@ REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=0,
         value_fn=lambda x: x,
+    ),
+    RegdataSensorEntityDescription(
+        key=139,
+        translation_key="mixer_valve_state",
+        product_models={ProductModel.ECOMAX_860P6_O},
+        device_class=DEVICE_CLASS_STATE,
+        value_fn=lambda x: EM_TO_HA_MIXER_VALVE_STATE.get(x, STATE_UNKNOWN),
     ),
 )
 

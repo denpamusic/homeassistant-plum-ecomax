@@ -163,6 +163,15 @@
       "mixer_temp": { "name": "Температура миксера" },
       "mixer_target_temp": { "name": "Заданная температура миксера" },
       "mixer_valve_opening_percentage": { "name": "Mixer valve opening percentage" },
+      "mixer_valve_state": {
+        "name": "Mixer valve state",
+        "state": {
+          "off": "Off",
+          "closing": "Closing",
+          "opening": "Opening",
+          "unknown": "Unknown"
+        }
+      },
       "circuit_temp": { "name": "Температура контура" },
       "circuit_target_temp": { "name": "Заданная температура контура" },
       "total_fuel_burned": {
