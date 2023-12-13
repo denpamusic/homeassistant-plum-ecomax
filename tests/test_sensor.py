@@ -1236,6 +1236,7 @@ async def test_mixer_valve_opening_percentage_sensor_ecomax_860p6_o(
     connection: EcomaxConnection,
     config_entry: MockConfigEntry,
     setup_integration,
+    frozen_time,
 ) -> None:
     """Test mixer valve opening percentage sensor for ecoMAX 860P6-O."""
     await setup_integration(hass, config_entry)
@@ -1260,6 +1261,7 @@ async def test_mixer_valve_opening_percentage_sensor_ecomax_860p6_o(
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
     # Dispatch new value.
+    frozen_time.move_to("12:00:10")
     await connection.device.dispatch(
         ATTR_REGDATA, {mixer_valve_opening_percentage_key: 55}
     )
