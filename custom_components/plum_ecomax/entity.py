@@ -25,6 +25,7 @@ class EcomaxEntity(ABC):
         """Subscribe to events."""
 
         async def async_set_available(_=None) -> None:
+            """Mark entity as available."""
             self._attr_available = True
 
         func = self.entity_description.filter_fn(self.async_update)

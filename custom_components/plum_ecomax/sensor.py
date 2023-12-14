@@ -567,7 +567,8 @@ class RegdataSensor(EcomaxSensor):
     async def async_added_to_hass(self):
         """Subscribe to regdata event."""
 
-        async def async_set_available(regdata: dict[str, Any]) -> None:
+        async def async_set_available(regdata: dict[int, Any]) -> None:
+            """Mark entity as available."""
             if self.entity_description.key in regdata:
                 self._attr_available = True
 
