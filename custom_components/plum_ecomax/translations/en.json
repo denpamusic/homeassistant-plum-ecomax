@@ -18,18 +18,21 @@
     },
     "step": {
       "user": {
+        "title": "Choose a connection type",
         "menu_options": {
           "tcp": "Connect via network (TCP)",
           "serial": "Connect via serial (RS-485)"
         }
       },
       "serial": {
+        "title": "Serial settings",
         "data": {
           "device": "Device",
           "baudrate": "Baudrate"
         }
       },
       "tcp": {
+        "title": "Network settings",
         "data": {
           "host": "Host",
           "port": "Port"

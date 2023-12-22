@@ -99,7 +99,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         self.modules_task: asyncio.Task | None = None
         self.init_info: MutableMapping[str, Any] = {}
 
-    async def async_step_user(self, user_input=None) -> FlowResult:
+    async def async_step_user(self, _=None) -> FlowResult:
         """Handle initial step."""
         return self.async_show_menu(
             step_id="user",

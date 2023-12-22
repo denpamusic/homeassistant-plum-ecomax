@@ -18,18 +18,21 @@
     },
     "step": {
       "user": {
+        "title": "Choose a connection type",
         "menu_options": {
           "tcp": "Підключитися через мережу (TCP)",
           "serial": "Підключитись через послідовний порт (RS-485)"
         }
       },
       "serial": {
+        "title": "Serial settings",
         "data": {
           "device": "Шлях пристрою",
           "baudrate": "Швидкість передачі"
         }
       },
       "tcp": {
+        "title": "Network settings",
         "data": {
           "host": "Хост",
           "port": "Порт"

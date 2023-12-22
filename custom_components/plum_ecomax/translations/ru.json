@@ -18,18 +18,21 @@
     },
     "step": {
       "user": {
+        "title": "Choose a connection type",
         "menu_options": {
           "tcp": "Подключиться по сети (TCP)",
           "serial": "Подключиться через последовательный порт (RS-485)"
         }
       },
       "serial": {
+        "title": "Serial settings",
         "data": {
           "device": "Путь к устройству",
           "baudrate": "Скорость передачи"
         }
       },
       "tcp": {
+        "title": "Network settings",
         "data": {
           "host": "IP-адрес/домен",
           "port": "Порт"

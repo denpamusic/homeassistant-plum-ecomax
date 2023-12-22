@@ -18,18 +18,21 @@
     },
     "step": {
       "user": {
+        "title": "Choose a connection type",
         "menu_options": {
           "tcp": "Připojte se přes síť (TCP)",
           "serial": "Připojte se přes sériový port (RS-485)"
         }
       },
       "serial": {
+        "title": "Serial settings",
         "data": {
           "device": "Cesta",
           "baudrate": "Přenosová rychlost"
         }
       },
       "tcp": {
+        "title": "Network settings",
         "data": {
           "host": "IP adresa/Doména",
           "port": "Port"
