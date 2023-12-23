@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import MutableMapping
+from collections.abc import Mapping
 import logging
 from typing import Any
 
@@ -67,7 +67,7 @@ STEP_SERIAL_DATA_SCHEMA = vol.Schema(
 
 
 async def validate_input(
-    connection_type: str, hass: HomeAssistant, data: MutableMapping[str, Any]
+    connection_type: str, hass: HomeAssistant, data: Mapping[str, Any]
 ) -> Connection:
     """Validate the user input allows us to connect.
 
@@ -97,7 +97,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         self.device_task: asyncio.Task | None = None
         self.identify_task: asyncio.Task | None = None
         self.modules_task: asyncio.Task | None = None
-        self.init_info: MutableMapping[str, Any] = {}
+        self.init_info: dict[str, Any] = {}
 
     async def async_step_user(self, _=None) -> FlowResult:
         """Handle initial step."""
@@ -107,7 +107,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         )
 
     async def async_step_tcp(
-        self, user_input: MutableMapping[str, Any] | None = None
+        self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle TCP connection setup."""
         if user_input is None:
@@ -136,7 +136,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         )
 
     async def async_step_serial(
-        self, user_input: MutableMapping[str, Any] | None = None
+        self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle serial connection setup."""
         if user_input is None:
@@ -166,7 +166,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             step_id="serial", data_schema=STEP_SERIAL_DATA_SCHEMA, errors=errors
         )
 
-    async def async_step_device(self, user_input=None) -> FlowResult:
+    async def async_step_device(self, _=None) -> FlowResult:
         """Wait until the device is available."""
 
         async def _wait_for_device() -> None:
@@ -195,7 +195,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
         return self.async_show_progress_done(next_step_id="identify")
 
-    async def async_step_identify(self, user_input=None) -> FlowResult:
+    async def async_step_identify(self, _=None) -> FlowResult:
         """Identify the device."""
 
         async def _identify_device() -> None:
@@ -241,7 +241,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
         return self.async_show_progress_done(next_step_id="discover")
 
-    async def async_step_discover(self, user_input=None) -> FlowResult:
+    async def async_step_discover(self, _=None) -> FlowResult:
         """Discover connected modules."""
 
         async def _discover_modules() -> None:
@@ -283,7 +283,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
         return self.async_show_progress_done(next_step_id="finish")
 
-    async def async_step_finish(self, user_input=None) -> FlowResult:
+    async def async_step_finish(self, _=None) -> FlowResult:
         """Finish integration config."""
         if self.connection:
             await self.connection.close()
@@ -292,15 +292,15 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             title=self.init_info[CONF_MODEL], data=self.init_info
         )
 
-    async def async_step_device_not_found(self, user_input=None) -> FlowResult:
+    async def async_step_device_not_found(self, _=None) -> FlowResult:
         """Handle issues that need transition await from progress step."""
         return self.async_abort(reason="no_devices_found")
 
-    async def async_step_unsupported_device(self, user_input=None) -> FlowResult:
+    async def async_step_unsupported_device(self, _=None) -> FlowResult:
         """Handle issues that need transition await from progress step."""
         return self.async_abort(reason="unsupported_device")
 
-    async def async_step_discovery_failed(self, user_input=None) -> FlowResult:
+    async def async_step_discovery_failed(self, _=None) -> FlowResult:
         """Handle issues that need transition await from progress step."""
         return self.async_abort(reason="discovery_failed")
 
