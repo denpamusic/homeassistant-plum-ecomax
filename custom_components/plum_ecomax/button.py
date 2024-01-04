@@ -18,7 +18,7 @@ from custom_components.plum_ecomax.const import DOMAIN
 from custom_components.plum_ecomax.entity import EcomaxEntity
 
 
-@dataclass(kw_only=True, slots=True)
+@dataclass(kw_only=True, frozen=True, slots=True)
 class EcomaxButtonEntityDescription(ButtonEntityDescription):
     """Describes an ecoMAX button."""
 

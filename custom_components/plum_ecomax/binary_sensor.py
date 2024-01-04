@@ -25,7 +25,7 @@ from .entity import EcomaxEntity, MixerEntity
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True, slots=True)
+@dataclass(kw_only=True, frozen=True, slots=True)
 class EcomaxBinarySensorEntityDescription(BinarySensorEntityDescription):
     """Describes an ecoMAX binary sensor."""
 
@@ -162,7 +162,7 @@ class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
         )
 
 
-@dataclass(slots=True)
+@dataclass(kw_only=True, frozen=True, slots=True)
 class MixerBinarySensorEntityDescription(EcomaxBinarySensorEntityDescription):
     """Describes a mixer binary sensor."""
 
