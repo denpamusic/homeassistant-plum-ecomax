@@ -81,6 +81,8 @@ async def test_setup_and_unload_entry(
         await async_setup_entry(hass, config_entry)
 
     assert exc_info.value.translation_key == "connection_timeout"
+    assert connection.close.call_count == 1
+    connection.close.reset_mock()
 
     # Send HA stop event and check that connection was closed.
     hass.bus.async_fire(EVENT_HOMEASSISTANT_STOP)
