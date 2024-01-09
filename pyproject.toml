@@ -8,9 +8,6 @@ authors = [
 description = "Plum ecoMAX boiler controller integration for Home Assistant."
 license = {text = "MIT License"}
 
-[tool.black]
-target-version = ["py311"]
-
 [tool.codespell]
 skip = ".git,.mypy_cache,.pytest_cache,.ruff_cache,.tox,.vscode,build,*/translations/*.json"
 ignore-words-list = "hass"
@@ -202,7 +199,6 @@ legacy_tox_ini = """
 
     commands =
         codespell
-        black --check --quiet .
         ruff .
 
     [testenv:test]
