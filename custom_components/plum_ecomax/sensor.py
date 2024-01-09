@@ -81,7 +81,7 @@ UPDATE_INTERVAL: Final = 10
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True, slots=True)
+@dataclass(kw_only=True, frozen=True, slots=True)
 class EcomaxSensorEntityDescription(SensorEntityDescription):
     """Describes an ecoMAX sensor."""
 
@@ -363,7 +363,7 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
         self.async_write_ha_state()
 
 
-@dataclass(slots=True)
+@dataclass(kw_only=True, frozen=True, slots=True)
 class MixerSensorEntityDescription(EcomaxSensorEntityDescription):
     """Describes a mixer sensor."""
 
@@ -430,7 +430,7 @@ class MixerSensor(MixerEntity, EcomaxSensor):
         super().__init__(connection, description)
 
 
-@dataclass(slots=True)
+@dataclass(kw_only=True, frozen=True, slots=True)
 class EcomaxMeterEntityDescription(EcomaxSensorEntityDescription):
     """Describes an ecoMAX meter entity."""
 
@@ -494,7 +494,7 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
         return self.entity_description.value_fn(self._attr_native_value)
 
 
-@dataclass(kw_only=True, slots=True)
+@dataclass(kw_only=True, frozen=True, slots=True)
 class RegdataSensorEntityDescription(EcomaxSensorEntityDescription):
     """Describes a regulator data sensor."""
 
