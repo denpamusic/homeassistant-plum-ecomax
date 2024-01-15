@@ -8,6 +8,7 @@ from typing import Any, Literal, cast
 
 from homeassistant.components.number import (
     EntityDescription,
+    NumberDeviceClass,
     NumberEntity,
     NumberEntityDescription,
     NumberMode,
@@ -41,6 +42,7 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="heating_target_temp",
         translation_key="target_heating_temp",
+        device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
@@ -48,6 +50,7 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="min_heating_target_temp",
         translation_key="min_heating_temp",
+        device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
@@ -55,6 +58,7 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="max_heating_target_temp",
         translation_key="max_heating_temp",
+        device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
@@ -62,6 +66,7 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="grate_heating_temp",
         translation_key="grate_mode_temp",
+        device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
@@ -138,6 +143,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
     EcomaxMixerNumberEntityDescription(
         key="mixer_target_temp",
         translation_key="target_mixer_temp",
+        device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
@@ -145,6 +151,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
     EcomaxMixerNumberEntityDescription(
         key="min_target_temp",
         translation_key="min_mixer_temp",
+        device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
@@ -152,6 +159,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
     EcomaxMixerNumberEntityDescription(
         key="max_target_temp",
         translation_key="max_mixer_temp",
+        device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
@@ -159,6 +167,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
     EcomaxMixerNumberEntityDescription(
         key="circuit_target_temp",
         translation_key="target_circuit_temp",
+        device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
@@ -166,6 +175,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
     EcomaxMixerNumberEntityDescription(
         key="min_target_temp",
         translation_key="min_circuit_temp",
+        device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
@@ -174,6 +184,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
     EcomaxMixerNumberEntityDescription(
         key="max_target_temp",
         translation_key="max_circuit_temp",
+        device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
@@ -182,6 +193,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
     EcomaxMixerNumberEntityDescription(
         key="day_target_temp",
         translation_key="day_target_circuit_temp",
+        device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
@@ -190,6 +202,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
     EcomaxMixerNumberEntityDescription(
         key="night_target_temp",
         translation_key="night_target_circuit_temp",
+        device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},

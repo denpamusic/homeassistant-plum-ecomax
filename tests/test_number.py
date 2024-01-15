@@ -10,9 +10,11 @@ from homeassistant.components.number import (
     ATTR_VALUE,
     DOMAIN,
     SERVICE_SET_VALUE,
+    NumberDeviceClass,
     NumberMode,
 )
 from homeassistant.const import (
+    ATTR_DEVICE_CLASS,
     ATTR_ENTITY_ID,
     ATTR_FRIENDLY_NAME,
     ATTR_UNIT_OF_MEASUREMENT,
@@ -96,6 +98,7 @@ async def test_target_heating_temperature_number(
     assert state.attributes[ATTR_MAX] == 1
     assert state.attributes[ATTR_STEP] == 1
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
+    assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
     await connection.device.dispatch(
@@ -147,6 +150,7 @@ async def test_minimum_heating_temperature_number(
     assert state.attributes[ATTR_MAX] == 1
     assert state.attributes[ATTR_STEP] == 1
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
+    assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
     await connection.device.dispatch(
@@ -198,6 +202,7 @@ async def test_maximum_heating_temperature_number(
     assert state.attributes[ATTR_MAX] == 1
     assert state.attributes[ATTR_STEP] == 1
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
+    assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
     await connection.device.dispatch(
@@ -249,6 +254,7 @@ async def test_grate_mode_temperature_number(
     assert state.attributes[ATTR_MAX] == 1
     assert state.attributes[ATTR_STEP] == 1
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
+    assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
     await connection.device.dispatch(
@@ -460,6 +466,7 @@ async def test_mixer_target_mixer_temperature_number(
     assert state.attributes[ATTR_MAX] == 1
     assert state.attributes[ATTR_STEP] == 1
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
+    assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
     await connection.device.mixers[0].dispatch(
@@ -516,6 +523,7 @@ async def test_mixer_minimum_mixer_temperature_number(
     assert state.attributes[ATTR_MAX] == 1
     assert state.attributes[ATTR_STEP] == 1
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
+    assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
     await connection.device.mixers[0].dispatch(
@@ -572,6 +580,7 @@ async def test_mixer_maximum_mixer_temperature_number(
     assert state.attributes[ATTR_MAX] == 1
     assert state.attributes[ATTR_STEP] == 1
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
+    assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
     await connection.device.mixers[0].dispatch(
@@ -628,6 +637,7 @@ async def test_circuit_target_circuit_temperature_number(
     assert state.attributes[ATTR_MAX] == 1
     assert state.attributes[ATTR_STEP] == 1
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
+    assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
     await connection.device.mixers[0].dispatch(
@@ -684,6 +694,7 @@ async def test_circuit_minimum_circuit_temperature_number(
     assert state.attributes[ATTR_MAX] == 1
     assert state.attributes[ATTR_STEP] == 1
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
+    assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
     await connection.device.mixers[1].dispatch(
@@ -740,6 +751,7 @@ async def test_circuit_maximum_circuit_temperature_number(
     assert state.attributes[ATTR_MAX] == 1
     assert state.attributes[ATTR_STEP] == 1
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
+    assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
     await connection.device.mixers[1].dispatch(
@@ -796,6 +808,7 @@ async def test_circuit_day_target_circuit_temperature_number(
     assert state.attributes[ATTR_MAX] == 1
     assert state.attributes[ATTR_STEP] == 1
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
+    assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
     await connection.device.mixers[1].dispatch(
@@ -854,6 +867,7 @@ async def test_circuit_night_target_circuit_temperature_number(
     assert state.attributes[ATTR_MAX] == 1
     assert state.attributes[ATTR_STEP] == 1
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
+    assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
     await connection.device.mixers[1].dispatch(
