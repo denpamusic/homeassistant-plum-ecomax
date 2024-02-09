@@ -79,7 +79,7 @@ async def validate_input(
         await asyncio.wait_for(connection.connect(), timeout=DEFAULT_TIMEOUT)
     except ConnectionFailedError as connection_failure:
         raise CannotConnect from connection_failure
-    except asyncio.TimeoutError as connection_timeout:
+    except TimeoutError as connection_timeout:
         raise TimeoutConnect from connection_timeout
 
     return connection
@@ -187,7 +187,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
         try:
             await self.device_task
-        except asyncio.TimeoutError as device_not_found:
+        except TimeoutError as device_not_found:
             _LOGGER.exception(device_not_found)
             return self.async_show_progress_done(next_step_id="device_not_found")
         finally:
@@ -233,7 +233,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
         try:
             await self.identify_task
-        except (UnsupportedProduct, asyncio.TimeoutError) as device_not_supported:
+        except (UnsupportedProduct, TimeoutError) as device_not_supported:
             _LOGGER.exception(device_not_supported)
             return self.async_show_progress_done(next_step_id="unsupported_device")
         finally:
@@ -275,7 +275,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
         try:
             await self.modules_task
-        except asyncio.TimeoutError as discovery_failed:
+        except TimeoutError as discovery_failed:
             _LOGGER.exception(discovery_failed)
             return self.async_show_progress_done(next_step_id="discovery_failed")
         finally:

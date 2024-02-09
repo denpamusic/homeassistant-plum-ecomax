@@ -1,5 +1,4 @@
 """Test Plum ecoMAX config flow."""
-import asyncio
 from typing import Any
 from unittest.mock import AsyncMock, Mock, patch
 
@@ -77,7 +76,7 @@ async def test_form_tcp(
     # Catch connection timeout.
     with patch(
         "custom_components.plum_ecomax.config_flow.async_get_connection_handler",
-        side_effect=asyncio.TimeoutError,
+        side_effect=TimeoutError,
     ):
         result3 = await hass.config_entries.flow.async_configure(
             result2["flow_id"], tcp_user_input
@@ -179,7 +178,7 @@ async def test_form_serial(
     # Catch connection timeout.
     with patch(
         "custom_components.plum_ecomax.config_flow.async_get_connection_handler",
-        side_effect=asyncio.TimeoutError,
+        side_effect=TimeoutError,
     ):
         result3 = await hass.config_entries.flow.async_configure(
             result2["flow_id"], serial_user_input
@@ -263,7 +262,7 @@ async def test_abort_device_not_found(
 
     # Create the PyPlumIO connection mock.
     mock_connection = Mock(spec=TcpConnection)
-    mock_connection.get = AsyncMock(side_effect=asyncio.TimeoutError)
+    mock_connection.get = AsyncMock(side_effect=TimeoutError)
 
     # Wait for the device.
     with patch(
@@ -372,7 +371,7 @@ async def test_abort_discovery_failed(
     assert result4["step_id"] == "identify"
 
     # Discover connected modules.
-    with patch("pyplumio.devices.ecomax.EcoMAX.get", side_effect=asyncio.TimeoutError):
+    with patch("pyplumio.devices.ecomax.EcoMAX.get", side_effect=TimeoutError):
         result5 = await hass.config_entries.flow.async_configure(result4["flow_id"])
         await hass.async_block_till_done()
 

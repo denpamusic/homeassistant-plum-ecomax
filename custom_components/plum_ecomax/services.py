@@ -1,7 +1,6 @@
 """Contains Plum ecoMAX services."""
 from __future__ import annotations
 
-import asyncio
 import datetime as dt
 import logging
 from typing import Any, Final
@@ -148,7 +147,7 @@ async def async_get_device_parameter(
     """Get device parameter."""
     try:
         parameter = await device.get(name, timeout=DEFAULT_TIMEOUT)
-    except asyncio.TimeoutError as e:
+    except TimeoutError as e:
         raise HomeAssistantError(
             translation_domain=DOMAIN,
             translation_key="get_parameter_timeout",
@@ -229,7 +228,7 @@ async def async_set_device_parameter(device: Device, name: str, value: float) ->
             translation_key="invalid_parameter_value",
             translation_placeholders={"parameter": name, "value": value},
         ) from e
-    except asyncio.TimeoutError as e:
+    except TimeoutError as e:
         raise HomeAssistantError(
             str(e),
             translation_domain=DOMAIN,

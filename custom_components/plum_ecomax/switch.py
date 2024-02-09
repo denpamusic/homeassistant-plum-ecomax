@@ -112,7 +112,7 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
             self.entity_description.state_off: False,
         }
 
-        self._attr_is_on = states[value.value] if value.value in states else None
+        self._attr_is_on = states.get(value.value, None)
         self.async_write_ha_state()
 
 

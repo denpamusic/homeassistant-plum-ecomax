@@ -1,6 +1,5 @@
 """Test Plum ecoMAX setup process."""
 
-import asyncio
 from typing import Final
 from unittest.mock import AsyncMock, Mock, patch
 
@@ -76,7 +75,7 @@ async def test_setup_and_unload_entry(
     # Test with exception.
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.async_setup",
-        side_effect=asyncio.TimeoutError,
+        side_effect=TimeoutError,
     ), pytest.raises(ConfigEntryNotReady) as exc_info:
         await async_setup_entry(hass, config_entry)
 
@@ -220,7 +219,7 @@ async def test_migrate_entry_with_timeout(
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.get_device",
         create=True,
-        side_effect=asyncio.TimeoutError,
+        side_effect=TimeoutError,
     ):
         assert not await async_migrate_entry(hass, config_entry)
 
