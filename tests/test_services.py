@@ -1,7 +1,5 @@
 """Test Plum ecoMAX services."""
 
-
-import asyncio
 from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_NAME
@@ -151,7 +149,7 @@ async def test_get_parameter_service(
 
     # Test timing out while trying to get a parameter.
     with pytest.raises(HomeAssistantError) as exc_info, patch(
-        "pyplumio.devices.Device.get", side_effect=asyncio.TimeoutError
+        "pyplumio.devices.Device.get", side_effect=TimeoutError
     ):
         await hass.services.async_call(
             DOMAIN,
@@ -302,7 +300,7 @@ async def test_set_parameter_service(
 
     # Test timing out while trying to set a parameter.
     with pytest.raises(HomeAssistantError) as exc_info, patch(
-        "pyplumio.devices.Device.set", side_effect=asyncio.TimeoutError
+        "pyplumio.devices.Device.set", side_effect=TimeoutError
     ) as mock_set:
         await hass.services.async_call(
             DOMAIN,

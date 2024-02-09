@@ -1,6 +1,5 @@
 """Test Plum ecoMAX connection."""
 
-import asyncio
 import logging
 from typing import Any, Final
 from unittest.mock import AsyncMock, Mock, patch
@@ -101,12 +100,10 @@ async def test_async_setup(
 ) -> None:
     """Test connection setup."""
     mock_ecomax = Mock(spec=EcoMAX)
-    mock_ecomax.wait_for = AsyncMock(
-        side_effect=(True, True, True, asyncio.TimeoutError)
-    )
+    mock_ecomax.wait_for = AsyncMock(side_effect=(True, True, True, TimeoutError))
     mock_connection = Mock(spec=TcpConnection)
     mock_connection.configure_mock(host=tcp_config_data.get(CONF_HOST))
-    mock_connection.get = AsyncMock(side_effect=(mock_ecomax, asyncio.TimeoutError))
+    mock_connection.get = AsyncMock(side_effect=(mock_ecomax, TimeoutError))
     connection = EcomaxConnection(hass, config_entry, mock_connection)
 
     # Test config not ready when device property is not set.
@@ -140,7 +137,7 @@ async def test_async_setup(
     )
 
     # Check with device timeout.
-    with pytest.raises(asyncio.TimeoutError):
+    with pytest.raises(TimeoutError):
         await connection.async_setup()
 
 

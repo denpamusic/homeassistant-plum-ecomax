@@ -75,7 +75,7 @@ def bypass_pyplumio_events():
     """Bypass pyplumio event system."""
     with patch(
         "pyplumio.helpers.event_manager.EventManager.create_event",
-        side_effect=asyncio.TimeoutError,
+        side_effect=TimeoutError,
     ):
         yield
 

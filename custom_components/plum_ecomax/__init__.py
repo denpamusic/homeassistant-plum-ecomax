@@ -1,7 +1,6 @@
 """The Plum ecoMAX integration."""
 from __future__ import annotations
 
-import asyncio
 from contextlib import suppress
 import logging
 from typing import Final
@@ -77,7 +76,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     try:
         await connection.async_setup()
-    except asyncio.TimeoutError as e:
+    except TimeoutError as e:
         await connection.close()
         raise ConfigEntryNotReady(
             translation_domain=DOMAIN,
@@ -176,7 +175,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         hass.config_entries.async_update_entry(config_entry, data=data)
         await connection.close()
         _LOGGER.info("Migration to version %s successful", config_entry.version)
-    except asyncio.TimeoutError:
+    except TimeoutError:
         _LOGGER.error("Migration failed, device has failed to respond in time")
         return False
 
