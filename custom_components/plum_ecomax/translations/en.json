@@ -12,7 +12,6 @@
       "unknown": "Unexpected error"
     },
     "progress": {
-      "wait_for_device": "Establishing connection to the device...",
       "identify_device": "Checking the device model...",
       "discover_modules": "Discovering modules for the {model}..."
     },

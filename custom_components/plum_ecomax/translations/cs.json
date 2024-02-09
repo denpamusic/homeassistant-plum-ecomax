@@ -12,7 +12,6 @@
       "unknown": "Neočekávaná chyba"
     },
     "progress": {
-      "wait_for_device": "Navazování připojení k zařízení...",
       "identify_device": "Kontrola modelu zařízení...",
       "discover_modules": "Objevování modulů pro {model}..."
     },

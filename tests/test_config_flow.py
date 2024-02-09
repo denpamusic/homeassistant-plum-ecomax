@@ -103,7 +103,7 @@ async def test_form_tcp(
     mock_connection = Mock(spec=TcpConnection)
     mock_connection.get = AsyncMock(return_value=ecomax_p)
 
-    # Wait for the device.
+    # Identify the device.
     with patch(
         "custom_components.plum_ecomax.config_flow.async_get_connection_handler",
         return_value=mock_connection,
@@ -114,25 +114,19 @@ async def test_form_tcp(
         await hass.async_block_till_done()
 
     assert result3["type"] == FlowResultType.SHOW_PROGRESS
-    assert result3["step_id"] == "device"
+    assert result3["step_id"] == "identify"
 
-    # Identify the device.
+    # Discover connected modules.
     result4 = await hass.config_entries.flow.async_configure(result3["flow_id"])
     await hass.async_block_till_done()
     assert result4["type"] == FlowResultType.SHOW_PROGRESS
-    assert result4["step_id"] == "identify"
-
-    # Discover connected modules.
-    result5 = await hass.config_entries.flow.async_configure(result4["flow_id"])
-    await hass.async_block_till_done()
-    assert result5["type"] == FlowResultType.SHOW_PROGRESS
-    assert result5["step_id"] == "discover"
+    assert result4["step_id"] == "discover"
 
     # Finish the config flow.
-    result6 = await hass.config_entries.flow.async_configure(result5["flow_id"])
-    assert result6["type"] == FlowResultType.CREATE_ENTRY
-    assert result6["title"] == "ecoMAX 850P2-C"
-    assert result6["data"] == {
+    result5 = await hass.config_entries.flow.async_configure(result4["flow_id"])
+    assert result5["type"] == FlowResultType.CREATE_ENTRY
+    assert result5["title"] == "ecoMAX 850P2-C"
+    assert result5["data"] == {
         CONF_HOST: "localhost",
         CONF_PORT: DEFAULT_PORT,
         CONF_CONNECTION_TYPE: CONNECTION_TYPE_TCP,
@@ -202,7 +196,7 @@ async def test_form_serial(
     mock_connection = Mock(spec=SerialConnection)
     mock_connection.get = AsyncMock(return_value=ecomax_p)
 
-    # Wait for the device.
+    # Identify the device.
     with patch(
         "custom_components.plum_ecomax.config_flow.async_get_connection_handler",
         return_value=mock_connection,
@@ -213,22 +207,16 @@ async def test_form_serial(
         await hass.async_block_till_done()
 
     assert result3["type"] == FlowResultType.SHOW_PROGRESS
-    assert result3["step_id"] == "device"
+    assert result3["step_id"] == "identify"
 
-    # Identify the device.
+    # Discover connected modules.
     result4 = await hass.config_entries.flow.async_configure(result3["flow_id"])
     await hass.async_block_till_done()
     assert result4["type"] == FlowResultType.SHOW_PROGRESS
-    assert result4["step_id"] == "identify"
-
-    # Discover connected modules.
-    result5 = await hass.config_entries.flow.async_configure(result4["flow_id"])
-    await hass.async_block_till_done()
-    assert result5["type"] == FlowResultType.SHOW_PROGRESS
-    assert result5["step_id"] == "discover"
+    assert result4["step_id"] == "discover"
 
     # Finish the config flow.
-    result6 = await hass.config_entries.flow.async_configure(result5["flow_id"])
+    result6 = await hass.config_entries.flow.async_configure(result4["flow_id"])
     assert result6["type"] == FlowResultType.CREATE_ENTRY
     assert result6["title"] == "ecoMAX 850P2-C"
     assert result6["data"] == {
@@ -264,7 +252,7 @@ async def test_abort_device_not_found(
     mock_connection = Mock(spec=TcpConnection)
     mock_connection.get = AsyncMock(side_effect=TimeoutError)
 
-    # Wait for the device.
+    # Identify the device.
     with patch(
         "custom_components.plum_ecomax.config_flow.async_get_connection_handler",
         return_value=mock_connection,
@@ -275,7 +263,7 @@ async def test_abort_device_not_found(
         await hass.async_block_till_done()
 
     assert result3["type"] == FlowResultType.SHOW_PROGRESS
-    assert result3["step_id"] == "device"
+    assert result3["step_id"] == "identify"
 
     # Fail with device not found.
     result4 = await hass.config_entries.flow.async_configure(result3["flow_id"])
@@ -303,32 +291,24 @@ async def test_abort_unsupported_device(
     mock_connection = Mock(spec=TcpConnection)
     mock_connection.get = AsyncMock(return_value=ecomax_p)
 
-    # Wait for the device.
+    # Identify the device.
+    unknown_device_type = 2
     with patch(
         "custom_components.plum_ecomax.config_flow.async_get_connection_handler",
         return_value=mock_connection,
-    ):
+    ), patch.object(ecomax_p.data["product"], "type", unknown_device_type):
         result3 = await hass.config_entries.flow.async_configure(
             result2["flow_id"], tcp_user_input
         )
         await hass.async_block_till_done()
 
     assert result3["type"] == FlowResultType.SHOW_PROGRESS
-    assert result3["step_id"] == "device"
-
-    # Identify the device.
-    unknown_device_type = 2
-    with patch.object(ecomax_p.data["product"], "type", unknown_device_type):
-        result4 = await hass.config_entries.flow.async_configure(result3["flow_id"])
-        await hass.async_block_till_done()
-
-    assert result4["type"] == FlowResultType.SHOW_PROGRESS
-    assert result4["step_id"] == "identify"
+    assert result3["step_id"] == "identify"
 
     # Fail with unsupported device.
-    result5 = await hass.config_entries.flow.async_configure(result4["flow_id"])
-    assert result5["type"] == FlowResultType.ABORT
-    assert result5["reason"] == "unsupported_device"
+    result4 = await hass.config_entries.flow.async_configure(result3["flow_id"])
+    assert result4["type"] == FlowResultType.ABORT
+    assert result4["reason"] == "unsupported_device"
 
 
 async def test_abort_discovery_failed(
@@ -351,7 +331,7 @@ async def test_abort_discovery_failed(
     mock_connection = Mock(spec=TcpConnection)
     mock_connection.get = AsyncMock(return_value=ecomax_p)
 
-    # Wait for the device.
+    # Identify the device.
     with patch(
         "custom_components.plum_ecomax.config_flow.async_get_connection_handler",
         return_value=mock_connection,
@@ -362,21 +342,15 @@ async def test_abort_discovery_failed(
         await hass.async_block_till_done()
 
     assert result3["type"] == FlowResultType.SHOW_PROGRESS
-    assert result3["step_id"] == "device"
-
-    # Identify the device.
-    result4 = await hass.config_entries.flow.async_configure(result3["flow_id"])
-    await hass.async_block_till_done()
-    assert result4["type"] == FlowResultType.SHOW_PROGRESS
-    assert result4["step_id"] == "identify"
+    assert result3["step_id"] == "identify"
 
     # Discover connected modules.
     with patch("pyplumio.devices.ecomax.EcoMAX.get", side_effect=TimeoutError):
-        result5 = await hass.config_entries.flow.async_configure(result4["flow_id"])
+        result4 = await hass.config_entries.flow.async_configure(result3["flow_id"])
         await hass.async_block_till_done()
 
-    assert result5["type"] == FlowResultType.SHOW_PROGRESS
-    assert result5["step_id"] == "discover"
+    assert result4["type"] == FlowResultType.SHOW_PROGRESS
+    assert result4["step_id"] == "discover"
 
     # Fail with module discovery failure.
     result5 = await hass.config_entries.flow.async_configure(result4["flow_id"])
@@ -404,7 +378,7 @@ async def test_abort_already_configured(
     mock_connection = Mock(spec=TcpConnection)
     mock_connection.get = AsyncMock(return_value=ecomax_p)
 
-    # Wait for the device.
+    # Identify the device.
     with patch(
         "custom_components.plum_ecomax.config_flow.async_get_connection_handler",
         return_value=mock_connection,
@@ -415,21 +389,16 @@ async def test_abort_already_configured(
         await hass.async_block_till_done()
 
     assert result3["type"] == FlowResultType.SHOW_PROGRESS
-    assert result3["step_id"] == "device"
-
-    # Identify the device.
-    result4 = await hass.config_entries.flow.async_configure(result3["flow_id"])
-    await hass.async_block_till_done()
-    assert result4["type"] == FlowResultType.SHOW_PROGRESS
-    assert result4["step_id"] == "identify"
+    assert result3["step_id"] == "identify"
 
     # Fail with device already configured.
     mock_config_entry = Mock(spec=config_entries.ConfigEntry)
     mock_config_entry.unique_id = ecomax_p.get_nowait("product").uid
     with patch(
-        "homeassistant.config_entries.ConfigEntries.async_entries",
-        return_value=[mock_config_entry],
+        "homeassistant.config_entries.ConfigEntries.async_entry_for_domain_unique_id",
+        return_value=mock_config_entry,
     ):
-        result5 = await hass.config_entries.flow.async_configure(result4["flow_id"])
-        assert result5["type"] == FlowResultType.ABORT
-        assert result5["reason"] == "already_configured"
+        result4 = await hass.config_entries.flow.async_configure(result3["flow_id"])
+
+    assert result4["type"] == FlowResultType.ABORT
+    assert result4["reason"] == "already_configured"

@@ -12,7 +12,6 @@
       "unknown": "Erreur inattendue"
     },
     "progress": {
-      "wait_for_device": "Établissement de la connexion à l'appareil...",
       "identify_device": "Vérification du modèle d'appareil...",
       "discover_modules": "Découverte des modules de {model}..."
     },

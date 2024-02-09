@@ -12,7 +12,6 @@
       "unknown": "Niespodziewany błąd"
     },
     "progress": {
-      "wait_for_device": "Nawiązywanie połączenia z urządzeniem...",
       "identify_device": "Sprawdzanie modelu urządzenia...",
       "discover_modules": "Wykrywanie modułów dla {model}..."
     },
