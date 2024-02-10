@@ -117,7 +117,7 @@ async def test_thermostat(
 ) -> None:
     """Test thermostat."""
     await setup_integration(hass, config_entry)
-    thermostat_entity_id = "climate.ecomax_thermostat"
+    thermostat_entity_id = "climate.ecomax_thermostat_1_thermostat"
     thermostat_state_key = "state"
     thermostat_contacts_key = "contacts"
     thermostat_current_temperature_key = "current_temp"
@@ -146,7 +146,7 @@ async def test_thermostat(
     assert state.attributes[ATTR_CURRENT_TEMPERATURE] == 0
     assert state.attributes[ATTR_HVAC_ACTION] == HVACAction.IDLE
     assert state.attributes[ATTR_PRESET_MODE] == PRESET_SCHEDULE
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Thermostat"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Thermostat 1 Thermostat"
 
     # Dispatch new room temperature.
     frozen_time.move_to("12:00:10")
@@ -224,7 +224,7 @@ async def test_thermostat_presets(
 ) -> None:
     """Test thermostat presets."""
     await setup_integration(hass, config_entry)
-    thermostat_entity_id = "climate.ecomax_thermostat"
+    thermostat_entity_id = "climate.ecomax_thermostat_1_thermostat"
     thermostat_mode_key = "mode"
     thermostat_target_temperature_key = "target_temp"
     thermostat_day_target_temperature_key = "day_target_temp"

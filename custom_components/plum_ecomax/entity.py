@@ -6,11 +6,12 @@ from typing import Any, cast, final
 
 from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 from pyplumio.const import ProductType
-from pyplumio.devices import Device
+from pyplumio.devices import Device as BaseDevice
 from pyplumio.devices.mixer import Mixer
+from pyplumio.devices.thermostat import Thermostat
 
 from .connection import EcomaxConnection
-from .const import ATTR_MIXERS, DOMAIN, MANUFACTURER
+from .const import ATTR_MIXERS, ATTR_THERMOSTATS, DOMAIN, MANUFACTURER, Device
 
 
 class EcomaxEntity(ABC):
@@ -41,7 +42,7 @@ class EcomaxEntity(ABC):
         self.device.unsubscribe(self.entity_description.key, self.async_update)
 
     @property
-    def device(self) -> Device:
+    def device(self) -> BaseDevice:
         """Return the device handler."""
         return self.connection.device
 
@@ -92,6 +93,40 @@ class EcomaxEntity(ABC):
         """Update entity state."""
 
 
+class ThermostatEntity(EcomaxEntity):
+    """Represents a thermostat entity."""
+
+    index: int
+
+    @property
+    def unique_id(self) -> str:
+        """Return the unique ID."""
+        return (
+            f"{self.connection.uid}-thermostat-"
+            + f"{self.index}-{self.entity_description.key}"
+        )
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return the device info."""
+        return DeviceInfo(
+            name=f"{self.connection.name} Thermostat {self.index + 1}",
+            identifiers={
+                (DOMAIN, f"{self.connection.uid}-{Device.THERMOSTAT}-{self.index}")
+            },
+            manufacturer=MANUFACTURER,
+            model=f"{self.connection.model} (Thermostat {self.index + 1})",
+            sw_version=self.connection.software,
+            via_device=(DOMAIN, self.connection.uid),
+        )
+
+    @final
+    @property
+    def device(self) -> Thermostat:
+        """Return the mixer handler."""
+        return self.connection.device.data[ATTR_THERMOSTATS][self.index]
+
+
 class MixerEntity(EcomaxEntity):
     """Represents a mixer entity."""
 
@@ -119,7 +154,9 @@ class MixerEntity(EcomaxEntity):
         """Return the device info."""
         return DeviceInfo(
             name=f"{self.connection.name} {self.device_name} {self.index + 1}",
-            identifiers={(DOMAIN, f"{self.connection.uid}-mixer-{self.index}")},
+            identifiers={
+                (DOMAIN, f"{self.connection.uid}-{Device.MIXER}-{self.index}")
+            },
             manufacturer=MANUFACTURER,
             model=f"{self.connection.model} ({self.device_name} {self.index + 1})",
             sw_version=self.connection.software,

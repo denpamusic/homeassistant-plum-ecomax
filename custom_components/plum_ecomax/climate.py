@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import Any, Final, cast, overload
+from typing import Any, Final, overload
 
 from homeassistant.components.climate import (
     PRESET_AWAY,
@@ -24,13 +24,12 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
-from pyplumio.devices.thermostat import Thermostat
 from pyplumio.filters import on_change, throttle
 from pyplumio.structures.thermostat_parameters import ThermostatParameter
 
 from .connection import EcomaxConnection
-from .const import ATTR_THERMOSTATS, DOMAIN
-from .entity import EcomaxEntity
+from .const import DOMAIN
+from .entity import ThermostatEntity
 
 TEMPERATURE_STEP: Final = 0.1
 
@@ -80,10 +79,8 @@ _LOGGER = logging.getLogger(__name__)
 class EcomaxClimateEntityDescription(ClimateEntityDescription):
     """Describes an ecoMAX climate entity."""
 
-    index: int
 
-
-class EcomaxClimate(EcomaxEntity, ClimateEntity):
+class EcomaxClimate(ThermostatEntity, ClimateEntity):
     """Represents an ecoMAX climate entity."""
 
     _attr_available = True
@@ -99,14 +96,13 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
     _attr_target_temperature_step = TEMPERATURE_STEP
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
 
-    def __init__(self, connection: EcomaxConnection, thermostat: Thermostat):
+    def __init__(self, connection: EcomaxConnection, index: int):
         """Initialize a new ecoMAX climate entity."""
         self.connection = connection
         self.entity_description = EcomaxClimateEntityDescription(
-            key=f"thermostat-{thermostat.index}",
-            translation_key="ecomax_climate",
-            index=thermostat.index,
+            key="thermostat", translation_key="thermostat"
         )
+        self.index = index
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
@@ -241,16 +237,6 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         return schedule_preset
 
     @property
-    def device(self) -> Thermostat:
-        """Return the thermostat object."""
-        return cast(
-            Thermostat,
-            self.connection.device.data[ATTR_THERMOSTATS][
-                self.entity_description.index
-            ],
-        )
-
-    @property
     def target_temperature_name(self) -> str | None:
         """Return the target temperature name."""
         return self._attr_target_temperature_name
@@ -267,8 +253,7 @@ async def async_setup_entry(
 
     if connection.has_thermostats and await connection.async_setup_thermostats():
         async_add_entities(
-            EcomaxClimate(connection, thermostat)
-            for thermostat in connection.device.thermostats.values()
+            EcomaxClimate(connection, index) for index in connection.device.thermostats
         )
         return True
 

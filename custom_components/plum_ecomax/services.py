@@ -41,6 +41,7 @@ from .const import (
     ATTR_PRODUCT,
     ATTR_SCHEDULES,
     ATTR_START,
+    ATTR_THERMOSTATS,
     ATTR_TYPE,
     ATTR_VALUE,
     ATTR_WEEKDAYS,
@@ -112,13 +113,17 @@ def async_extract_target_device(
         )
 
     identifier = list(device.identifiers)[0][1]
-    if "-mixer-" in identifier:
-        index = int(identifier.split("-", 3).pop())
-        mixers: dict[int, Device] = connection.device.data.get(ATTR_MIXERS, {})
-        try:
-            return mixers[index]
-        except KeyError:
-            pass
+
+    for device_type in (ATTR_MIXERS, ATTR_THERMOSTATS):
+        if f"-{device_type[:-1]}-" in identifier:
+            index = int(identifier.split("-", 3).pop())
+            sub_devices: dict[int, Device] = connection.device.get_nowait(
+                device_type, {}
+            )
+            try:
+                return sub_devices[index]
+            except KeyError:
+                pass
 
     return connection.device
 

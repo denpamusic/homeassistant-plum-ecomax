@@ -16,7 +16,6 @@ from pyplumio.structures.mixer_parameters import ATTR_MIXER_PARAMETERS
 from pyplumio.structures.thermostat_parameters import ATTR_THERMOSTAT_PARAMETERS
 import pytest
 
-from custom_components.plum_ecomax.climate import ATTR_THERMOSTATS
 from custom_components.plum_ecomax.connection import (
     DEFAULT_TIMEOUT,
     EcomaxConnection,
@@ -26,6 +25,7 @@ from custom_components.plum_ecomax.connection import (
 from custom_components.plum_ecomax.const import (
     ATTR_MIXERS,
     ATTR_REGDATA,
+    ATTR_THERMOSTATS,
     ATTR_WATER_HEATER,
     CONF_HOST,
     CONF_MODEL,
