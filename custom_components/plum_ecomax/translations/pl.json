@@ -59,7 +59,7 @@
       "detect_sub_devices": { "name": "Wykryj urządzenia podrzędne" }
     },
     "climate": {
-      "ecomax_climate": {
+      "thermostat": {
         "name": "Termostat",
         "state_attributes": {
           "preset_mode": {

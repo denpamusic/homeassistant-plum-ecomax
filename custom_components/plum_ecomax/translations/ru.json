@@ -59,7 +59,7 @@
       "detect_sub_devices": { "name": "Определить модули" }
     },
     "climate": {
-      "ecomax_climate": {
+      "thermostat": {
         "name": "Термостат",
         "state_attributes": {
           "preset_mode": {

@@ -129,7 +129,7 @@ async def test_thermostat(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(thermostat_entity_id)
     assert entry
-    assert entry.translation_key == "ecomax_climate"
+    assert entry.translation_key == "thermostat"
     assert (
         entry.supported_features
         == ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE
