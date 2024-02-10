@@ -171,7 +171,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Identify the device."""
-        if not self.identify_task:
+        if self.identify_task is None:
             self.identify_task = self.hass.async_create_task(
                 self._async_identify_device()
             )
@@ -201,7 +201,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         """Discover connected modules."""
         await self._async_set_unique_id(self.init_info[CONF_UID])
 
-        if not self.discover_task:
+        if self.discover_task is None:
             self.discover_task = self.hass.async_create_task(
                 self._async_discover_modules()
             )

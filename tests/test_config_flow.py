@@ -216,10 +216,10 @@ async def test_form_serial(
     assert result4["step_id"] == "discover"
 
     # Finish the config flow.
-    result6 = await hass.config_entries.flow.async_configure(result4["flow_id"])
-    assert result6["type"] == FlowResultType.CREATE_ENTRY
-    assert result6["title"] == "ecoMAX 850P2-C"
-    assert result6["data"] == {
+    result5 = await hass.config_entries.flow.async_configure(result4["flow_id"])
+    assert result5["type"] == FlowResultType.CREATE_ENTRY
+    assert result5["title"] == "ecoMAX 850P2-C"
+    assert result5["data"] == {
         CONF_DEVICE: DEFAULT_DEVICE,
         CONF_BAUDRATE: DEFAULT_BAUDRATE,
         CONF_CONNECTION_TYPE: CONNECTION_TYPE_SERIAL,
