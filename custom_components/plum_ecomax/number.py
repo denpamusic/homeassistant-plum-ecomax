@@ -34,7 +34,6 @@ class EcomaxNumberEntityDescription(NumberEntityDescription):
 
     product_types: set[ProductType] | Literal["all"] = ALL
     filter_fn: Callable[[Any], Any] = on_change
-    mode: NumberMode = NumberMode.AUTO
     module: str = Module.A
 
 
