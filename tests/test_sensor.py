@@ -69,6 +69,7 @@ from custom_components.plum_ecomax.const import (
     DEVICE_CLASS_STATE,
     DOMAIN,
     FLOW_KGH,
+    Module,
 )
 from custom_components.plum_ecomax.sensor import (
     SERVICE_CALIBRATE_METER,
@@ -432,9 +433,9 @@ async def test_connected_modules_sensor(
     assert state.state == "3"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Connected modules"
     assert state.attributes[ATTR_ICON] == "mdi:raspberry-pi"
-    assert state.attributes["module_a"] == "6.10.32.K1"
-    assert state.attributes["ecolambda"] == "0.8.0"
-    assert state.attributes["panel"] == "6.30.36"
+    assert state.attributes[Module.A] == "6.10.32.K1"
+    assert state.attributes[Module.ECOLAMBDA] == "0.8.0"
+    assert state.attributes[Module.PANEL] == "6.30.36"
 
     # Dispatch new value.
     await connection.device.dispatch(
@@ -442,7 +443,7 @@ async def test_connected_modules_sensor(
     )
     state = hass.states.get(connected_modules_entity_id)
     assert state.state == "1"
-    assert state.attributes["module_a"] == "1.0.0.T0"
+    assert state.attributes[Module.A] == "1.0.0.T0"
 
 
 @pytest.mark.usefixtures("ecomax_p")
