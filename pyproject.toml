@@ -50,6 +50,11 @@ exclude = [
     ".vscode"
 ]
 
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_incomplete_defs = false
+disallow_untyped_defs = false
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 

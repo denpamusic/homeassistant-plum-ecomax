@@ -96,7 +96,7 @@ async def test_async_get_sub_devices(ecomax_p: EcoMAX, caplog) -> None:
 async def test_async_setup(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
-    tcp_config_data: dict[str, str],
+    tcp_config_data: dict[str, Any],
 ) -> None:
     """Test connection setup."""
     mock_ecomax = Mock(spec=EcoMAX)

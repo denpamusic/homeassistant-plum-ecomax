@@ -11,6 +11,6 @@ def keys_to_int(data: dict[str, Any]) -> dict[int, Any]:
     return {int(k): v for k, v in data.items()}
 
 
-def load_regdata_fixture(filename: str) -> str:
+def load_regdata_fixture(filename: str):
     """Load regdata fixture."""
     return json.loads(load_fixture(filename), object_hook=keys_to_int)
