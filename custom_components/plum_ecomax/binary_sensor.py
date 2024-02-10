@@ -20,7 +20,7 @@ from pyplumio.filters import on_change
 from pyplumio.structures.modules import ConnectedModules
 
 from .connection import EcomaxConnection
-from .const import ALL, DOMAIN, MODULE_A
+from .const import ALL, DOMAIN, Module
 from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ class EcomaxBinarySensorEntityDescription(BinarySensorEntityDescription):
     always_available: bool = False
     filter_fn: Callable[[Any], Any] = on_change
     icon_off: str | None = None
-    module: str = MODULE_A
+    module: str = Module.A
 
 
 BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (

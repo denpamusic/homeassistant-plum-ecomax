@@ -46,8 +46,8 @@ from .const import (
     DEFAULT_DEVICE,
     DEFAULT_PORT,
     DOMAIN,
-    ECOMAX,
     MANUFACTURER,
+    Device,
 )
 
 DEFAULT_TIMEOUT: Final = 15
@@ -139,7 +139,9 @@ class EcomaxConnection:
     async def async_setup(self) -> None:
         """Set up ecoMAX connection."""
         await self.connect()
-        device: AddressableDevice = await self.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
+        device: AddressableDevice = await self.get(
+            Device.ECOMAX, timeout=DEFAULT_TIMEOUT
+        )
         for required in (ATTR_LOADED, ATTR_SENSORS, ATTR_ECOMAX_PARAMETERS):
             await device.wait_for(required, timeout=DEFAULT_TIMEOUT)
 

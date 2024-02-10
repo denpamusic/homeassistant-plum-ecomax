@@ -46,7 +46,7 @@ from .const import (
     DEFAULT_DEVICE,
     DEFAULT_PORT,
     DOMAIN,
-    ECOMAX,
+    Device,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -263,7 +263,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
         self.device = cast(
             AddressableDevice,
-            await self.connection.get(ECOMAX, timeout=DEFAULT_TIMEOUT),
+            await self.connection.get(Device.ECOMAX, timeout=DEFAULT_TIMEOUT),
         )
         product: ProductInfo = await self.device.get(
             ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT

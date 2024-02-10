@@ -4,22 +4,23 @@ from enum import StrEnum, unique
 from typing import Final
 
 DOMAIN = "plum_ecomax"
-MANUFACTURER: Final = "Plum Sp. z o.o."
 
 # Generic constants.
 ALL: Final = "all"
+MANUFACTURER: Final = "Plum Sp. z o.o."
 
 # Generic attributes.
 ATTR_BURNED_SINCE_LAST_UPDATE: Final = "burned_since_last_update"
 ATTR_END: Final = "end"
+ATTR_FIRMWARE: Final = "firmware"
 ATTR_FROM: Final = "from"
 ATTR_LOADED: Final = "loaded"
 ATTR_MIXERS: Final = "mixers"
 ATTR_MODULES: Final = "modules"
 ATTR_NUMERIC_STATE: Final = "numeric_state"
 ATTR_PASSWORD: Final = "password"
-ATTR_PRODUCT: Final = "product"
 ATTR_PRESET: Final = "preset"
+ATTR_PRODUCT: Final = "product"
 ATTR_REGDATA: Final = "regdata"
 ATTR_SCHEDULES: Final = "schedules"
 ATTR_SENSORS: Final = "sensors"
@@ -30,17 +31,6 @@ ATTR_TYPE: Final = "type"
 ATTR_VALUE: Final = "value"
 ATTR_WATER_HEATER: Final = "water_heater"
 ATTR_WEEKDAYS: Final = "weekdays"
-ATTR_FIRMWARE: Final = "firmware"
-
-# Devices.
-ECOMAX: Final = "ecomax"
-ECOLAMBDA: Final = "ecolambda"
-ECOSTER: Final = "ecoster"
-
-# Modules.
-MODULE_A: Final = "module_a"
-MODULE_B: Final = "module_b"
-MODULE_C: Final = "module_c"
 
 # Baudrates.
 # (should be listed as strings due to the visual bug in hass selectors)
@@ -65,29 +55,29 @@ WEEKDAYS: Final[tuple[str, ...]] = (
 )
 
 # Configuration flow.
+CONF_BAUDRATE: Final = "baudrate"
 CONF_CAPABILITIES: Final = "capabilities"
 CONF_CONNECTION_TYPE: Final = "connection_type"
 CONF_DEVICE: Final = "device"
-CONF_BAUDRATE: Final = "baudrate"
 CONF_HOST: Final = "host"
 CONF_MODEL: Final = "model"
 CONF_PORT: Final = "port"
-CONF_PRODUCT_TYPE: Final = "product_type"
 CONF_PRODUCT_ID: Final = "product_id"
+CONF_PRODUCT_TYPE: Final = "product_type"
 CONF_SOFTWARE: Final = "software"
 CONF_SUB_DEVICES: Final = "sub_devices"
 CONF_TITLE: Final = "title"
 CONF_UID: Final = "uid"
 
 # Connection types.
-CONNECTION_TYPE_TCP: Final = "TCP"
 CONNECTION_TYPE_SERIAL: Final = "Serial"
+CONNECTION_TYPE_TCP: Final = "TCP"
 CONNECTION_TYPES: Final = (CONNECTION_TYPE_TCP, CONNECTION_TYPE_SERIAL)
 
 # Defaults.
+DEFAULT_BAUDRATE: Final = BAUDRATES[-1]
 DEFAULT_CONNECTION_TYPE: Final = CONNECTION_TYPE_TCP
 DEFAULT_DEVICE: Final = "/dev/ttyUSB0"
-DEFAULT_BAUDRATE: Final = BAUDRATES[-1]
 DEFAULT_PORT: Final = 8899
 
 # Units of measurement.
@@ -102,10 +92,30 @@ DEVICE_CLASS_STATE: Final = "plum_ecomax__state"
 DEVICE_CLASS_METER: Final = "plum_ecomax__meter"
 
 
-# Device models.
+@unique
+class Device(StrEnum):
+    """Known devices, represented by PyPlumIO's Device class."""
+
+    ECOMAX = "ecomax"
+    MIXER = "mixer"
+    THERMOSTAT = "thermostat"
+
+
+@unique
+class Module(StrEnum):
+    """Known ecoMAX modules."""
+
+    A = "module_a"
+    B = "module_b"
+    C = "module_c"
+    ECOLAMBDA = "ecolambda"
+    ECOSTER = "ecoster"
+    PANEL = "panel"
+
+
 @unique
 class ProductModel(StrEnum):
-    """Contains known device models."""
+    """Known ecoMAX models."""
 
     ECOMAX_350P2_ZF = "ecoMAX 350P2-ZF"
     ECOMAX_850I = "ecoMAX 850i"

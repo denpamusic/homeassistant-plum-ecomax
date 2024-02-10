@@ -16,7 +16,7 @@ from pyplumio.filters import on_change
 from pyplumio.structures.modules import ConnectedModules
 
 from .connection import EcomaxConnection
-from .const import ALL, DOMAIN, MODULE_A
+from .const import ALL, DOMAIN, Module
 from .entity import EcomaxEntity, MixerEntity
 
 STATE_AUTO: Final = "auto"
@@ -33,7 +33,7 @@ class EcomaxSelectEntityDescription(SelectEntityDescription):
 
     product_types: set[ProductType] | Literal["all"] = ALL
     filter_fn: Callable[[Any], Any] = on_change
-    module: str = MODULE_A
+    module: str = Module.A
 
 
 SELECT_TYPES: tuple[EcomaxSelectEntityDescription, ...] = (

@@ -18,7 +18,7 @@ from pyplumio.helpers.typing import ParameterValueType
 from pyplumio.structures.modules import ConnectedModules
 
 from .connection import EcomaxConnection
-from .const import ALL, DOMAIN, MODULE_A
+from .const import ALL, DOMAIN, Module
 from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ class EcomaxSwitchEntityDescription(SwitchEntityDescription):
 
     product_types: set[ProductType] | Literal["all"] = ALL
     filter_fn: Callable[[Any], Any] = on_change
-    module: str = MODULE_A
+    module: str = Module.A
     state_off: ParameterValueType = STATE_OFF
     state_on: ParameterValueType = STATE_ON
 

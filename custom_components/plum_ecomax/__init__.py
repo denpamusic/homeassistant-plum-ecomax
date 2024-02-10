@@ -36,8 +36,8 @@ from .const import (
     CONF_SUB_DEVICES,
     DEFAULT_CONNECTION_TYPE,
     DOMAIN,
-    ECOMAX,
     EVENT_PLUM_ECOMAX_ALERT,
+    Device,
 )
 from .services import async_setup_services
 
@@ -153,7 +153,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
     data = {**config_entry.data}
 
     try:
-        device = await connection.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
+        device = await connection.get(Device.ECOMAX, timeout=DEFAULT_TIMEOUT)
 
         if config_entry.version in (1, 2):
             product = await device.get(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
