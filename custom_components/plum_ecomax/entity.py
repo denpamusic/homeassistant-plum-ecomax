@@ -124,7 +124,9 @@ class ThermostatEntity(EcomaxEntity):
     @property
     def device(self) -> Thermostat:
         """Return the mixer handler."""
-        return self.connection.device.data[ATTR_THERMOSTATS][self.index]
+        return cast(
+            Thermostat, self.connection.device.data[ATTR_THERMOSTATS][self.index]
+        )
 
 
 class MixerEntity(EcomaxEntity):
