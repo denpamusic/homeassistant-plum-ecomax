@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import datetime as dt
 import logging
-from typing import Any, Final
+from typing import Any, Final, Literal, cast
 
 from homeassistant.const import ATTR_NAME, STATE_OFF, STATE_ON
 from homeassistant.core import (
@@ -114,7 +114,7 @@ def async_extract_target_device(
     identifier = list(device.identifiers)[0][1]
     if "-mixer-" in identifier:
         index = int(identifier.split("-", 3).pop())
-        mixers = connection.device.data.get(ATTR_MIXERS, {})
+        mixers: dict[int, Device] = connection.device.data.get(ATTR_MIXERS, {})
         try:
             return mixers[index]
         except KeyError:
@@ -213,7 +213,7 @@ def async_setup_get_parameter_service(
 async def async_set_device_parameter(device: Device, name: str, value: float) -> bool:
     """Set device parameter."""
     try:
-        return await device.set(name, value, timeout=DEFAULT_TIMEOUT)
+        return cast(bool, await device.set(name, value, timeout=DEFAULT_TIMEOUT))
     except TypeError as e:
         raise ServiceValidationError(
             str(e),
@@ -270,7 +270,9 @@ def async_setup_set_parameter_service(
     )
 
 
-def async_schedule_day_to_dict(schedule_day: ScheduleDay):
+def async_schedule_day_to_dict(
+    schedule_day: ScheduleDay,
+) -> dict[str, Literal["day", "night"]]:
     """Format the schedule day as a dictionary."""
     return {
         (START_OF_DAY_DT + dt.timedelta(minutes=30 * index)).strftime(TIME_FORMAT): (

@@ -4,7 +4,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 import logging
 import math
-from typing import Any, Final
+from typing import Any, Final, cast
 
 from homeassistant.components.network import async_get_source_ip
 from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
@@ -129,7 +129,7 @@ class EcomaxConnection:
         self._hass = hass
         self.entry = entry
 
-    def __getattr__(self, name: str):
+    def __getattr__(self, name: str) -> Any:
         """Proxy calls to the underlying connection handler class."""
         if hasattr(self._connection, name):
             return getattr(self._connection, name)
@@ -148,12 +148,13 @@ class EcomaxConnection:
     async def async_setup_thermostats(self) -> bool:
         """Set up thermostats."""
         try:
-            return await self.device.request(
+            await self.device.request(
                 ATTR_THERMOSTAT_PARAMETERS,
                 FrameType.REQUEST_THERMOSTAT_PARAMETERS,
                 retries=5,
                 timeout=DEFAULT_TIMEOUT,
             )
+            return True
         except ValueError:
             _LOGGER.error("Timed out while trying to setup thermostats.")
             return False
@@ -161,12 +162,13 @@ class EcomaxConnection:
     async def async_setup_mixers(self) -> bool:
         """Set up mixers."""
         try:
-            return await self.device.request(
+            await self.device.request(
                 ATTR_MIXER_PARAMETERS,
                 FrameType.REQUEST_MIXER_PARAMETERS,
                 retries=5,
                 timeout=DEFAULT_TIMEOUT,
             )
+            return True
         except ValueError:
             _LOGGER.error("Timed out while trying to setup mixers.")
             return False
@@ -174,12 +176,13 @@ class EcomaxConnection:
     async def async_setup_regdata(self) -> bool:
         """Set up regulator data."""
         try:
-            return await self.device.request(
+            await self.device.request(
                 ATTR_REGDATA,
                 FrameType.REQUEST_REGULATOR_DATA_SCHEMA,
                 retries=5,
                 timeout=DEFAULT_TIMEOUT,
             )
+            return True
         except ValueError:
             _LOGGER.error("Timed out while trying to setup regulator data.")
             return False
@@ -222,32 +225,32 @@ class EcomaxConnection:
     @property
     def model(self) -> str:
         """Return the product model."""
-        return self.entry.data[CONF_MODEL]
+        return cast(str, self.entry.data[CONF_MODEL])
 
     @property
     def product_type(self) -> ProductType:
         """Return the product type."""
-        return self.entry.data[CONF_PRODUCT_TYPE]
+        return cast(ProductType, self.entry.data[CONF_PRODUCT_TYPE])
 
     @property
     def product_id(self) -> int:
         """Return the product id."""
-        return self.entry.data[CONF_PRODUCT_ID]
+        return cast(int, self.entry.data[CONF_PRODUCT_ID])
 
     @property
     def uid(self) -> str:
         """Return the product UID."""
-        return self.entry.data[CONF_UID]
+        return cast(str, self.entry.data[CONF_UID])
 
     @property
     def software(self) -> str:
         """Return the product software version."""
-        return self.entry.data[CONF_SOFTWARE]
+        return cast(str, self.entry.data[CONF_SOFTWARE])
 
     @property
     def name(self) -> str:
         """Return the connection name."""
-        return self.entry.title
+        return cast(str, self.entry.title)
 
     @property
     def connection(self) -> Connection:

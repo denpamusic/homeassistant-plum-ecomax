@@ -258,7 +258,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
     async def _async_identify_device(self) -> None:
         """Task to identify the device."""
+        # Tell mypy that once we here, connection is not None
         assert isinstance(self.connection, Connection)
+
         self.device = await self.connection.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
         product: ProductInfo = await self.device.get(
             ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT
@@ -280,7 +282,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
     async def _async_discover_modules(self) -> None:
         """Task to discover modules."""
+        # Tell mypy that once we here, device is not None
         assert isinstance(self.device, AddressableDevice)
+
         modules: ConnectedModules = await self.device.get(
             ATTR_MODULES, timeout=DEFAULT_TIMEOUT
         )

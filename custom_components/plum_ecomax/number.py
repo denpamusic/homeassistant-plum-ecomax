@@ -7,7 +7,6 @@ import logging
 from typing import Any, Literal, cast
 
 from homeassistant.components.number import (
-    EntityDescription,
     NumberDeviceClass,
     NumberEntity,
     NumberEntityDescription,
@@ -20,6 +19,7 @@ from homeassistant.helpers.typing import ConfigType
 from pyplumio.const import ProductType
 from pyplumio.filters import on_change
 from pyplumio.helpers.parameter import Parameter
+from pyplumio.structures.modules import ConnectedModules
 
 from .connection import EcomaxConnection
 from .const import ALL, CALORIFIC_KWH_KG, DOMAIN, MODULE_A
@@ -99,23 +99,11 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
 class EcomaxNumber(EcomaxEntity, NumberEntity):
     """Represents an ecoMAX number."""
 
-    _attr_mode: NumberMode = NumberMode.AUTO
-    _attr_native_max_value: float | None
-    _attr_native_min_value: float | None
-    _attr_native_value: float | None
-    _connection: EcomaxConnection
-    entity_description: EntityDescription
-
     def __init__(
         self, connection: EcomaxConnection, description: EcomaxNumberEntityDescription
     ):
         """Initialize a new ecoMAX number."""
-        self._attr_available = False
-        self._attr_mode = description.mode
-        self._attr_native_max_value = None
-        self._attr_native_min_value = None
-        self._attr_native_value = None
-        self._connection = connection
+        self.connection = connection
         self.entity_description = description
 
     async def async_set_native_value(self, value: float) -> None:
@@ -239,7 +227,8 @@ def get_by_product_type(
 
 
 def get_by_modules(
-    connected_modules, descriptions: Iterable[EcomaxNumberEntityDescription]
+    connected_modules: ConnectedModules,
+    descriptions: Iterable[EcomaxNumberEntityDescription],
 ) -> Generator[EcomaxNumberEntityDescription, None, None]:
     """Filter descriptions by connected modules."""
     for description in descriptions:
@@ -304,4 +293,5 @@ async def async_setup_entry(
     if connection.has_mixers and await connection.async_setup_mixers():
         entities.extend(async_setup_mixer_numbers(connection))
 
-    return async_add_entities(entities)
+    async_add_entities(entities)
+    return True

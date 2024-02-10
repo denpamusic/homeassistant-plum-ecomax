@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from collections.abc import Callable, Generator, Iterable
 from dataclasses import asdict, astuple, dataclass
-from datetime import date, datetime
 import logging
 from typing import Any, Final, Literal
 
@@ -26,7 +25,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers.entity import EntityCategory, EntityDescription
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import (
     AddEntitiesCallback,
     async_get_current_platform,
@@ -333,20 +332,14 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
 class EcomaxSensor(EcomaxEntity, SensorEntity):
     """Represents an ecoMAX sensor."""
 
-    _attr_native_value: StateType | date | datetime
-    _connection: EcomaxConnection
-    entity_description: EntityDescription
-
     def __init__(
         self, connection: EcomaxConnection, description: EcomaxSensorEntityDescription
     ):
         """Initialize a new ecoMAX sensor."""
-        self._attr_available = False
-        self._attr_native_value = None
-        self._connection = connection
+        self.connection = connection
         self.entity_description = description
 
-    async def async_update(self, value) -> None:
+    async def async_update(self, value: Any) -> None:
         """Update entity state."""
         self._attr_native_value = self.entity_description.value_fn(value)
 
@@ -456,9 +449,10 @@ METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
 class EcomaxMeter(RestoreSensor, EcomaxSensor):
     """Represents an ecoMAX sensor that restores previous value."""
 
-    _unrecorded_attributes: frozenset[str] = frozenset({ATTR_BURNED_SINCE_LAST_UPDATE})
+    _attr_extra_state_attributes: dict[str, Any]
+    _unrecorded_attributes = frozenset({ATTR_BURNED_SINCE_LAST_UPDATE})
 
-    async def async_added_to_hass(self):
+    async def async_added_to_hass(self) -> None:
         """Restore native value."""
         await super().async_added_to_hass()
         if (last_sensor_data := await self.async_get_last_sensor_data()) is not None:
@@ -469,17 +463,17 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
         else:
             self._attr_native_value = 0.0
 
-    async def async_calibrate_meter(self, value) -> None:
+    async def async_calibrate_meter(self, value: float) -> None:
         """Calibrate meter state."""
         self._attr_native_value = value
         self.async_write_ha_state()
 
-    async def async_reset_meter(self):
+    async def async_reset_meter(self) -> None:
         """Reset stored value."""
         self._attr_native_value = 0.0
         self.async_write_ha_state()
 
-    async def async_update(self, value=None) -> None:
+    async def async_update(self, value: float | None = None) -> None:
         """Update meter state."""
         if value is not None:
             self._attr_extra_state_attributes = {
@@ -564,7 +558,7 @@ class RegdataSensor(EcomaxSensor):
         )
         self.async_write_ha_state()
 
-    async def async_added_to_hass(self):
+    async def async_added_to_hass(self) -> None:
         """Subscribe to regdata event."""
 
         async def async_set_available(regdata: dict[int, Any]) -> None:
@@ -580,7 +574,7 @@ class RegdataSensor(EcomaxSensor):
             await async_set_available(self.device.data[ATTR_REGDATA])
             await func(self.device.data[ATTR_REGDATA])
 
-    async def async_will_remove_from_hass(self):
+    async def async_will_remove_from_hass(self) -> None:
         """Unsubscribe from regdata event."""
         self.device.unsubscribe(ATTR_REGDATA, self.async_update)
 
@@ -714,4 +708,5 @@ async def async_setup_entry(
             "async_calibrate_meter",
         )
 
-    return async_add_entities(entities)
+    async_add_entities(entities)
+    return True

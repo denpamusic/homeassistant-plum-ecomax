@@ -1,4 +1,5 @@
 """Test Plum ecoMAX config flow."""
+from collections.abc import Generator
 from typing import Any
 from unittest.mock import AsyncMock, Mock, patch
 
@@ -34,7 +35,7 @@ from custom_components.plum_ecomax.const import (
 
 
 @pytest.fixture(autouse=True)
-def bypass_async_setup_entry():
+def bypass_async_setup_entry() -> Generator[Any, Any, Any]:
     """Bypass async setup entry."""
     with patch(
         "custom_components.plum_ecomax.async_setup_entry",

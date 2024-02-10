@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import Final, Literal, overload
+from typing import Any, Final, cast, overload
 
 from homeassistant.components.climate import (
     PRESET_AWAY,
@@ -22,7 +22,6 @@ from homeassistant.const import (
     UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from pyplumio.devices.thermostat import Thermostat
@@ -87,52 +86,33 @@ class EcomaxClimateEntityDescription(ClimateEntityDescription):
 class EcomaxClimate(EcomaxEntity, ClimateEntity):
     """Represents an ecoMAX climate entity."""
 
-    _attr_current_temperature: float | None = None
-    _attr_entity_registry_enabled_default: bool
-    _attr_hvac_action: HVACAction | str | None = None
-    _attr_hvac_mode: HVACMode | str | None
-    _attr_hvac_modes: list[HVACMode] | list[str]
-    _attr_precision: float
-    _attr_preset_mode: str | None
-    _attr_preset_modes: list[str] | None
-    _attr_supported_features: ClimateEntityFeature = ClimateEntityFeature(0)
-    _attr_target_temperature: float | None = None
-    _attr_target_temperature_high: float | None
-    _attr_target_temperature_low: float | None
-    _attr_target_temperature_name: str | None
-    _attr_target_temperature_step: float | None
-    _attr_temperature_unit: str
-    _connection: EcomaxConnection
-    entity_description: EntityDescription
+    _attr_available = True
+    _attr_entity_registry_enabled_default = True
+    _attr_hvac_mode = HVACMode.HEAT
+    _attr_hvac_modes = [HVACMode.HEAT]
+    _attr_precision = PRECISION_TENTHS
+    _attr_preset_modes = CLIMATE_MODES
+    _attr_supported_features = (
+        ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE
+    )
+    _attr_target_temperature_name: str | None = None
+    _attr_target_temperature_step = TEMPERATURE_STEP
+    _attr_temperature_unit = UnitOfTemperature.CELSIUS
 
     def __init__(self, connection: EcomaxConnection, thermostat: Thermostat):
         """Initialize a new ecoMAX climate entity."""
-        self._attr_current_temperature = None
-        self._attr_entity_registry_enabled_default = True
-        self._attr_hvac_action = None
-        self._attr_hvac_mode = HVACMode.HEAT
-        self._attr_hvac_modes = [HVACMode.HEAT]
-        self._attr_precision = PRECISION_TENTHS
-        self._attr_preset_mode = None
-        self._attr_preset_modes = CLIMATE_MODES
-        self._attr_supported_features = (
-            ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE
-        )
-        self._attr_target_temperature = None
-        self._attr_target_temperature_high = None
-        self._attr_target_temperature_low = None
-        self._attr_target_temperature_name = None
-        self._attr_target_temperature_step = TEMPERATURE_STEP
-        self._attr_temperature_unit = UnitOfTemperature.CELSIUS
-        self._connection = connection
+        self.connection = connection
         self.entity_description = EcomaxClimateEntityDescription(
             key=f"thermostat-{thermostat.index}",
             translation_key="ecomax_climate",
             index=thermostat.index,
         )
 
-    async def async_set_temperature(self, **kwargs):
+    async def async_set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
+        # Tell mypy that once we here, temperature name is already set
+        assert isinstance(self.target_temperature_name, str)
+
         temperature = round(kwargs[ATTR_TEMPERATURE], 1)
         self.device.set_nowait(self.target_temperature_name, temperature)
         self._attr_target_temperature = temperature
@@ -146,7 +126,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         await self._async_update_target_temperature_attributes()
         self.async_write_ha_state()
 
-    async def async_update(self, value) -> None:
+    async def async_update(self, value: float) -> None:
         """Update entity state."""
         self._attr_current_temperature = value
         self.async_write_ha_state()
@@ -165,7 +145,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
     async def async_update_preset_mode(self, mode: ThermostatParameter) -> None:
         ...
 
-    async def async_update_preset_mode(self, mode) -> None:
+    async def async_update_preset_mode(self, mode: ThermostatParameter | int) -> None:
         """Update preset mode."""
         if isinstance(mode, ThermostatParameter):
             mode = int(mode.value)
@@ -186,7 +166,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
         self._attr_hvac_action = HVACAction.HEATING if value else HVACAction.IDLE
         self.async_write_ha_state()
 
-    async def async_added_to_hass(self):
+    async def async_added_to_hass(self) -> None:
         """Subscribe to thermostat events."""
         callbacks = {
             "mode": on_change(self.async_update_preset_mode),
@@ -203,7 +183,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
 
             self.device.subscribe(name, func)
 
-    async def async_will_remove_from_hass(self):
+    async def async_will_remove_from_hass(self) -> None:
         """Unsubscribe from thermostat events."""
         self.device.unsubscribe("mode", self.async_update_preset_mode)
         self.device.unsubscribe("state", self.async_update_preset_mode)
@@ -239,7 +219,7 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
 
     async def _async_get_current_schedule_preset(
         self, target_temp: float | None = None
-    ) -> Literal["comfort", "eco", "unknown"]:
+    ) -> str:
         """Get current preset for the schedule mode."""
         if target_temp is None:
             target_temp = await self.device.get("target_temp")
@@ -251,20 +231,24 @@ class EcomaxClimate(EcomaxEntity, ClimateEntity):
             HA_PRESET_TO_EM_TEMP[PRESET_ECO]
         )
 
+        schedule_preset = PRESET_UNKNOWN
         if target_temp == comfort_temp.value and target_temp != eco_temp.value:
-            return PRESET_COMFORT
+            schedule_preset = PRESET_COMFORT
 
         if target_temp == eco_temp.value and target_temp != comfort_temp.value:
-            return PRESET_ECO
+            schedule_preset = PRESET_ECO
 
-        return PRESET_UNKNOWN
+        return schedule_preset
 
     @property
     def device(self) -> Thermostat:
         """Return the thermostat object."""
-        return self.connection.device.data[ATTR_THERMOSTATS][
-            self.entity_description.index
-        ]
+        return cast(
+            Thermostat,
+            self.connection.device.data[ATTR_THERMOSTATS][
+                self.entity_description.index
+            ],
+        )
 
     @property
     def target_temperature_name(self) -> str | None:
@@ -282,9 +266,10 @@ async def async_setup_entry(
     _LOGGER.debug("Starting setup of climate platform...")
 
     if connection.has_thermostats and await connection.async_setup_thermostats():
-        return async_add_entities(
+        async_add_entities(
             EcomaxClimate(connection, thermostat)
             for thermostat in connection.device.thermostats.values()
         )
+        return True
 
     return False

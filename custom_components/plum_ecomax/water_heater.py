@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import Final, cast
+from typing import Any, Final, cast
 
 from homeassistant.components.water_heater import (
     STATE_ECO,
@@ -19,7 +19,6 @@ from homeassistant.const import (
     UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from pyplumio.filters import on_change, throttle
@@ -45,50 +44,28 @@ class EcomaxWaterHeaterEntityDescription(WaterHeaterEntityEntityDescription):
 class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     """Represents an ecoMAX water heater."""
 
-    _attr_current_operation: str | None
-    _attr_current_temperature: float | None
-    _attr_entity_registry_enabled_default: bool
-    _attr_hysteresis: int
-    _attr_max_temp: float | None
-    _attr_min_temp: float | None
-    _attr_operation_list: list[str] | None
-    _attr_precision: float
-    _attr_supported_features: WaterHeaterEntityFeature = WaterHeaterEntityFeature(0)
-    _attr_target_temperature: float | None
-    _attr_target_temperature_high: float | None
-    _attr_target_temperature_low: float | None
-    _attr_temperature_unit: str
-    _connection: EcomaxConnection
-    entity_description: EntityDescription
+    _attr_available = True
+    _attr_entity_registry_enabled_default = True
+    _attr_hysteresis: int = 0
+    _attr_max_temp: float | None = None
+    _attr_min_temp: float | None = None
+    _attr_operation_list = WATER_HEATER_MODES
+    _attr_precision = PRECISION_WHOLE
+    _attr_supported_features: WaterHeaterEntityFeature = (
+        WaterHeaterEntityFeature.TARGET_TEMPERATURE
+        | WaterHeaterEntityFeature.OPERATION_MODE
+    )
+    _attr_temperature_unit = UnitOfTemperature.CELSIUS
 
-    def __init__(
-        self,
-        connection: EcomaxConnection,
-    ):
+    def __init__(self, connection: EcomaxConnection):
         """Initialize a new ecoMAX water heater."""
-        self._attr_current_operation = None
-        self._attr_current_temperature = None
-        self._attr_entity_registry_enabled_default = True
-        self._attr_hysteresis = 0
-        self._attr_max_temp = None
-        self._attr_min_temp = None
-        self._attr_operation_list = WATER_HEATER_MODES
-        self._attr_precision = PRECISION_WHOLE
-        self._attr_supported_features = (
-            WaterHeaterEntityFeature.TARGET_TEMPERATURE
-            | WaterHeaterEntityFeature.OPERATION_MODE
-        )
-        self._attr_target_temperature = None
-        self._attr_target_temperature_high = None
-        self._attr_target_temperature_low = None
-        self._attr_temperature_unit = UnitOfTemperature.CELSIUS
-        self._connection = connection
+        self.connection = connection
         self.entity_description = EcomaxWaterHeaterEntityDescription(
             key="water_heater",
             translation_key="indirect_water_heater",
         )
 
-    async def async_set_temperature(self, **kwargs):
+    async def async_set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
         temperature = kwargs[ATTR_TEMPERATURE]
         self.device.set_nowait(
@@ -97,7 +74,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         self._attr_target_temperature = temperature
         self.async_write_ha_state()
 
-    async def async_set_operation_mode(self, operation_mode: str):
+    async def async_set_operation_mode(self, operation_mode: str) -> None:
         """Set new target operation mode."""
         self.device.set_nowait(
             f"{self.entity_description.key}_work_mode", HA_TO_EM_STATE[operation_mode]
@@ -129,12 +106,12 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         self._attr_current_operation = EM_TO_HA_STATE[int(value.value)]
         self.async_write_ha_state()
 
-    async def async_update(self, value) -> None:
+    async def async_update(self, value: float) -> None:
         """Update entity state."""
         self._attr_current_temperature = value
         self.async_write_ha_state()
 
-    async def async_added_to_hass(self):
+    async def async_added_to_hass(self) -> None:
         """Subscribe to water heater events."""
         key = self.entity_description.key
         callbacks = {
@@ -151,7 +128,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
 
             self.device.subscribe(name, func)
 
-    async def async_will_remove_from_hass(self):
+    async def async_will_remove_from_hass(self) -> None:
         """Unsubscribe to water heater events."""
         key = self.entity_description.key
         self.device.unsubscribe(f"{key}_temp", self.async_update)
@@ -175,6 +152,7 @@ async def async_setup_entry(
     _LOGGER.debug("Starting setup of water heater platform...")
 
     if connection.has_water_heater:
-        return async_add_entities([EcomaxWaterHeater(connection)])
+        async_add_entities([EcomaxWaterHeater(connection)])
+        return True
 
     return False

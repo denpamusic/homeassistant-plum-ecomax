@@ -15,7 +15,7 @@ from .const import ATTR_PASSWORD, ATTR_PRODUCT, CONF_HOST, CONF_UID, DOMAIN
 REDACTED: Final = "**REDACTED**"
 
 
-def _value_as_dict(value):
+def _value_as_dict(value: Any) -> Any:
     """Return value as a dictionary."""
     if isinstance(value, Device):
         return dict(value.data)

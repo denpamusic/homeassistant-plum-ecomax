@@ -6,17 +6,14 @@ from dataclasses import dataclass
 import logging
 from typing import Any, Final, Literal
 
-from homeassistant.components.select import (
-    EntityDescription,
-    SelectEntity,
-    SelectEntityDescription,
-)
+from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from pyplumio.const import ProductType
 from pyplumio.filters import on_change
+from pyplumio.structures.modules import ConnectedModules
 
 from .connection import EcomaxConnection
 from .const import ALL, DOMAIN, MODULE_A
@@ -52,16 +49,11 @@ SELECT_TYPES: tuple[EcomaxSelectEntityDescription, ...] = (
 class EcomaxSelect(EcomaxEntity, SelectEntity):
     """Represents an ecoMAX select."""
 
-    _attr_current_option: str | None
-    _connection: EcomaxConnection
-    entity_description: EntityDescription
-
     def __init__(
         self, connection: EcomaxConnection, description: EcomaxSelectEntityDescription
     ):
         """Initialize a new ecoMAX select."""
-        self._attr_current_option = None
-        self._connection = connection
+        self.connection = connection
         self.entity_description = description
 
     async def async_select_option(self, option: str) -> None:
@@ -71,7 +63,7 @@ class EcomaxSelect(EcomaxEntity, SelectEntity):
         self._attr_current_option = option
         self.async_write_ha_state()
 
-    async def async_update(self, value) -> None:
+    async def async_update(self, value: Any) -> None:
         """Update entity state."""
         self._attr_current_option = self.entity_description.options[int(value)]
         self.async_write_ha_state()
@@ -129,7 +121,8 @@ def get_by_product_type(
 
 
 def get_by_modules(
-    connected_modules, descriptions: Iterable[EcomaxSelectEntityDescription]
+    connected_modules: ConnectedModules,
+    descriptions: Iterable[EcomaxSelectEntityDescription],
 ) -> Generator[EcomaxSelectEntityDescription, None, None]:
     """Filter descriptions by connected modules."""
     for description in descriptions:
@@ -194,4 +187,5 @@ async def async_setup_entry(
     if connection.has_mixers and await connection.async_setup_mixers():
         entities.extend(async_setup_mixer_selects(connection))
 
-    return async_add_entities(entities)
+    async_add_entities(entities)
+    return True

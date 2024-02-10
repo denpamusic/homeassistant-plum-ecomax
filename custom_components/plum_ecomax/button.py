@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 from homeassistant.components.button import (
     ButtonDeviceClass,
@@ -9,7 +10,7 @@ from homeassistant.components.button import (
     ButtonEntityDescription,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import EntityCategory, EntityDescription
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 
@@ -31,7 +32,6 @@ BUTTON_TYPES: tuple[EcomaxButtonEntityDescription, ...] = (
         translation_key="detect_sub_devices",
         device_class=ButtonDeviceClass.UPDATE,
         entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=True,
         press_fn="async_update_sub_devices",
     ),
 )
@@ -40,14 +40,15 @@ BUTTON_TYPES: tuple[EcomaxButtonEntityDescription, ...] = (
 class EcomaxButton(EcomaxEntity, ButtonEntity):
     """Represents an ecoMAX button."""
 
-    _connection: EcomaxConnection
-    entity_description: EntityDescription
+    _attr_available = True
+    _attr_entity_registry_enabled_default = True
+    entity_description: EcomaxButtonEntityDescription
 
     def __init__(
         self, connection: EcomaxConnection, description: EcomaxButtonEntityDescription
     ):
         """Initialize a new ecoMAX button."""
-        self._connection = connection
+        self.connection = connection
         self.entity_description = description
 
     async def async_press(self) -> None:
@@ -55,21 +56,13 @@ class EcomaxButton(EcomaxEntity, ButtonEntity):
         func = getattr(self.connection, self.entity_description.press_fn)
         await func()
 
-    @property
-    def entity_registry_enabled_default(self) -> bool:
-        """Return if the entity should be enabled when first added.
-
-        This only applies when fist added to the entity registry.
-        """
-        return self.entity_description.entity_registry_enabled_default
-
-    async def async_update(self, _) -> None:
+    async def async_update(self, value: Any) -> None:
         """Update entity state."""
 
-    async def async_added_to_hass(self):
+    async def async_added_to_hass(self) -> None:
         """Subscribe to the events."""
 
-    async def async_will_remove_from_hass(self):
+    async def async_will_remove_from_hass(self) -> None:
         """Unsubscribe from the events."""
 
 
@@ -80,6 +73,7 @@ async def async_setup_entry(
 ) -> bool:
     """Set up the button platform."""
     connection = hass.data[DOMAIN][config_entry.entry_id]
-    return async_add_entities(
+    async_add_entities(
         EcomaxButton(connection, description) for description in BUTTON_TYPES
     )
+    return True

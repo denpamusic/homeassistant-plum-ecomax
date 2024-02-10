@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import final
+from typing import Any, cast, final
 
 from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 from pyplumio.const import ProductType
@@ -16,15 +16,15 @@ from .const import ATTR_MIXERS, DOMAIN, MANUFACTURER
 class EcomaxEntity(ABC):
     """Represents an ecoMAX entity."""
 
-    _attr_available: bool
+    _attr_available: bool = False
     _attr_entity_registry_enabled_default: bool
-    _connection: EcomaxConnection
+    connection: EcomaxConnection
     entity_description: EntityDescription
 
-    async def async_added_to_hass(self):
+    async def async_added_to_hass(self) -> None:
         """Subscribe to events."""
 
-        async def async_set_available(_=None) -> None:
+        async def async_set_available(value: Any = None) -> None:
             """Mark entity as available."""
             self._attr_available = True
 
@@ -36,7 +36,7 @@ class EcomaxEntity(ABC):
             await async_set_available()
             await func(self.device.get_nowait(self.entity_description.key, None))
 
-    async def async_will_remove_from_hass(self):
+    async def async_will_remove_from_hass(self) -> None:
         """Unsubscribe from events."""
         self.device.unsubscribe(self.entity_description.key, self.async_update)
 
@@ -75,11 +75,6 @@ class EcomaxEntity(ABC):
         return f"{self.connection.uid}-{self.entity_description.key}"
 
     @property
-    def connection(self) -> EcomaxConnection:
-        """Return the connection handler."""
-        return self._connection
-
-    @property
     def should_poll(self) -> bool:
         """Return True if entity has to be polled for state.
 
@@ -93,7 +88,7 @@ class EcomaxEntity(ABC):
         return True
 
     @abstractmethod
-    async def async_update(self, value) -> None:
+    async def async_update(self, value: Any) -> None:
         """Update entity state."""
 
 
@@ -135,4 +130,4 @@ class MixerEntity(EcomaxEntity):
     @property
     def device(self) -> Mixer:
         """Return the mixer handler."""
-        return self.connection.device.data[ATTR_MIXERS][self.index]
+        return cast(Mixer, self.connection.device.data[ATTR_MIXERS][self.index])

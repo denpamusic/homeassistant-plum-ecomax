@@ -17,6 +17,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from pyplumio.const import ProductType
 from pyplumio.filters import on_change
+from pyplumio.structures.modules import ConnectedModules
 
 from .connection import EcomaxConnection
 from .const import ALL, DOMAIN, MODULE_A
@@ -136,18 +137,18 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
 class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
     """Represents an ecoMAX binary sensor."""
 
+    entity_description: EcomaxBinarySensorEntityDescription
+
     def __init__(
         self,
         connection: EcomaxConnection,
         description: EcomaxBinarySensorEntityDescription,
     ):
         """Initialize a new ecoMAX binary sensor."""
-        self._connection = connection
+        self.connection = connection
         self.entity_description = description
-        self._attr_available = False
-        self._attr_is_on = None
 
-    async def async_update(self, value) -> None:
+    async def async_update(self, value: Any) -> None:
         """Update entity state."""
         self._attr_is_on = self.entity_description.value_fn(value)
         self.async_write_ha_state()
@@ -217,7 +218,8 @@ def get_by_product_type(
 
 
 def get_by_modules(
-    connected_modules, descriptions: Iterable[EcomaxBinarySensorEntityDescription]
+    connected_modules: ConnectedModules,
+    descriptions: Iterable[EcomaxBinarySensorEntityDescription],
 ) -> Generator[EcomaxBinarySensorEntityDescription, None, None]:
     """Filter descriptions by connected modules."""
     for description in descriptions:
@@ -274,4 +276,5 @@ async def async_setup_entry(
     if connection.has_mixers and await connection.async_setup_mixers():
         entities.extend(async_setup_mixer_binary_sensors(connection))
 
-    return async_add_entities(entities)
+    async_add_entities(entities)
+    return True

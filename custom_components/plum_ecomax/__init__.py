@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from contextlib import suppress
 import logging
-from typing import Final
+from typing import Final, cast
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -13,7 +13,7 @@ from homeassistant.const import (
     EVENT_HOMEASSISTANT_STOP,
     Platform,
 )
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 from pyplumio.filters import custom, delta
@@ -66,7 +66,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await async_get_connection_handler(connection_type, hass, entry.data),
     )
 
-    async def async_close_connection(event=None):
+    async def async_close_connection(event: Event | None = None) -> None:
         """Close the ecoMAX connection on HA Stop."""
         await connection.close()
 
@@ -134,7 +134,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         except KeyError:
             pass
 
-    return unload_ok
+    return cast(bool, unload_ok)
 
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
