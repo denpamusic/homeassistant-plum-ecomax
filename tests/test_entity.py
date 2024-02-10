@@ -4,7 +4,7 @@ import asyncio
 from typing import Any
 from unittest.mock import AsyncMock, Mock, call, patch
 
-from homeassistant.helpers.entity import EntityDescription
+from homeassistant.helpers.entity import Entity, EntityDescription
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.filters import Filter
 
@@ -12,7 +12,7 @@ from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.entity import EcomaxEntity
 
 
-class _TestEntity(EcomaxEntity):
+class _TestEntity(EcomaxEntity, Entity):
     """Test entity class."""
 
     _attr_available = True

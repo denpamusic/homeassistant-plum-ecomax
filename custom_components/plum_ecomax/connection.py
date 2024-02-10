@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from functools import cached_property
 import logging
 import math
 from typing import Any, Final, cast
@@ -198,19 +199,9 @@ class EcomaxConnection:
         await self._hass.config_entries.async_reload(self.entry.entry_id)
 
     @property
-    def has_water_heater(self) -> bool:
-        """Return if device has attached water heater."""
-        return ATTR_WATER_HEATER in self.entry.data.get(CONF_SUB_DEVICES, [])
-
-    @property
-    def has_thermostats(self) -> bool:
-        """Return if device has attached thermostats."""
-        return ATTR_THERMOSTATS in self.entry.data.get(CONF_SUB_DEVICES, [])
-
-    @property
-    def has_mixers(self) -> bool:
-        """Return if device has attached mixers."""
-        return ATTR_MIXERS in self.entry.data.get(CONF_SUB_DEVICES, [])
+    def connection(self) -> Connection:
+        """Return the connection handler."""
+        return self._connection
 
     @property
     def device(self) -> AddressableDevice:
@@ -224,42 +215,52 @@ class EcomaxConnection:
 
         return self._device
 
-    @property
+    @cached_property
+    def has_water_heater(self) -> bool:
+        """Return if device has attached water heater."""
+        return ATTR_WATER_HEATER in self.entry.data.get(CONF_SUB_DEVICES, [])
+
+    @cached_property
+    def has_thermostats(self) -> bool:
+        """Return if device has attached thermostats."""
+        return ATTR_THERMOSTATS in self.entry.data.get(CONF_SUB_DEVICES, [])
+
+    @cached_property
+    def has_mixers(self) -> bool:
+        """Return if device has attached mixers."""
+        return ATTR_MIXERS in self.entry.data.get(CONF_SUB_DEVICES, [])
+
+    @cached_property
     def model(self) -> str:
         """Return the product model."""
         return cast(str, self.entry.data[CONF_MODEL])
 
-    @property
+    @cached_property
     def product_type(self) -> ProductType:
         """Return the product type."""
         return cast(ProductType, self.entry.data[CONF_PRODUCT_TYPE])
 
-    @property
+    @cached_property
     def product_id(self) -> int:
         """Return the product id."""
         return cast(int, self.entry.data[CONF_PRODUCT_ID])
 
-    @property
+    @cached_property
     def uid(self) -> str:
         """Return the product UID."""
         return cast(str, self.entry.data[CONF_UID])
 
-    @property
+    @cached_property
     def software(self) -> str:
         """Return the product software version."""
         return cast(str, self.entry.data[CONF_SOFTWARE])
 
-    @property
+    @cached_property
     def name(self) -> str:
         """Return the connection name."""
         return cast(str, self.entry.title)
 
-    @property
-    def connection(self) -> Connection:
-        """Return the connection handler."""
-        return self._connection
-
-    @property
+    @cached_property
     def device_info(self) -> DeviceInfo:
         """Return the device info."""
         return DeviceInfo(

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from functools import cached_property
 from typing import Any, cast, final
 
 from homeassistant.helpers.entity import DeviceInfo, EntityDescription
@@ -19,6 +20,8 @@ class EcomaxEntity(ABC):
 
     _attr_available: bool = False
     _attr_entity_registry_enabled_default: bool
+    _attr_should_poll: bool = False
+    _attr_has_entity_name: bool = True
     connection: EcomaxConnection
     entity_description: EntityDescription
 
@@ -42,16 +45,6 @@ class EcomaxEntity(ABC):
         self.device.unsubscribe(self.entity_description.key, self.async_update)
 
     @property
-    def device(self) -> BaseDevice:
-        """Return the device handler."""
-        return self.connection.device
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return the device info."""
-        return self.connection.device_info
-
-    @property
     def available(self) -> bool:
         """Return True if entity is available."""
         if getattr(self.entity_description, "always_available", False):
@@ -70,23 +63,20 @@ class EcomaxEntity(ABC):
 
         return self.entity_description.key in self.device.data
 
-    @property
+    @cached_property
     def unique_id(self) -> str:
         """Return a unique ID."""
         return f"{self.connection.uid}-{self.entity_description.key}"
 
-    @property
-    def should_poll(self) -> bool:
-        """Return True if entity has to be polled for state.
-
-        False if entity pushes its state to HA.
-        """
-        return False
+    @cached_property
+    def device_info(self) -> DeviceInfo:
+        """Return the device info."""
+        return self.connection.device_info
 
     @property
-    def has_entity_name(self) -> bool:
-        """Return if the name of the entity is describing only the entity itself."""
-        return True
+    def device(self) -> BaseDevice:
+        """Return the device handler."""
+        return self.connection.device
 
     @abstractmethod
     async def async_update(self, value: Any) -> None:
@@ -98,7 +88,7 @@ class ThermostatEntity(EcomaxEntity):
 
     index: int
 
-    @property
+    @cached_property
     def unique_id(self) -> str:
         """Return the unique ID."""
         return (
@@ -106,7 +96,7 @@ class ThermostatEntity(EcomaxEntity):
             + f"{self.index}-{self.entity_description.key}"
         )
 
-    @property
+    @cached_property
     def device_info(self) -> DeviceInfo:
         """Return the device info."""
         return DeviceInfo(
@@ -134,7 +124,7 @@ class MixerEntity(EcomaxEntity):
 
     index: int
 
-    @property
+    @cached_property
     def unique_id(self) -> str:
         """Return a unique ID."""
         return (
@@ -142,7 +132,7 @@ class MixerEntity(EcomaxEntity):
             + f"{self.index}-{self.entity_description.key}"
         )
 
-    @property
+    @cached_property
     def device_name(self) -> str:
         """Return the device name."""
         return (
@@ -151,7 +141,7 @@ class MixerEntity(EcomaxEntity):
             else "Mixer"
         )
 
-    @property
+    @cached_property
     def device_info(self) -> DeviceInfo:
         """Return the device info."""
         return DeviceInfo(
