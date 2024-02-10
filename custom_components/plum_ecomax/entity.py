@@ -102,7 +102,7 @@ class ThermostatEntity(EcomaxEntity):
     def unique_id(self) -> str:
         """Return the unique ID."""
         return (
-            f"{self.connection.uid}-thermostat-"
+            f"{self.connection.uid}-{Device.THERMOSTAT}-"
             + f"{self.index}-{self.entity_description.key}"
         )
 
@@ -138,7 +138,7 @@ class MixerEntity(EcomaxEntity):
     def unique_id(self) -> str:
         """Return a unique ID."""
         return (
-            f"{self.connection.uid}-mixer-"
+            f"{self.connection.uid}-{Device.MIXER}-"
             + f"{self.index}-{self.entity_description.key}"
         )
 
