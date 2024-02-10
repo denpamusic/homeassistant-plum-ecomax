@@ -268,7 +268,9 @@ class EcomaxConnection:
             manufacturer=MANUFACTURER,
             model=self.model,
             sw_version=self.software,
-            configuration_url=f"http://{self.entry.data[CONF_HOST]}"
-            if self.entry.data[CONF_CONNECTION_TYPE] == CONNECTION_TYPE_TCP
-            else None,
+            configuration_url=(
+                f"http://{self.entry.data[CONF_HOST]}"
+                if self.entry.data[CONF_CONNECTION_TYPE] == CONNECTION_TYPE_TCP
+                else None
+            ),
         )

@@ -175,9 +175,11 @@ async def async_get_device_parameter(
         "value": parameter.value,
         "min_value": parameter.min_value,
         "max_value": parameter.max_value,
-        "unit_of_measurement": parameter.unit_of_measurement.value
-        if isinstance(parameter.unit_of_measurement, UnitOfMeasurement)
-        else parameter.unit_of_measurement,
+        "unit_of_measurement": (
+            parameter.unit_of_measurement.value
+            if isinstance(parameter.unit_of_measurement, UnitOfMeasurement)
+            else parameter.unit_of_measurement
+        ),
         "device_type": device.__class__.__name__.lower(),
         "device_uid": device_uid,
         "device_index": device.index + 1 if hasattr(device, "index") else 0,
