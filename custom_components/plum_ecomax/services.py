@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import datetime as dt
 import logging
-from typing import Any, Final, Literal, cast
+from typing import Any, Final, Literal
 
 from homeassistant.const import ATTR_NAME, STATE_OFF, STATE_ON
 from homeassistant.core import (
@@ -213,7 +213,7 @@ def async_setup_get_parameter_service(
 async def async_set_device_parameter(device: Device, name: str, value: float) -> bool:
     """Set device parameter."""
     try:
-        return cast(bool, await device.set(name, value, timeout=DEFAULT_TIMEOUT))
+        return await device.set(name, value, timeout=DEFAULT_TIMEOUT)
     except TypeError as e:
         raise ServiceValidationError(
             str(e),

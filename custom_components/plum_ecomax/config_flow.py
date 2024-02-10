@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Mapping
 import logging
-from typing import Any
+from typing import Any, cast
 
 from homeassistant import config_entries
 from homeassistant.const import CONF_BASE
@@ -261,7 +261,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         # Tell mypy that once we here, connection is not None
         assert isinstance(self.connection, Connection)
 
-        self.device = await self.connection.get(ECOMAX, timeout=DEFAULT_TIMEOUT)
+        self.device = cast(
+            AddressableDevice,
+            await self.connection.get(ECOMAX, timeout=DEFAULT_TIMEOUT),
+        )
         product: ProductInfo = await self.device.get(
             ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT
         )
