@@ -7,7 +7,7 @@ import logging
 from typing import Any, Final, Literal
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
-from homeassistant.const import STATE_OFF, STATE_ON
+from homeassistant.const import STATE_OFF
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
@@ -19,6 +19,8 @@ from .connection import EcomaxConnection
 from .const import ALL, DOMAIN, Module
 from .entity import EcomaxEntity, MixerEntity
 
+STATE_SUMMER: Final = "summer"
+STATE_WINTER: Final = "winter"
 STATE_AUTO: Final = "auto"
 STATE_HEATING: Final = "heating"
 STATE_HEATED_FLOOR: Final = "heated_floor"
@@ -40,7 +42,7 @@ SELECT_TYPES: tuple[EcomaxSelectEntityDescription, ...] = (
     EcomaxSelectEntityDescription(
         key="summer_mode",
         translation_key="summer_mode",
-        options=[STATE_OFF, STATE_AUTO, STATE_ON],
+        options=[STATE_WINTER, STATE_SUMMER, STATE_AUTO],
         icon="mdi:weather-sunny",
     ),
 )

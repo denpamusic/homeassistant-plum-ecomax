@@ -95,8 +95,8 @@
       "summer_mode": {
         "name": "Summer mode",
         "state": {
-          "on": "On",
-          "off": "Off",
+          "winter": "Winter",
+          "summer": "Summer",
           "auto": "Auto"
         }
       },

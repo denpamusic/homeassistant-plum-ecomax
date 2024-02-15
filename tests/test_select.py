@@ -8,13 +8,7 @@ from homeassistant.components.select.const import (
     DOMAIN,
     SERVICE_SELECT_OPTION,
 )
-from homeassistant.const import (
-    ATTR_ENTITY_ID,
-    ATTR_FRIENDLY_NAME,
-    ATTR_ICON,
-    STATE_OFF,
-    STATE_ON,
-)
+from homeassistant.const import ATTR_ENTITY_ID, ATTR_FRIENDLY_NAME, ATTR_ICON, STATE_OFF
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from pyplumio.helpers.parameter import ParameterValues
@@ -35,6 +29,8 @@ from custom_components.plum_ecomax.select import (
     STATE_HEATED_FLOOR,
     STATE_HEATING,
     STATE_PUMP_ONLY,
+    STATE_SUMMER,
+    STATE_WINTER,
 )
 
 
@@ -94,10 +90,10 @@ async def test_summer_mode_select(
 
     # Get initial value.
     state = hass.states.get(summer_mode_entity_id)
-    assert state.state == STATE_OFF
+    assert state.state == STATE_WINTER
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Summer mode"
     assert state.attributes[ATTR_ICON] == "mdi:weather-sunny"
-    assert state.attributes[ATTR_OPTIONS] == [STATE_OFF, STATE_AUTO, STATE_ON]
+    assert state.attributes[ATTR_OPTIONS] == [STATE_WINTER, STATE_SUMMER, STATE_AUTO]
     options = state.attributes[ATTR_OPTIONS]
 
     # Dispatch new value.
@@ -105,7 +101,7 @@ async def test_summer_mode_select(
         summer_mode_select_key,
         EcomaxParameter(
             device=connection.device,
-            values=ParameterValues(value=1, min_value=0, max_value=2),
+            values=ParameterValues(value=2, min_value=0, max_value=2),
             description=EcomaxParameterDescription(summer_mode_select_key),
         ),
     )
@@ -114,12 +110,12 @@ async def test_summer_mode_select(
 
     # Select an option.
     with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
-        state = await async_select_option(hass, summer_mode_entity_id, STATE_ON)
+        state = await async_select_option(hass, summer_mode_entity_id, STATE_SUMMER)
 
     mock_set_nowait.assert_called_once_with(
-        summer_mode_select_key, options.index(STATE_ON)
+        summer_mode_select_key, options.index(STATE_SUMMER)
     )
-    assert state.state == STATE_ON
+    assert state.state == STATE_SUMMER
 
 
 @pytest.mark.usefixtures("ecomax_p", "mixers")

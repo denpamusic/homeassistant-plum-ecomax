@@ -95,8 +95,8 @@
       "summer_mode": {
         "name": "Tryb letni",
         "state": {
-          "on": "Włączony",
-          "off": "Wyłączony",
+          "winter": "Zima",
+          "summer": "Lato",
           "auto": "Auto"
         }
       },
