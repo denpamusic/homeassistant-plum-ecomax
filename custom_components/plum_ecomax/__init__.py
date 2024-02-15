@@ -66,14 +66,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await async_get_connection_handler(connection_type, hass, entry.data),
     )
 
-    async def async_close_connection(event: Event | None = None) -> None:
-        """Close the ecoMAX connection on HA Stop."""
-        await connection.close()
-
-    entry.async_on_unload(
-        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, async_close_connection)
-    )
-
     try:
         await connection.async_setup()
     except TimeoutError as e:
@@ -87,6 +79,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async_setup_services(hass, connection)
     async_setup_events(hass, connection)
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = connection
+
+    async def _async_close_connection(event: Event | None = None) -> None:
+        """Close the ecoMAX connection on HA Stop."""
+        await connection.close()
+
+    entry.async_on_unload(
+        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, _async_close_connection)
+    )
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
