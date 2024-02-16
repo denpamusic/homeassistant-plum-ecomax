@@ -30,7 +30,6 @@ from pyplumio.const import (
     ATTR_STATE,
     ATTR_TARGET_TEMP,
     DeviceState,
-    ProductType,
 )
 from pyplumio.devices.ecomax import ATTR_FUEL_BURNED
 from pyplumio.structures.boiler_load import ATTR_BOILER_LOAD
@@ -40,7 +39,6 @@ from pyplumio.structures.fuel_consumption import ATTR_FUEL_CONSUMPTION
 from pyplumio.structures.fuel_level import ATTR_FUEL_LEVEL
 from pyplumio.structures.lambda_sensor import ATTR_LAMBDA_LEVEL
 from pyplumio.structures.modules import ATTR_MODULES, ConnectedModules
-from pyplumio.structures.product_info import ATTR_PRODUCT, ProductInfo
 from pyplumio.structures.statuses import ATTR_HEATING_TARGET, ATTR_WATER_HEATER_TARGET
 from pyplumio.structures.temperatures import (
     ATTR_EXHAUST_TEMP,
@@ -444,39 +442,6 @@ async def test_connected_modules_sensor(
     state = hass.states.get(connected_modules_entity_id)
     assert state.state == "1"
     assert state.attributes[Module.A] == "1.0.0.T0"
-
-
-@pytest.mark.usefixtures("ecomax_p")
-async def test_uid_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-) -> None:
-    """Test uid sensor."""
-    await setup_integration(hass, config_entry)
-    uid_entity_id = "sensor.ecomax_uid"
-
-    # Check entry.
-    entity_registry = er.async_get(hass)
-    entry = entity_registry.async_get(uid_entity_id)
-    assert entry
-    assert entry.translation_key == "uid"
-
-    # Get initial value.
-    state = hass.states.get(uid_entity_id)
-    assert state.state == "TEST"
-    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX UID"
-
-    # Dispatch new value.
-    await connection.device.dispatch(
-        ATTR_PRODUCT,
-        ProductInfo(
-            type=ProductType.ECOMAX_I, id=0, uid="TEST2", logo=0, image=0, model="TEST2"
-        ),
-    )
-    state = hass.states.get(uid_entity_id)
-    assert state.state == "TEST2"
 
 
 @pytest.mark.usefixtures("ecomax_p")

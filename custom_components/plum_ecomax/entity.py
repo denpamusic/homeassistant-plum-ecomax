@@ -12,7 +12,16 @@ from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
 
 from .connection import EcomaxConnection
-from .const import ATTR_MIXERS, ATTR_THERMOSTATS, DOMAIN, MANUFACTURER, Device
+from .const import (
+    ATTR_MIXERS,
+    ATTR_THERMOSTATS,
+    CONF_CONNECTION_TYPE,
+    CONF_HOST,
+    CONNECTION_TYPE_TCP,
+    DOMAIN,
+    MANUFACTURER,
+    Device,
+)
 
 
 class EcomaxEntity(ABC):
@@ -71,7 +80,20 @@ class EcomaxEntity(ABC):
     @cached_property
     def device_info(self) -> DeviceInfo:
         """Return the device info."""
-        return self.connection.device_info
+        return DeviceInfo(
+            configuration_url=(
+                f"http://{self.connection.entry.data[CONF_HOST]}"
+                if self.connection.entry.data[CONF_CONNECTION_TYPE]
+                == CONNECTION_TYPE_TCP
+                else None
+            ),
+            identifiers={(DOMAIN, self.connection.uid)},
+            manufacturer=MANUFACTURER,
+            model=self.connection.model,
+            name=self.connection.name,
+            serial_number=self.connection.uid,
+            sw_version=self.connection.software,
+        )
 
     @property
     def device(self) -> BaseDevice:
@@ -100,13 +122,12 @@ class ThermostatEntity(EcomaxEntity):
     def device_info(self) -> DeviceInfo:
         """Return the device info."""
         return DeviceInfo(
-            name=f"{self.connection.name} Thermostat {self.index + 1}",
             identifiers={
                 (DOMAIN, f"{self.connection.uid}-{Device.THERMOSTAT}-{self.index}")
             },
             manufacturer=MANUFACTURER,
             model=f"{self.connection.model} (Thermostat {self.index + 1})",
-            sw_version=self.connection.software,
+            name=f"{self.connection.name} Thermostat {self.index + 1}",
             via_device=(DOMAIN, self.connection.uid),
         )
 
@@ -145,13 +166,12 @@ class MixerEntity(EcomaxEntity):
     def device_info(self) -> DeviceInfo:
         """Return the device info."""
         return DeviceInfo(
-            name=f"{self.connection.name} {self.device_name} {self.index + 1}",
             identifiers={
                 (DOMAIN, f"{self.connection.uid}-{Device.MIXER}-{self.index}")
             },
             manufacturer=MANUFACTURER,
             model=f"{self.connection.model} ({self.device_name} {self.index + 1})",
-            sw_version=self.connection.software,
+            name=f"{self.connection.name} {self.device_name} {self.index + 1}",
             via_device=(DOMAIN, self.connection.uid),
         )
 

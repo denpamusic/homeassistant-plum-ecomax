@@ -8,7 +8,6 @@ from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers.entity import DeviceInfo
 from pyplumio.connection import Connection, SerialConnection, TcpConnection
 from pyplumio.const import FrameType
 from pyplumio.devices.ecomax import EcoMAX
@@ -36,8 +35,6 @@ from custom_components.plum_ecomax.const import (
     CONF_UID,
     CONNECTION_TYPE_SERIAL,
     CONNECTION_TYPE_TCP,
-    DOMAIN,
-    MANUFACTURER,
     Device,
 )
 
@@ -127,14 +124,6 @@ async def test_async_setup(
     assert connection.connection == mock_connection
     assert connection.product_type == tcp_config_data.get(CONF_PRODUCT_TYPE)
     assert connection.product_id == tcp_config_data.get(CONF_PRODUCT_ID)
-    assert connection.device_info == DeviceInfo(
-        name=connection.name,
-        identifiers={(DOMAIN, connection.uid)},
-        manufacturer=MANUFACTURER,
-        model=f"{connection.model}",
-        sw_version=connection.software,
-        configuration_url=f"http://{tcp_config_data.get(CONF_HOST)}",
-    )
 
     # Check with device timeout.
     with pytest.raises(TimeoutError):

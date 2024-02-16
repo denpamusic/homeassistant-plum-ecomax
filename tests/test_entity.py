@@ -4,11 +4,13 @@ import asyncio
 from typing import Any
 from unittest.mock import AsyncMock, Mock, call, patch
 
-from homeassistant.helpers.entity import Entity, EntityDescription
+from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.filters import Filter
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
+from custom_components.plum_ecomax.const import DOMAIN, MANUFACTURER
 from custom_components.plum_ecomax.entity import EcomaxEntity
 
 
@@ -22,7 +24,9 @@ class _TestEntity(EcomaxEntity, Entity):
 
 
 @patch.object(_TestEntity, "async_update")
-async def test_base_entity(mock_async_update: Any, ecomax_p: EcoMAX) -> None:
+async def test_base_entity(
+    mock_async_update: Any, ecomax_p: EcoMAX, config_entry: MockConfigEntry
+) -> None:
     """Test base entity."""
     entity = _TestEntity()
     mock_description = Mock(spec=EntityDescription)
@@ -33,6 +37,7 @@ async def test_base_entity(mock_async_update: Any, ecomax_p: EcoMAX) -> None:
     entity.entity_description = mock_description
     mock_connection = Mock(spec=EcomaxConnection)
     mock_connection.device = ecomax_p
+    mock_connection.entry = config_entry
     entity.connection = mock_connection
 
     # Test adding entity to hass.
@@ -62,7 +67,15 @@ async def test_base_entity(mock_async_update: Any, ecomax_p: EcoMAX) -> None:
     mock_connection.reset_mock()
 
     # Test device info property.
-    assert entity.device_info == mock_connection.device_info
+    assert entity.device_info == DeviceInfo(
+        configuration_url="http://localhost",
+        identifiers={(DOMAIN, mock_connection.uid)},
+        manufacturer=MANUFACTURER,
+        model=mock_connection.model,
+        name=mock_connection.name,
+        serial_number=mock_connection.uid,
+        sw_version=mock_connection.software,
+    )
 
     # Test unique id property.
     mock_connection.uid = "test_uid"

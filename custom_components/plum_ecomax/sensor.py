@@ -160,12 +160,6 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         value_fn=lambda x: len([value for value in astuple(x) if value is not None]),
     ),
     EcomaxSensorEntityDescription(
-        key="product",
-        translation_key="uid",
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda x: x.uid,
-    ),
-    EcomaxSensorEntityDescription(
         key="lambda_level",
         translation_key="oxygen_level",
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),

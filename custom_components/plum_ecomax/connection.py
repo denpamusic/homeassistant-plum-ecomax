@@ -12,7 +12,6 @@ from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers.entity import DeviceInfo
 import pyplumio
 from pyplumio.connection import Connection
 from pyplumio.const import FrameType, ProductType
@@ -32,7 +31,6 @@ from .const import (
     ATTR_THERMOSTATS,
     ATTR_WATER_HEATER,
     CONF_BAUDRATE,
-    CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
     CONF_MODEL,
@@ -47,7 +45,6 @@ from .const import (
     DEFAULT_DEVICE,
     DEFAULT_PORT,
     DOMAIN,
-    MANUFACTURER,
     Device,
 )
 
@@ -259,19 +256,3 @@ class EcomaxConnection:
     def name(self) -> str:
         """Return the connection name."""
         return cast(str, self.entry.title)
-
-    @cached_property
-    def device_info(self) -> DeviceInfo:
-        """Return the device info."""
-        return DeviceInfo(
-            name=self.name,
-            identifiers={(DOMAIN, self.uid)},
-            manufacturer=MANUFACTURER,
-            model=self.model,
-            sw_version=self.software,
-            configuration_url=(
-                f"http://{self.entry.data[CONF_HOST]}"
-                if self.entry.data[CONF_CONNECTION_TYPE] == CONNECTION_TYPE_TCP
-                else None
-            ),
-        )
