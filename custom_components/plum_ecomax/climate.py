@@ -95,13 +95,12 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
     _attr_target_temperature_name: str | None = None
     _attr_target_temperature_step = TEMPERATURE_STEP
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_translation_key = "thermostat"
 
     def __init__(self, connection: EcomaxConnection, index: int):
         """Initialize a new ecoMAX climate entity."""
         self.connection = connection
-        self.entity_description = EcomaxClimateEntityDescription(
-            key="thermostat", translation_key="thermostat"
-        )
+        self.entity_description = EcomaxClimateEntityDescription(key="thermostat")
         self.index = index
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
