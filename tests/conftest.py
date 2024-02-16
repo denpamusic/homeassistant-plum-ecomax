@@ -106,7 +106,14 @@ def fixture_config_data():
         CONF_MODEL: "ecoMAX 850P2-C",
         CONF_PRODUCT_TYPE: ProductType.ECOMAX_P,
         CONF_PRODUCT_ID: 4,
-        CONF_SOFTWARE: "6.10.32.K1",
+        CONF_SOFTWARE: {
+            "module_a": "6.10.32.K1",
+            "module_b": None,
+            "module_c": None,
+            "ecolambda": "0.8.0",
+            "ecoster": None,
+            "panel": "6.30.36",
+        },
         CONF_SUB_DEVICES: [ATTR_MIXERS],
     }
 
@@ -115,11 +122,7 @@ def fixture_config_data():
 def fixture_tcp_config_data(tcp_user_input, config_data):
     """Inject the TCP connection type."""
     config_data |= tcp_user_input
-    config_data.update(
-        {
-            CONF_CONNECTION_TYPE: CONNECTION_TYPE_TCP,
-        }
-    )
+    config_data.update({CONF_CONNECTION_TYPE: CONNECTION_TYPE_TCP})
 
     yield config_data
 
@@ -128,11 +131,7 @@ def fixture_tcp_config_data(tcp_user_input, config_data):
 def fixture_serial_config_data(serial_user_input, config_data):
     """Inject the serial connection type."""
     config_data |= serial_user_input
-    config_data.update(
-        {
-            CONF_CONNECTION_TYPE: CONNECTION_TYPE_SERIAL,
-        }
-    )
+    config_data.update({CONF_CONNECTION_TYPE: CONNECTION_TYPE_SERIAL})
 
     yield config_data
 

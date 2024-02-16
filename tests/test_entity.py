@@ -10,7 +10,7 @@ from pyplumio.filters import Filter
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import DOMAIN, MANUFACTURER
+from custom_components.plum_ecomax.const import DOMAIN, MANUFACTURER, Module
 from custom_components.plum_ecomax.entity import EcomaxEntity
 
 
@@ -38,6 +38,7 @@ async def test_base_entity(
     mock_connection = Mock(spec=EcomaxConnection)
     mock_connection.device = ecomax_p
     mock_connection.entry = config_entry
+    mock_connection.software = {Module.A: "6.10.32.K1"}
     entity.connection = mock_connection
 
     # Test adding entity to hass.
@@ -74,7 +75,7 @@ async def test_base_entity(
         model=mock_connection.model,
         name=mock_connection.name,
         serial_number=mock_connection.uid,
-        sw_version=mock_connection.software,
+        sw_version=mock_connection.software[Module.A],
     )
 
     # Test unique id property.

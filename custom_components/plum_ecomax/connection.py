@@ -248,9 +248,9 @@ class EcomaxConnection:
         return cast(str, self.entry.data[CONF_UID])
 
     @cached_property
-    def software(self) -> str:
+    def software(self) -> dict[str, str]:
         """Return the product software version."""
-        return cast(str, self.entry.data[CONF_SOFTWARE])
+        return cast(dict[str, str], self.entry.data[CONF_SOFTWARE])
 
     @cached_property
     def name(self) -> str:

@@ -135,7 +135,14 @@ async def test_form_tcp(
         CONF_MODEL: "ecoMAX 850P2-C",
         CONF_PRODUCT_TYPE: ProductType.ECOMAX_P,
         CONF_PRODUCT_ID: 4,
-        CONF_SOFTWARE: "6.10.32.K1",
+        CONF_SOFTWARE: {
+            "module_a": "6.10.32.K1",
+            "module_b": None,
+            "module_c": None,
+            "ecolambda": "0.8.0",
+            "ecoster": None,
+            "panel": "6.30.36",
+        },
         CONF_SUB_DEVICES: ["water_heater"],
     }
 
@@ -228,7 +235,14 @@ async def test_form_serial(
         CONF_MODEL: "ecoMAX 850P2-C",
         CONF_PRODUCT_TYPE: ProductType.ECOMAX_P,
         CONF_PRODUCT_ID: 4,
-        CONF_SOFTWARE: "6.10.32.K1",
+        CONF_SOFTWARE: {
+            "module_a": "6.10.32.K1",
+            "module_b": None,
+            "module_c": None,
+            "ecolambda": "0.8.0",
+            "ecoster": None,
+            "panel": "6.30.36",
+        },
         CONF_SUB_DEVICES: ["water_heater"],
     }
 

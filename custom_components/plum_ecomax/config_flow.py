@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Mapping
+from dataclasses import asdict
 import logging
 from typing import Any, cast
 
@@ -88,7 +89,7 @@ async def validate_input(
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
     """Handle a config flow for Plum ecoMAX integration."""
 
-    VERSION = 7
+    VERSION = 8
 
     def __init__(self) -> None:
         """Initialize a new config flow."""
@@ -295,7 +296,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
         self.init_info.update(
             {
-                CONF_SOFTWARE: modules.module_a,
+                CONF_SOFTWARE: asdict(modules),
                 CONF_SUB_DEVICES: sub_devices,
             }
         )

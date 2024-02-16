@@ -21,6 +21,7 @@ from .const import (
     DOMAIN,
     MANUFACTURER,
     Device,
+    Module,
 )
 
 
@@ -92,7 +93,7 @@ class EcomaxEntity(ABC):
             model=self.connection.model,
             name=self.connection.name,
             serial_number=self.connection.uid,
-            sw_version=self.connection.software,
+            sw_version=self.connection.software[Module.A],
         )
 
     @property
@@ -128,6 +129,7 @@ class ThermostatEntity(EcomaxEntity):
             manufacturer=MANUFACTURER,
             model=f"{self.connection.model} (Thermostat {self.index + 1})",
             name=f"{self.connection.name} Thermostat {self.index + 1}",
+            sw_version=self.connection.software[Module.ECOSTER],
             via_device=(DOMAIN, self.connection.uid),
         )
 
