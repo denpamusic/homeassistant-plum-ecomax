@@ -24,6 +24,7 @@ ALERT_MESSAGES: dict[AlertType, str] = {
     AlertType.MAX_FEEDER_TEMP_EXCEEDED: "maximum feeder temperature exceeded",
     AlertType.EXHAUST_TEMP_SENSOR_FAILURE: "exhaust temperature sensor failed",
     AlertType.KINDLING_FAILURE: "encountered kindling failure",
+    AlertType.NO_FUEL: "fuel not detected",
     AlertType.FAN_FAILURE: "encountered fan failure",
 }
 
