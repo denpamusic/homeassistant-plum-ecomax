@@ -1,10 +1,10 @@
 {
   "config": {
     "abort": {
-      "unsupported_product": "Контроллер не поддерживается",
+      "already_configured": "Устройство уже настроено",
       "discovery_failed": "Ошибка обнаружения модулей",
       "no_devices_found": "Устройства не обнаружены",
-      "already_configured": "Устройство уже настроено"
+      "unsupported_product": "Контроллер не поддерживается"
     },
     "error": {
       "cannot_connect": "Ошибка подключения",
@@ -12,48 +12,74 @@
       "unknown": "Неопознанная ошибка"
     },
     "progress": {
-      "identify_device": "Определяем модель контроллера...",
-      "discover_modules": "Обнаруживаем подключенные к {model} модули..."
+      "discover_modules": "Обнаруживаем подключенные к {model} модули...",
+      "identify_device": "Определяем модель контроллера..."
     },
     "step": {
-      "user": {
-        "title": "Choose a connection type",
-        "menu_options": {
-          "tcp": "Подключиться по сети (TCP)",
-          "serial": "Подключиться через последовательный порт (RS-485)"
-        }
-      },
       "serial": {
-        "title": "Serial settings",
         "data": {
-          "device": "Путь к устройству",
-          "baudrate": "Скорость передачи"
-        }
+          "baudrate": "Скорость передачи",
+          "device": "Путь к устройству"
+        },
+        "title": "Serial settings"
       },
       "tcp": {
-        "title": "Network settings",
         "data": {
           "host": "IP-адрес/домен",
           "port": "Порт"
-        }
+        },
+        "title": "Network settings"
+      },
+      "user": {
+        "menu_options": {
+          "serial": "Подключиться через последовательный порт (RS-485)",
+          "tcp": "Подключиться по сети (TCP)"
+        },
+        "title": "Choose a connection type"
       }
     }
   },
   "entity": {
     "binary_sensor": {
-      "heating_pump": { "name": "Насос отопления" },
-      "water_heater_pump": { "name": "Насос водонагревателя" },
-      "circulation_pump": { "name": "Насос рециркуляции ГВС" },
-      "alert": { "name": "Тревога" },
-      "connection_status": { "name": "Состояние подключения" },
-      "fan": { "name": "Вентилятор" },
-      "exhaust_fan": { "name": "Дымосос" },
-      "feeder": { "name": "Подача" },
-      "lighter": { "name": "Авторозжиг" },
-      "solar_pump": { "name": "Насос солнечного нагвателя" },
-      "fireplace_pump": { "name": "Насос камина" },
-      "mixer_pump": { "name": "Насос миксера" },
-      "circuit_pump": { "name": "Насос контура" }
+      "alert": {
+        "name": "Тревога"
+      },
+      "circuit_pump": {
+        "name": "Насос контура"
+      },
+      "circulation_pump": {
+        "name": "Насос рециркуляции ГВС"
+      },
+      "connection_status": {
+        "name": "Состояние подключения"
+      },
+      "exhaust_fan": {
+        "name": "Дымосос"
+      },
+      "fan": {
+        "name": "Вентилятор"
+      },
+      "feeder": {
+        "name": "Подача"
+      },
+      "fireplace_pump": {
+        "name": "Насос камина"
+      },
+      "heating_pump": {
+        "name": "Насос отопления"
+      },
+      "lighter": {
+        "name": "Авторозжиг"
+      },
+      "mixer_pump": {
+        "name": "Насос миксера"
+      },
+      "solar_pump": {
+        "name": "Насос солнечного нагвателя"
+      },
+      "water_heater_pump": {
+        "name": "Насос водонагревателя"
+      }
     },
     "climate": {
       "thermostat": {
@@ -61,166 +87,269 @@
         "state_attributes": {
           "preset_mode": {
             "state": {
-              "schedule": "Расписание",
               "airing": "Проветривание",
-              "party": "Party",
+              "antifreeze": "Антизамерзание",
               "holidays": "Отпуск",
-              "antifreeze": "Антизамерзание"
+              "party": "Party",
+              "schedule": "Расписание"
             }
           }
         }
       }
     },
     "number": {
-      "target_heating_temp": { "name": "Заданная температура отопления" },
-      "min_heating_temp": { "name": "Минимальная температура отопления" },
-      "max_heating_temp": { "name": "Максимальная температура отопления" },
-      "grate_mode_temp": { "name": "Заданная температура отопления в ручном режиме" },
-      "fuzzy_logic_min_power": { "name": "Минимальная мощность fuzzy logic" },
-      "fuzzy_logic_max_power": { "name": "Максимальная мощность Fuzzy logic" },
-      "fuel_calorific_value": { "name": "Теплотворность топлива" },
-      "target_mixer_temp": { "name": "Заданная температура миксера" },
-      "min_mixer_temp": { "name": "Минимальная температура миксера" },
-      "max_mixer_temp": { "name": "Максимальная температура миксера" },
-      "target_circuit_temp": { "name": "Заданная температура контура" },
-      "min_circuit_temp": { "name": "Минимальная температура контура" },
-      "max_circuit_temp": { "name": "Максимальная температура контура" },
-      "day_target_circuit_temp": { "name": "Дневная температура контура" },
-      "night_target_circuit_temp": { "name": "Ночная температура контура" }
+      "day_target_circuit_temp": {
+        "name": "Дневная температура контура"
+      },
+      "fuel_calorific_value": {
+        "name": "Теплотворность топлива"
+      },
+      "fuzzy_logic_max_power": {
+        "name": "Максимальная мощность Fuzzy logic"
+      },
+      "fuzzy_logic_min_power": {
+        "name": "Минимальная мощность fuzzy logic"
+      },
+      "grate_mode_temp": {
+        "name": "Заданная температура отопления в ручном режиме"
+      },
+      "max_circuit_temp": {
+        "name": "Максимальная температура контура"
+      },
+      "max_heating_temp": {
+        "name": "Максимальная температура отопления"
+      },
+      "max_mixer_temp": {
+        "name": "Максимальная температура миксера"
+      },
+      "min_circuit_temp": {
+        "name": "Минимальная температура контура"
+      },
+      "min_heating_temp": {
+        "name": "Минимальная температура отопления"
+      },
+      "min_mixer_temp": {
+        "name": "Минимальная температура миксера"
+      },
+      "night_target_circuit_temp": {
+        "name": "Ночная температура контура"
+      },
+      "target_circuit_temp": {
+        "name": "Заданная температура контура"
+      },
+      "target_heating_temp": {
+        "name": "Заданная температура отопления"
+      },
+      "target_mixer_temp": {
+        "name": "Заданная температура миксера"
+      }
     },
     "select": {
-      "summer_mode": {
-        "name": "Летний режим",
-        "state": {
-          "winter": "Зима",
-          "summer": "Лето",
-          "auto": "Авто"
-        }
-      },
       "mixer_work_mode": {
         "name": "Режим работы",
         "state": {
-          "off": "Выключено",
-          "heating": "Отопление",
           "heated_floor": "Теплый пол",
+          "heating": "Отопление",
+          "off": "Выключено",
           "pump_only": "Только насос"
+        }
+      },
+      "summer_mode": {
+        "name": "Летний режим",
+        "state": {
+          "auto": "Авто",
+          "summer": "Лето",
+          "winter": "Зима"
         }
       }
     },
     "sensor": {
-      "heating_temp": { "name": "Температура отопления" },
-      "water_heater_temp": { "name": "Температура водонагревателя" },
-      "outside_temp": { "name": "Температура на улице" },
-      "heating_target": { "name": "Заданная температура отопления" },
-      "water_heater_target": { "name": "Заданная температура водонагревателя" },
-      "ecomax_state": {
-        "name": "Режим",
-        "state": {
-          "off": "Выключено",
-          "stabilization": "Раздув",
-          "kindling": "Розжиг",
-          "heating": "Нагрев",
-          "paused": "Поддержание",
-          "idle": "Простой",
-          "standby": "Ожидание",
-          "burning_off": "Очистка",
-          "alert": "Тревога",
-          "unknown": "Неизвестно"
-        },
-        "state_attributes": {
-          "numeric_state": { "name": "Числовое значение" }
-        }
+      "ash_pan_full": {
+        "name": "Заполненность зольного ящика"
       },
-      "service_password": { "name": "Сервисный пароль" },
+      "boiler_load": {
+        "name": "Нагрузка"
+      },
+      "boiler_power": {
+        "name": "Мощность"
+      },
+      "circuit_target_temp": {
+        "name": "Заданная температура контура"
+      },
+      "circuit_temp": {
+        "name": "Температура контура"
+      },
       "connected_modules": {
         "name": "Connected modules",
         "state_attributes": {
-          "panel": { "name": "Panel software version" },
-          "module_a": { "name": "Module A software version" },
-          "module_b": { "name": "Module B software version" },
-          "module_c": { "name": "Module C software version" },
-          "ecoster": { "name": "ecoSTER software version" },
-          "ecolambda": { "name": "ecoLAMBDA software version" }
+          "ecolambda": {
+            "name": "ecoLAMBDA software version"
+          },
+          "ecoster": {
+            "name": "ecoSTER software version"
+          },
+          "module_a": {
+            "name": "Module A software version"
+          },
+          "module_b": {
+            "name": "Module B software version"
+          },
+          "module_c": {
+            "name": "Module C software version"
+          },
+          "panel": {
+            "name": "Panel software version"
+          }
         }
       },
-      "uid": { "name": "UID" },
-      "oxygen_level": { "name": "Содержание кислорода" },
-      "boiler_power": { "name": "Мощность" },
-      "fuel_level": { "name": "Уровень топлива" },
-      "fuel_consumption": { "name": "Потребление топлива" },
-      "boiler_load": { "name": "Нагрузка" },
-      "fan_power": { "name": "Производительность вентелятора" },
-      "flame_intensity": { "name": "Интенсивность пламени" },
-      "feeder_temp": { "name": "Температура механизма подачи" },
-      "exhaust_temp": { "name": "Температура дымовых газов" },
-      "return_temp": { "name": "Температура обратки" },
-      "lower_buffer_temp": { "name": "Температура накопителя в нижней точке" },
-      "upper_buffer_temp": { "name": "Температура накопителя в верхней точке" },
-      "lower_solar_temp": { "name": "Температура солнечного нагревателя в нижней точке" },
-      "upper_solar_temp": { "name": "Температура солнечного нагревателя в верхней точке" },
-      "fireplace_temp": { "name": "Температура камина" },
-      "mixer_temp": { "name": "Температура миксера" },
-      "mixer_target_temp": { "name": "Заданная температура миксера" },
-      "mixer_valve_opening_percentage": { "name": "Mixer valve opening percentage" },
+      "ecomax_state": {
+        "name": "Режим",
+        "state": {
+          "alert": "Тревога",
+          "burning_off": "Очистка",
+          "heating": "Нагрев",
+          "idle": "Простой",
+          "kindling": "Розжиг",
+          "off": "Выключено",
+          "paused": "Поддержание",
+          "stabilization": "Раздув",
+          "standby": "Ожидание",
+          "unknown": "Неизвестно"
+        },
+        "state_attributes": {
+          "numeric_state": {
+            "name": "Числовое значение"
+          }
+        }
+      },
+      "exhaust_temp": {
+        "name": "Температура дымовых газов"
+      },
+      "fan_power": {
+        "name": "Производительность вентелятора"
+      },
+      "feeder_temp": {
+        "name": "Температура механизма подачи"
+      },
+      "fireplace_temp": {
+        "name": "Температура камина"
+      },
+      "flame_intensity": {
+        "name": "Интенсивность пламени"
+      },
+      "fuel_consumption": {
+        "name": "Потребление топлива"
+      },
+      "fuel_level": {
+        "name": "Уровень топлива"
+      },
+      "heating_target": {
+        "name": "Заданная температура отопления"
+      },
+      "heating_temp": {
+        "name": "Температура отопления"
+      },
+      "lower_buffer_temp": {
+        "name": "Температура накопителя в нижней точке"
+      },
+      "lower_solar_temp": {
+        "name": "Температура солнечного нагревателя в нижней точке"
+      },
+      "mixer_target_temp": {
+        "name": "Заданная температура миксера"
+      },
+      "mixer_temp": {
+        "name": "Температура миксера"
+      },
+      "mixer_valve_opening_percentage": {
+        "name": "Mixer valve opening percentage"
+      },
       "mixer_valve_state": {
         "name": "Mixer valve state",
         "state": {
-          "off": "Off",
           "closing": "Closing",
+          "off": "Off",
           "opening": "Opening",
           "unknown": "Unknown"
         }
       },
-      "circuit_temp": { "name": "Температура контура" },
-      "circuit_target_temp": { "name": "Заданная температура контура" },
+      "outside_temp": {
+        "name": "Температура на улице"
+      },
+      "oxygen_level": {
+        "name": "Содержание кислорода"
+      },
+      "return_temp": {
+        "name": "Температура обратки"
+      },
+      "service_password": {
+        "name": "Сервисный пароль"
+      },
       "total_fuel_burned": {
         "name": "Сожжено топлива",
         "state_attributes": {
-          "burned_since_last_update": { "name": "Сожжено с последнего обновления, г" }
+          "burned_since_last_update": {
+            "name": "Сожжено с последнего обновления, г"
+          }
         }
       },
-      "ash_pan_full": { "name": "Заполненность зольного ящика" }
+      "uid": {
+        "name": "UID"
+      },
+      "upper_buffer_temp": {
+        "name": "Температура накопителя в верхней точке"
+      },
+      "upper_solar_temp": {
+        "name": "Температура солнечного нагревателя в верхней точке"
+      },
+      "water_heater_target": {
+        "name": "Заданная температура водонагревателя"
+      },
+      "water_heater_temp": {
+        "name": "Температура водонагревателя"
+      }
     },
     "switch": {
-      "controller_switch": { "name": "Питание контроллера" },
-      "water_heater_disinfection_switch": { "name": "Дезинфекция водонагревателя" },
-      "water_heater_pump_switch": { "name": "Насос водонагревателя" },
-      "weather_control_switch": { "name": "Погодозависимое управление" },
-      "fuzzy_logic_switch": { "name": "Fuzzy logic" },
-      "heating_schedule_switch": { "name": "Работа отопления по расписанию" },
-      "water_heater_schedule_switch": { "name": "Работа водонагревателя по расписанию" },
-      "enable_in_summer_mode": { "name": "Включен в летнем режиме" },
-      "disable_pump_on_thermostat": { "name": "Отключать насос по сигналу термостата" },
-      "enable_circuit": { "name": "Включить контур" }
+      "controller_switch": {
+        "name": "Питание контроллера"
+      },
+      "disable_pump_on_thermostat": {
+        "name": "Отключать насос по сигналу термостата"
+      },
+      "enable_circuit": {
+        "name": "Включить контур"
+      },
+      "enable_in_summer_mode": {
+        "name": "Включен в летнем режиме"
+      },
+      "fuzzy_logic_switch": {
+        "name": "Fuzzy logic"
+      },
+      "heating_schedule_switch": {
+        "name": "Работа отопления по расписанию"
+      },
+      "water_heater_disinfection_switch": {
+        "name": "Дезинфекция водонагревателя"
+      },
+      "water_heater_pump_switch": {
+        "name": "Насос водонагревателя"
+      },
+      "water_heater_schedule_switch": {
+        "name": "Работа водонагревателя по расписанию"
+      },
+      "weather_control_switch": {
+        "name": "Погодозависимое управление"
+      }
     },
     "water_heater": {
-      "indirect_water_heater": { "name": "Пассивный водонагреватель" }
+      "indirect_water_heater": {
+        "name": "Пассивный водонагреватель"
+      }
     }
   },
   "exceptions": {
-    "invalid_parameter": {
-      "message": "Invalid parameter selected ({parameter})"
-    },
-    "invalid_parameter_value": {
-      "message": "Invalid value {value} for the {parameter} parameter"
-    },
-    "set_parameter_failed": {
-      "message": "Request to set a parameter failed ({parameter})"
-    },
-    "set_parameter_timeout": {
-      "message": "Request to set a parameter timed out ({parameter})"
-    },
-    "get_parameter_timeout": {
-      "message": "Request to get a parameter timed out ({parameter})"
-    },
-    "parameter_not_found": {
-      "message": "Requested parameter not found ({parameter})"
-    },
-    "schedule_not_found": {
-      "message": "Requested schedule not found ({schedule})"
-    },
-    "invalid_schedule_interval": {
-      "message": "Invalid interval selected for {schedule}. Got {start} to {end}."
+    "connection_timeout": {
+      "message": "Timed out while trying to connect ({connection})"
     },
     "device_not_found": {
       "message": "Requested device not found ({device})"
@@ -228,8 +357,29 @@
     "device_not_ready": {
       "message": "Device not ready ({device})"
     },
-    "connection_timeout": {
-      "message": "Timed out while trying to connect ({connection})"
+    "get_parameter_timeout": {
+      "message": "Request to get a parameter timed out ({parameter})"
+    },
+    "invalid_parameter": {
+      "message": "Invalid parameter selected ({parameter})"
+    },
+    "invalid_parameter_value": {
+      "message": "Invalid value {value} for the {parameter} parameter"
+    },
+    "invalid_schedule_interval": {
+      "message": "Invalid interval selected for {schedule}. Got {start} to {end}."
+    },
+    "parameter_not_found": {
+      "message": "Requested parameter not found ({parameter})"
+    },
+    "schedule_not_found": {
+      "message": "Requested schedule not found ({schedule})"
+    },
+    "set_parameter_failed": {
+      "message": "Request to set a parameter failed ({parameter})"
+    },
+    "set_parameter_timeout": {
+      "message": "Request to set a parameter timed out ({parameter})"
     }
   },
   "options": {
@@ -265,6 +415,12 @@
     }
   },
   "selector": {
+    "preset": {
+      "options": {
+        "day": "День",
+        "night": "Ночь"
+      }
+    },
     "schedule_type": {
       "options": {
         "heating": "Отопление",
@@ -273,19 +429,13 @@
     },
     "weekdays": {
       "options": {
-        "monday": "Понедельник",
-        "tuesday": "Вторник",
-        "wednesday": "Среда",
-        "thursday": "Четверг",
         "friday": "Пятница",
+        "monday": "Понедельник",
         "saturday": "Суббота",
-        "sunday": "Воскресенье"
-      }
-    },
-    "preset": {
-      "options": {
-        "day": "День",
-        "night": "Ночь"
+        "sunday": "Воскресенье",
+        "thursday": "Четверг",
+        "tuesday": "Вторник",
+        "wednesday": "Среда"
       }
     },
     "binary_sensor_device_class": {
@@ -443,83 +593,83 @@
     }
   },
   "services": {
-    "get_parameter": {
-      "name": "Получить значение параметра",
-      "description": "Получает значение параметра устройства.",
-      "fields": {
-        "name": {
-          "name": "Название",
-          "description": "Название параметра."
-        }
-      }
-    },
-    "set_parameter": {
-      "name": "Установить значение параметра",
-      "description": "Устанавливает значение параметра устройства.",
-      "fields": {
-        "name": {
-          "name": "Название",
-          "description": "Название параметра."
-        },
-        "value": {
-          "name": "Значение",
-          "description": "Новое значение параметра."
-        }
-      }
-    },
-    "get_schedule": {
-      "name": "Получить расписание",
-      "description": "Получает расписание работы устройства.",
-      "fields": {
-        "type": {
-          "name": "Тип",
-          "description": "Тип расписания."
-        },
-        "weekdays": {
-          "name": "Дни недели",
-          "description": "Дни недели, для которых требуется получить расписание."
-        }
-      }
-    },
-    "set_schedule": {
-      "name": "Установить расписание",
-      "description": "Устанавливает расписание работы устройства.",
-      "fields": {
-        "type": {
-          "name": "Тип",
-          "description": "Тип расписания."
-        },
-        "weekdays": {
-          "name": "Дни недели",
-          "description": "Дни недели, для которых требуется установить расписание."
-        },
-        "preset": {
-          "name": "Состояние",
-          "description": "Состояние устройства в заданный интервал времени."
-        },
-        "start": {
-          "name": "Начало",
-          "description": "Заданное состояние будет установлено начиная с этого времени."
-        },
-        "end": {
-          "name": "Конец",
-          "description": "Заданое состояние будет сброшено начиная с этого времени."
-        }
-      }
-    },
-    "reset_meter": {
-      "name": "Сбросить счетчик",
-      "description": "Сбрасывает значение счетчика."
-    },
     "calibrate_meter": {
-      "name": "Калибровать счетчик",
       "description": "Позволяет устанавливать текущее значение счетчика.",
       "fields": {
         "value": {
-          "name": "Значение",
-          "description": "Значение на каторое будет установлен счетчик."
+          "description": "Значение на каторое будет установлен счетчик.",
+          "name": "Значение"
         }
-      }
+      },
+      "name": "Калибровать счетчик"
+    },
+    "get_parameter": {
+      "description": "Получает значение параметра устройства.",
+      "fields": {
+        "name": {
+          "description": "Название параметра.",
+          "name": "Название"
+        }
+      },
+      "name": "Получить значение параметра"
+    },
+    "get_schedule": {
+      "description": "Получает расписание работы устройства.",
+      "fields": {
+        "type": {
+          "description": "Тип расписания.",
+          "name": "Тип"
+        },
+        "weekdays": {
+          "description": "Дни недели, для которых требуется получить расписание.",
+          "name": "Дни недели"
+        }
+      },
+      "name": "Получить расписание"
+    },
+    "reset_meter": {
+      "description": "Сбрасывает значение счетчика.",
+      "name": "Сбросить счетчик"
+    },
+    "set_parameter": {
+      "description": "Устанавливает значение параметра устройства.",
+      "fields": {
+        "name": {
+          "description": "Название параметра.",
+          "name": "Название"
+        },
+        "value": {
+          "description": "Новое значение параметра.",
+          "name": "Значение"
+        }
+      },
+      "name": "Установить значение параметра"
+    },
+    "set_schedule": {
+      "description": "Устанавливает расписание работы устройства.",
+      "fields": {
+        "end": {
+          "description": "Заданое состояние будет сброшено начиная с этого времени.",
+          "name": "Конец"
+        },
+        "preset": {
+          "description": "Состояние устройства в заданный интервал времени.",
+          "name": "Состояние"
+        },
+        "start": {
+          "description": "Заданное состояние будет установлено начиная с этого времени.",
+          "name": "Начало"
+        },
+        "type": {
+          "description": "Тип расписания.",
+          "name": "Тип"
+        },
+        "weekdays": {
+          "description": "Дни недели, для которых требуется установить расписание.",
+          "name": "Дни недели"
+        }
+      },
+      "name": "Установить расписание"
     }
   }
 }

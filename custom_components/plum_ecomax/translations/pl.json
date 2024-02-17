@@ -1,10 +1,10 @@
 {
   "config": {
     "abort": {
-      "unsupported_product": "Nieobsługiwany produkt",
+      "already_configured": "Urządzenie jest już skonfigurowane",
       "discovery_failed": "Nie można zakończyć wykrywania modułu",
       "no_devices_found": "Nie znaleziono żadnych urządzeń w sieci",
-      "already_configured": "Urządzenie jest już skonfigurowane"
+      "unsupported_product": "Nieobsługiwany produkt"
     },
     "error": {
       "cannot_connect": "Nie udało się połączyć",
@@ -12,48 +12,74 @@
       "unknown": "Niespodziewany błąd"
     },
     "progress": {
-      "identify_device": "Sprawdzanie modelu urządzenia...",
-      "discover_modules": "Wykrywanie modułów dla {model}..."
+      "discover_modules": "Wykrywanie modułów dla {model}...",
+      "identify_device": "Sprawdzanie modelu urządzenia..."
     },
     "step": {
-      "user": {
-        "title": "Choose a connection type",
-        "menu_options": {
-          "tcp": "Połącz przez sieć (TCP)",
-          "serial": "Połącz przez port szeregowy (RS-485)"
-        }
-      },
       "serial": {
-        "title": "Serial settings",
         "data": {
-          "device": "Ścieżka urządzenia",
-          "baudrate": "Szybkość transmisji"
-        }
+          "baudrate": "Szybkość transmisji",
+          "device": "Ścieżka urządzenia"
+        },
+        "title": "Serial settings"
       },
       "tcp": {
-        "title": "Network settings",
         "data": {
           "host": "Host",
           "port": "Port"
-        }
+        },
+        "title": "Network settings"
+      },
+      "user": {
+        "menu_options": {
+          "serial": "Połącz przez port szeregowy (RS-485)",
+          "tcp": "Połącz przez sieć (TCP)"
+        },
+        "title": "Choose a connection type"
       }
     }
   },
   "entity": {
     "binary_sensor": {
-      "heating_pump": { "name": "Pompa CO" },
-      "water_heater_pump": { "name": "Pompa CWU" },
-      "circulation_pump": { "name": "Pompa cyrkulacyjna" },
-      "alert": { "name": "Alarm" },
-      "connection_status": { "name": "Status połączenia" },
-      "fan": { "name": "Wentylator" },
-      "exhaust_fan": { "name": "Wentylator wyciągowy" },
-      "feeder": { "name": "Podajnik" },
-      "lighter": { "name": "Zapalarka" },
-      "solar_pump": { "name": "Pompa solarna" },
-      "fireplace_pump": { "name": "Pompa kominkowa" },
-      "mixer_pump": { "name": "Pompa mieszacza" },
-      "circuit_pump": { "name": "Pompa obiegowa" }
+      "alert": {
+        "name": "Alarm"
+      },
+      "circuit_pump": {
+        "name": "Pompa obiegowa"
+      },
+      "circulation_pump": {
+        "name": "Pompa cyrkulacyjna"
+      },
+      "connection_status": {
+        "name": "Status połączenia"
+      },
+      "exhaust_fan": {
+        "name": "Wentylator wyciągowy"
+      },
+      "fan": {
+        "name": "Wentylator"
+      },
+      "feeder": {
+        "name": "Podajnik"
+      },
+      "fireplace_pump": {
+        "name": "Pompa kominkowa"
+      },
+      "heating_pump": {
+        "name": "Pompa CO"
+      },
+      "lighter": {
+        "name": "Zapalarka"
+      },
+      "mixer_pump": {
+        "name": "Pompa mieszacza"
+      },
+      "solar_pump": {
+        "name": "Pompa solarna"
+      },
+      "water_heater_pump": {
+        "name": "Pompa CWU"
+      }
     },
     "climate": {
       "thermostat": {
@@ -61,166 +87,269 @@
         "state_attributes": {
           "preset_mode": {
             "state": {
-              "schedule": "Harmonogram",
               "airing": "Wietrzenie",
-              "party": "Impreza",
+              "antifreeze": "Przeciwzamarzanie",
               "holidays": "Wakacje",
-              "antifreeze": "Przeciwzamarzanie"
+              "party": "Impreza",
+              "schedule": "Harmonogram"
             }
           }
         }
       }
     },
     "number": {
-      "target_heating_temp": { "name": "Temperatura zadana kotła" },
-      "min_heating_temp": { "name": "Min. temperatura kotła" },
-      "max_heating_temp": { "name": "Max. temperatura kotła" },
-      "grate_mode_temp": { "name": "Temperatura trybu rusztu" },
-      "fuzzy_logic_min_power": { "name": "Min. moc kotła FL" },
-      "fuzzy_logic_max_power": { "name": "Max. moc kotła FL" },
-      "fuel_calorific_value": { "name": "Kaloryczność paliwa" },
-      "target_mixer_temp": { "name": "Temperatura zadana mieszacza" },
-      "min_mixer_temp": { "name": "Min. temperatura mieszacza" },
-      "max_mixer_temp": { "name": "Max. temperatura  mieszacza" },
-      "target_circuit_temp": { "name": "Temperatura zadana obiegu" },
-      "min_circuit_temp": { "name": "Min. temperatura obiegu" },
-      "max_circuit_temp": { "name": "Max. temperatura obiegu" },
-      "day_target_circuit_temp": { "name": "Temperatura zadana dzień" },
-      "night_target_circuit_temp": { "name": "Temperatura zadana noc" }
+      "day_target_circuit_temp": {
+        "name": "Temperatura zadana dzień"
+      },
+      "fuel_calorific_value": {
+        "name": "Kaloryczność paliwa"
+      },
+      "fuzzy_logic_max_power": {
+        "name": "Max. moc kotła FL"
+      },
+      "fuzzy_logic_min_power": {
+        "name": "Min. moc kotła FL"
+      },
+      "grate_mode_temp": {
+        "name": "Temperatura trybu rusztu"
+      },
+      "max_circuit_temp": {
+        "name": "Max. temperatura obiegu"
+      },
+      "max_heating_temp": {
+        "name": "Max. temperatura kotła"
+      },
+      "max_mixer_temp": {
+        "name": "Max. temperatura  mieszacza"
+      },
+      "min_circuit_temp": {
+        "name": "Min. temperatura obiegu"
+      },
+      "min_heating_temp": {
+        "name": "Min. temperatura kotła"
+      },
+      "min_mixer_temp": {
+        "name": "Min. temperatura mieszacza"
+      },
+      "night_target_circuit_temp": {
+        "name": "Temperatura zadana noc"
+      },
+      "target_circuit_temp": {
+        "name": "Temperatura zadana obiegu"
+      },
+      "target_heating_temp": {
+        "name": "Temperatura zadana kotła"
+      },
+      "target_mixer_temp": {
+        "name": "Temperatura zadana mieszacza"
+      }
     },
     "select": {
-      "summer_mode": {
-        "name": "Tryb letni",
-        "state": {
-          "winter": "Zima",
-          "summer": "Lato",
-          "auto": "Auto"
-        }
-      },
       "mixer_work_mode": {
         "name": "Obsługa mieszacza",
         "state": {
-          "off": "Wyłączony",
-          "heating": "Grzanie CO",
           "heated_floor": "Grzanie podłogowe",
+          "heating": "Grzanie CO",
+          "off": "Wyłączony",
           "pump_only": "Tylko pompa"
+        }
+      },
+      "summer_mode": {
+        "name": "Tryb letni",
+        "state": {
+          "auto": "Auto",
+          "summer": "Lato",
+          "winter": "Zima"
         }
       }
     },
     "sensor": {
-      "heating_temp": { "name": "Temperatura CO" },
-      "water_heater_temp": { "name": "Temperatura CWU" },
-      "outside_temp": { "name": "Temperatura na zewnątrz" },
-      "heating_target": { "name": "Temperatura zadana CO" },
-      "water_heater_target": { "name": "Temperatura zadana CWU" },
-      "ecomax_state": {
-        "name": "Tryb",
-        "state": {
-          "off": "Wyłączony",
-          "stabilization": "Stabilizacja",
-          "kindling": "Rozpalanie",
-          "heating": "Praca",
-          "paused": "Nadzór",
-          "idle": "Bezczynny",
-          "standby": "Czuwanie",
-          "burning_off": "Wygaszanie",
-          "alert": "Alarm",
-          "unknown": "Nieznany"
-        },
-        "state_attributes": {
-          "numeric_state": { "name": "Numeric state" }
-        }
+      "ash_pan_full": {
+        "name": "Popielnik pełny"
       },
-      "service_password": { "name": "Hasło serwisowe" },
+      "boiler_load": {
+        "name": "Poziom obciążenia kotła"
+      },
+      "boiler_power": {
+        "name": "Moc kotła"
+      },
+      "circuit_target_temp": {
+        "name": "Temperatura zadana obiegu"
+      },
+      "circuit_temp": {
+        "name": "Temperatura obiegu"
+      },
       "connected_modules": {
         "name": "Connected modules",
         "state_attributes": {
-          "panel": { "name": "Wersja oprogramowania Panel" },
-          "module_a": { "name": "Wersja oprogramowania Module A" },
-          "module_b": { "name": "Wersja oprogramowania Module B" },
-          "module_c": { "name": "Wersja oprogramowania Module C" },
-          "ecoster": { "name": "Wersja oprogramowania ecoSTER" },
-          "ecolambda": { "name": "Wersja oprogramowania ecoLAMBDA" }
+          "ecolambda": {
+            "name": "Wersja oprogramowania ecoLAMBDA"
+          },
+          "ecoster": {
+            "name": "Wersja oprogramowania ecoSTER"
+          },
+          "module_a": {
+            "name": "Wersja oprogramowania Module A"
+          },
+          "module_b": {
+            "name": "Wersja oprogramowania Module B"
+          },
+          "module_c": {
+            "name": "Wersja oprogramowania Module C"
+          },
+          "panel": {
+            "name": "Wersja oprogramowania Panel"
+          }
         }
       },
-      "uid": { "name": "UID" },
-      "oxygen_level": { "name": "Poziom tlenu" },
-      "boiler_power": { "name": "Moc kotła" },
-      "fuel_level": { "name": "Poziom paliwa" },
-      "fuel_consumption": { "name": "Zużycie paliwa" },
-      "boiler_load": { "name": "Poziom obciążenia kotła" },
-      "fan_power": { "name": "Moc wentylatora" },
-      "flame_intensity": { "name": "Intensywność płomienia" },
-      "feeder_temp": { "name": "Temperatura podajnika" },
-      "exhaust_temp": { "name": "Temperatura spalin" },
-      "return_temp": { "name": "Temperatura powrotu" },
-      "lower_buffer_temp": { "name": "Temperatura dolna bufora" },
-      "upper_buffer_temp": { "name": "Temperatura górna bufora" },
-      "lower_solar_temp": { "name": "Temperatura dolna solarny" },
-      "upper_solar_temp": { "name": "Temperatura górna solarny" },
-      "fireplace_temp": { "name": "Temperatura kominkowa" },
-      "mixer_temp": { "name": "Temperatura mieszacza" },
-      "mixer_target_temp": { "name": "Temperatura zadana mieszacza" },
-      "mixer_valve_opening_percentage": { "name": "Otwarcie zaworu mieszacza" },
+      "ecomax_state": {
+        "name": "Tryb",
+        "state": {
+          "alert": "Alarm",
+          "burning_off": "Wygaszanie",
+          "heating": "Praca",
+          "idle": "Bezczynny",
+          "kindling": "Rozpalanie",
+          "off": "Wyłączony",
+          "paused": "Nadzór",
+          "stabilization": "Stabilizacja",
+          "standby": "Czuwanie",
+          "unknown": "Nieznany"
+        },
+        "state_attributes": {
+          "numeric_state": {
+            "name": "Numeric state"
+          }
+        }
+      },
+      "exhaust_temp": {
+        "name": "Temperatura spalin"
+      },
+      "fan_power": {
+        "name": "Moc wentylatora"
+      },
+      "feeder_temp": {
+        "name": "Temperatura podajnika"
+      },
+      "fireplace_temp": {
+        "name": "Temperatura kominkowa"
+      },
+      "flame_intensity": {
+        "name": "Intensywność płomienia"
+      },
+      "fuel_consumption": {
+        "name": "Zużycie paliwa"
+      },
+      "fuel_level": {
+        "name": "Poziom paliwa"
+      },
+      "heating_target": {
+        "name": "Temperatura zadana CO"
+      },
+      "heating_temp": {
+        "name": "Temperatura CO"
+      },
+      "lower_buffer_temp": {
+        "name": "Temperatura dolna bufora"
+      },
+      "lower_solar_temp": {
+        "name": "Temperatura dolna solarny"
+      },
+      "mixer_target_temp": {
+        "name": "Temperatura zadana mieszacza"
+      },
+      "mixer_temp": {
+        "name": "Temperatura mieszacza"
+      },
+      "mixer_valve_opening_percentage": {
+        "name": "Otwarcie zaworu mieszacza"
+      },
       "mixer_valve_state": {
         "name": "Status zaworu",
         "state": {
-          "off": "Nie działa",
           "closing": "Zamykanie",
+          "off": "Nie działa",
           "opening": "Otwieranie",
           "unknown": "Nieznany"
         }
       },
-      "circuit_temp": { "name": "Temperatura obiegu" },
-      "circuit_target_temp": { "name": "Temperatura zadana obiegu" },
+      "outside_temp": {
+        "name": "Temperatura na zewnątrz"
+      },
+      "oxygen_level": {
+        "name": "Poziom tlenu"
+      },
+      "return_temp": {
+        "name": "Temperatura powrotu"
+      },
+      "service_password": {
+        "name": "Hasło serwisowe"
+      },
       "total_fuel_burned": {
         "name": "Spalone paliwo",
         "state_attributes": {
-          "burned_since_last_update": { "name": "Burned since last update, g" }
+          "burned_since_last_update": {
+            "name": "Burned since last update, g"
+          }
         }
       },
-      "ash_pan_full": { "name": "Popielnik pełny" }
+      "uid": {
+        "name": "UID"
+      },
+      "upper_buffer_temp": {
+        "name": "Temperatura górna bufora"
+      },
+      "upper_solar_temp": {
+        "name": "Temperatura górna solarny"
+      },
+      "water_heater_target": {
+        "name": "Temperatura zadana CWU"
+      },
+      "water_heater_temp": {
+        "name": "Temperatura CWU"
+      }
     },
     "switch": {
-      "controller_switch": { "name": "Przełącznik regulatora" },
-      "water_heater_disinfection_switch": { "name": "Dezynfekcja zasobnika CWU" },
-      "water_heater_pump_switch": { "name": "Przełącznik pompy CWU" },
-      "weather_control_switch": { "name": "Sterowanie pogodowe" },
-      "fuzzy_logic_switch": { "name": "Przełącznik Fuzzy Logic" },
-      "heating_schedule_switch": { "name": "Harmonogram CO" },
-      "water_heater_schedule_switch": { "name": "Harmonogram CWU" },
-      "enable_in_summer_mode": { "name": "Praca w trybie letnim" },
-      "disable_pump_on_thermostat": { "name": "Blokada pompy od termostatu" },
-      "enable_circuit": { "name": "Obsługa obiegu" }
+      "controller_switch": {
+        "name": "Przełącznik regulatora"
+      },
+      "disable_pump_on_thermostat": {
+        "name": "Blokada pompy od termostatu"
+      },
+      "enable_circuit": {
+        "name": "Obsługa obiegu"
+      },
+      "enable_in_summer_mode": {
+        "name": "Praca w trybie letnim"
+      },
+      "fuzzy_logic_switch": {
+        "name": "Przełącznik Fuzzy Logic"
+      },
+      "heating_schedule_switch": {
+        "name": "Harmonogram CO"
+      },
+      "water_heater_disinfection_switch": {
+        "name": "Dezynfekcja zasobnika CWU"
+      },
+      "water_heater_pump_switch": {
+        "name": "Przełącznik pompy CWU"
+      },
+      "water_heater_schedule_switch": {
+        "name": "Harmonogram CWU"
+      },
+      "weather_control_switch": {
+        "name": "Sterowanie pogodowe"
+      }
     },
     "water_heater": {
-      "indirect_water_heater": { "name": "CWU" }
+      "indirect_water_heater": {
+        "name": "CWU"
+      }
     }
   },
   "exceptions": {
-    "invalid_parameter": {
-      "message": "Invalid parameter selected ({parameter})"
-    },
-    "invalid_parameter_value": {
-      "message": "Invalid value {value} for the {parameter} parameter"
-    },
-    "set_parameter_failed": {
-      "message": "Request to set a parameter failed ({parameter})"
-    },
-    "set_parameter_timeout": {
-      "message": "Request to set a parameter timed out ({parameter})"
-    },
-    "get_parameter_timeout": {
-      "message": "Request to get a parameter timed out ({parameter})"
-    },
-    "parameter_not_found": {
-      "message": "Requested parameter not found ({parameter})"
-    },
-    "schedule_not_found": {
-      "message": "Requested schedule not found ({schedule})"
-    },
-    "invalid_schedule_interval": {
-      "message": "Invalid interval selected for {schedule}. Got {start} to {end}."
+    "connection_timeout": {
+      "message": "Timed out while trying to connect ({connection})"
     },
     "device_not_found": {
       "message": "Requested device not found ({device})"
@@ -228,8 +357,29 @@
     "device_not_ready": {
       "message": "Device not ready ({device})"
     },
-    "connection_timeout": {
-      "message": "Timed out while trying to connect ({connection})"
+    "get_parameter_timeout": {
+      "message": "Request to get a parameter timed out ({parameter})"
+    },
+    "invalid_parameter": {
+      "message": "Invalid parameter selected ({parameter})"
+    },
+    "invalid_parameter_value": {
+      "message": "Invalid value {value} for the {parameter} parameter"
+    },
+    "invalid_schedule_interval": {
+      "message": "Invalid interval selected for {schedule}. Got {start} to {end}."
+    },
+    "parameter_not_found": {
+      "message": "Requested parameter not found ({parameter})"
+    },
+    "schedule_not_found": {
+      "message": "Requested schedule not found ({schedule})"
+    },
+    "set_parameter_failed": {
+      "message": "Request to set a parameter failed ({parameter})"
+    },
+    "set_parameter_timeout": {
+      "message": "Request to set a parameter timed out ({parameter})"
     }
   },
   "options": {
@@ -265,6 +415,12 @@
     }
   },
   "selector": {
+    "preset": {
+      "options": {
+        "day": "Dzień",
+        "night": "Noc"
+      }
+    },
     "schedule_type": {
       "options": {
         "heating": "Grzanie CO",
@@ -273,19 +429,13 @@
     },
     "weekdays": {
       "options": {
-        "monday": "Poniedziałek",
-        "tuesday": "Wtorek",
-        "wednesday": "Środa",
-        "thursday": "Czwartek",
         "friday": "Piątek",
+        "monday": "Poniedziałek",
         "saturday": "Sobota",
-        "sunday": "Niedziela"
-      }
-    },
-    "preset": {
-      "options": {
-        "day": "Dzień",
-        "night": "Noc"
+        "sunday": "Niedziela",
+        "thursday": "Czwartek",
+        "tuesday": "Wtorek",
+        "wednesday": "Środa"
       }
     },
     "binary_sensor_device_class": {
@@ -443,83 +593,83 @@
     }
   },
   "services": {
-    "get_parameter": {
-      "name": "Pobierz parametr",
-      "description": "Pobiera parametry urządzenia.",
-      "fields": {
-        "name": {
-          "name": "Nazwa",
-          "description": "Nazwa parametru."
-        }
-      }
-    },
-    "set_parameter": {
-      "name": "Ustaw parametr",
-      "description": "Ustawia parametry urządzenia.",
-      "fields": {
-        "name": {
-          "name": "Nazwa",
-          "description": "Nazwa parametru."
-        },
-        "value": {
-          "name": "Wartość",
-          "description": "Zadana wartość parametru."
-        }
-      }
-    },
-    "get_schedule": {
-      "name": "Pobierz harmonogram",
-      "description": "Pobierz harmonogram urządzenia.",
-      "fields": {
-        "type": {
-          "name": "Typ",
-          "description": "Typ harmonogramu."
-        },
-        "weekdays": {
-          "name": "Dni tygodnia",
-          "description": "Dni tygodnia dla których pobrać harmonogram."
-        }
-      }
-    },
-    "set_schedule": {
-      "name": "Ustaw harmonogram",
-      "description": "Ustaw harmonogram urządzenia.",
-      "fields": {
-        "type": {
-          "name": "Typ",
-          "description": "Typ harmonogramu."
-        },
-        "weekdays": {
-          "name": "Dni tygodnia",
-          "description": "Dni tygodnia dla których ustawić harmonogram."
-        },
-        "preset": {
-          "name": "Nastaw",
-          "description": "Nastaw na zaplanowany czas."
-        },
-        "start": {
-          "name": "Czas startu",
-          "description": "Czas w których nastaw ma zostać rozpoczęty."
-        },
-        "end": {
-          "name": "Czas zakończenia",
-          "description": "Czas w których nastaw ma zostać zakończony."
-        }
-      }
-    },
-    "reset_meter": {
-      "name": "Reset licznika",
-      "description": "Resetuje licznik."
-    },
     "calibrate_meter": {
-      "name": "Kalibracja licznika",
       "description": "Umożliwia kalibrację licznika poprzez wstępne ustawienie jego wartości.",
       "fields": {
         "value": {
-          "name": "Wartość",
-          "description": "Ustaw licznik do zadanej wartości."
+          "description": "Ustaw licznik do zadanej wartości.",
+          "name": "Wartość"
         }
-      }
+      },
+      "name": "Kalibracja licznika"
+    },
+    "get_parameter": {
+      "description": "Pobiera parametry urządzenia.",
+      "fields": {
+        "name": {
+          "description": "Nazwa parametru.",
+          "name": "Nazwa"
+        }
+      },
+      "name": "Pobierz parametr"
+    },
+    "get_schedule": {
+      "description": "Pobierz harmonogram urządzenia.",
+      "fields": {
+        "type": {
+          "description": "Typ harmonogramu.",
+          "name": "Typ"
+        },
+        "weekdays": {
+          "description": "Dni tygodnia dla których pobrać harmonogram.",
+          "name": "Dni tygodnia"
+        }
+      },
+      "name": "Pobierz harmonogram"
+    },
+    "reset_meter": {
+      "description": "Resetuje licznik.",
+      "name": "Reset licznika"
+    },
+    "set_parameter": {
+      "description": "Ustawia parametry urządzenia.",
+      "fields": {
+        "name": {
+          "description": "Nazwa parametru.",
+          "name": "Nazwa"
+        },
+        "value": {
+          "description": "Zadana wartość parametru.",
+          "name": "Wartość"
+        }
+      },
+      "name": "Ustaw parametr"
+    },
+    "set_schedule": {
+      "description": "Ustaw harmonogram urządzenia.",
+      "fields": {
+        "end": {
+          "description": "Czas w których nastaw ma zostać zakończony.",
+          "name": "Czas zakończenia"
+        },
+        "preset": {
+          "description": "Nastaw na zaplanowany czas.",
+          "name": "Nastaw"
+        },
+        "start": {
+          "description": "Czas w których nastaw ma zostać rozpoczęty.",
+          "name": "Czas startu"
+        },
+        "type": {
+          "description": "Typ harmonogramu.",
+          "name": "Typ"
+        },
+        "weekdays": {
+          "description": "Dni tygodnia dla których ustawić harmonogram.",
+          "name": "Dni tygodnia"
+        }
+      },
+      "name": "Ustaw harmonogram"
     }
   }
 }
