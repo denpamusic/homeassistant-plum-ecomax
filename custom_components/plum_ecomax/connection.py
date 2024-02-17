@@ -49,6 +49,7 @@ from .const import (
 )
 
 DEFAULT_TIMEOUT: Final = 15
+DEFAULT_RETRIES: Final = 5
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -151,7 +152,7 @@ class EcomaxConnection:
             await self.device.request(
                 ATTR_THERMOSTAT_PARAMETERS,
                 FrameType.REQUEST_THERMOSTAT_PARAMETERS,
-                retries=5,
+                retries=DEFAULT_RETRIES,
                 timeout=DEFAULT_TIMEOUT,
             )
             return True
@@ -165,7 +166,7 @@ class EcomaxConnection:
             await self.device.request(
                 ATTR_MIXER_PARAMETERS,
                 FrameType.REQUEST_MIXER_PARAMETERS,
-                retries=5,
+                retries=DEFAULT_RETRIES,
                 timeout=DEFAULT_TIMEOUT,
             )
             return True
@@ -179,7 +180,7 @@ class EcomaxConnection:
             await self.device.request(
                 ATTR_REGDATA,
                 FrameType.REQUEST_REGULATOR_DATA_SCHEMA,
-                retries=5,
+                retries=DEFAULT_RETRIES,
                 timeout=DEFAULT_TIMEOUT,
             )
             return True
