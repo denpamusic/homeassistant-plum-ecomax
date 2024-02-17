@@ -7,7 +7,7 @@ from typing import Any, cast, final
 
 from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 from pyplumio.const import ProductType
-from pyplumio.devices import Device as BaseDevice
+from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
 
@@ -96,8 +96,8 @@ class EcomaxEntity(ABC):
             sw_version=self.connection.software[Module.A],
         )
 
-    @property
-    def device(self) -> BaseDevice:
+    @cached_property
+    def device(self) -> EcoMAX:
         """Return the device handler."""
         return self.connection.device
 
@@ -134,7 +134,7 @@ class ThermostatEntity(EcomaxEntity):
         )
 
     @final
-    @property
+    @cached_property
     def device(self) -> Thermostat:
         """Return the mixer handler."""
         return cast(
@@ -178,7 +178,7 @@ class MixerEntity(EcomaxEntity):
         )
 
     @final
-    @property
+    @cached_property
     def device(self) -> Mixer:
         """Return the mixer handler."""
         return cast(Mixer, self.connection.device.data[ATTR_MIXERS][self.index])
