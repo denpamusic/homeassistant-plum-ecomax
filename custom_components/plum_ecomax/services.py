@@ -22,7 +22,7 @@ from homeassistant.helpers.service import (
     async_extract_referenced_entity_ids,
 )
 from pyplumio.const import UnitOfMeasurement
-from pyplumio.devices import Device
+from pyplumio.devices import Device as BaseDevice
 from pyplumio.helpers.parameter import Parameter
 from pyplumio.helpers.schedule import (
     START_OF_DAY,
@@ -37,17 +37,16 @@ import voluptuous as vol
 from .connection import DEFAULT_TIMEOUT, EcomaxConnection
 from .const import (
     ATTR_END,
-    ATTR_MIXERS,
     ATTR_PRESET,
     ATTR_PRODUCT,
     ATTR_SCHEDULES,
     ATTR_START,
-    ATTR_THERMOSTATS,
     ATTR_TYPE,
     ATTR_VALUE,
     ATTR_WEEKDAYS,
     DOMAIN,
     WEEKDAYS,
+    Device,
 )
 
 SCHEDULES: Final = (
@@ -102,7 +101,7 @@ _LOGGER = logging.getLogger(__name__)
 @callback
 def async_extract_target_device(
     device_id: str, hass: HomeAssistant, connection: EcomaxConnection
-) -> Device:
+) -> BaseDevice:
     """Get target device by the device id."""
     device_registry = dr.async_get(hass)
     device = device_registry.async_get(device_id)
@@ -114,17 +113,13 @@ def async_extract_target_device(
         )
 
     identifier = list(device.identifiers)[0][1]
-
-    for device_type in (ATTR_MIXERS, ATTR_THERMOSTATS):
-        if f"-{device_type[:-1]}-" in identifier:
+    for device_type in (Device.MIXER, Device.THERMOSTAT):
+        if f"-{device_type}-" in identifier:
             index = int(identifier.split("-", 3).pop())
-            sub_devices: dict[int, Device] = connection.device.get_nowait(
-                device_type, {}
+            sub_devices: dict[int, BaseDevice] = connection.device.get_nowait(
+                f"{device_type}s", {}
             )
-            try:
-                return sub_devices[index]
-            except KeyError:
-                pass
+            return sub_devices.get(index, connection.device)
 
     return connection.device
 
@@ -132,9 +127,9 @@ def async_extract_target_device(
 @callback
 def async_extract_referenced_devices(
     hass: HomeAssistant, connection: EcomaxConnection, selected: SelectedEntities
-) -> set[Device]:
+) -> set[BaseDevice]:
     """Extract referenced devices from the selected entities."""
-    devices: set[Device] = set()
+    devices: set[BaseDevice] = set()
     extracted: set[str] = set()
     entity_registry = er.async_get(hass)
     referenced = selected.referenced | selected.indirectly_referenced
@@ -148,7 +143,7 @@ def async_extract_referenced_devices(
 
 
 async def async_get_device_parameter(
-    device: Device, name: str
+    device: BaseDevice, name: str
 ) -> dict[str, Any] | None:
     """Get device parameter."""
     try:
@@ -220,7 +215,9 @@ def async_setup_get_parameter_service(
     )
 
 
-async def async_set_device_parameter(device: Device, name: str, value: float) -> bool:
+async def async_set_device_parameter(
+    device: BaseDevice, name: str, value: float
+) -> bool:
     """Set device parameter."""
     try:
         return await device.set(name, value, timeout=DEFAULT_TIMEOUT)
