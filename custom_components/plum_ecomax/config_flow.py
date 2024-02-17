@@ -37,7 +37,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er, selector
 import homeassistant.helpers.config_validation as cv
 from pyplumio.connection import Connection
-from pyplumio.const import ProductType
+from pyplumio.const import ProductType, UnitOfMeasurement
 from pyplumio.devices import AddressableDevice
 from pyplumio.exceptions import ConnectionFailedError
 from pyplumio.helpers.parameter import Parameter
@@ -386,27 +386,27 @@ def async_get_source_options(
     """Return source options."""
     data = dict(sorted(data.items()))
 
-    def format_value(value):
+    def _async_format_value(value: Any) -> Any:
         """Format the value."""
         if isinstance(value, float):
             return round(value, 2)
 
         if isinstance(value, Parameter):
-            unit_of_measurement = (
-                value.unit_of_measurement.value
-                if hasattr(value.unit_of_measurement, "value")
-                else value.unit_of_measurement
-            )
-            return (
-                f"{value.value} {unit_of_measurement}"
-                if unit_of_measurement is not None
-                else f"{value.value}"
-            )
+            if isinstance(value.unit_of_measurement, UnitOfMeasurement):
+                unit_of_measurement = f" {value.unit_of_measurement.value}"
+            elif isinstance(value.unit_of_measurement, str):
+                unit_of_measurement = f" {value.unit_of_measurement}"
+            elif value.unit_of_measurement is None:
+                unit_of_measurement = ""
+
+            return f"{value.value}{unit_of_measurement}"
 
         return value
 
     return [
-        selector.SelectOptionDict(value=str(k), label=f"{k} (value: {format_value(v)})")
+        selector.SelectOptionDict(
+            value=str(k), label=f"{k} (value: {_async_format_value(v)})"
+        )
         for k, v in data.items()
         if type(v) in platform_types
     ]
