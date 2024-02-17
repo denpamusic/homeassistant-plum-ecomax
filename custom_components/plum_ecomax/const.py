@@ -93,7 +93,7 @@ DEVICE_CLASS_METER: Final = "plum_ecomax__meter"
 
 
 @unique
-class Device(StrEnum):
+class DeviceType(StrEnum):
     """Known devices, represented by PyPlumIO's Device class."""
 
     ECOMAX = "ecomax"
@@ -102,7 +102,7 @@ class Device(StrEnum):
 
 
 @unique
-class Module(StrEnum):
+class ModuleType(StrEnum):
     """Known ecoMAX modules."""
 
     A = "module_a"

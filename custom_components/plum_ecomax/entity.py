@@ -7,7 +7,7 @@ from typing import Any, cast, final
 
 from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 from pyplumio.const import ProductType
-from pyplumio.devices import Device as BaseDevice
+from pyplumio.devices import Device
 from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
 
@@ -20,8 +20,8 @@ from .const import (
     CONNECTION_TYPE_TCP,
     DOMAIN,
     MANUFACTURER,
-    Device,
-    Module,
+    DeviceType,
+    ModuleType,
 )
 
 
@@ -93,11 +93,11 @@ class EcomaxEntity(ABC):
             model=self.connection.model,
             name=self.connection.name,
             serial_number=self.connection.uid,
-            sw_version=self.connection.software[Module.A],
+            sw_version=self.connection.software[ModuleType.A],
         )
 
     @cached_property
-    def device(self) -> BaseDevice:
+    def device(self) -> Device:
         """Return the device handler."""
         return self.connection.device
 
@@ -115,7 +115,7 @@ class ThermostatEntity(EcomaxEntity):
     def unique_id(self) -> str:
         """Return the unique ID."""
         return (
-            f"{self.connection.uid}-{Device.THERMOSTAT}-"
+            f"{self.connection.uid}-{DeviceType.THERMOSTAT}-"
             + f"{self.index}-{self.entity_description.key}"
         )
 
@@ -124,12 +124,12 @@ class ThermostatEntity(EcomaxEntity):
         """Return the device info."""
         return DeviceInfo(
             identifiers={
-                (DOMAIN, f"{self.connection.uid}-{Device.THERMOSTAT}-{self.index}")
+                (DOMAIN, f"{self.connection.uid}-{DeviceType.THERMOSTAT}-{self.index}")
             },
             manufacturer=MANUFACTURER,
             model=f"{self.connection.model} (Thermostat {self.index + 1})",
             name=f"{self.connection.name} Thermostat {self.index + 1}",
-            sw_version=self.connection.software[Module.ECOSTER],
+            sw_version=self.connection.software[ModuleType.ECOSTER],
             via_device=(DOMAIN, self.connection.uid),
         )
 
@@ -151,7 +151,7 @@ class MixerEntity(EcomaxEntity):
     def unique_id(self) -> str:
         """Return a unique ID."""
         return (
-            f"{self.connection.uid}-{Device.MIXER}-"
+            f"{self.connection.uid}-{DeviceType.MIXER}-"
             + f"{self.index}-{self.entity_description.key}"
         )
 
@@ -169,7 +169,7 @@ class MixerEntity(EcomaxEntity):
         """Return the device info."""
         return DeviceInfo(
             identifiers={
-                (DOMAIN, f"{self.connection.uid}-{Device.MIXER}-{self.index}")
+                (DOMAIN, f"{self.connection.uid}-{DeviceType.MIXER}-{self.index}")
             },
             manufacturer=MANUFACTURER,
             model=f"{self.connection.model} ({self.device_name} {self.index + 1})",
