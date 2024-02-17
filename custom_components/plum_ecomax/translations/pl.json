@@ -415,29 +415,6 @@
     }
   },
   "selector": {
-    "preset": {
-      "options": {
-        "day": "Dzień",
-        "night": "Noc"
-      }
-    },
-    "schedule_type": {
-      "options": {
-        "heating": "Grzanie CO",
-        "water_heater": "Grzanie CWU"
-      }
-    },
-    "weekdays": {
-      "options": {
-        "friday": "Piątek",
-        "monday": "Poniedziałek",
-        "saturday": "Sobota",
-        "sunday": "Niedziela",
-        "thursday": "Czwartek",
-        "tuesday": "Wtorek",
-        "wednesday": "Środa"
-      }
-    },
     "binary_sensor_device_class": {
       "options": {
         "battery": "Battery",
@@ -528,6 +505,18 @@
         "none": "No unit of measurement"
       }
     },
+    "preset": {
+      "options": {
+        "day": "Dzień",
+        "night": "Noc"
+      }
+    },
+    "schedule_type": {
+      "options": {
+        "heating": "Grzanie CO",
+        "water_heater": "Grzanie CWU"
+      }
+    },
     "sensor_device_class": {
       "options": {
         "apparent_power": "Apparent power",
@@ -589,6 +578,17 @@
     "sensor_unit_of_measurement": {
       "options": {
         "none": "No unit of measurement"
+      }
+    },
+    "weekdays": {
+      "options": {
+        "friday": "Piątek",
+        "monday": "Poniedziałek",
+        "saturday": "Sobota",
+        "sunday": "Niedziela",
+        "thursday": "Czwartek",
+        "tuesday": "Wtorek",
+        "wednesday": "Środa"
       }
     }
   },

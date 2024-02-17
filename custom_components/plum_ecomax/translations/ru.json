@@ -415,29 +415,6 @@
     }
   },
   "selector": {
-    "preset": {
-      "options": {
-        "day": "День",
-        "night": "Ночь"
-      }
-    },
-    "schedule_type": {
-      "options": {
-        "heating": "Отопление",
-        "water_heater": "Водонагреватель"
-      }
-    },
-    "weekdays": {
-      "options": {
-        "friday": "Пятница",
-        "monday": "Понедельник",
-        "saturday": "Суббота",
-        "sunday": "Воскресенье",
-        "thursday": "Четверг",
-        "tuesday": "Вторник",
-        "wednesday": "Среда"
-      }
-    },
     "binary_sensor_device_class": {
       "options": {
         "battery": "Battery",
@@ -528,6 +505,18 @@
         "none": "No unit of measurement"
       }
     },
+    "preset": {
+      "options": {
+        "day": "День",
+        "night": "Ночь"
+      }
+    },
+    "schedule_type": {
+      "options": {
+        "heating": "Отопление",
+        "water_heater": "Водонагреватель"
+      }
+    },
     "sensor_device_class": {
       "options": {
         "apparent_power": "Apparent power",
@@ -589,6 +578,17 @@
     "sensor_unit_of_measurement": {
       "options": {
         "none": "No unit of measurement"
+      }
+    },
+    "weekdays": {
+      "options": {
+        "friday": "Пятница",
+        "monday": "Понедельник",
+        "saturday": "Суббота",
+        "sunday": "Воскресенье",
+        "thursday": "Четверг",
+        "tuesday": "Вторник",
+        "wednesday": "Среда"
       }
     }
   },

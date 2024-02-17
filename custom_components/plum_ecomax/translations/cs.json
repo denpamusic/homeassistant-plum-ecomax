@@ -415,29 +415,6 @@
     }
   },
   "selector": {
-    "preset": {
-      "options": {
-        "day": "Day",
-        "night": "Night"
-      }
-    },
-    "schedule_type": {
-      "options": {
-        "heating": "Heating",
-        "water_heater": "Water heater"
-      }
-    },
-    "weekdays": {
-      "options": {
-        "friday": "Friday",
-        "monday": "Monday",
-        "saturday": "Saturday",
-        "sunday": "Sunday",
-        "thursday": "Thursday",
-        "tuesday": "Tuesday",
-        "wednesday": "Wednesday"
-      }
-    },
     "binary_sensor_device_class": {
       "options": {
         "battery": "Battery",
@@ -528,6 +505,18 @@
         "none": "No unit of measurement"
       }
     },
+    "preset": {
+      "options": {
+        "day": "Day",
+        "night": "Night"
+      }
+    },
+    "schedule_type": {
+      "options": {
+        "heating": "Heating",
+        "water_heater": "Water heater"
+      }
+    },
     "sensor_device_class": {
       "options": {
         "apparent_power": "Apparent power",
@@ -589,6 +578,17 @@
     "sensor_unit_of_measurement": {
       "options": {
         "none": "No unit of measurement"
+      }
+    },
+    "weekdays": {
+      "options": {
+        "friday": "Friday",
+        "monday": "Monday",
+        "saturday": "Saturday",
+        "sunday": "Sunday",
+        "thursday": "Thursday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday"
       }
     }
   },
