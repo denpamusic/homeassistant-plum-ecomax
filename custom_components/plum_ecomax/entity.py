@@ -7,7 +7,7 @@ from typing import Any, cast, final
 
 from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 from pyplumio.const import ProductType
-from pyplumio.devices.ecomax import EcoMAX
+from pyplumio.devices import Device as BaseDevice
 from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
 
@@ -97,7 +97,7 @@ class EcomaxEntity(ABC):
         )
 
     @cached_property
-    def device(self) -> EcoMAX:
+    def device(self) -> BaseDevice:
         """Return the device handler."""
         return self.connection.device
 
