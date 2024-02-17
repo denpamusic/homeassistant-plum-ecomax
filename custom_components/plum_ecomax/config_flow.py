@@ -84,7 +84,7 @@ from .const import (
     DEFAULT_PORT,
     DOMAIN,
     REGDATA,
-    Device,
+    DeviceType,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -301,7 +301,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
         self.device = cast(
             AddressableDevice,
-            await self.connection.get(Device.ECOMAX, timeout=DEFAULT_TIMEOUT),
+            await self.connection.get(DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT),
         )
         product: ProductInfo = await self.device.get(
             ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT
@@ -417,17 +417,19 @@ def async_get_source_device_options(
     connection: EcomaxConnection,
 ) -> list[selector.SelectOptionDict]:
     """Return source devices."""
-    sources: dict[str, str] = {Device.ECOMAX: f"Common ({connection.model})"}
+    sources: dict[str, str] = {DeviceType.ECOMAX: f"Common ({connection.model})"}
 
     if connection.device.get_nowait(REGDATA, None):
         sources[REGDATA] = f"Extended ({connection.model})"
 
     if mixers := connection.device.get_nowait(ATTR_MIXERS, None):
-        sources |= {f"{Device.MIXER}_{mixer}": f"Mixer {mixer + 1}" for mixer in mixers}
+        sources |= {
+            f"{DeviceType.MIXER}_{mixer}": f"Mixer {mixer + 1}" for mixer in mixers
+        }
 
     if thermostats := connection.device.get_nowait(ATTR_THERMOSTATS, None):
         sources |= {
-            f"{Device.THERMOSTAT}_{thermostat}": f"Thermostat {thermostat + 1}"
+            f"{DeviceType.THERMOSTAT}_{thermostat}": f"Thermostat {thermostat + 1}"
             for thermostat in thermostats
         }
 
@@ -683,19 +685,19 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         )
         entity_keys = [entity.unique_id.split("-")[-1] for entity in entities]
 
-        if self.source_device == Device.ECOMAX:
+        if self.source_device == DeviceType.ECOMAX:
             data = device.data
             skipped = [
                 key
                 for key in entity_keys
-                if not key.startswith((Device.MIXER, Device.THERMOSTAT))
+                if not key.startswith((DeviceType.MIXER, DeviceType.THERMOSTAT))
             ]
 
         elif self.source_device == REGDATA:
             data = device.get_nowait(REGDATA, {})
             skipped = [int(key) for key in entity_keys if key.isnumeric()]
 
-        elif self.source_device.startswith((Device.MIXER, Device.THERMOSTAT)):
+        elif self.source_device.startswith((DeviceType.MIXER, DeviceType.THERMOSTAT)):
             device_type, index = self.source_device.split("_", 1)
             devices: dict[int, Any] = device.get_nowait(f"{device_type}s", {})
             data = devices[int(index)].data

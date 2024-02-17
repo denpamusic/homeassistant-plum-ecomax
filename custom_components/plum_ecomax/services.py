@@ -37,17 +37,16 @@ import voluptuous as vol
 from .connection import DEFAULT_TIMEOUT, EcomaxConnection
 from .const import (
     ATTR_END,
-    ATTR_MIXERS,
     ATTR_PRESET,
     ATTR_PRODUCT,
     ATTR_SCHEDULES,
     ATTR_START,
-    ATTR_THERMOSTATS,
     ATTR_TYPE,
     ATTR_VALUE,
     ATTR_WEEKDAYS,
     DOMAIN,
     WEEKDAYS,
+    DeviceType,
 )
 
 SCHEDULES: Final = (
@@ -114,17 +113,13 @@ def async_extract_target_device(
         )
 
     identifier = list(device.identifiers)[0][1]
-
-    for device_type in (ATTR_MIXERS, ATTR_THERMOSTATS):
-        if f"-{device_type[:-1]}-" in identifier:
+    for device_type in (DeviceType.MIXER, DeviceType.THERMOSTAT):
+        if f"-{device_type}-" in identifier:
             index = int(identifier.split("-", 3).pop())
             sub_devices: dict[int, Device] = connection.device.get_nowait(
-                device_type, {}
+                f"{device_type}s", {}
             )
-            try:
-                return sub_devices[index]
-            except KeyError:
-                pass
+            return sub_devices.get(index, connection.device)
 
     return connection.device
 

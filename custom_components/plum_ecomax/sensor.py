@@ -47,7 +47,7 @@ from .const import (
     DEVICE_CLASS_STATE,
     DOMAIN,
     FLOW_KGH,
-    Module,
+    ModuleType,
     ProductModel,
 )
 from .entity import EcomaxEntity, MixerEntity
@@ -87,7 +87,7 @@ class EcomaxSensorEntityDescription(SensorEntityDescription):
     value_fn: Callable[[Any], Any]
     always_available: bool = False
     filter_fn: Callable[[Any], Any] = on_change
-    module: str = Module.A
+    module: str = ModuleType.A
 
 
 SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
@@ -164,7 +164,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         translation_key="oxygen_level",
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         icon="mdi:weather-windy-variant",
-        module=Module.ECOLAMBDA,
+        module=ModuleType.ECOLAMBDA,
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,

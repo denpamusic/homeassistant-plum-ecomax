@@ -34,7 +34,7 @@ from custom_components.plum_ecomax.const import (
     CONF_UID,
     CONNECTION_TYPE_SERIAL,
     CONNECTION_TYPE_TCP,
-    Device,
+    DeviceType,
 )
 
 SOURCE_IP: Final = "1.1.1.1"
@@ -110,7 +110,9 @@ async def test_async_setup(
     assert exc_info.value.translation_placeholders == {"device": "ecoMAX 850P2-C"}
     await connection.async_setup()
     mock_connection.connect.assert_awaited_once()
-    mock_connection.get.assert_awaited_once_with(Device.ECOMAX, timeout=DEFAULT_TIMEOUT)
+    mock_connection.get.assert_awaited_once_with(
+        DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT
+    )
 
     # Check connection class properties for tcp connection.
     assert not hasattr(connection, "nonexistent")

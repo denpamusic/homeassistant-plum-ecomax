@@ -22,7 +22,7 @@ from pyplumio.helpers.parameter import Parameter
 from pyplumio.structures.modules import ConnectedModules
 
 from .connection import EcomaxConnection
-from .const import ALL, CALORIFIC_KWH_KG, DOMAIN, Module
+from .const import ALL, CALORIFIC_KWH_KG, DOMAIN, ModuleType
 from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ class EcomaxNumberEntityDescription(NumberEntityDescription):
 
     product_types: set[ProductType] | Literal["all"] = ALL
     filter_fn: Callable[[Any], Any] = on_change
-    module: str = Module.A
+    module: str = ModuleType.A
 
 
 NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (

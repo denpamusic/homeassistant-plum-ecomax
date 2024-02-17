@@ -21,7 +21,7 @@ from custom_components.plum_ecomax.const import (
     ATTR_WEEKDAYS,
     DOMAIN,
     WEEKDAYS,
-    Device,
+    DeviceType,
 )
 from custom_components.plum_ecomax.services import (
     SCHEDULES,
@@ -112,7 +112,7 @@ async def test_get_parameter_service(
                 "min_value": 0,
                 "max_value": 1,
                 "unit_of_measurement": "°C",
-                "device_type": Device.ECOMAX,
+                "device_type": DeviceType.ECOMAX,
                 "device_uid": "TEST",
                 "device_index": 0,
             }
@@ -206,7 +206,7 @@ async def test_get_parameter_service(
                 "min_value": 0,
                 "max_value": 1,
                 "unit_of_measurement": "°C",
-                "device_type": Device.ECOMAX,
+                "device_type": DeviceType.ECOMAX,
                 "device_uid": "unknown",
                 "device_index": 0,
             }
