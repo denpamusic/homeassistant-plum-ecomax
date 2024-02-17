@@ -58,6 +58,7 @@ WEEKDAYS: Final[tuple[str, ...]] = (
 CONF_BAUDRATE: Final = "baudrate"
 CONF_CAPABILITIES: Final = "capabilities"
 CONF_CONNECTION_TYPE: Final = "connection_type"
+CONF_KEY: Final = "key"
 CONF_DEVICE: Final = "device"
 CONF_HOST: Final = "host"
 CONF_MODEL: Final = "model"
@@ -68,6 +69,7 @@ CONF_SOFTWARE: Final = "software"
 CONF_SUB_DEVICES: Final = "sub_devices"
 CONF_TITLE: Final = "title"
 CONF_UID: Final = "uid"
+CONF_UPDATE_INTERVAL: Final = "update_interval"
 
 # Connection types.
 CONNECTION_TYPE_SERIAL: Final = "Serial"
@@ -90,6 +92,9 @@ EVENT_PLUM_ECOMAX_ALERT: Final = "plum_ecomax_alert"
 # Device classes.
 DEVICE_CLASS_STATE: Final = "plum_ecomax__state"
 DEVICE_CLASS_METER: Final = "plum_ecomax__meter"
+
+# Data registry.
+REGDATA = "regdata"
 
 
 @unique

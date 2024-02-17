@@ -94,6 +94,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
+async def async_reload_config(
+    hass: HomeAssistant, entry: ConfigEntry, connection: EcomaxConnection
+) -> None:
+    """Reload config on update."""
+    data = {**entry.data}
+    data[CONF_SUB_DEVICES] = await async_get_sub_devices(connection.device)
+    hass.config_entries.async_update_entry(entry, data=data)
+    await hass.config_entries.async_reload(entry.entry_id)
+
+
 @callback
 def async_setup_events(hass: HomeAssistant, connection: EcomaxConnection) -> bool:
     """Set up the ecoMAX events."""

@@ -31,7 +31,6 @@ from custom_components.plum_ecomax.const import (
     CONF_PRODUCT_ID,
     CONF_PRODUCT_TYPE,
     CONF_SOFTWARE,
-    CONF_SUB_DEVICES,
     CONF_UID,
     CONNECTION_TYPE_SERIAL,
     CONNECTION_TYPE_TCP,

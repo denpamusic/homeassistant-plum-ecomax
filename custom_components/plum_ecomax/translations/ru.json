@@ -55,9 +55,6 @@
       "mixer_pump": { "name": "Насос миксера" },
       "circuit_pump": { "name": "Насос контура" }
     },
-    "button": {
-      "detect_sub_devices": { "name": "Определить модули" }
-    },
     "climate": {
       "thermostat": {
         "name": "Термостат",
@@ -235,6 +232,38 @@
       "message": "Timed out while trying to connect ({connection})"
     }
   },
+  "options": {
+    "step": {
+      "entity_details": {
+        "data": {
+          "device_class": "Device class",
+          "key": "Key",
+          "mode": "Mode",
+          "name": "Name",
+          "state_class": "State class",
+          "unit_of_measurement": "Unit of measurement",
+          "update_interval": "Update interval"
+        },
+        "title": "Add a new {platform}"
+      },
+      "entity_type": {
+        "menu_options": {
+          "add_binary_sensor": "Binary sensor",
+          "add_number": "Number",
+          "add_sensor": "Sensor",
+          "add_switch": "Switch"
+        },
+        "title": "Select an entity type"
+      },
+      "init": {
+        "menu_options": {
+          "add_entity": "Add a new entity",
+          "edit_entity": "Edit/delete an entity",
+          "reload": "Reload configuration"
+        }
+      }
+    }
+  },
   "selector": {
     "schedule_type": {
       "options": {
@@ -257,6 +286,159 @@
       "options": {
         "day": "День",
         "night": "Ночь"
+      }
+    },
+    "binary_sensor_device_class": {
+      "options": {
+        "battery": "Battery",
+        "battery_charging": "Charging",
+        "carbon_monoxide": "Carbon monoxide",
+        "cold": "Cold",
+        "connectivity": "Connectivity",
+        "door": "Door",
+        "garage_door": "Garage door",
+        "gas": "Gas",
+        "heat": "Heat",
+        "light": "Light",
+        "lock": "Lock",
+        "moisture": "Moisture",
+        "motion": "Motion",
+        "moving": "Moving",
+        "occupancy": "Occupancy",
+        "opening": "Opening",
+        "plug": "Plug",
+        "power": "Power",
+        "presence": "Presence",
+        "problem": "Problem",
+        "running": "Running",
+        "safety": "Safety",
+        "smoke": "Smoke",
+        "sound": "Sound",
+        "update": "Update",
+        "vibration": "Vibration",
+        "window": "Window"
+      }
+    },
+    "number_device_class": {
+      "options": {
+        "apparent_power": "Apparent power",
+        "aqi": "Air quality index",
+        "atmospheric_pressure": "Atmospheric pressure",
+        "battery": "Battery",
+        "carbon_dioxide": "Carbon dioxide",
+        "carbon_monoxide": "Carbon monoxide",
+        "current": "Current",
+        "data_rate": "Data rate",
+        "distance": "Distance",
+        "energy": "Energy",
+        "energy_storage": "Stored energy",
+        "frequency": "Frequency",
+        "gas": "Gas",
+        "humidity": "Humidity",
+        "illuminance": "Illuminance",
+        "irradiance": "Irradiance",
+        "moisture": "Moisture",
+        "nitrogen_dioxide": "Nitrogen dioxide",
+        "nitrogen_monoxide": "Nitrogen monoxide",
+        "nitrous_oxide": "Nitrous oxide",
+        "ozone": "Ozone",
+        "ph": "pH",
+        "pm1": "PM1",
+        "pm10": "PM10",
+        "pm25": "PM2.5",
+        "power": "Power",
+        "power_factor": "Power factor",
+        "precipitation": "Precipitation",
+        "precipitation_intensity": "Precipitation intensity",
+        "pressure": "Pressure",
+        "reactive_power": "Reactive power",
+        "signal_strength": "Signal strength",
+        "sound_pressure": "Sound pressure",
+        "speed": "Speed",
+        "sulphur_dioxide": "Sulphur dioxide",
+        "temperature": "Temperature",
+        "volatile_organic_compounds": "VOCs",
+        "voltage": "Voltage",
+        "volume": "Volume",
+        "volume_storage": "Stored volume",
+        "water": "Water",
+        "weight": "Weight",
+        "wind_speed": "Wind speed"
+      }
+    },
+    "number_mode": {
+      "options": {
+        "auto": "Auto",
+        "box": "Box",
+        "slider": "Slider"
+      }
+    },
+    "number_unit_of_measurement": {
+      "options": {
+        "none": "No unit of measurement"
+      }
+    },
+    "sensor_device_class": {
+      "options": {
+        "apparent_power": "Apparent power",
+        "aqi": "Air quality index",
+        "atmospheric_pressure": "Atmospheric pressure",
+        "battery": "Battery",
+        "carbon_dioxide": "Carbon dioxide",
+        "carbon_monoxide": "Carbon monoxide",
+        "current": "Current",
+        "data_rate": "Data rate",
+        "date": "Date",
+        "distance": "Distance",
+        "duration": "Duration",
+        "energy": "Energy",
+        "energy_storage": "Stored energy",
+        "frequency": "Frequency",
+        "gas": "Gas",
+        "humidity": "Humidity",
+        "illuminance": "Illuminance",
+        "irradiance": "Irradiance",
+        "moisture": "Moisture",
+        "monetary": "Balance",
+        "nitrogen_dioxide": "Nitrogen dioxide",
+        "nitrogen_monoxide": "Nitrogen monoxide",
+        "nitrous_oxide": "Nitrous oxide",
+        "ozone": "Ozone",
+        "ph": "pH",
+        "pm1": "PM1",
+        "pm10": "PM10",
+        "pm25": "PM2.5",
+        "power": "Power",
+        "power_factor": "Power factor",
+        "precipitation": "Precipitation",
+        "precipitation_intensity": "Precipitation intensity",
+        "pressure": "Pressure",
+        "reactive_power": "Reactive power",
+        "signal_strength": "Signal strength",
+        "sound_pressure": "Sound pressure",
+        "speed": "Speed",
+        "sulphur_dioxide": "Sulphur dioxide",
+        "temperature": "Temperature",
+        "timestamp": "Timestamp",
+        "volatile_organic_compounds": "VOCs",
+        "voltage": "Voltage",
+        "volume": "Volume",
+        "volume_storage": "Stored volume",
+        "water": "Water",
+        "weight": "Weight",
+        "wind_speed": "Wind speed"
+      }
+    },
+    "sensor_state_class": {
+      "options": {
+        "measurement": "Measurement",
+        "total": "Total",
+        "total_increasing": "Total increasing"
+      }
+    },
+    "sensor_unit_of_measurement": {
+      "options": {
+        "none": "No unit of measurement"
       }
     }
   },
