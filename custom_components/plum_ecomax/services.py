@@ -29,6 +29,7 @@ from pyplumio.helpers.schedule import (
     STATE_DAY,
     STATE_NIGHT,
     TIME_FORMAT,
+    Schedule,
     ScheduleDay,
 )
 import voluptuous as vol
@@ -192,7 +193,9 @@ def async_setup_get_parameter_service(
 ) -> None:
     """Set up service to get a device parameter."""
 
-    async def async_get_parameter_service(service_call: ServiceCall) -> ServiceResponse:
+    async def _async_get_parameter_service(
+        service_call: ServiceCall,
+    ) -> ServiceResponse:
         """Service to get a device parameter."""
         name = service_call.data[ATTR_NAME]
         selected = async_extract_referenced_entity_ids(hass, service_call)
@@ -211,7 +214,7 @@ def async_setup_get_parameter_service(
     hass.services.async_register(
         DOMAIN,
         SERVICE_GET_PARAMETER,
-        async_get_parameter_service,
+        _async_get_parameter_service,
         schema=SERVICE_GET_PARAMETER_SCHEMA,
         supports_response=SupportsResponse.ONLY,
     )
@@ -250,7 +253,7 @@ def async_setup_set_parameter_service(
 ) -> None:
     """Set up the service to set a device parameter."""
 
-    async def async_set_parameter_service(service_call: ServiceCall) -> None:
+    async def _async_set_parameter_service(service_call: ServiceCall) -> None:
         """Service to set a device parameter."""
         name = service_call.data[ATTR_NAME]
         value = service_call.data[ATTR_VALUE]
@@ -272,7 +275,7 @@ def async_setup_set_parameter_service(
     hass.services.async_register(
         DOMAIN,
         SERVICE_SET_PARAMETER,
-        async_set_parameter_service,
+        _async_set_parameter_service,
         schema=SERVICE_SET_PARAMETER_SCHEMA,
     )
 
@@ -295,7 +298,7 @@ def async_setup_get_schedule_service(
 ) -> None:
     """Set up the service to get a schedule."""
 
-    async def async_get_schedule_service(service_call: ServiceCall) -> ServiceResponse:
+    async def _async_get_schedule_service(service_call: ServiceCall) -> ServiceResponse:
         """Service to get a schedule."""
         schedule_type = service_call.data[ATTR_TYPE]
         weekdays = service_call.data[ATTR_WEEKDAYS]
@@ -319,7 +322,7 @@ def async_setup_get_schedule_service(
     hass.services.async_register(
         DOMAIN,
         SERVICE_GET_SCHEDULE,
-        async_get_schedule_service,
+        _async_get_schedule_service,
         schema=SERVICE_GET_SCHEDULE_SCHEMA,
         supports_response=SupportsResponse.ONLY,
     )
@@ -331,7 +334,7 @@ def async_setup_set_schedule_service(
 ) -> None:
     """Set up the service to set a schedule."""
 
-    async def async_set_schedule_service(service_call: ServiceCall) -> None:
+    async def _async_set_schedule_service(service_call: ServiceCall) -> None:
         """Service to set a schedule."""
         schedule_type = service_call.data[ATTR_TYPE]
         weekdays = service_call.data[ATTR_WEEKDAYS]
@@ -347,7 +350,7 @@ def async_setup_set_schedule_service(
                 translation_placeholders={"schedule": schedule_type},
             )
 
-        schedule = schedules[schedule_type]
+        schedule: Schedule = schedules[schedule_type]
         for weekday in weekdays:
             schedule_day: ScheduleDay = getattr(schedule, weekday)
             try:
@@ -369,7 +372,7 @@ def async_setup_set_schedule_service(
     hass.services.async_register(
         DOMAIN,
         SERVICE_SET_SCHEDULE,
-        async_set_schedule_service,
+        _async_set_schedule_service,
         schema=SERVICE_SET_SCHEDULE_SCHEMA,
     )
 

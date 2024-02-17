@@ -38,16 +38,16 @@ class EcomaxEntity(ABC):
     async def async_added_to_hass(self) -> None:
         """Subscribe to events."""
 
-        async def async_set_available(value: Any = None) -> None:
+        async def _async_set_available(value: Any = None) -> None:
             """Mark entity as available."""
             self._attr_available = True
 
         func = self.entity_description.filter_fn(self.async_update)
-        self.device.subscribe_once(self.entity_description.key, async_set_available)
+        self.device.subscribe_once(self.entity_description.key, _async_set_available)
         self.device.subscribe(self.entity_description.key, func)
 
         if self.entity_description.key in self.device.data:
-            await async_set_available()
+            await _async_set_available()
             await func(self.device.get_nowait(self.entity_description.key, None))
 
     async def async_will_remove_from_hass(self) -> None:

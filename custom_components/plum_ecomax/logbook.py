@@ -36,7 +36,7 @@ def async_describe_events(
     """Describe logbook events."""
 
     @callback
-    def async_describe_alert_event(event: Event) -> dict[str, str]:
+    def _async_describe_alert_event(event: Event) -> dict[str, str]:
         """Describe an ecoMAX alert logbook event."""
         alert_code = event.data[ATTR_CODE]
         start_time = event.data[ATTR_FROM]
@@ -57,4 +57,4 @@ def async_describe_events(
             LOGBOOK_ENTRY_MESSAGE: f"{alert_string} {time_string}",
         }
 
-    async_describe_event(DOMAIN, EVENT_PLUM_ECOMAX_ALERT, async_describe_alert_event)
+    async_describe_event(DOMAIN, EVENT_PLUM_ECOMAX_ALERT, _async_describe_alert_event)
