@@ -101,7 +101,6 @@ def async_setup_events(hass: HomeAssistant, connection: EcomaxConnection) -> boo
 
     device_registry = dr.async_get(hass)
 
-    @callback
     async def _async_dispatch_alert_events(alerts: list[Alert]) -> None:
         """Handle ecoMAX alert events."""
         if (
