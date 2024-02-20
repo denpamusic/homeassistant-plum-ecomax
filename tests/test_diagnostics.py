@@ -58,6 +58,7 @@ async def test_diagnostics(
             CONF_SOFTWARE: tcp_config_data.get(CONF_SOFTWARE),
             CONF_SUB_DEVICES: tcp_config_data.get(CONF_SUB_DEVICES),
         },
+        "options": {},
     }
     ecomax_data = dict(ecomax_p.data)
     ecomax_data[ATTR_PASSWORD] = REDACTED
