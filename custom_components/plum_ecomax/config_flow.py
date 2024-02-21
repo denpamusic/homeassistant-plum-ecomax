@@ -38,7 +38,7 @@ from homeassistant.helpers import entity_registry as er, selector
 import homeassistant.helpers.config_validation as cv
 from pyplumio.connection import Connection
 from pyplumio.const import ProductType, UnitOfMeasurement
-from pyplumio.devices import AddressableDevice
+from pyplumio.devices import AddressableDevice, SubDevice
 from pyplumio.exceptions import ConnectionFailedError
 from pyplumio.helpers.parameter import Parameter
 from pyplumio.structures.ecomax_parameters import EcomaxBinaryParameter, EcomaxParameter
@@ -687,7 +687,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         if self.source_device == DeviceType.ECOMAX:
             data = device.data
-            skipped = [
+            existing_entities = [
                 key
                 for key in entity_keys
                 if not key.startswith((DeviceType.MIXER, DeviceType.THERMOSTAT))
@@ -695,15 +695,17 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
         elif self.source_device == REGDATA:
             data = device.get_nowait(REGDATA, {})
-            skipped = [int(key) for key in entity_keys if key.isnumeric()]
+            existing_entities = [int(key) for key in entity_keys if key.isnumeric()]
 
         elif self.source_device.startswith((DeviceType.MIXER, DeviceType.THERMOSTAT)):
             device_type, index = self.source_device.split("_", 1)
-            devices: dict[int, Any] = device.get_nowait(f"{device_type}s", {})
+            devices: dict[int, SubDevice] = device.get_nowait(f"{device_type}s", {})
             data = devices[int(index)].data
-            skipped = [key for key in entity_keys if f"{device_type}-{index}" in key]
+            existing_entities = [
+                key for key in entity_keys if f"{device_type}-{index}" in key
+            ]
 
         else:
             raise HomeAssistantError
 
-        return {k: v for k, v in data.items() if k not in skipped}
+        return {k: v for k, v in data.items() if k not in existing_entities}
