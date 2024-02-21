@@ -462,7 +462,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     ) -> FlowResult:
         """Handle adding a new entity."""
         if user_input is not None:
-            self.source_device = user_input[CONF_SOURCE]
+            self.source_device: str = user_input[CONF_SOURCE]
             return await self.async_step_entity_type()
 
         return self.async_show_form(
