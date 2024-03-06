@@ -24,7 +24,7 @@ from homeassistant.helpers.typing import ConfigType
 from pyplumio.filters import on_change, throttle
 from pyplumio.helpers.parameter import Parameter
 
-from . import EcomaxEntity
+from . import EcomaxEntity, EcomaxEntityDescription
 from .connection import EcomaxConnection
 from .const import DOMAIN
 
@@ -37,7 +37,9 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(kw_only=True, frozen=True, slots=True)
-class EcomaxWaterHeaterEntityDescription(WaterHeaterEntityEntityDescription):
+class EcomaxWaterHeaterEntityDescription(
+    WaterHeaterEntityEntityDescription, EcomaxEntityDescription
+):
     """Describes an ecoMAX water heater."""
 
 

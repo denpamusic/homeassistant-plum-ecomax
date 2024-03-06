@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from contextlib import suppress
 from dataclasses import asdict
 from functools import cached_property
 import logging
-from typing import Any, Final, cast, final
+from typing import Any, Final, Literal, cast, final
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -24,7 +25,7 @@ from pyplumio.const import ProductType
 from pyplumio.devices import Device
 from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
-from pyplumio.filters import custom, delta
+from pyplumio.filters import Filter, custom, delta, on_change
 from pyplumio.structures.alerts import ATTR_ALERTS, Alert
 
 from .connection import (
@@ -34,6 +35,7 @@ from .connection import (
     async_get_sub_devices,
 )
 from .const import (
+    ALL,
     ATTR_FROM,
     ATTR_MIXERS,
     ATTR_MODULES,
@@ -203,6 +205,15 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
     return True
 
 
+class EcomaxEntityDescription(EntityDescription):
+    """Describes an ecoMAX entity."""
+
+    always_available: bool = False
+    filter_fn: Callable[[Any], Filter] = on_change
+    module: ModuleType = ModuleType.A
+    product_types: set[ProductType] | Literal["all"] = ALL
+
+
 class EcomaxEntity(ABC):
     """Represents an ecoMAX entity."""
 
@@ -211,7 +222,7 @@ class EcomaxEntity(ABC):
     _attr_should_poll = False
     _attr_has_entity_name = True
     connection: EcomaxConnection
-    entity_description: EntityDescription
+    entity_description: EcomaxEntityDescription
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to events."""

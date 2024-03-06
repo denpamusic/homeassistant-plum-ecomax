@@ -14,13 +14,13 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 
-from . import EcomaxEntity
+from . import EcomaxEntity, EcomaxEntityDescription
 from .connection import EcomaxConnection
 from .const import DOMAIN
 
 
 @dataclass(kw_only=True, frozen=True, slots=True)
-class EcomaxButtonEntityDescription(ButtonEntityDescription):
+class EcomaxButtonEntityDescription(ButtonEntityDescription, EcomaxEntityDescription):
     """Describes an ecoMAX button."""
 
     press_fn: str

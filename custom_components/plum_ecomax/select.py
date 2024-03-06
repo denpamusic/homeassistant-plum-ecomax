@@ -1,7 +1,7 @@
 """Platform for select integration."""
 from __future__ import annotations
 
-from collections.abc import Callable, Generator, Iterable
+from collections.abc import Generator, Iterable
 from dataclasses import dataclass
 import logging
 from typing import Any, Final, Literal
@@ -12,12 +12,11 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from pyplumio.const import ProductType
-from pyplumio.filters import on_change
 from pyplumio.structures.modules import ConnectedModules
 
-from . import EcomaxEntity, MixerEntity
+from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity
 from .connection import EcomaxConnection
-from .const import ALL, DOMAIN, ModuleType
+from .const import ALL, DOMAIN
 
 STATE_SUMMER: Final = "summer"
 STATE_WINTER: Final = "winter"
@@ -30,20 +29,16 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(kw_only=True, frozen=True, slots=True)
-class EcomaxSelectEntityDescription(SelectEntityDescription):
+class EcomaxSelectEntityDescription(SelectEntityDescription, EcomaxEntityDescription):
     """Describes an ecoMAX select."""
-
-    product_types: set[ProductType] | Literal["all"] = ALL
-    filter_fn: Callable[[Any], Any] = on_change
-    module: str = ModuleType.A
 
 
 SELECT_TYPES: tuple[EcomaxSelectEntityDescription, ...] = (
     EcomaxSelectEntityDescription(
         key="summer_mode",
         translation_key="summer_mode",
-        options=[STATE_WINTER, STATE_SUMMER, STATE_AUTO],
         icon="mdi:weather-sunny",
+        options=[STATE_WINTER, STATE_SUMMER, STATE_AUTO],
     ),
 )
 

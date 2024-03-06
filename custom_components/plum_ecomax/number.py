@@ -1,10 +1,10 @@
 """Platform for number integration."""
 from __future__ import annotations
 
-from collections.abc import Callable, Generator, Iterable
+from collections.abc import Generator, Iterable
 from dataclasses import dataclass
 import logging
-from typing import Any, Literal, cast
+from typing import Literal, cast
 
 from homeassistant.components.number import (
     NumberDeviceClass,
@@ -17,24 +17,19 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from pyplumio.const import ProductType
-from pyplumio.filters import on_change
 from pyplumio.helpers.parameter import Parameter
 from pyplumio.structures.modules import ConnectedModules
 
-from . import EcomaxEntity, MixerEntity
+from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity
 from .connection import EcomaxConnection
-from .const import ALL, CALORIFIC_KWH_KG, DOMAIN, ModuleType
+from .const import ALL, CALORIFIC_KWH_KG, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(kw_only=True, frozen=True, slots=True)
-class EcomaxNumberEntityDescription(NumberEntityDescription):
+class EcomaxNumberEntityDescription(NumberEntityDescription, EcomaxEntityDescription):
     """Describes an ecoMAX number."""
-
-    product_types: set[ProductType] | Literal["all"] = ALL
-    filter_fn: Callable[[Any], Any] = on_change
-    module: str = ModuleType.A
 
 
 NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (

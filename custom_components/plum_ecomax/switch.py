@@ -1,7 +1,7 @@
 """Platform for switch integration."""
 from __future__ import annotations
 
-from collections.abc import Callable, Generator, Iterable
+from collections.abc import Generator, Iterable
 from dataclasses import dataclass
 import logging
 from typing import Any, Literal
@@ -12,25 +12,21 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 from pyplumio.const import ProductType
-from pyplumio.filters import on_change
 from pyplumio.helpers.parameter import Parameter
 from pyplumio.helpers.typing import ParameterValueType
 from pyplumio.structures.modules import ConnectedModules
 
-from . import EcomaxEntity, MixerEntity
+from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity
 from .connection import EcomaxConnection
-from .const import ALL, DOMAIN, ModuleType
+from .const import ALL, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(kw_only=True, frozen=True, slots=True)
-class EcomaxSwitchEntityDescription(SwitchEntityDescription):
+class EcomaxSwitchEntityDescription(SwitchEntityDescription, EcomaxEntityDescription):
     """Describes an ecoMAX switch."""
 
-    product_types: set[ProductType] | Literal["all"] = ALL
-    filter_fn: Callable[[Any], Any] = on_change
-    module: str = ModuleType.A
     state_off: ParameterValueType = STATE_OFF
     state_on: ParameterValueType = STATE_ON
 

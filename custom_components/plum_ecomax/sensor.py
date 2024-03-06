@@ -4,7 +4,7 @@ from __future__ import annotations
 from collections.abc import Callable, Generator, Iterable
 from dataclasses import asdict, astuple, dataclass
 import logging
-from typing import Any, Final, Literal
+from typing import Any, Final
 
 from homeassistant.components.sensor import (
     RestoreSensor,
@@ -36,7 +36,7 @@ from pyplumio.filters import aggregate, on_change, throttle
 from pyplumio.structures.modules import ConnectedModules
 import voluptuous as vol
 
-from . import EcomaxEntity, MixerEntity
+from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity
 from .connection import EcomaxConnection
 from .const import (
     ALL,
@@ -80,14 +80,10 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(kw_only=True, frozen=True, slots=True)
-class EcomaxSensorEntityDescription(SensorEntityDescription):
+class EcomaxSensorEntityDescription(SensorEntityDescription, EcomaxEntityDescription):
     """Describes an ecoMAX sensor."""
 
-    product_types: set[ProductType] | Literal["all"] = ALL
     value_fn: Callable[[Any], Any]
-    always_available: bool = False
-    filter_fn: Callable[[Any], Any] = on_change
-    module: str = ModuleType.A
 
 
 SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
