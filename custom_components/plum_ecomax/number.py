@@ -21,9 +21,9 @@ from pyplumio.filters import on_change
 from pyplumio.helpers.parameter import Parameter
 from pyplumio.structures.modules import ConnectedModules
 
+from . import EcomaxEntity, MixerEntity
 from .connection import EcomaxConnection
 from .const import ALL, CALORIFIC_KWH_KG, DOMAIN, ModuleType
-from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
 

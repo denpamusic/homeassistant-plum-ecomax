@@ -17,9 +17,9 @@ from pyplumio.helpers.parameter import Parameter
 from pyplumio.helpers.typing import ParameterValueType
 from pyplumio.structures.modules import ConnectedModules
 
+from . import EcomaxEntity, MixerEntity
 from .connection import EcomaxConnection
 from .const import ALL, DOMAIN, ModuleType
-from .entity import EcomaxEntity, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
 

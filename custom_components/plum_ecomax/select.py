@@ -15,9 +15,9 @@ from pyplumio.const import ProductType
 from pyplumio.filters import on_change
 from pyplumio.structures.modules import ConnectedModules
 
+from . import EcomaxEntity, MixerEntity
 from .connection import EcomaxConnection
 from .const import ALL, DOMAIN, ModuleType
-from .entity import EcomaxEntity, MixerEntity
 
 STATE_SUMMER: Final = "summer"
 STATE_WINTER: Final = "winter"

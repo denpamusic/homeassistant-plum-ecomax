@@ -27,9 +27,9 @@ from homeassistant.helpers.typing import ConfigType
 from pyplumio.filters import on_change, throttle
 from pyplumio.structures.thermostat_parameters import ThermostatParameter
 
+from . import ThermostatEntity
 from .connection import EcomaxConnection
 from .const import DOMAIN
-from .entity import ThermostatEntity
 
 TEMPERATURE_STEP: Final = 0.1
 

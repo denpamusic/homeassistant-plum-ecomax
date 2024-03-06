@@ -14,9 +14,9 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
 
-from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import DOMAIN
-from custom_components.plum_ecomax.entity import EcomaxEntity
+from . import EcomaxEntity
+from .connection import EcomaxConnection
+from .const import DOMAIN
 
 
 @dataclass(kw_only=True, frozen=True, slots=True)

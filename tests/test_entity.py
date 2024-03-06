@@ -9,9 +9,9 @@ from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.filters import Filter
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.plum_ecomax import EcomaxEntity
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import DOMAIN, MANUFACTURER, ModuleType
-from custom_components.plum_ecomax.entity import EcomaxEntity
 
 
 class _TestEntity(EcomaxEntity, Entity):

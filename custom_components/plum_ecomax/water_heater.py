@@ -24,9 +24,9 @@ from homeassistant.helpers.typing import ConfigType
 from pyplumio.filters import on_change, throttle
 from pyplumio.helpers.parameter import Parameter
 
+from . import EcomaxEntity
 from .connection import EcomaxConnection
 from .const import DOMAIN
-from .entity import EcomaxEntity
 
 EM_TO_HA_STATE: Final = {0: STATE_OFF, 1: STATE_PERFORMANCE, 2: STATE_ECO}
 HA_TO_EM_STATE: Final = {v: k for k, v in EM_TO_HA_STATE.items()}

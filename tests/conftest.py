@@ -351,7 +351,7 @@ def fixture_ecomax_p(ecomax_common: EcoMAX):
         "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
         ProductType.ECOMAX_P,
     ), patch(
-        "custom_components.plum_ecomax.entity.EcomaxConnection.async_setup_mixers",
+        "custom_components.plum_ecomax.EcomaxConnection.async_setup_mixers",
         return_value=False,
     ):
         yield ecomax_common
@@ -388,7 +388,7 @@ def fixture_ecomax_i(ecomax_common: EcoMAX):
         "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
         ProductType.ECOMAX_I,
     ), patch(
-        "custom_components.plum_ecomax.entity.EcomaxConnection.async_setup_mixers",
+        "custom_components.plum_ecomax.EcomaxConnection.async_setup_mixers",
         return_value=False,
     ):
         yield ecomax_common
@@ -528,9 +528,7 @@ def water_heater(ecomax_common: EcoMAX):
         }
     )
 
-    with patch(
-        "custom_components.plum_ecomax.entity.EcomaxConnection.has_water_heater", True
-    ):
+    with patch("custom_components.plum_ecomax.EcomaxConnection.has_water_heater", True):
         yield ecomax_common
 
 
@@ -650,7 +648,7 @@ def mixers(ecomax_common: EcoMAX):
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.has_mixers", True
     ), patch(
-        "custom_components.plum_ecomax.entity.EcomaxConnection.async_setup_mixers",
+        "custom_components.plum_ecomax.EcomaxConnection.async_setup_mixers",
         return_value=True,
     ):
         yield ecomax_common
@@ -750,9 +748,9 @@ def thermostats(ecomax_common: EcoMAX):
     )
 
     with patch(
-        "custom_components.plum_ecomax.entity.EcomaxConnection.has_thermostats", True
+        "custom_components.plum_ecomax.EcomaxConnection.has_thermostats", True
     ), patch(
-        "custom_components.plum_ecomax.entity.EcomaxConnection.async_setup_thermostats",
+        "custom_components.plum_ecomax.EcomaxConnection.async_setup_thermostats",
         return_value=True,
     ):
         yield ecomax_common

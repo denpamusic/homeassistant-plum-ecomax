@@ -36,6 +36,7 @@ from pyplumio.filters import aggregate, on_change, throttle
 from pyplumio.structures.modules import ConnectedModules
 import voluptuous as vol
 
+from . import EcomaxEntity, MixerEntity
 from .connection import EcomaxConnection
 from .const import (
     ALL,
@@ -50,7 +51,6 @@ from .const import (
     ModuleType,
     ProductModel,
 )
-from .entity import EcomaxEntity, MixerEntity
 
 SERVICE_RESET_METER: Final = "reset_meter"
 SERVICE_CALIBRATE_METER: Final = "calibrate_meter"
