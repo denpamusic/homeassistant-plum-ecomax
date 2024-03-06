@@ -301,11 +301,15 @@ class ThermostatEntity(EcomaxEntity):
     def device_info(self) -> DeviceInfo:
         """Return the device info."""
         return DeviceInfo(
+            translation_key="thermostat",
+            translation_placeholders={
+                "device_name": self.connection.name,
+                "thermostat_number": self.index + 1,
+            },
             identifiers={
                 (DOMAIN, f"{self.connection.uid}-{DeviceType.THERMOSTAT}-{self.index}")
             },
             manufacturer=MANUFACTURER,
-            name=f"{self.connection.name} Thermostat {self.index + 1}",
             sw_version=self.connection.software[ModuleType.ECOSTER],
             via_device=(DOMAIN, self.connection.uid),
         )
@@ -333,23 +337,22 @@ class MixerEntity(EcomaxEntity):
         )
 
     @cached_property
-    def device_name(self) -> str:
-        """Return the device name."""
-        return (
-            "Circuit"
-            if self.connection.product_type == ProductType.ECOMAX_I
-            else "Mixer"
-        )
-
-    @cached_property
     def device_info(self) -> DeviceInfo:
         """Return the device info."""
         return DeviceInfo(
+            translation_key=(
+                "circuit"
+                if self.connection.product_type == ProductType.ECOMAX_I
+                else "mixer"
+            ),
+            translation_placeholders={
+                "device_name": self.connection.name,
+                "mixer_number": self.index + 1,
+            },
             identifiers={
                 (DOMAIN, f"{self.connection.uid}-{DeviceType.MIXER}-{self.index}")
             },
             manufacturer=MANUFACTURER,
-            name=f"{self.connection.name} {self.device_name} {self.index + 1}",
             via_device=(DOMAIN, self.connection.uid),
         )
 
