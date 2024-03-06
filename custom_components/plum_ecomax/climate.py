@@ -27,9 +27,9 @@ from homeassistant.helpers.typing import ConfigType
 from pyplumio.filters import on_change, throttle
 from pyplumio.structures.thermostat_parameters import ThermostatParameter
 
+from . import EcomaxEntityDescription, ThermostatEntity
 from .connection import EcomaxConnection
 from .const import DOMAIN
-from .entity import ThermostatEntity
 
 TEMPERATURE_STEP: Final = 0.1
 
@@ -76,7 +76,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(kw_only=True, frozen=True, slots=True)
-class EcomaxClimateEntityDescription(ClimateEntityDescription):
+class EcomaxClimateEntityDescription(ClimateEntityDescription, EcomaxEntityDescription):
     """Describes an ecoMAX climate entity."""
 
 

@@ -409,6 +409,7 @@ async def test_abort_already_configured(
     # Fail with device already configured.
     mock_config_entry = Mock(spec=config_entries.ConfigEntry)
     mock_config_entry.unique_id = ecomax_p.get_nowait("product").uid
+    mock_config_entry.source = config_entries.SOURCE_USER
     with patch(
         "homeassistant.config_entries.ConfigEntries.async_entry_for_domain_unique_id",
         return_value=mock_config_entry,
