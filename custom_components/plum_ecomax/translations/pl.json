@@ -39,6 +39,17 @@
       }
     }
   },
+  "device": {
+    "circuit": {
+      "name": "{device_name} Obwod {mixer_number}"
+    },
+    "mixer": {
+      "name": "{device_name} Mieszacz {mixer_number}"
+    },
+    "thermostat": {
+      "name": "{device_name} Termostat {thermostat_number}"
+    }
+  },
   "entity": {
     "binary_sensor": {
       "alert": {
