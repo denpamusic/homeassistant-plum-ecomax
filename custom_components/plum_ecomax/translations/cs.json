@@ -41,7 +41,7 @@
   },
   "device": {
     "circuit": {
-      "name": "{device_name} Circuit {mixer_number}"
+      "name": "{device_name} Okruh {mixer_number}"
     },
     "mixer": {
       "name": "{device_name} Mixer {mixer_number}"
