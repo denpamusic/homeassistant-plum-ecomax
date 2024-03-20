@@ -61,7 +61,6 @@ from .services import async_setup_services
 
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
-    Platform.BUTTON,
     Platform.CLIMATE,
     Platform.NUMBER,
     Platform.SELECT,
@@ -108,6 +107,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
+
+
+async def async_reload_config(
+    hass: HomeAssistant, entry: ConfigEntry, connection: EcomaxConnection
+) -> None:
+    """Reload config on update."""
+    data = {**entry.data}
+    data[CONF_SUB_DEVICES] = await async_get_sub_devices(connection.device)
+    hass.config_entries.async_update_entry(entry, data=data)
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 @callback
