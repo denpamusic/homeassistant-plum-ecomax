@@ -415,7 +415,7 @@ async def test_set_schedule_service(
     mock_schedule.monday.set_state = Mock()
     mock_schedule.tuesday = Mock(spec=ScheduleDay)
     mock_schedule.tuesday.set_state = Mock()
-    mock_schedule.commit = Mock()
+    mock_schedule.commit = AsyncMock()
     schedules = {SCHEDULES[0]: mock_schedule}
 
     # Test setting schedule for EM device.

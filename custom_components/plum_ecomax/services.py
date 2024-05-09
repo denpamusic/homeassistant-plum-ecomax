@@ -362,7 +362,7 @@ def async_setup_set_schedule_service(
                     },
                 ) from e
 
-        schedule.commit()
+        await schedule.commit()
 
     hass.services.async_register(
         DOMAIN,
