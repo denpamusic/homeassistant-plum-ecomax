@@ -1,4 +1,5 @@
 """Platform for button integration."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -12,11 +13,9 @@ from homeassistant.components.button import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType
 
-from . import EcomaxEntity, EcomaxEntityDescription
+from . import EcomaxEntity, EcomaxEntityDescription, PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import DOMAIN
 
 
 @dataclass(kw_only=True, frozen=True, slots=True)
@@ -68,12 +67,12 @@ class EcomaxButton(EcomaxEntity, ButtonEntity):
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigType,
+    entry: PlumEcomaxConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the button platform."""
-    connection = hass.data[DOMAIN][config_entry.entry_id]
     async_add_entities(
-        EcomaxButton(connection, description) for description in BUTTON_TYPES
+        EcomaxButton(entry.runtime_data.connection, description)
+        for description in BUTTON_TYPES
     )
     return True

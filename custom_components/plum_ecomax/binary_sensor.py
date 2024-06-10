@@ -1,4 +1,5 @@
 """Platform for binary sensor integration."""
+
 from __future__ import annotations
 
 from collections.abc import Callable, Generator, Iterable
@@ -14,13 +15,12 @@ from homeassistant.components.binary_sensor import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType
 from pyplumio.const import ProductType
 from pyplumio.structures.modules import ConnectedModules
 
-from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity
+from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity, PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import ALL, DOMAIN
+from .const import ALL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -257,11 +257,11 @@ def async_setup_mixer_binary_sensors(
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigType,
+    entry: PlumEcomaxConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the binary sensor platform."""
-    connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
+    connection = entry.runtime_data.connection
     _LOGGER.debug("Starting setup of binary sensor platform...")
 
     entities: list[EcomaxBinarySensor] = []

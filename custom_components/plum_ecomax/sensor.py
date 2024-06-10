@@ -1,4 +1,5 @@
 """Platform for sensor integration."""
+
 from __future__ import annotations
 
 from collections.abc import Callable, Generator, Iterable
@@ -30,13 +31,13 @@ from homeassistant.helpers.entity_platform import (
     AddEntitiesCallback,
     async_get_current_platform,
 )
-from homeassistant.helpers.typing import ConfigType, StateType
+from homeassistant.helpers.typing import StateType
 from pyplumio.const import DeviceState, ProductType
 from pyplumio.filters import aggregate, on_change, throttle
 from pyplumio.structures.modules import ConnectedModules
 import voluptuous as vol
 
-from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity
+from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity, PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
 from .const import (
     ALL,
@@ -46,7 +47,6 @@ from .const import (
     ATTR_VALUE,
     DEVICE_CLASS_METER,
     DEVICE_CLASS_STATE,
-    DOMAIN,
     FLOW_KGH,
     ModuleType,
     ProductModel,
@@ -671,11 +671,11 @@ def async_setup_mixer_sensors(connection: EcomaxConnection) -> list[MixerSensor]
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigType,
+    entry: PlumEcomaxConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the sensor platform."""
-    connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
+    connection = entry.runtime_data.connection
     _LOGGER.debug("Starting setup of sensor platform...")
 
     entities: list[EcomaxSensor] = []

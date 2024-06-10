@@ -1,10 +1,11 @@
 """The Plum ecoMAX integration."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from contextlib import suppress
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from functools import cached_property
 import logging
 from typing import Any, Final, Literal, cast, final
@@ -74,8 +75,17 @@ DATE_STR_FORMAT: Final = "%Y-%m-%d %H:%M:%S"
 
 _LOGGER = logging.getLogger(__name__)
 
+type PlumEcomaxConfigEntry = ConfigEntry["PlumEcomaxData"]
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+
+@dataclass
+class PlumEcomaxData:
+    """Represents and Plum ecoMAX config data."""
+
+    connection: EcomaxConnection
+
+
+async def async_setup_entry(hass: HomeAssistant, entry: PlumEcomaxConfigEntry) -> bool:
     """Set up the Plum ecoMAX from a config entry."""
     connection_type = entry.data.get(CONF_CONNECTION_TYPE, DEFAULT_CONNECTION_TYPE)
     connection = EcomaxConnection(
@@ -96,7 +106,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     async_setup_services(hass, connection)
     async_setup_events(hass, connection)
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = connection
+    entry.runtime_data = PlumEcomaxData(connection)
 
     async def _async_close_connection(event: Event | None = None) -> None:
         """Close the ecoMAX connection on HA Stop."""
@@ -142,62 +152,57 @@ def async_setup_events(hass: HomeAssistant, connection: EcomaxConnection) -> boo
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: PlumEcomaxConfigEntry) -> bool:
     """Unload a config entry."""
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        try:
-            connection: EcomaxConnection = hass.data[DOMAIN][entry.entry_id]
-            await connection.close()
-            hass.data[DOMAIN].pop(entry.entry_id)
-        except KeyError:
-            pass
+        await entry.runtime_data.connection.close()
 
     return cast(bool, unload_ok)
 
 
-async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+async def async_migrate_entry(
+    hass: HomeAssistant, entry: PlumEcomaxConfigEntry
+) -> bool:
     """Migrate old entry."""
-    _LOGGER.debug("Migrating from version %s", config_entry.version)
+    _LOGGER.debug("Migrating from version %s", entry.version)
 
-    connection_type = config_entry.data.get(
-        CONF_CONNECTION_TYPE, DEFAULT_CONNECTION_TYPE
-    )
+    connection_type = entry.data.get(CONF_CONNECTION_TYPE, DEFAULT_CONNECTION_TYPE)
     connection = EcomaxConnection(
         hass,
-        config_entry,
-        await async_get_connection_handler(connection_type, hass, config_entry.data),
+        entry,
+        await async_get_connection_handler(connection_type, hass, entry.data),
     )
     await connection.connect()
-    data = {**config_entry.data}
+    data = {**entry.data}
 
     try:
         device = await connection.get(DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT)
 
-        if config_entry.version in (1, 2):
+        if entry.version in (1, 2):
             product = await device.get(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
             data[CONF_PRODUCT_TYPE] = product.type
-            config_entry.version = 3
+            entry.version = 3
 
-        if config_entry.version in (3, 4, 5):
+        if entry.version in (3, 4, 5):
             with suppress(KeyError):
                 del data[CONF_CAPABILITIES]
 
             data[CONF_SUB_DEVICES] = await async_get_sub_devices(device)
-            config_entry.version = 6
+            entry.version = 6
 
-        if config_entry.version == 6:
+        if entry.version == 6:
             product = await device.get(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
             data[CONF_PRODUCT_ID] = product.id
-            config_entry.version = 7
+            entry.version = 7
 
-        if config_entry.version == 7:
+        if entry.version == 7:
             modules = await device.get(ATTR_MODULES, timeout=DEFAULT_TIMEOUT)
             data[CONF_SOFTWARE] = asdict(modules)
-            config_entry.version = 8
+            entry.version = 8
 
-        hass.config_entries.async_update_entry(config_entry, data=data)
+        hass.config_entries.async_update_entry(entry, data=data)
         await connection.close()
-        _LOGGER.info("Migration to version %s successful", config_entry.version)
+        _LOGGER.info("Migration to version %s successful", entry.version)
     except TimeoutError:
         _LOGGER.error("Migration failed, device has failed to respond in time")
         return False

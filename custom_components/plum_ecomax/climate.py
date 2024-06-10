@@ -1,4 +1,5 @@
 """Platform for climate integration."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -23,13 +24,11 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType
 from pyplumio.filters import on_change, throttle
 from pyplumio.structures.thermostat_parameters import ThermostatParameter
 
-from . import EcomaxEntityDescription, ThermostatEntity
+from . import EcomaxEntityDescription, PlumEcomaxConfigEntry, ThermostatEntity
 from .connection import EcomaxConnection
-from .const import DOMAIN
 
 TEMPERATURE_STEP: Final = 0.1
 
@@ -133,12 +132,10 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
         self.async_write_ha_state()
 
     @overload
-    async def async_update_preset_mode(self, mode: int) -> None:
-        ...
+    async def async_update_preset_mode(self, mode: int) -> None: ...
 
     @overload
-    async def async_update_preset_mode(self, mode: ThermostatParameter) -> None:
-        ...
+    async def async_update_preset_mode(self, mode: ThermostatParameter) -> None: ...
 
     async def async_update_preset_mode(self, mode: ThermostatParameter | int) -> None:
         """Update preset mode."""
@@ -243,11 +240,11 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigType,
+    entry: PlumEcomaxConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the climate platform."""
-    connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
+    connection = entry.runtime_data.connection
     _LOGGER.debug("Starting setup of climate platform...")
 
     if connection.has_thermostats and await connection.async_setup_thermostats():

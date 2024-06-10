@@ -1,4 +1,5 @@
 """Platform for number integration."""
+
 from __future__ import annotations
 
 from collections.abc import Generator, Iterable
@@ -15,14 +16,13 @@ from homeassistant.components.number import (
 from homeassistant.const import PERCENTAGE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType
 from pyplumio.const import ProductType
 from pyplumio.helpers.parameter import Parameter
 from pyplumio.structures.modules import ConnectedModules
 
-from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity
+from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity, PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import ALL, CALORIFIC_KWH_KG, DOMAIN
+from .const import ALL, CALORIFIC_KWH_KG
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -271,11 +271,11 @@ def async_setup_mixer_numbers(connection: EcomaxConnection) -> list[MixerNumber]
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigType,
+    entry: PlumEcomaxConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the number platform."""
-    connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
+    connection = entry.runtime_data.connection
     _LOGGER.debug("Starting setup of number platform...")
 
     entities: list[EcomaxNumber] = []

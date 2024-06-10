@@ -1,4 +1,5 @@
 """Platform for switch integration."""
+
 from __future__ import annotations
 
 from collections.abc import Generator, Iterable
@@ -10,15 +11,14 @@ from homeassistant.components.switch import SwitchEntity, SwitchEntityDescriptio
 from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType
 from pyplumio.const import ProductType
 from pyplumio.helpers.parameter import Parameter
 from pyplumio.helpers.typing import ParameterValueType
 from pyplumio.structures.modules import ConnectedModules
 
-from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity
+from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity, PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import ALL, DOMAIN
+from .const import ALL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -220,11 +220,11 @@ def async_setup_mixer_switches(connection: EcomaxConnection) -> list[MixerSwitch
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigType,
+    entry: PlumEcomaxConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the sensor platform."""
-    connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
+    connection = entry.runtime_data.connection
     _LOGGER.debug("Starting setup of switch platform...")
 
     entities: list[EcomaxSwitch] = []

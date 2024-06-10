@@ -9,6 +9,7 @@ from pyplumio import __version__
 from pyplumio.devices.ecomax import EcoMAX
 import pytest
 
+from custom_components.plum_ecomax import PlumEcomaxData
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
     ATTR_MIXERS,
@@ -42,7 +43,7 @@ async def test_diagnostics(
     """Test config entry diagnostics."""
     mock_connection = AsyncMock(spec=EcomaxConnection)
     mock_connection.device = ecomax_p
-    hass.data[DOMAIN][config_entry.entry_id] = mock_connection
+    config_entry.runtime_data = PlumEcomaxData(mock_connection)
     result = await async_get_config_entry_diagnostics(hass, config_entry)
     assert result["pyplumio"]["version"] == __version__
     assert result["entry"] == {

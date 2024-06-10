@@ -1,4 +1,5 @@
 """Platform for select integration."""
+
 from __future__ import annotations
 
 from collections.abc import Generator, Iterable
@@ -10,13 +11,12 @@ from homeassistant.components.select import SelectEntity, SelectEntityDescriptio
 from homeassistant.const import STATE_OFF
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType
 from pyplumio.const import ProductType
 from pyplumio.structures.modules import ConnectedModules
 
-from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity
+from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity, PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import ALL, DOMAIN
+from .const import ALL
 
 STATE_SUMMER: Final = "summer"
 STATE_WINTER: Final = "winter"
@@ -168,11 +168,11 @@ def async_setup_mixer_selects(connection: EcomaxConnection) -> list[MixerSelect]
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigType,
+    entry: PlumEcomaxConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the select platform."""
-    connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
+    connection = entry.runtime_data.connection
     _LOGGER.debug("Starting setup of select platform...")
 
     entities: list[EcomaxSelect] = []

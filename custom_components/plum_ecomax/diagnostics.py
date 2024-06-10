@@ -1,4 +1,5 @@
 """Diagnostics support for Plum ecoMAX."""
+
 from __future__ import annotations
 
 from copy import copy
@@ -71,7 +72,8 @@ async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: ConfigEntry
 ) -> dict[str, Any]:
     """Return diagnostics for a config entry."""
-    device: Device = hass.data[DOMAIN][entry.entry_id].device
+    data = entry.runtime_data
+    device: Device = data.connection.device
     return {
         "entry": {
             "title": entry.title,

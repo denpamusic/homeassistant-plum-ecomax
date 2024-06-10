@@ -1,4 +1,5 @@
 """Platform for water heater integration."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -20,13 +21,11 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType
 from pyplumio.filters import on_change, throttle
 from pyplumio.helpers.parameter import Parameter
 
-from . import EcomaxEntity, EcomaxEntityDescription
+from . import EcomaxEntity, EcomaxEntityDescription, PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import DOMAIN
 
 EM_TO_HA_STATE: Final = {0: STATE_OFF, 1: STATE_PERFORMANCE, 2: STATE_ECO}
 HA_TO_EM_STATE: Final = {v: k for k, v in EM_TO_HA_STATE.items()}
@@ -146,11 +145,11 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigType,
+    entry: PlumEcomaxConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the water heater platform."""
-    connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
+    connection = entry.runtime_data.connection
     _LOGGER.debug("Starting setup of water heater platform...")
 
     if connection.has_water_heater:
