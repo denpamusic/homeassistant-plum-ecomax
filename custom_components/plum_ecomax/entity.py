@@ -44,7 +44,7 @@ DescriptorT = TypeVar("DescriptorT", bound=EcomaxEntityDescription)
 class EcomaxEntity(Entity):
     """Represents an ecoMAX entity."""
 
-    _always_available: bool = False
+    _always_available = False
     _attr_available = False
     _attr_has_entity_name = True
     _attr_should_poll = False
