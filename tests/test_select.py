@@ -8,7 +8,7 @@ from homeassistant.components.select.const import (
     DOMAIN,
     SERVICE_SELECT_OPTION,
 )
-from homeassistant.const import ATTR_ENTITY_ID, ATTR_FRIENDLY_NAME, ATTR_ICON, STATE_OFF
+from homeassistant.const import ATTR_ENTITY_ID, ATTR_FRIENDLY_NAME, STATE_OFF
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
 from pyplumio.helpers.parameter import ParameterValues
@@ -93,7 +93,6 @@ async def test_summer_mode_select(
     assert isinstance(state, State)
     assert state.state == STATE_WINTER
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Summer mode"
-    assert state.attributes[ATTR_ICON] == "mdi:weather-sunny"
     assert state.attributes[ATTR_OPTIONS] == [STATE_WINTER, STATE_SUMMER, STATE_AUTO]
     options = state.attributes[ATTR_OPTIONS]
 

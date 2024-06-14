@@ -144,21 +144,18 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="password",
         entity_category=EntityCategory.DIAGNOSTIC,
-        icon="mdi:form-textbox-password",
         translation_key="service_password",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="modules",
         entity_category=EntityCategory.DIAGNOSTIC,
-        icon="mdi:raspberry-pi",
         translation_key="connected_modules",
         value_fn=lambda x: len([value for value in astuple(x) if value is not None]),
     ),
     EcomaxSensorEntityDescription(
         key="lambda_level",
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
-        icon="mdi:weather-windy-variant",
         module=ModuleType.ECOLAMBDA,
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -169,7 +166,6 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="boiler_power",
         device_class=SensorDeviceClass.POWER,
-        icon="mdi:radiator",
         native_unit_of_measurement=UnitOfPower.KILO_WATT,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
@@ -179,7 +175,6 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
     EcomaxSensorEntityDescription(
         key="fuel_level",
-        icon="mdi:gas-station",
         native_unit_of_measurement=PERCENTAGE,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
@@ -189,7 +184,6 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
     EcomaxSensorEntityDescription(
         key="fuel_consumption",
-        icon="mdi:fire",
         native_unit_of_measurement=FLOW_KGH,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
@@ -199,7 +193,6 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
     EcomaxSensorEntityDescription(
         key="boiler_load",
-        icon="mdi:gauge",
         native_unit_of_measurement=PERCENTAGE,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
@@ -208,7 +201,6 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
     EcomaxSensorEntityDescription(
         key="fan_power",
-        icon="mdi:fan",
         native_unit_of_measurement=PERCENTAGE,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
@@ -219,7 +211,6 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="optical_temp",
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
-        icon="mdi:fire",
         native_unit_of_measurement=PERCENTAGE,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
@@ -419,7 +410,6 @@ METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
         key="fuel_burned",
         always_available=True,
         filter_fn=lambda x: aggregate(x, seconds=30),
-        icon="mdi:counter",
         native_unit_of_measurement=UnitOfMass.KILOGRAMS,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.TOTAL_INCREASING,
@@ -493,7 +483,6 @@ EM_TO_HA_MIXER_VALVE_STATE: dict[int, str] = {
 REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
     RegdataSensorEntityDescription(
         key="227",
-        icon="mdi:tray-alert",
         native_unit_of_measurement=PERCENTAGE,
         product_models={ProductModel.ECOMAX_860P3_O},
         state_class=SensorStateClass.MEASUREMENT,
@@ -503,7 +492,6 @@ REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
     ),
     RegdataSensorEntityDescription(
         key="215",
-        icon="mdi:tray-alert",
         native_unit_of_measurement=PERCENTAGE,
         product_models={ProductModel.ECOMAX_860P3_S_LITE},
         state_class=SensorStateClass.MEASUREMENT,
@@ -513,7 +501,6 @@ REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
     ),
     RegdataSensorEntityDescription(
         key="223",
-        icon="mdi:tray-alert",
         native_unit_of_measurement=PERCENTAGE,
         product_models={ProductModel.ECOMAX_860P6_O},
         state_class=SensorStateClass.MEASUREMENT,

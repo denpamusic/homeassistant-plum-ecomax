@@ -44,7 +44,6 @@ class EcomaxSelectEntityDescription(EcomaxEntityDescription, SelectEntityDescrip
 SELECT_TYPES: tuple[EcomaxSelectEntityDescription, ...] = (
     EcomaxSelectEntityDescription(
         key="summer_mode",
-        icon="mdi:weather-sunny",
         options=[STATE_WINTER, STATE_SUMMER, STATE_AUTO],
         translation_key="summer_mode",
     ),
