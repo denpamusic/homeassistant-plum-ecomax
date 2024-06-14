@@ -254,9 +254,6 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
         """Handle issues that need transition await from progress step."""
         return self.async_abort(reason="discovery_failed")
 
-    async def _async_wait_for_device(self) -> None:
-        """Task to wait until the device is available."""
-
     async def _async_identify_device(self) -> None:
         """Task to identify the device."""
         # Tell mypy that once we here, connection is not None
