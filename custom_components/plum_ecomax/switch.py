@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Generator, Iterable
 from dataclasses import dataclass
 import logging
-from typing import Any, Literal
+from typing import Any
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.const import STATE_OFF, STATE_ON
@@ -19,7 +19,14 @@ from pyplumio.structures.modules import ConnectedModules
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
 from .const import ALL
-from .entity import DescriptorT, EcomaxEntity, EcomaxEntityDescription, MixerEntity
+from .entity import (
+    DescriptorT,
+    EcomaxEntity,
+    EcomaxEntityDescription,
+    MixerEntity,
+    SubDescriptorT,
+    SubdeviceEntityDescription,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -104,10 +111,10 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
 
 
 @dataclass(frozen=True, kw_only=True)
-class MixerSwitchEntityDescription(EcomaxSwitchEntityDescription):
+class MixerSwitchEntityDescription(
+    EcomaxSwitchEntityDescription, SubdeviceEntityDescription
+):
     """Describes a mixer switch entity."""
-
-    indexes: set[int] | Literal["all"] = ALL
 
 
 MIXER_SWITCH_TYPES: tuple[MixerSwitchEntityDescription, ...] = (
@@ -177,8 +184,8 @@ def get_by_modules(
 
 
 def get_by_index(
-    index: int, descriptions: Iterable[MixerSwitchEntityDescription]
-) -> Generator[EcomaxSwitchEntityDescription, None, None]:
+    index: int, descriptions: Iterable[SubDescriptorT]
+) -> Generator[SubDescriptorT, None, None]:
     """Filter mixer/circuit descriptions by the index."""
     index += 1
     for description in descriptions:

@@ -134,6 +134,16 @@ class EcomaxEntity(Entity):
         raise NotImplementedError
 
 
+@dataclass(frozen=True, kw_only=True)
+class SubdeviceEntityDescription(EcomaxEntityDescription):
+    """Describes an ecoMAX entity."""
+
+    indexes: set[int] | Literal["all"] = ALL
+
+
+SubDescriptorT = TypeVar("SubDescriptorT", bound=SubdeviceEntityDescription)
+
+
 class ThermostatEntity(EcomaxEntity):
     """Represents a thermostat entity."""
 
@@ -171,9 +181,8 @@ class ThermostatEntity(EcomaxEntity):
     @override
     def device(self) -> Thermostat:
         """Return the mixer handler."""
-        return cast(
-            Thermostat, self.connection.device.data[ATTR_THERMOSTATS][self.index]
-        )
+        device = self.connection.device
+        return cast(Thermostat, device.data[ATTR_THERMOSTATS][self.index])
 
 
 class MixerEntity(EcomaxEntity):
@@ -216,4 +225,5 @@ class MixerEntity(EcomaxEntity):
     @override
     def device(self) -> Mixer:
         """Return the mixer handler."""
-        return cast(Mixer, self.connection.device.data[ATTR_MIXERS][self.index])
+        device = self.connection.device
+        return cast(Mixer, device.data[ATTR_MIXERS][self.index])
