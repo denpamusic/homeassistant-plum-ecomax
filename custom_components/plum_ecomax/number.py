@@ -36,64 +36,64 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, kw_only=True)
-class EcomaxNumberEntityDescription(NumberEntityDescription, EcomaxEntityDescription):
+class EcomaxNumberEntityDescription(EcomaxEntityDescription, NumberEntityDescription):
     """Describes an ecoMAX number."""
 
 
 NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
     EcomaxNumberEntityDescription(
         key="heating_target_temp",
-        translation_key="target_heating_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
+        translation_key="target_heating_temp",
     ),
     EcomaxNumberEntityDescription(
         key="min_heating_target_temp",
-        translation_key="min_heating_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
+        translation_key="min_heating_temp",
     ),
     EcomaxNumberEntityDescription(
         key="max_heating_target_temp",
-        translation_key="max_heating_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
+        translation_key="max_heating_temp",
     ),
     EcomaxNumberEntityDescription(
         key="grate_heating_temp",
-        translation_key="grate_mode_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
+        translation_key="grate_mode_temp",
     ),
     EcomaxNumberEntityDescription(
         key="min_fuzzy_logic_power",
-        translation_key="fuzzy_logic_min_power",
         native_step=1,
         native_unit_of_measurement=PERCENTAGE,
         product_types={ProductType.ECOMAX_P},
+        translation_key="fuzzy_logic_min_power",
     ),
     EcomaxNumberEntityDescription(
         key="max_fuzzy_logic_power",
-        translation_key="fuzzy_logic_max_power",
         native_step=1,
         native_unit_of_measurement=PERCENTAGE,
         product_types={ProductType.ECOMAX_P},
+        translation_key="fuzzy_logic_max_power",
     ),
     EcomaxNumberEntityDescription(
         key="fuel_calorific_value",
-        translation_key="fuel_calorific_value",
         mode=NumberMode.BOX,
         native_step=0.1,
         native_unit_of_measurement=CALORIFIC_KWH_KG,
         product_types={ProductType.ECOMAX_P},
+        translation_key="fuel_calorific_value",
     ),
 )
 
@@ -127,71 +127,71 @@ class EcomaxMixerNumberEntityDescription(
 MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
     EcomaxMixerNumberEntityDescription(
         key="mixer_target_temp",
-        translation_key="target_mixer_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
+        translation_key="target_mixer_temp",
     ),
     EcomaxMixerNumberEntityDescription(
         key="min_target_temp",
-        translation_key="min_mixer_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
+        translation_key="min_mixer_temp",
     ),
     EcomaxMixerNumberEntityDescription(
         key="max_target_temp",
-        translation_key="max_mixer_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
+        translation_key="max_mixer_temp",
     ),
     EcomaxMixerNumberEntityDescription(
         key="circuit_target_temp",
-        translation_key="target_circuit_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
+        translation_key="target_circuit_temp",
     ),
     EcomaxMixerNumberEntityDescription(
         key="min_target_temp",
-        translation_key="min_circuit_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
+        indexes={2, 3},
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
-        indexes={2, 3},
+        translation_key="min_circuit_temp",
     ),
     EcomaxMixerNumberEntityDescription(
         key="max_target_temp",
-        translation_key="max_circuit_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
+        indexes={2, 3},
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
-        indexes={2, 3},
+        translation_key="max_circuit_temp",
     ),
     EcomaxMixerNumberEntityDescription(
         key="day_target_temp",
-        translation_key="day_target_circuit_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
+        indexes={2, 3},
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
-        indexes={2, 3},
+        translation_key="day_target_circuit_temp",
     ),
     EcomaxMixerNumberEntityDescription(
         key="night_target_temp",
-        translation_key="night_target_circuit_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
+        indexes={2, 3},
         native_step=1,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
-        indexes={2, 3},
+        translation_key="night_target_circuit_temp",
     ),
 )
 

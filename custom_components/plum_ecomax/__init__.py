@@ -89,9 +89,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: PlumEcomaxConfigEntry) -
             translation_placeholders={"connection": connection.name},
         ) from e
 
+    entry.runtime_data = PlumEcomaxData(connection)
     async_setup_services(hass, connection)
     async_setup_events(hass, connection)
-    entry.runtime_data = PlumEcomaxData(connection)
 
     async def _async_close_connection(event: Event | None = None) -> None:
         """Close the ecoMAX connection on HA Stop."""

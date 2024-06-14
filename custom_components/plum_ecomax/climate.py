@@ -76,15 +76,15 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, kw_only=True)
-class EcomaxClimateEntityDescription(ClimateEntityDescription, EcomaxEntityDescription):
+class EcomaxClimateEntityDescription(EcomaxEntityDescription, ClimateEntityDescription):
     """Describes an ecoMAX climate entity."""
 
 
-DEFAULT_ENTITY_DESCRIPTION = EcomaxClimateEntityDescription(
+ENTITY_DESCRIPTION = EcomaxClimateEntityDescription(
     key="thermostat",
-    translation_key="thermostat",
     always_available=True,
     entity_registry_enabled_default=True,
+    translation_key="thermostat",
 )
 
 
@@ -260,9 +260,7 @@ async def async_setup_entry(
 
     if connection.has_thermostats and await connection.async_setup_thermostats():
         async_add_entities(
-            EcomaxClimate(
-                connection, description=DEFAULT_ENTITY_DESCRIPTION, index=index
-            )
+            EcomaxClimate(connection, description=ENTITY_DESCRIPTION, index=index)
             for index in connection.device.thermostats
         )
         return True

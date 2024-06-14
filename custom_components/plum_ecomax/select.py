@@ -37,16 +37,16 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, kw_only=True)
-class EcomaxSelectEntityDescription(SelectEntityDescription, EcomaxEntityDescription):
+class EcomaxSelectEntityDescription(EcomaxEntityDescription, SelectEntityDescription):
     """Describes an ecoMAX select."""
 
 
 SELECT_TYPES: tuple[EcomaxSelectEntityDescription, ...] = (
     EcomaxSelectEntityDescription(
         key="summer_mode",
-        translation_key="summer_mode",
         icon="mdi:weather-sunny",
         options=[STATE_WINTER, STATE_SUMMER, STATE_AUTO],
+        translation_key="summer_mode",
     ),
 )
 
@@ -80,16 +80,16 @@ class EcomaxMixerSelectEntityDescription(
 MIXER_SELECT_TYPES: tuple[EcomaxMixerSelectEntityDescription, ...] = (
     EcomaxMixerSelectEntityDescription(
         key="work_mode",
-        translation_key="mixer_work_mode",
         options=[STATE_OFF, STATE_HEATING, STATE_HEATED_FLOOR, STATE_PUMP_ONLY],
         product_types={ProductType.ECOMAX_P},
+        translation_key="mixer_work_mode",
     ),
     EcomaxMixerSelectEntityDescription(
         key="enable_circuit",
-        translation_key="mixer_work_mode",
+        indexes={2, 3},
         options=[STATE_OFF, STATE_HEATING, STATE_HEATED_FLOOR],
         product_types={ProductType.ECOMAX_I},
-        indexes={2, 3},
+        translation_key="mixer_work_mode",
     ),
 )
 

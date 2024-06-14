@@ -37,16 +37,16 @@ _LOGGER = logging.getLogger(__name__)
 
 @dataclass(frozen=True, kw_only=True)
 class EcomaxWaterHeaterEntityDescription(
-    WaterHeaterEntityEntityDescription, EcomaxEntityDescription
+    EcomaxEntityDescription, WaterHeaterEntityEntityDescription
 ):
     """Describes an ecoMAX water heater."""
 
 
-DEFAULT_ENTITY_DESCRIPTION = EcomaxWaterHeaterEntityDescription(
+ENTITY_DESCRIPTION = EcomaxWaterHeaterEntityDescription(
     key="water_heater",
-    translation_key="indirect_water_heater",
     always_available=True,
     entity_registry_enabled_default=True,
+    translation_key="indirect_water_heater",
 )
 
 
@@ -153,7 +153,7 @@ async def async_setup_entry(
 
     if connection.has_water_heater:
         async_add_entities(
-            [EcomaxWaterHeater(connection, description=DEFAULT_ENTITY_DESCRIPTION)]
+            [EcomaxWaterHeater(connection, description=ENTITY_DESCRIPTION)]
         )
         return True
 

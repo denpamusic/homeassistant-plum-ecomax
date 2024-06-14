@@ -32,7 +32,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, kw_only=True)
-class EcomaxSwitchEntityDescription(SwitchEntityDescription, EcomaxEntityDescription):
+class EcomaxSwitchEntityDescription(EcomaxEntityDescription, SwitchEntityDescription):
     """Describes an ecoMAX switch."""
 
     state_off: ParameterValueType = STATE_OFF
@@ -50,29 +50,29 @@ SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
     ),
     EcomaxSwitchEntityDescription(
         key="water_heater_work_mode",
-        translation_key="water_heater_pump_switch",
         state_off=0,
         state_on=2,
+        translation_key="water_heater_pump_switch",
     ),
     EcomaxSwitchEntityDescription(
         key="weather_control",
-        translation_key="weather_control_switch",
         product_types={ProductType.ECOMAX_P},
+        translation_key="weather_control_switch",
     ),
     EcomaxSwitchEntityDescription(
         key="fuzzy_logic",
-        translation_key="fuzzy_logic_switch",
         product_types={ProductType.ECOMAX_P},
+        translation_key="fuzzy_logic_switch",
     ),
     EcomaxSwitchEntityDescription(
         key="heating_schedule_switch",
-        translation_key="heating_schedule_switch",
         product_types={ProductType.ECOMAX_P},
+        translation_key="heating_schedule_switch",
     ),
     EcomaxSwitchEntityDescription(
         key="water_heater_schedule_switch",
-        translation_key="water_heater_schedule_switch",
         product_types={ProductType.ECOMAX_P},
+        translation_key="water_heater_schedule_switch",
     ),
 )
 
@@ -120,26 +120,26 @@ class MixerSwitchEntityDescription(
 MIXER_SWITCH_TYPES: tuple[MixerSwitchEntityDescription, ...] = (
     MixerSwitchEntityDescription(
         key="summer_work",
-        translation_key="enable_in_summer_mode",
         product_types={ProductType.ECOMAX_P, ProductType.ECOMAX_I},
+        translation_key="enable_in_summer_mode",
     ),
     MixerSwitchEntityDescription(
         key="weather_control",
-        translation_key="weather_control_switch",
         product_types={ProductType.ECOMAX_P},
+        translation_key="weather_control_switch",
     ),
     MixerSwitchEntityDescription(
         key="disable_pump_on_thermostat",
-        translation_key="disable_pump_on_thermostat",
         product_types={ProductType.ECOMAX_P},
+        translation_key="disable_pump_on_thermostat",
     ),
     MixerSwitchEntityDescription(
         key="enable_circuit",
-        translation_key="enable_circuit",
+        indexes={1},
         product_types={ProductType.ECOMAX_I},
         state_off=0,
         state_on=1,
-        indexes={1},
+        translation_key="enable_circuit",
     ),
 )
 

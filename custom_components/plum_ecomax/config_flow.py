@@ -95,8 +95,8 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
         """Initialize a new config flow."""
         self.connection: Connection | None = None
         self.device: AddressableDevice | None = None
-        self.identify_task: asyncio.Task | None = None
         self.discover_task: asyncio.Task | None = None
+        self.identify_task: asyncio.Task | None = None
         self.init_info: dict[str, Any] = {}
 
     async def async_step_user(

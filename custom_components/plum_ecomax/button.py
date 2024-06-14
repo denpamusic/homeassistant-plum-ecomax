@@ -19,7 +19,7 @@ from .entity import EcomaxEntity, EcomaxEntityDescription
 
 
 @dataclass(frozen=True, kw_only=True)
-class EcomaxButtonEntityDescription(ButtonEntityDescription, EcomaxEntityDescription):
+class EcomaxButtonEntityDescription(EcomaxEntityDescription, ButtonEntityDescription):
     """Describes an ecoMAX button."""
 
     press_fn: str
@@ -28,12 +28,12 @@ class EcomaxButtonEntityDescription(ButtonEntityDescription, EcomaxEntityDescrip
 BUTTON_TYPES: tuple[EcomaxButtonEntityDescription, ...] = (
     EcomaxButtonEntityDescription(
         key="detect_sub_devices",
-        translation_key="detect_sub_devices",
+        always_available=True,
         device_class=ButtonDeviceClass.UPDATE,
         entity_category=EntityCategory.DIAGNOSTIC,
-        press_fn="async_update_sub_devices",
         entity_registry_enabled_default=True,
-        always_available=True,
+        press_fn="async_update_sub_devices",
+        translation_key="detect_sub_devices",
     ),
 )
 
