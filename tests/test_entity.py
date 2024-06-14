@@ -1,12 +1,12 @@
 """Test Plum ecoMAX base entity."""
 
 import asyncio
-from typing import Any
 from unittest.mock import AsyncMock, Mock, call, patch
 
 from homeassistant.helpers.entity import DeviceInfo
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.filters import Filter
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax import EcomaxEntity, EcomaxEntityDescription
@@ -14,10 +14,7 @@ from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import DOMAIN, MANUFACTURER, ModuleType
 
 
-@patch.object(EcomaxEntity, "async_update")
-async def test_base_entity(
-    mock_async_update: Any, ecomax_p: EcoMAX, config_entry: MockConfigEntry
-) -> None:
+async def test_base_entity(ecomax_p: EcoMAX, config_entry: MockConfigEntry) -> None:
     """Test base entity."""
     mock_connection = Mock(spec=EcomaxConnection)
     mock_connection.device = ecomax_p
@@ -42,7 +39,10 @@ async def test_base_entity(
     mock_subscribe.assert_has_calls([call("heating_temp", mock_filter)])
 
     # Test removing entity from the hass.
-    with patch.object(mock_connection.device, "unsubscribe") as mock_unsubscribe:
+    with (
+        patch.object(EcomaxEntity, "async_update") as mock_async_update,
+        patch.object(mock_connection.device, "unsubscribe") as mock_unsubscribe,
+    ):
         await entity.async_will_remove_from_hass()
 
     mock_unsubscribe.assert_called_once_with("heating_temp", mock_async_update)
@@ -89,3 +89,7 @@ async def test_base_entity(
         key="test_data2", name="ecoMAX Data 2"
     )
     assert not entity.entity_registry_enabled_default
+
+    # Test exception when calling update on base entity class.
+    with pytest.raises(NotImplementedError):
+        await entity.async_update("test")
