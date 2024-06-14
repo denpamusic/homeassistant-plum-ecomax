@@ -174,7 +174,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
         """Identify the device."""
         if not self.identify_task:
             self.identify_task = self.hass.async_create_task(
-                self._async_identify_device()
+                self._async_identify_device(), eager_start=False
             )
 
         if not self.identify_task.done():
@@ -204,7 +204,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
 
         if not self.discover_task:
             self.discover_task = self.hass.async_create_task(
-                self._async_discover_modules()
+                self._async_discover_modules(), eager_start=False
             )
 
         if not self.discover_task.done():
