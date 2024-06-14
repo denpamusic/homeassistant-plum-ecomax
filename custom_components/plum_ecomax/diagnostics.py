@@ -11,7 +11,7 @@ from pyplumio import __version__ as pyplumio_version
 from pyplumio.devices import Device
 from pyplumio.structures.product_info import ProductInfo
 
-from .const import ATTR_PASSWORD, ATTR_PRODUCT, CONF_HOST, CONF_UID, DOMAIN
+from .const import ATTR_PASSWORD, ATTR_PRODUCT, CONF_HOST, CONF_UID
 
 REDACTED: Final = "**REDACTED**"
 

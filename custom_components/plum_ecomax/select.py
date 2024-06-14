@@ -14,7 +14,13 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.const import ProductType
 from pyplumio.structures.modules import ConnectedModules
 
-from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity, PlumEcomaxConfigEntry
+from . import (
+    DescriptorT,
+    EcomaxEntity,
+    EcomaxEntityDescription,
+    MixerEntity,
+    PlumEcomaxConfigEntry,
+)
 from .connection import EcomaxConnection
 from .const import ALL
 
@@ -28,7 +34,7 @@ STATE_PUMP_ONLY: Final = "pump_only"
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True, frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class EcomaxSelectEntityDescription(SelectEntityDescription, EcomaxEntityDescription):
     """Describes an ecoMAX select."""
 
@@ -46,27 +52,23 @@ SELECT_TYPES: tuple[EcomaxSelectEntityDescription, ...] = (
 class EcomaxSelect(EcomaxEntity, SelectEntity):
     """Represents an ecoMAX select."""
 
-    def __init__(
-        self, connection: EcomaxConnection, description: EcomaxSelectEntityDescription
-    ):
-        """Initialize a new ecoMAX select."""
-        self.connection = connection
-        self.entity_description = description
+    entity_description: EcomaxSelectEntityDescription
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
-        options: list[str] = self.entity_description.options
-        self.device.set_nowait(self.entity_description.key, options.index(option))
-        self._attr_current_option = option
-        self.async_write_ha_state()
+        if options := self.entity_description.options:
+            self.device.set_nowait(self.entity_description.key, options.index(option))
+            self._attr_current_option = option
+            self.async_write_ha_state()
 
     async def async_update(self, value: Any) -> None:
         """Update entity state."""
-        self._attr_current_option = self.entity_description.options[int(value)]
-        self.async_write_ha_state()
+        if self.entity_description.options:
+            self._attr_current_option = self.entity_description.options[int(value)]
+            self.async_write_ha_state()
 
 
-@dataclass(kw_only=True, frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class EcomaxMixerSelectEntityDescription(EcomaxSelectEntityDescription):
     """Describes a mixer select."""
 
@@ -93,10 +95,12 @@ MIXER_SELECT_TYPES: tuple[EcomaxMixerSelectEntityDescription, ...] = (
 class MixerSelect(MixerEntity, EcomaxSelect):
     """Represents a mixer select."""
 
+    entity_description: EcomaxMixerSelectEntityDescription
+
     def __init__(
         self,
         connection: EcomaxConnection,
-        description: EcomaxSelectEntityDescription,
+        description: EcomaxMixerSelectEntityDescription,
         index: int,
     ):
         """Initialize a new mixer select."""
@@ -106,8 +110,8 @@ class MixerSelect(MixerEntity, EcomaxSelect):
 
 def get_by_product_type(
     product_type: ProductType,
-    descriptions: Iterable[EcomaxSelectEntityDescription],
-) -> Generator[EcomaxSelectEntityDescription, None, None]:
+    descriptions: Iterable[DescriptorT],
+) -> Generator[DescriptorT, None, None]:
     """Filter descriptions by the product type."""
     for description in descriptions:
         if (
@@ -119,8 +123,8 @@ def get_by_product_type(
 
 def get_by_modules(
     connected_modules: ConnectedModules,
-    descriptions: Iterable[EcomaxSelectEntityDescription],
-) -> Generator[EcomaxSelectEntityDescription, None, None]:
+    descriptions: Iterable[DescriptorT],
+) -> Generator[DescriptorT, None, None]:
     """Filter descriptions by connected modules."""
     for description in descriptions:
         if getattr(connected_modules, description.module, None) is not None:

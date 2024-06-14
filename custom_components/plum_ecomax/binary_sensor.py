@@ -18,14 +18,20 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.const import ProductType
 from pyplumio.structures.modules import ConnectedModules
 
-from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity, PlumEcomaxConfigEntry
+from . import (
+    DescriptorT,
+    EcomaxEntity,
+    EcomaxEntityDescription,
+    MixerEntity,
+    PlumEcomaxConfigEntry,
+)
 from .connection import EcomaxConnection
 from .const import ALL
 
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True, frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class EcomaxBinarySensorEntityDescription(
     BinarySensorEntityDescription, EcomaxEntityDescription
 ):
@@ -136,15 +142,6 @@ class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
 
     entity_description: EcomaxBinarySensorEntityDescription
 
-    def __init__(
-        self,
-        connection: EcomaxConnection,
-        description: EcomaxBinarySensorEntityDescription,
-    ):
-        """Initialize a new ecoMAX binary sensor."""
-        self.connection = connection
-        self.entity_description = description
-
     async def async_update(self, value: Any) -> None:
         """Update entity state."""
         self._attr_is_on = self.entity_description.value_fn(value)
@@ -160,7 +157,7 @@ class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
         )
 
 
-@dataclass(kw_only=True, frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class MixerBinarySensorEntityDescription(EcomaxBinarySensorEntityDescription):
     """Describes a mixer binary sensor."""
 
@@ -190,6 +187,8 @@ MIXER_BINARY_SENSOR_TYPES: tuple[MixerBinarySensorEntityDescription, ...] = (
 class MixerBinarySensor(MixerEntity, EcomaxBinarySensor):
     """Represents a mixer binary sensor."""
 
+    entity_description: MixerBinarySensorEntityDescription
+
     def __init__(
         self,
         connection: EcomaxConnection,
@@ -203,8 +202,8 @@ class MixerBinarySensor(MixerEntity, EcomaxBinarySensor):
 
 def get_by_product_type(
     product_type: ProductType,
-    descriptions: Iterable[EcomaxBinarySensorEntityDescription],
-) -> Generator[EcomaxBinarySensorEntityDescription, None, None]:
+    descriptions: Iterable[DescriptorT],
+) -> Generator[DescriptorT, None, None]:
     """Filter descriptions by the product type."""
     for description in descriptions:
         if (
@@ -216,8 +215,8 @@ def get_by_product_type(
 
 def get_by_modules(
     connected_modules: ConnectedModules,
-    descriptions: Iterable[EcomaxBinarySensorEntityDescription],
-) -> Generator[EcomaxBinarySensorEntityDescription, None, None]:
+    descriptions: Iterable[DescriptorT],
+) -> Generator[DescriptorT, None, None]:
     """Filter descriptions by connected modules."""
     for description in descriptions:
         if getattr(connected_modules, description.module, None) is not None:

@@ -1,4 +1,5 @@
 """Connection handler for Plum ecoMAX."""
+
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -256,4 +257,4 @@ class EcomaxConnection:
     @cached_property
     def name(self) -> str:
         """Return the connection name."""
-        return cast(str, self.entry.title)
+        return self.entry.title

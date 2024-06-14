@@ -14,7 +14,7 @@ from homeassistant.const import (
     ATTR_FRIENDLY_NAME,
     STATE_UNKNOWN,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -81,6 +81,7 @@ async def test_detect_sub_devices_button(
 
     # Get initial value.
     state = hass.states.get(detect_sub_devices_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_UNKNOWN
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Detect sub-devices"
     assert state.attributes[ATTR_DEVICE_CLASS] == ButtonDeviceClass.UPDATE
@@ -92,4 +93,5 @@ async def test_detect_sub_devices_button(
         state = await async_press(hass, detect_sub_devices_entity_id)
 
     mock_async_update_sub_devices.assert_awaited_once()
+    assert isinstance(state, State)
     assert state.state == "2012-12-12T12:00:00+00:00"

@@ -74,16 +74,22 @@ CLIMATE_MODES: Final[list[str]] = [
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True, frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class EcomaxClimateEntityDescription(ClimateEntityDescription, EcomaxEntityDescription):
     """Describes an ecoMAX climate entity."""
+
+
+DEFAULT_ENTITY_DESCRIPTION = EcomaxClimateEntityDescription(
+    key="thermostat",
+    translation_key="thermostat",
+    always_available=True,
+    entity_registry_enabled_default=True,
+)
 
 
 class EcomaxClimate(ThermostatEntity, ClimateEntity):
     """Represents an ecoMAX climate entity."""
 
-    _attr_available = True
-    _attr_entity_registry_enabled_default = True
     _attr_hvac_mode = HVACMode.HEAT
     _attr_hvac_modes = [HVACMode.HEAT]
     _attr_precision = PRECISION_TENTHS
@@ -94,13 +100,17 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
     _attr_target_temperature_name: str | None = None
     _attr_target_temperature_step = TEMPERATURE_STEP
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
-    _attr_translation_key = "thermostat"
+    entity_description: EcomaxClimateEntityDescription
 
-    def __init__(self, connection: EcomaxConnection, index: int):
+    def __init__(
+        self,
+        connection: EcomaxConnection,
+        description: EcomaxClimateEntityDescription,
+        index: int,
+    ):
         """Initialize a new ecoMAX climate entity."""
-        self.connection = connection
-        self.entity_description = EcomaxClimateEntityDescription(key="thermostat")
         self.index = index
+        super().__init__(connection, description)
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
@@ -192,7 +202,7 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
         if preset_mode == PRESET_SCHEDULE:
             preset_mode = await self._async_get_current_schedule_preset(target_temp)
 
-        if preset_mode in (PRESET_AIRING, PRESET_UNKNOWN):
+        if not preset_mode or preset_mode in (PRESET_AIRING, PRESET_UNKNOWN):
             # Couldn't identify preset in schedule mode or
             # preset is airing.
             return
@@ -206,8 +216,8 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
             target_temperature_name
         )
         self._attr_target_temperature_name = target_temperature_name
-        self._attr_max_temp = target_temperature_parameter.max_value
-        self._attr_min_temp = target_temperature_parameter.min_value
+        self._attr_max_temp = float(target_temperature_parameter.max_value)
+        self._attr_min_temp = float(target_temperature_parameter.min_value)
 
     async def _async_get_current_schedule_preset(
         self, target_temp: float | None = None
@@ -249,7 +259,10 @@ async def async_setup_entry(
 
     if connection.has_thermostats and await connection.async_setup_thermostats():
         async_add_entities(
-            EcomaxClimate(connection, index) for index in connection.device.thermostats
+            EcomaxClimate(
+                connection, description=DEFAULT_ENTITY_DESCRIPTION, index=index
+            )
+            for index in connection.device.thermostats
         )
         return True
 

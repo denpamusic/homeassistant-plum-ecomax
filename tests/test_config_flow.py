@@ -1,4 +1,5 @@
 """Test Plum ecoMAX config flow."""
+
 from collections.abc import Generator
 from typing import Any
 from unittest.mock import AsyncMock, Mock, patch
@@ -112,7 +113,6 @@ async def test_form_tcp(
         result3 = await hass.config_entries.flow.async_configure(
             result2["flow_id"], tcp_user_input
         )
-        await hass.async_block_till_done()
 
     assert result3["type"] == FlowResultType.SHOW_PROGRESS
     assert result3["step_id"] == "identify"
@@ -308,10 +308,13 @@ async def test_abort_unsupported_device(
 
     # Identify the device.
     unknown_device_type = 2
-    with patch(
-        "custom_components.plum_ecomax.config_flow.async_get_connection_handler",
-        return_value=mock_connection,
-    ), patch.object(ecomax_p.data["product"], "type", unknown_device_type):
+    with (
+        patch(
+            "custom_components.plum_ecomax.config_flow.async_get_connection_handler",
+            return_value=mock_connection,
+        ),
+        patch.object(ecomax_p.data["product"], "type", unknown_device_type),
+    ):
         result3 = await hass.config_entries.flow.async_configure(
             result2["flow_id"], tcp_user_input
         )

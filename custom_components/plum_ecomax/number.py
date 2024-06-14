@@ -20,14 +20,20 @@ from pyplumio.const import ProductType
 from pyplumio.helpers.parameter import Parameter
 from pyplumio.structures.modules import ConnectedModules
 
-from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity, PlumEcomaxConfigEntry
+from . import (
+    DescriptorT,
+    EcomaxEntity,
+    EcomaxEntityDescription,
+    MixerEntity,
+    PlumEcomaxConfigEntry,
+)
 from .connection import EcomaxConnection
 from .const import ALL, CALORIFIC_KWH_KG
 
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True, frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class EcomaxNumberEntityDescription(NumberEntityDescription, EcomaxEntityDescription):
     """Describes an ecoMAX number."""
 
@@ -93,12 +99,7 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
 class EcomaxNumber(EcomaxEntity, NumberEntity):
     """Represents an ecoMAX number."""
 
-    def __init__(
-        self, connection: EcomaxConnection, description: EcomaxNumberEntityDescription
-    ):
-        """Initialize a new ecoMAX number."""
-        self.connection = connection
-        self.entity_description = description
+    entity_description: EcomaxNumberEntityDescription
 
     async def async_set_native_value(self, value: float) -> None:
         """Update current value."""
@@ -114,7 +115,7 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
         self.async_write_ha_state()
 
 
-@dataclass(kw_only=True, frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class EcomaxMixerNumberEntityDescription(EcomaxNumberEntityDescription):
     """Describes a mixer number."""
 
@@ -196,10 +197,12 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
 class MixerNumber(MixerEntity, EcomaxNumber):
     """Represents a mixer number."""
 
+    entity_description: EcomaxMixerNumberEntityDescription
+
     def __init__(
         self,
         connection: EcomaxConnection,
-        description: EcomaxNumberEntityDescription,
+        description: EcomaxMixerNumberEntityDescription,
         index: int,
     ):
         """Initialize a new mixer number."""
@@ -209,8 +212,8 @@ class MixerNumber(MixerEntity, EcomaxNumber):
 
 def get_by_product_type(
     product_type: ProductType,
-    descriptions: Iterable[EcomaxNumberEntityDescription],
-) -> Generator[EcomaxNumberEntityDescription, None, None]:
+    descriptions: Iterable[DescriptorT],
+) -> Generator[DescriptorT, None, None]:
     """Filter descriptions by the product type."""
     for description in descriptions:
         if (
@@ -222,8 +225,8 @@ def get_by_product_type(
 
 def get_by_modules(
     connected_modules: ConnectedModules,
-    descriptions: Iterable[EcomaxNumberEntityDescription],
-) -> Generator[EcomaxNumberEntityDescription, None, None]:
+    descriptions: Iterable[DescriptorT],
+) -> Generator[DescriptorT, None, None]:
     """Filter descriptions by connected modules."""
     for description in descriptions:
         if getattr(connected_modules, description.module, None) is not None:

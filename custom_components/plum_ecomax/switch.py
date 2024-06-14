@@ -16,14 +16,20 @@ from pyplumio.helpers.parameter import Parameter
 from pyplumio.helpers.typing import ParameterValueType
 from pyplumio.structures.modules import ConnectedModules
 
-from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity, PlumEcomaxConfigEntry
+from . import (
+    DescriptorT,
+    EcomaxEntity,
+    EcomaxEntityDescription,
+    MixerEntity,
+    PlumEcomaxConfigEntry,
+)
 from .connection import EcomaxConnection
 from .const import ALL
 
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True, frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class EcomaxSwitchEntityDescription(SwitchEntityDescription, EcomaxEntityDescription):
     """Describes an ecoMAX switch."""
 
@@ -73,13 +79,7 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
     """Represents an ecoMAX switch."""
 
     _attr_is_on: bool | None = None
-
-    def __init__(
-        self, connection: EcomaxConnection, description: EcomaxSwitchEntityDescription
-    ):
-        """Initialize a new ecoMAX switch."""
-        self.connection = connection
-        self.entity_description = description
+    entity_description: EcomaxSwitchEntityDescription
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on."""
@@ -108,7 +108,7 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
         self.async_write_ha_state()
 
 
-@dataclass(kw_only=True, frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class MixerSwitchEntityDescription(EcomaxSwitchEntityDescription):
     """Describes a mixer switch entity."""
 
@@ -145,6 +145,8 @@ MIXER_SWITCH_TYPES: tuple[MixerSwitchEntityDescription, ...] = (
 class MixerSwitch(MixerEntity, EcomaxSwitch):
     """Represents a mixer switch."""
 
+    entity_description: EcomaxSwitchEntityDescription
+
     def __init__(
         self,
         connection: EcomaxConnection,
@@ -158,8 +160,8 @@ class MixerSwitch(MixerEntity, EcomaxSwitch):
 
 def get_by_product_type(
     product_type: ProductType,
-    descriptions: Iterable[EcomaxSwitchEntityDescription],
-) -> Generator[EcomaxSwitchEntityDescription, None, None]:
+    descriptions: Iterable[DescriptorT],
+) -> Generator[DescriptorT, None, None]:
     """Filter descriptions by the product type."""
     for description in descriptions:
         if (
@@ -171,8 +173,8 @@ def get_by_product_type(
 
 def get_by_modules(
     connected_modules: ConnectedModules,
-    descriptions: Iterable[EcomaxSwitchEntityDescription],
-) -> Generator[EcomaxSwitchEntityDescription, None, None]:
+    descriptions: Iterable[DescriptorT],
+) -> Generator[DescriptorT, None, None]:
     """Filter descriptions by connected modules."""
     for description in descriptions:
         if getattr(connected_modules, description.module, None) is not None:

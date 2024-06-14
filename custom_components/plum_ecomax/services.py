@@ -1,9 +1,10 @@
 """Contains Plum ecoMAX services."""
+
 from __future__ import annotations
 
 import datetime as dt
 import logging
-from typing import Any, Final, Literal
+from typing import Any, Final
 
 from homeassistant.const import ATTR_NAME, STATE_OFF, STATE_ON
 from homeassistant.core import (
@@ -21,6 +22,7 @@ from homeassistant.helpers.service import (
     SelectedEntities,
     async_extract_referenced_entity_ids,
 )
+from homeassistant.util.json import JsonObjectType
 from pyplumio.const import UnitOfMeasurement
 from pyplumio.devices import Device
 from pyplumio.helpers.parameter import Parameter
@@ -135,7 +137,7 @@ def async_extract_referenced_devices(
     referenced = selected.referenced | selected.indirectly_referenced
     for entity_id in referenced:
         entity = entity_registry.async_get(entity_id)
-        if entity.device_id not in extracted:
+        if entity and entity.device_id and entity.device_id not in extracted:
             devices.add(async_extract_target_device(entity.device_id, hass, connection))
             extracted.add(entity.device_id)
 
@@ -231,7 +233,7 @@ async def async_set_device_parameter(device: Device, name: str, value: float) ->
             str(e),
             translation_domain=DOMAIN,
             translation_key="invalid_parameter_value",
-            translation_placeholders={"parameter": name, "value": value},
+            translation_placeholders={"parameter": name, "value": str(value)},
         ) from e
     except TimeoutError as e:
         raise HomeAssistantError(
@@ -275,9 +277,9 @@ def async_setup_set_parameter_service(
     )
 
 
-def async_schedule_day_to_dict(
+def async_get_schedule_day_data(
     schedule_day: ScheduleDay,
-) -> dict[str, Literal["day", "night"]]:
+) -> JsonObjectType:
     """Format the schedule day as a dictionary."""
     return {
         (START_OF_DAY_DT + dt.timedelta(minutes=30 * index)).strftime(TIME_FORMAT): (
@@ -309,9 +311,9 @@ def async_setup_get_schedule_service(
         schedule = schedules[schedule_type]
         return {
             "schedule": {
-                weekday: async_schedule_day_to_dict(getattr(schedule, weekday))
+                weekday: async_get_schedule_day_data(getattr(schedule, weekday))
                 for weekday in weekdays
-            }
+            },
         }
 
     hass.services.async_register(

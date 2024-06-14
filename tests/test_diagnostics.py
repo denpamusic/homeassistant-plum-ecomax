@@ -25,7 +25,6 @@ from custom_components.plum_ecomax.const import (
     CONF_SUB_DEVICES,
     CONF_UID,
     CONNECTION_TYPE_TCP,
-    DOMAIN,
 )
 from custom_components.plum_ecomax.diagnostics import (
     REDACTED,

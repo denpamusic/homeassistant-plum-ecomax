@@ -1,6 +1,7 @@
 """Test Plum ecoMAX setup process."""
 
-from typing import Final
+from datetime import datetime
+from typing import Final, cast
 from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
@@ -18,6 +19,7 @@ from pyplumio.structures.alerts import ATTR_ALERTS, Alert
 import pytest
 
 from custom_components.plum_ecomax import (
+    PlumEcomaxData,
     async_migrate_entry,
     async_setup_entry,
     async_setup_events,
@@ -31,7 +33,6 @@ from custom_components.plum_ecomax.const import (
     CONF_PRODUCT_ID,
     CONF_SOFTWARE,
     CONF_SUB_DEVICES,
-    DOMAIN,
     EVENT_PLUM_ECOMAX_ALERT,
 )
 
@@ -49,14 +50,17 @@ def bypass_async_setup_services():
 @pytest.fixture(autouse=True)
 def bypass_connect_and_close():
     """Bypass initiating and closing connection.."""
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.connect",
-        create=True,
-        new_callable=AsyncMock,
-    ), patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.close",
-        create=True,
-        new_callable=AsyncMock,
+    with (
+        patch(
+            "custom_components.plum_ecomax.connection.EcomaxConnection.connect",
+            create=True,
+            new_callable=AsyncMock,
+        ),
+        patch(
+            "custom_components.plum_ecomax.connection.EcomaxConnection.close",
+            create=True,
+            new_callable=AsyncMock,
+        ),
     ):
         yield
 
@@ -69,15 +73,17 @@ async def test_setup_and_unload_entry(
     with patch("custom_components.plum_ecomax.connection.EcomaxConnection.async_setup"):
         assert await async_setup_entry(hass, config_entry)
 
-    assert DOMAIN in hass.data and config_entry.entry_id in hass.data[DOMAIN]
-    connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
-    assert isinstance(connection, EcomaxConnection)
+    assert isinstance(data := config_entry.runtime_data, PlumEcomaxData)
+    assert isinstance(connection := data.connection, EcomaxConnection)
 
     # Test with exception.
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.async_setup",
-        side_effect=TimeoutError,
-    ), pytest.raises(ConfigEntryNotReady) as exc_info:
+    with (
+        patch(
+            "custom_components.plum_ecomax.connection.EcomaxConnection.async_setup",
+            side_effect=TimeoutError,
+        ),
+        pytest.raises(ConfigEntryNotReady) as exc_info,
+    ):
         await async_setup_entry(hass, config_entry)
 
     assert exc_info.value.translation_key == "connection_timeout"
@@ -96,20 +102,20 @@ async def test_setup_and_unload_entry(
     connection.close.assert_awaited_once()
     connection.close.reset_mock()
 
-    # Test when already unloaded.
-    assert await async_unload_entry(hass, config_entry)
-    connection.close.assert_not_awaited()
-
 
 @pytest.mark.usefixtures("ecomax_p", "connection")
 async def test_setup_events(
     hass: HomeAssistant, config_entry: ConfigEntry, caplog
 ) -> None:
     """Test setup events."""
-    connection = hass.data[DOMAIN][config_entry.entry_id]
-    with patch("custom_components.plum_ecomax.delta") as mock_delta, patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.device.subscribe"
-    ) as mock_subscribe:
+    data = config_entry.runtime_data
+    connection = data.connection
+    with (
+        patch("custom_components.plum_ecomax.delta") as mock_delta,
+        patch(
+            "custom_components.plum_ecomax.connection.EcomaxConnection.device.subscribe"
+        ) as mock_subscribe,
+    ):
         assert async_setup_events(hass, connection)
 
     mock_subscribe.assert_called_once_with(ATTR_ALERTS, mock_delta.return_value)
@@ -119,15 +125,18 @@ async def test_setup_events(
     # Test calling the callback with an alert.
     alert = Alert(
         code=AlertType.POWER_LOSS,
-        from_dt=dt_util.parse_datetime(DATE_FROM),
+        from_dt=cast(datetime, dt_util.parse_datetime(DATE_FROM)),
         to_dt=dt_util.parse_datetime(DATE_TO),
     )
     mock_device_entry = Mock()
 
-    with patch(
-        "homeassistant.helpers.device_registry.DeviceRegistry.async_get_device",
-        return_value=mock_device_entry,
-    ), patch("homeassistant.core.EventBus.async_fire") as mock_async_fire:
+    with (
+        patch(
+            "homeassistant.helpers.device_registry.DeviceRegistry.async_get_device",
+            return_value=mock_device_entry,
+        ),
+        patch("homeassistant.core.EventBus.async_fire") as mock_async_fire,
+    ):
         await callback([alert])
 
     mock_async_fire.assert_called_once_with(

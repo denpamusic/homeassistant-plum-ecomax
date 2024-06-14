@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 from collections.abc import Callable
 from contextlib import suppress
 from dataclasses import asdict, dataclass
 from functools import cached_property
 import logging
-from typing import Any, Final, Literal, cast, final
+from typing import Any, Final, Literal, TypeVar, cast, final, override
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -21,7 +20,7 @@ from homeassistant.const import (
 from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
-from homeassistant.helpers.entity import DeviceInfo, EntityDescription
+from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
 from pyplumio.const import ProductType
 from pyplumio.devices import Device
 from pyplumio.devices.mixer import Mixer
@@ -157,7 +156,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: PlumEcomaxConfigEntry) 
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         await entry.runtime_data.connection.close()
 
-    return cast(bool, unload_ok)
+    return unload_ok
 
 
 async def async_migrate_entry(
@@ -210,69 +209,86 @@ async def async_migrate_entry(
     return True
 
 
+@dataclass(frozen=True, kw_only=True)
 class EcomaxEntityDescription(EntityDescription):
     """Describes an ecoMAX entity."""
 
     always_available: bool = False
+    entity_registry_enabled_default: bool = False
     filter_fn: Callable[[Any], Filter] = on_change
     module: ModuleType = ModuleType.A
     product_types: set[ProductType] | Literal["all"] = ALL
 
 
-class EcomaxEntity(ABC):
+DescriptorT = TypeVar("DescriptorT", bound=EcomaxEntityDescription)
+
+
+class EcomaxEntity(Entity):
     """Represents an ecoMAX entity."""
 
+    _always_available: bool = False
     _attr_available = False
-    _attr_entity_registry_enabled_default: bool
-    _attr_should_poll = False
     _attr_has_entity_name = True
+    _attr_should_poll = False
     connection: EcomaxConnection
     entity_description: EcomaxEntityDescription
 
+    def __init__(
+        self, connection: EcomaxConnection, description: EcomaxEntityDescription
+    ) -> None:
+        """Initialize a new ecoMAX entity."""
+        self.connection = connection
+        self.entity_description = description
+
     async def async_added_to_hass(self) -> None:
         """Subscribe to events."""
+        description = self.entity_description
+        handler = description.filter_fn(self.async_update)
 
         async def _async_set_available(value: Any = None) -> None:
             """Mark entity as available."""
             self._attr_available = True
 
-        func = self.entity_description.filter_fn(self.async_update)
-        self.device.subscribe_once(self.entity_description.key, _async_set_available)
-        self.device.subscribe(self.entity_description.key, func)
-
-        if self.entity_description.key in self.device.data:
+        if description.key in self.device.data:
             await _async_set_available()
-            await func(self.device.get_nowait(self.entity_description.key, None))
+            await handler(self.device.get_nowait(description.key, None))
+
+        self.device.subscribe_once(description.key, _async_set_available)
+        self.device.subscribe(description.key, handler)
 
     async def async_will_remove_from_hass(self) -> None:
         """Unsubscribe from events."""
         self.device.unsubscribe(self.entity_description.key, self.async_update)
 
     @property
+    @override
     def available(self) -> bool:
         """Return True if entity is available."""
-        if getattr(self.entity_description, "always_available", False):
+        if self.entity_description.always_available:
             return True
 
         return self.connection.connected.is_set() and self._attr_available
 
     @property
+    @override
     def entity_registry_enabled_default(self) -> bool:
         """Return if the entity should be enabled when first added.
 
         This only applies when fist added to the entity registry.
         """
-        if hasattr(self, "_attr_entity_registry_enabled_default"):
-            return self._attr_entity_registry_enabled_default
+        if self.entity_description.entity_registry_enabled_default:
+            return True
 
         return self.entity_description.key in self.device.data
 
     @cached_property
+    @override
     def unique_id(self) -> str:
         """Return a unique ID."""
         return f"{self.connection.uid}-{self.entity_description.key}"
 
     @cached_property
+    @override
     def device_info(self) -> DeviceInfo:
         """Return the device info."""
         return DeviceInfo(
@@ -295,9 +311,9 @@ class EcomaxEntity(ABC):
         """Return the device handler."""
         return self.connection.device
 
-    @abstractmethod
     async def async_update(self, value: Any) -> None:
         """Update entity state."""
+        raise NotImplementedError
 
 
 class ThermostatEntity(EcomaxEntity):
@@ -306,6 +322,7 @@ class ThermostatEntity(EcomaxEntity):
     index: int
 
     @cached_property
+    @override
     def unique_id(self) -> str:
         """Return the unique ID."""
         return (
@@ -314,13 +331,14 @@ class ThermostatEntity(EcomaxEntity):
         )
 
     @cached_property
+    @override
     def device_info(self) -> DeviceInfo:
         """Return the device info."""
         return DeviceInfo(
             translation_key="thermostat",
             translation_placeholders={
                 "device_name": self.connection.name,
-                "thermostat_number": self.index + 1,
+                "thermostat_number": str(self.index + 1),
             },
             identifiers={
                 (DOMAIN, f"{self.connection.uid}-{DeviceType.THERMOSTAT}-{self.index}")
@@ -330,8 +348,9 @@ class ThermostatEntity(EcomaxEntity):
             via_device=(DOMAIN, self.connection.uid),
         )
 
-    @final
     @cached_property
+    @final
+    @override
     def device(self) -> Thermostat:
         """Return the mixer handler."""
         return cast(
@@ -345,6 +364,7 @@ class MixerEntity(EcomaxEntity):
     index: int
 
     @cached_property
+    @override
     def unique_id(self) -> str:
         """Return a unique ID."""
         return (
@@ -353,6 +373,7 @@ class MixerEntity(EcomaxEntity):
         )
 
     @cached_property
+    @override
     def device_info(self) -> DeviceInfo:
         """Return the device info."""
         return DeviceInfo(
@@ -363,7 +384,7 @@ class MixerEntity(EcomaxEntity):
             ),
             translation_placeholders={
                 "device_name": self.connection.name,
-                "mixer_number": self.index + 1,
+                "mixer_number": str(self.index + 1),
             },
             identifiers={
                 (DOMAIN, f"{self.connection.uid}-{DeviceType.MIXER}-{self.index}")
@@ -372,8 +393,9 @@ class MixerEntity(EcomaxEntity):
             via_device=(DOMAIN, self.connection.uid),
         )
 
-    @final
     @cached_property
+    @final
+    @override
     def device(self) -> Mixer:
         """Return the mixer handler."""
         return cast(Mixer, self.connection.device.data[ATTR_MIXERS][self.index])

@@ -15,10 +15,9 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import EcomaxEntity, EcomaxEntityDescription, PlumEcomaxConfigEntry
-from .connection import EcomaxConnection
 
 
-@dataclass(kw_only=True, frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class EcomaxButtonEntityDescription(ButtonEntityDescription, EcomaxEntityDescription):
     """Describes an ecoMAX button."""
 
@@ -32,6 +31,8 @@ BUTTON_TYPES: tuple[EcomaxButtonEntityDescription, ...] = (
         device_class=ButtonDeviceClass.UPDATE,
         entity_category=EntityCategory.DIAGNOSTIC,
         press_fn="async_update_sub_devices",
+        entity_registry_enabled_default=True,
+        always_available=True,
     ),
 )
 
@@ -39,16 +40,7 @@ BUTTON_TYPES: tuple[EcomaxButtonEntityDescription, ...] = (
 class EcomaxButton(EcomaxEntity, ButtonEntity):
     """Represents an ecoMAX button."""
 
-    _attr_available = True
-    _attr_entity_registry_enabled_default = True
     entity_description: EcomaxButtonEntityDescription
-
-    def __init__(
-        self, connection: EcomaxConnection, description: EcomaxButtonEntityDescription
-    ):
-        """Initialize a new ecoMAX button."""
-        self.connection = connection
-        self.entity_description = description
 
     async def async_press(self) -> None:
         """Press the button."""
