@@ -14,7 +14,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from . import EcomaxEntity, EcomaxEntityDescription, PlumEcomaxConfigEntry
+from . import PlumEcomaxConfigEntry
+from .entity import EcomaxEntity, EcomaxEntityDescription
 
 
 @dataclass(frozen=True, kw_only=True)

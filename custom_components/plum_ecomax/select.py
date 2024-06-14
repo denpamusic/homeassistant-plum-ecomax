@@ -14,15 +14,10 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.const import ProductType
 from pyplumio.structures.modules import ConnectedModules
 
-from . import (
-    DescriptorT,
-    EcomaxEntity,
-    EcomaxEntityDescription,
-    MixerEntity,
-    PlumEcomaxConfigEntry,
-)
+from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
 from .const import ALL
+from .entity import DescriptorT, EcomaxEntity, EcomaxEntityDescription, MixerEntity
 
 STATE_SUMMER: Final = "summer"
 STATE_WINTER: Final = "winter"

@@ -16,15 +16,10 @@ from pyplumio.helpers.parameter import Parameter
 from pyplumio.helpers.typing import ParameterValueType
 from pyplumio.structures.modules import ConnectedModules
 
-from . import (
-    DescriptorT,
-    EcomaxEntity,
-    EcomaxEntityDescription,
-    MixerEntity,
-    PlumEcomaxConfigEntry,
-)
+from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
 from .const import ALL
+from .entity import DescriptorT, EcomaxEntity, EcomaxEntityDescription, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
 
