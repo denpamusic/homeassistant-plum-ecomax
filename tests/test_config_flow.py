@@ -113,6 +113,7 @@ async def test_form_tcp(
         result3 = await hass.config_entries.flow.async_configure(
             result2["flow_id"], tcp_user_input
         )
+        await hass.async_block_till_done()
 
     assert result3["type"] == FlowResultType.SHOW_PROGRESS
     assert result3["step_id"] == "identify"

@@ -129,7 +129,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
             errors[CONF_BASE] = "cannot_connect"
         except TimeoutConnect:
             errors[CONF_BASE] = "timeout_connect"
-        except Exception:  # pylint: disable=broad-except
+        except Exception:
             _LOGGER.exception("Unexpected exception")
             errors[CONF_BASE] = "unknown"
 
@@ -160,7 +160,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
             errors[CONF_BASE] = "cannot_connect"
         except TimeoutConnect:
             errors[CONF_BASE] = "timeout_connect"
-        except Exception:  # pylint: disable=broad-except
+        except Exception:
             _LOGGER.exception("Unexpected exception")
             errors[CONF_BASE] = "unknown"
 

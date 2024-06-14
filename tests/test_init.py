@@ -100,7 +100,6 @@ async def test_setup_and_unload_entry(
     assert await async_unload_entry(hass, config_entry)
     assert config_entry.state is ConfigEntryState.NOT_LOADED
     connection.close.assert_awaited_once()
-    connection.close.reset_mock()
 
 
 @pytest.mark.usefixtures("ecomax_p", "connection")
