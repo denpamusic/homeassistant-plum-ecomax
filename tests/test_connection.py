@@ -123,7 +123,6 @@ async def test_async_setup(
     assert connection.software == tcp_config_data.get(CONF_SOFTWARE)
     assert connection.name == config_entry.title
     assert connection.device == mock_ecomax
-    assert connection.connection == mock_connection
     assert connection.product_type == tcp_config_data.get(CONF_PRODUCT_TYPE)
     assert connection.product_id == tcp_config_data.get(CONF_PRODUCT_ID)
 
@@ -200,15 +199,19 @@ async def test_async_update_sub_device(
 ) -> None:
     """Test function to update connected sub-devices."""
     connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=TcpConnection))
-    with patch(
-        "homeassistant.config_entries.ConfigEntries.async_reload"
-    ) as mock_async_reload, patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.device",
-        return_value=ecomax_p,
-    ) as mock_device, patch(
-        "custom_components.plum_ecomax.connection.async_get_sub_devices",
-        return_value=[ATTR_MIXERS],
-    ) as mock_async_get_sub_devices:
+    with (
+        patch(
+            "homeassistant.config_entries.ConfigEntries.async_reload"
+        ) as mock_async_reload,
+        patch(
+            "custom_components.plum_ecomax.connection.EcomaxConnection.device",
+            return_value=ecomax_p,
+        ) as mock_device,
+        patch(
+            "custom_components.plum_ecomax.connection.async_get_sub_devices",
+            return_value=[ATTR_MIXERS],
+        ) as mock_async_get_sub_devices,
+    ):
         await connection.async_update_sub_devices()
 
     mock_async_get_sub_devices.assert_awaited_once_with(mock_device)

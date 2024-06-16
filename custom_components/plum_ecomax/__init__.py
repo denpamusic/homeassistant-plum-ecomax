@@ -82,7 +82,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: PlumEcomaxConfigEntry) -
     try:
         await connection.async_setup()
     except TimeoutError as e:
-        await connection.close()
+        await connection.async_close()
         raise ConfigEntryNotReady(
             translation_domain=DOMAIN,
             translation_key="connection_timeout",
@@ -95,7 +95,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: PlumEcomaxConfigEntry) -
 
     async def _async_close_connection(event: Event | None = None) -> None:
         """Close the ecoMAX connection on HA Stop."""
-        await connection.close()
+        await connection.async_close()
 
     entry.async_on_unload(
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, _async_close_connection)

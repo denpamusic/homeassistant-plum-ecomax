@@ -138,7 +138,7 @@ class EcomaxConnection:
 
     async def async_setup(self) -> None:
         """Set up ecoMAX connection."""
-        await self.connect()
+        await self._connection.connect()
         device: AddressableDevice = await self.get(
             DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT
         )
@@ -197,10 +197,9 @@ class EcomaxConnection:
         _LOGGER.info("Updated sub-devices, reloading config entry...")
         await self._hass.config_entries.async_reload(self.entry.entry_id)
 
-    @property
-    def connection(self) -> Connection:
-        """Return the connection handler."""
-        return self._connection
+    async def async_close(self) -> None:
+        """Close ecoMAX connection."""
+        await self._connection.close()
 
     @property
     def device(self) -> AddressableDevice:

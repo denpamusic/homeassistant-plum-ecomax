@@ -52,12 +52,12 @@ def bypass_connect_and_close():
     """Bypass initiating and closing connection.."""
     with (
         patch(
-            "custom_components.plum_ecomax.connection.EcomaxConnection.connect",
+            "pyplumio.connection.Connection.connect",
             create=True,
             new_callable=AsyncMock,
         ),
         patch(
-            "custom_components.plum_ecomax.connection.EcomaxConnection.close",
+            "pyplumio.connection.Connection.close",
             create=True,
             new_callable=AsyncMock,
         ),
