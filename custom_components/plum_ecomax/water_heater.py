@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import logging
 from typing import Any, Final, cast
 
+from homeassistant.components.climate import ATTR_TARGET_TEMP_STEP
 from homeassistant.components.water_heater import (
     STATE_ECO,
     STATE_PERFORMANCE,
@@ -15,7 +16,7 @@ from homeassistant.components.water_heater import (
 )
 from homeassistant.const import (
     ATTR_TEMPERATURE,
-    PRECISION_WHOLE,
+    PRECISION_TENTHS,
     STATE_OFF,
     UnitOfTemperature,
 )
@@ -29,8 +30,6 @@ from .entity import EcomaxEntity, EcomaxEntityDescription
 
 EM_TO_HA_STATE: Final = {0: STATE_OFF, 1: STATE_PERFORMANCE, 2: STATE_ECO}
 HA_TO_EM_STATE: Final = {v: k for k, v in EM_TO_HA_STATE.items()}
-
-WATER_HEATER_MODES: Final = [STATE_OFF, STATE_PERFORMANCE, STATE_ECO]
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -53,12 +52,13 @@ ENTITY_DESCRIPTION = EcomaxWaterHeaterEntityDescription(
 class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     """Represents an ecoMAX water heater."""
 
+    _attr_extra_state_attributes = {ATTR_TARGET_TEMP_STEP: 1}
     _attr_hysteresis: int = 0
     _attr_max_temp: float
     _attr_min_temp: float
-    _attr_operation_list = WATER_HEATER_MODES
-    _attr_precision = PRECISION_WHOLE
-    _attr_supported_features: WaterHeaterEntityFeature = (
+    _attr_operation_list = list(HA_TO_EM_STATE)
+    _attr_precision = PRECISION_TENTHS
+    _attr_supported_features = (
         WaterHeaterEntityFeature.TARGET_TEMPERATURE
         | WaterHeaterEntityFeature.OPERATION_MODE
     )

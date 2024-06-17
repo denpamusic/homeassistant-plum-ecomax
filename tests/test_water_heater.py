@@ -3,6 +3,7 @@
 from unittest.mock import patch
 
 from freezegun import freeze_time
+from homeassistant.components.climate import ATTR_TARGET_TEMP_STEP
 from homeassistant.components.water_heater import (
     ATTR_CURRENT_TEMPERATURE,
     ATTR_MAX_TEMP,
@@ -32,10 +33,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.water_heater import (
-    HA_TO_EM_STATE,
-    WATER_HEATER_MODES,
-)
+from custom_components.plum_ecomax.water_heater import HA_TO_EM_STATE
 
 
 @pytest.fixture(autouse=True)
@@ -136,12 +134,17 @@ async def test_indirect_water_heater(
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Indirect water heater"
     assert state.attributes[ATTR_MIN_TEMP] == 10
     assert state.attributes[ATTR_MAX_TEMP] == 80
-    assert state.attributes[ATTR_OPERATION_LIST] == WATER_HEATER_MODES
+    assert state.attributes[ATTR_OPERATION_LIST] == [
+        STATE_OFF,
+        STATE_PERFORMANCE,
+        STATE_ECO,
+    ]
     assert state.attributes[ATTR_CURRENT_TEMPERATURE] == 0
     assert state.attributes[ATTR_TEMPERATURE] == 50
     assert state.attributes[ATTR_TARGET_TEMP_HIGH] == 50
     assert state.attributes[ATTR_TARGET_TEMP_LOW] == 45
     assert state.attributes[ATTR_OPERATION_MODE] == STATE_OFF
+    assert state.attributes[ATTR_TARGET_TEMP_STEP] == 1
 
     # Dispatch new water heater temperature.
     frozen_time.move_to("12:00:10")
