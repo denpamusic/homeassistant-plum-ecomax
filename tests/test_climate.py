@@ -34,10 +34,13 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.climate import (
-    CLIMATE_MODES,
     HA_PRESET_TO_EM_TEMP,
     HA_TO_EM_MODE,
     PRESET_AIRING,
+    PRESET_ANTIFREEZE,
+    PRESET_AWAY,
+    PRESET_HOLIDAYS,
+    PRESET_PARTY,
     PRESET_SCHEDULE,
 )
 from custom_components.plum_ecomax.connection import EcomaxConnection
@@ -143,7 +146,16 @@ async def test_thermostat(
     assert state.attributes[ATTR_MIN_TEMP] == 10
     assert state.attributes[ATTR_MAX_TEMP] == 35
     assert state.attributes[ATTR_TARGET_TEMP_STEP] == 0.1
-    assert state.attributes[ATTR_PRESET_MODES] == CLIMATE_MODES
+    assert state.attributes[ATTR_PRESET_MODES] == [
+        PRESET_SCHEDULE,
+        PRESET_ECO,
+        PRESET_COMFORT,
+        PRESET_AWAY,
+        PRESET_AIRING,
+        PRESET_PARTY,
+        PRESET_HOLIDAYS,
+        PRESET_ANTIFREEZE,
+    ]
     assert state.attributes[ATTR_CURRENT_TEMPERATURE] == 0
     assert state.attributes[ATTR_HVAC_ACTION] == HVACAction.IDLE
     assert state.attributes[ATTR_PRESET_MODE] == PRESET_SCHEDULE

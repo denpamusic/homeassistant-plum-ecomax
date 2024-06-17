@@ -53,9 +53,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     """Represents an ecoMAX water heater."""
 
     _attr_extra_state_attributes = {ATTR_TARGET_TEMP_STEP: 1}
-    _attr_hysteresis: int = 0
-    _attr_max_temp: float
-    _attr_min_temp: float
+    _attr_hysteresis = 0
     _attr_operation_list = list(HA_TO_EM_STATE)
     _attr_precision = PRECISION_TENTHS
     _attr_supported_features = (

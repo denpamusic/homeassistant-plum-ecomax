@@ -61,17 +61,6 @@ HA_PRESET_TO_EM_TEMP: Final[dict[str, str]] = {
     PRESET_ANTIFREEZE: "antifreeze_target_temp",
 }
 
-CLIMATE_MODES: Final[list[str]] = [
-    PRESET_SCHEDULE,
-    PRESET_ECO,
-    PRESET_COMFORT,
-    PRESET_AWAY,
-    PRESET_AIRING,
-    PRESET_PARTY,
-    PRESET_HOLIDAYS,
-    PRESET_ANTIFREEZE,
-]
-
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -94,7 +83,7 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
     _attr_hvac_mode = HVACMode.HEAT
     _attr_hvac_modes = [HVACMode.HEAT]
     _attr_precision = PRECISION_TENTHS
-    _attr_preset_modes = CLIMATE_MODES
+    _attr_preset_modes = list(HA_TO_EM_MODE)
     _attr_supported_features = (
         ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE
     )
