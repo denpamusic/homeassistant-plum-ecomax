@@ -28,6 +28,8 @@ from pyplumio.helpers.parameter import Parameter
 from . import PlumEcomaxConfigEntry
 from .entity import EcomaxEntity, EcomaxEntityDescription
 
+TEMPERATURE_STEP: Final = 1
+
 EM_TO_HA_STATE: Final = {0: STATE_OFF, 1: STATE_PERFORMANCE, 2: STATE_ECO}
 HA_TO_EM_STATE: Final = {v: k for k, v in EM_TO_HA_STATE.items()}
 
@@ -52,7 +54,7 @@ ENTITY_DESCRIPTION = EcomaxWaterHeaterEntityDescription(
 class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     """Represents an ecoMAX water heater."""
 
-    _attr_extra_state_attributes = {ATTR_TARGET_TEMP_STEP: 1}
+    _attr_extra_state_attributes = {ATTR_TARGET_TEMP_STEP: TEMPERATURE_STEP}
     _attr_hysteresis = 0
     _attr_operation_list = list(HA_TO_EM_STATE)
     _attr_precision = PRECISION_TENTHS
