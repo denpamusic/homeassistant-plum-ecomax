@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import Any, Final, cast
+from typing import Any, Final
 
 from homeassistant.components.climate import ATTR_TARGET_TEMP_STEP
 from homeassistant.components.water_heater import (
@@ -94,7 +94,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
 
     async def async_update_hysteresis(self, value: Parameter) -> None:
         """Update lower target temperature bound."""
-        self._attr_hysteresis = cast(int, value.value)
+        self._attr_hysteresis = int(value.value)
         if self.target_temperature is not None:
             self._attr_target_temperature_low = (
                 int(self.target_temperature) - self.hysteresis
