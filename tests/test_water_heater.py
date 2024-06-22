@@ -3,6 +3,7 @@
 from unittest.mock import patch
 
 from freezegun import freeze_time
+from homeassistant.components.climate import ATTR_TARGET_TEMP_STEP
 from homeassistant.components.water_heater import (
     ATTR_CURRENT_TEMPERATURE,
     ATTR_MAX_TEMP,
@@ -20,8 +21,9 @@ from homeassistant.components.water_heater import (
     WaterHeaterEntityFeature,
 )
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_FRIENDLY_NAME, STATE_OFF
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.entity_registry import RegistryEntry
 from pyplumio.helpers.parameter import ParameterValues
 from pyplumio.structures.ecomax_parameters import (
     EcomaxParameter,
@@ -31,10 +33,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.water_heater import (
-    HA_TO_EM_STATE,
-    WATER_HEATER_MODES,
-)
+from custom_components.plum_ecomax.water_heater import HA_TO_EM_STATE
 
 
 @pytest.fixture(autouse=True)
@@ -120,31 +119,38 @@ async def test_indirect_water_heater(
     # Check entry.
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(indirect_water_heater_entity_id)
+    assert isinstance(entry, RegistryEntry)
     assert (
         entry.supported_features
         == WaterHeaterEntityFeature.TARGET_TEMPERATURE
         | WaterHeaterEntityFeature.OPERATION_MODE
     )
-    assert entry
     assert entry.translation_key == "indirect_water_heater"
 
     # Get initial value.
     state = hass.states.get(indirect_water_heater_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Indirect water heater"
     assert state.attributes[ATTR_MIN_TEMP] == 10
     assert state.attributes[ATTR_MAX_TEMP] == 80
-    assert state.attributes[ATTR_OPERATION_LIST] == WATER_HEATER_MODES
+    assert state.attributes[ATTR_OPERATION_LIST] == [
+        STATE_OFF,
+        STATE_PERFORMANCE,
+        STATE_ECO,
+    ]
     assert state.attributes[ATTR_CURRENT_TEMPERATURE] == 0
     assert state.attributes[ATTR_TEMPERATURE] == 50
     assert state.attributes[ATTR_TARGET_TEMP_HIGH] == 50
     assert state.attributes[ATTR_TARGET_TEMP_LOW] == 45
     assert state.attributes[ATTR_OPERATION_MODE] == STATE_OFF
+    assert state.attributes[ATTR_TARGET_TEMP_STEP] == 1
 
     # Dispatch new water heater temperature.
     frozen_time.move_to("12:00:10")
     await connection.device.dispatch(water_heater_current_temperature_key, 51)
     state = hass.states.get(indirect_water_heater_entity_id)
+    assert isinstance(state, State)
     assert state.attributes[ATTR_CURRENT_TEMPERATURE] == 51
 
     # Dispatch new water heater target temperature.
@@ -158,6 +164,7 @@ async def test_indirect_water_heater(
         ),
     )
     state = hass.states.get(indirect_water_heater_entity_id)
+    assert isinstance(state, State)
     assert state.attributes[ATTR_TARGET_TEMP_HIGH] == 55
     assert state.attributes[ATTR_TARGET_TEMP_LOW] == 50
 
@@ -171,6 +178,7 @@ async def test_indirect_water_heater(
         ),
     )
     state = hass.states.get(indirect_water_heater_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_PERFORMANCE
     assert state.attributes[ATTR_OPERATION_MODE] == STATE_PERFORMANCE
 
@@ -184,6 +192,7 @@ async def test_indirect_water_heater(
         ),
     )
     state = hass.states.get(indirect_water_heater_entity_id)
+    assert isinstance(state, State)
     assert state.attributes[ATTR_TARGET_TEMP_LOW] == 45
 
     # Test that water heater operation mode can be set.
@@ -195,6 +204,7 @@ async def test_indirect_water_heater(
     mock_set_nowait.assert_called_once_with(
         water_heater_operation_mode_key, HA_TO_EM_STATE[STATE_ECO]
     )
+    assert isinstance(state, State)
     assert state.state == STATE_ECO
 
     # Test that water heater temperature can be set.
@@ -202,6 +212,7 @@ async def test_indirect_water_heater(
         state = await async_set_temperature(hass, indirect_water_heater_entity_id, 60)
 
     mock_set_nowait.assert_called_once_with(water_heater_target_temperature_key, 60)
+    assert isinstance(state, State)
     assert state.state == STATE_ECO
 
     # Test without water heater.

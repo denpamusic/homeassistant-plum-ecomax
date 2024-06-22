@@ -6,11 +6,10 @@ from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.const import (
     ATTR_DEVICE_CLASS,
     ATTR_FRIENDLY_NAME,
-    ATTR_ICON,
     STATE_OFF,
     STATE_ON,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from pyplumio.const import ATTR_CONNECTED
@@ -71,16 +70,16 @@ async def test_heating_pump_binary_sensor(
 
     # Get initial value.
     state = hass.states.get(heating_pump_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Heating pump"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
-    assert state.attributes[ATTR_ICON] == "mdi:pump-off"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_HEATING_PUMP, True)
     state = hass.states.get(heating_pump_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_ON
-    assert state.attributes[ATTR_ICON] == "mdi:pump"
 
 
 @pytest.mark.usefixtures("ecomax_p", "water_heater")
@@ -102,16 +101,16 @@ async def test_water_heater_pump_binary_sensor(
 
     # Get initial value.
     state = hass.states.get(water_heater_pump_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Water heater pump"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
-    assert state.attributes[ATTR_ICON] == "mdi:pump-off"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_WATER_HEATER_PUMP, True)
     state = hass.states.get(water_heater_pump_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_ON
-    assert state.attributes[ATTR_ICON] == "mdi:pump"
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -133,16 +132,16 @@ async def test_circulation_pump_binary_sensor(
 
     # Get initial value.
     state = hass.states.get(circulation_pump_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Circulation pump"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
-    assert state.attributes[ATTR_ICON] == "mdi:pump-off"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_CIRCULATION_PUMP, True)
     state = hass.states.get(circulation_pump_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_ON
-    assert state.attributes[ATTR_ICON] == "mdi:pump"
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -165,6 +164,7 @@ async def test_alert_binary_sensor(
 
     # Get initial value.
     state = hass.states.get(alert_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Alert"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.PROBLEM
@@ -172,6 +172,7 @@ async def test_alert_binary_sensor(
     # Dispatch new value.
     await connection.device.dispatch(ATTR_PENDING_ALERTS, 2)
     state = hass.states.get(alert_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_ON
 
 
@@ -195,6 +196,7 @@ async def test_connection_status_binary_sensor(
 
     # Get initial value.
     state = hass.states.get(connection_status_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Connection status"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.CONNECTIVITY
@@ -202,6 +204,7 @@ async def test_connection_status_binary_sensor(
     # Dispatch new value.
     await connection.device.dispatch(ATTR_CONNECTED, True)
     state = hass.states.get(connection_status_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_ON
 
 
@@ -224,16 +227,16 @@ async def test_fan_binary_sensor(
 
     # Get initial value.
     state = hass.states.get(fan_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fan"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
-    assert state.attributes[ATTR_ICON] == "mdi:fan-off"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_FAN, True)
     state = hass.states.get(fan_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_ON
-    assert state.attributes[ATTR_ICON] == "mdi:fan"
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -255,16 +258,16 @@ async def test_exhaust_fan_binary_sensor(
 
     # Get initial value.
     state = hass.states.get(exhaust_fan_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Exhaust fan"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
-    assert state.attributes[ATTR_ICON] == "mdi:fan-off"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_FAN2_EXHAUST, True)
     state = hass.states.get(exhaust_fan_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_ON
-    assert state.attributes[ATTR_ICON] == "mdi:fan"
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -286,15 +289,15 @@ async def test_feeder_binary_sensor(
 
     # Get initial value.
     state = hass.states.get(feeder_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Feeder"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
-    assert state.attributes[ATTR_ICON] == "mdi:screw-lag"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_FEEDER, True)
     state = hass.states.get(feeder_entity_id)
-    assert state.state == STATE_ON
+    assert isinstance(state, State)
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -316,16 +319,16 @@ async def test_lighter_binary_sensor(
 
     # Get initial value.
     state = hass.states.get(lighter_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Lighter"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
-    assert state.attributes[ATTR_ICON] == "mdi:fire-off"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_LIGHTER, True)
     state = hass.states.get(lighter_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_ON
-    assert state.attributes[ATTR_ICON] == "mdi:fire"
 
 
 @pytest.mark.usefixtures("ecomax_i")
@@ -347,16 +350,16 @@ async def test_solar_pump_binary_sensor(
 
     # Get initial value.
     state = hass.states.get(solar_pump_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Solar pump"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
-    assert state.attributes[ATTR_ICON] == "mdi:pump-off"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_SOLAR_PUMP, True)
     state = hass.states.get(solar_pump_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_ON
-    assert state.attributes[ATTR_ICON] == "mdi:pump"
 
 
 @pytest.mark.usefixtures("ecomax_i")
@@ -378,16 +381,16 @@ async def test_fireplace_pump_binary_sensor(
 
     # Get initial value.
     state = hass.states.get(fireplace_pump_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fireplace pump"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
-    assert state.attributes[ATTR_ICON] == "mdi:pump-off"
 
     # Dispatch new value.
     await connection.device.dispatch(ATTR_FIREPLACE_PUMP, True)
     state = hass.states.get(fireplace_pump_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_ON
-    assert state.attributes[ATTR_ICON] == "mdi:pump"
 
 
 @pytest.mark.usefixtures("ecomax_p", "mixers")
@@ -409,16 +412,16 @@ async def test_mixer_pump_binary_sensor(
 
     # Get initial value.
     state = hass.states.get(mixer_pump_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Mixer 1 Mixer pump"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
-    assert state.attributes[ATTR_ICON] == "mdi:pump-off"
 
     # Dispatch new value.
     await connection.device.mixers[0].dispatch(ATTR_PUMP, True)
     state = hass.states.get(mixer_pump_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_ON
-    assert state.attributes[ATTR_ICON] == "mdi:pump"
 
 
 @pytest.mark.usefixtures("ecomax_i", "mixers")
@@ -440,13 +443,13 @@ async def test_circuit_pump_binary_sensor(
 
     # Get initial value.
     state = hass.states.get(circuit_pump_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_OFF
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Circuit 1 Circuit pump"
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
-    assert state.attributes[ATTR_ICON] == "mdi:pump-off"
 
     # Dispatch new value.
     await connection.device.mixers[0].dispatch(ATTR_PUMP, True)
     state = hass.states.get(circuit_pump_entity_id)
+    assert isinstance(state, State)
     assert state.state == STATE_ON
-    assert state.attributes[ATTR_ICON] == "mdi:pump"

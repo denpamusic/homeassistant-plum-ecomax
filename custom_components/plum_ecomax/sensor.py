@@ -1,10 +1,11 @@
 """Platform for sensor integration."""
+
 from __future__ import annotations
 
 from collections.abc import Callable, Generator, Iterable
 from dataclasses import asdict, astuple, dataclass
 import logging
-from typing import Any, Final
+from typing import Any, Final, cast, override
 
 from homeassistant.components.sensor import (
     RestoreSensor,
@@ -30,13 +31,13 @@ from homeassistant.helpers.entity_platform import (
     AddEntitiesCallback,
     async_get_current_platform,
 )
-from homeassistant.helpers.typing import ConfigType, StateType
+from homeassistant.helpers.typing import StateType
 from pyplumio.const import DeviceState, ProductType
 from pyplumio.filters import aggregate, on_change, throttle
 from pyplumio.structures.modules import ConnectedModules
 import voluptuous as vol
 
-from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity
+from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
 from .const import (
     ALL,
@@ -45,12 +46,11 @@ from .const import (
     ATTR_REGDATA,
     ATTR_VALUE,
     DEVICE_CLASS_METER,
-    DEVICE_CLASS_STATE,
-    DOMAIN,
     FLOW_KGH,
     ModuleType,
     ProductModel,
 )
+from .entity import DescriptorT, EcomaxEntity, EcomaxEntityDescription, MixerEntity
 
 SERVICE_RESET_METER: Final = "reset_meter"
 SERVICE_CALIBRATE_METER: Final = "calibrate_meter"
@@ -79,8 +79,8 @@ UPDATE_INTERVAL: Final = 10
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True, frozen=True, slots=True)
-class EcomaxSensorEntityDescription(SensorEntityDescription, EcomaxEntityDescription):
+@dataclass(frozen=True, kw_only=True)
+class EcomaxSensorEntityDescription(EcomaxEntityDescription, SensorEntityDescription):
     """Describes an ecoMAX sensor."""
 
     value_fn: Callable[[Any], Any]
@@ -89,230 +89,221 @@ class EcomaxSensorEntityDescription(SensorEntityDescription, EcomaxEntityDescrip
 SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="heating_temp",
-        translation_key="heating_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="heating_temp",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="water_heater_temp",
-        translation_key="water_heater_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="water_heater_temp",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="outside_temp",
-        translation_key="outside_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="outside_temp",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="heating_target",
-        translation_key="heating_target",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="heating_target",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="water_heater_target",
-        translation_key="water_heater_target",
         device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="water_heater_target",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="state",
+        device_class=SensorDeviceClass.ENUM,
         translation_key="ecomax_state",
-        device_class=DEVICE_CLASS_STATE,
         value_fn=lambda x: EM_TO_HA_STATE.get(x, STATE_UNKNOWN),
     ),
     EcomaxSensorEntityDescription(
         key="password",
-        translation_key="service_password",
         entity_category=EntityCategory.DIAGNOSTIC,
-        icon="mdi:form-textbox-password",
+        translation_key="service_password",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="modules",
-        translation_key="connected_modules",
         entity_category=EntityCategory.DIAGNOSTIC,
-        icon="mdi:raspberry-pi",
+        translation_key="connected_modules",
         value_fn=lambda x: len([value for value in astuple(x) if value is not None]),
     ),
     EcomaxSensorEntityDescription(
         key="lambda_level",
-        translation_key="oxygen_level",
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
-        icon="mdi:weather-windy-variant",
         module=ModuleType.ECOLAMBDA,
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="oxygen_level",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="boiler_power",
-        translation_key="boiler_power",
         device_class=SensorDeviceClass.POWER,
-        icon="mdi:radiator",
         native_unit_of_measurement=UnitOfPower.KILO_WATT,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="boiler_power",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="fuel_level",
-        translation_key="fuel_level",
-        icon="mdi:gas-station",
         native_unit_of_measurement=PERCENTAGE,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=0,
+        translation_key="fuel_level",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="fuel_consumption",
-        translation_key="fuel_consumption",
-        icon="mdi:fire",
         native_unit_of_measurement=FLOW_KGH,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=2,
+        translation_key="fuel_consumption",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="boiler_load",
-        translation_key="boiler_load",
-        icon="mdi:gauge",
         native_unit_of_measurement=PERCENTAGE,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
+        translation_key="boiler_load",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="fan_power",
-        translation_key="fan_power",
-        icon="mdi:fan",
         native_unit_of_measurement=PERCENTAGE,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="fan_power",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="optical_temp",
-        translation_key="flame_intensity",
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
-        icon="mdi:fire",
         native_unit_of_measurement=PERCENTAGE,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="flame_intensity",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="feeder_temp",
-        translation_key="feeder_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="feeder_temp",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="exhaust_temp",
-        translation_key="exhaust_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="exhaust_temp",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="return_temp",
-        translation_key="return_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="return_temp",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="lower_buffer_temp",
-        translation_key="lower_buffer_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="lower_buffer_temp",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="upper_buffer_temp",
-        translation_key="upper_buffer_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="upper_buffer_temp",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="lower_solar_temp",
-        translation_key="lower_solar_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="lower_solar_temp",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="upper_solar_temp",
-        translation_key="upper_solar_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="upper_solar_temp",
         value_fn=lambda x: x,
     ),
     EcomaxSensorEntityDescription(
         key="fireplace_temp",
-        translation_key="fireplace_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="fireplace_temp",
         value_fn=lambda x: x,
     ),
 )
@@ -321,18 +312,13 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
 class EcomaxSensor(EcomaxEntity, SensorEntity):
     """Represents an ecoMAX sensor."""
 
-    def __init__(
-        self, connection: EcomaxConnection, description: EcomaxSensorEntityDescription
-    ):
-        """Initialize a new ecoMAX sensor."""
-        self.connection = connection
-        self.entity_description = description
+    entity_description: EcomaxSensorEntityDescription
 
     async def async_update(self, value: Any) -> None:
         """Update entity state."""
         self._attr_native_value = self.entity_description.value_fn(value)
 
-        if self.entity_description.device_class == DEVICE_CLASS_STATE:
+        if self.entity_description.device_class == SensorDeviceClass.ENUM:
             # Include raw numeric value as an extra attribute for the
             # device state.
             self._attr_extra_state_attributes = {ATTR_NUMERIC_STATE: int(value)}
@@ -345,7 +331,7 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
         self.async_write_ha_state()
 
 
-@dataclass(kw_only=True, frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class MixerSensorEntityDescription(EcomaxSensorEntityDescription):
     """Describes a mixer sensor."""
 
@@ -353,46 +339,46 @@ class MixerSensorEntityDescription(EcomaxSensorEntityDescription):
 MIXER_SENSOR_TYPES: tuple[MixerSensorEntityDescription, ...] = (
     MixerSensorEntityDescription(
         key="current_temp",
-        translation_key="mixer_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="mixer_temp",
         value_fn=lambda x: x,
     ),
     MixerSensorEntityDescription(
         key="target_temp",
-        translation_key="mixer_target_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="mixer_target_temp",
         value_fn=lambda x: x,
     ),
     MixerSensorEntityDescription(
         key="current_temp",
-        translation_key="circuit_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="circuit_temp",
         value_fn=lambda x: x,
     ),
     MixerSensorEntityDescription(
         key="target_temp",
-        translation_key="circuit_target_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
+        translation_key="circuit_target_temp",
         value_fn=lambda x: x,
     ),
 )
@@ -400,6 +386,8 @@ MIXER_SENSOR_TYPES: tuple[MixerSensorEntityDescription, ...] = (
 
 class MixerSensor(MixerEntity, EcomaxSensor):
     """Represents a mixer sensor."""
+
+    entity_description: MixerSensorEntityDescription
 
     def __init__(
         self,
@@ -412,35 +400,34 @@ class MixerSensor(MixerEntity, EcomaxSensor):
         super().__init__(connection, description)
 
 
-@dataclass(kw_only=True, frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class EcomaxMeterEntityDescription(EcomaxSensorEntityDescription):
     """Describes an ecoMAX meter entity."""
-
-    device_class: str = DEVICE_CLASS_METER
 
 
 METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
     EcomaxMeterEntityDescription(
         key="fuel_burned",
-        translation_key="total_fuel_burned",
         always_available=True,
         filter_fn=lambda x: aggregate(x, seconds=30),
-        icon="mdi:counter",
         native_unit_of_measurement=UnitOfMass.KILOGRAMS,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.TOTAL_INCREASING,
         suggested_display_precision=3,
+        translation_key="total_fuel_burned",
         value_fn=lambda x: x,
     ),
 )
 
 
-class EcomaxMeter(RestoreSensor, EcomaxSensor):
+class EcomaxMeter(EcomaxSensor, RestoreSensor):
     """Represents an ecoMAX sensor that restores previous value."""
 
-    _attr_extra_state_attributes: dict[str, Any]
+    _attr_device_class = DEVICE_CLASS_METER  # type: ignore[assignment]
     _unrecorded_attributes = frozenset({ATTR_BURNED_SINCE_LAST_UPDATE})
+    entity_description: EcomaxMeterEntityDescription
 
+    @override
     async def async_added_to_hass(self) -> None:
         """Restore native value."""
         await super().async_added_to_hass()
@@ -464,7 +451,7 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
 
     async def async_update(self, value: float | None = None) -> None:
         """Update meter state."""
-        if value is not None:
+        if value is not None and isinstance(self._attr_native_value, float):
             self._attr_extra_state_attributes = {
                 ATTR_BURNED_SINCE_LAST_UPDATE: value * 1000
             }
@@ -474,14 +461,13 @@ class EcomaxMeter(RestoreSensor, EcomaxSensor):
     @property
     def native_value(self) -> StateType:
         """Return the value reported by the sensor."""
-        return self.entity_description.value_fn(self._attr_native_value)
+        return cast(float, self.entity_description.value_fn(self._attr_native_value))
 
 
-@dataclass(kw_only=True, frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class RegdataSensorEntityDescription(EcomaxSensorEntityDescription):
     """Describes a regulator data sensor."""
 
-    key: int
     product_models: set[ProductModel]
 
 
@@ -496,40 +482,47 @@ EM_TO_HA_MIXER_VALVE_STATE: dict[int, str] = {
 
 REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
     RegdataSensorEntityDescription(
-        key=227,
-        translation_key="ash_pan_full",
-        icon="mdi:tray-alert",
+        key="227",
         native_unit_of_measurement=PERCENTAGE,
         product_models={ProductModel.ECOMAX_860P3_O},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=0,
+        translation_key="ash_pan_full",
         value_fn=lambda x: x,
     ),
     RegdataSensorEntityDescription(
-        key=215,
-        translation_key="ash_pan_full",
-        icon="mdi:tray-alert",
+        key="215",
         native_unit_of_measurement=PERCENTAGE,
         product_models={ProductModel.ECOMAX_860P3_S_LITE},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=0,
+        translation_key="ash_pan_full",
         value_fn=lambda x: x,
     ),
     RegdataSensorEntityDescription(
-        key=134,
-        translation_key="mixer_valve_opening_percentage",
+        key="223",
+        native_unit_of_measurement=PERCENTAGE,
+        product_models={ProductModel.ECOMAX_860P6_O},
+        state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=0,
+        translation_key="ash_pan_full",
+        value_fn=lambda x: x,
+    ),
+    RegdataSensorEntityDescription(
+        key="134",
         filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         native_unit_of_measurement=PERCENTAGE,
         product_models={ProductModel.ECOMAX_860P6_O},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=0,
+        translation_key="mixer_valve_opening_percentage",
         value_fn=lambda x: x,
     ),
     RegdataSensorEntityDescription(
-        key=139,
-        translation_key="mixer_valve_state",
+        key="139",
+        device_class=SensorDeviceClass.ENUM,
         product_models={ProductModel.ECOMAX_860P6_O},
-        device_class=DEVICE_CLASS_STATE,
+        translation_key="mixer_valve_state",
         value_fn=lambda x: EM_TO_HA_MIXER_VALVE_STATE.get(x, STATE_UNKNOWN),
     ),
 )
@@ -538,30 +531,38 @@ REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
 class RegdataSensor(EcomaxSensor):
     """Represents a regulator data sensor."""
 
-    async def async_update(self, value: dict[str, Any]) -> None:
+    _regdata_key: int
+
+    def __init__(
+        self, connection: EcomaxConnection, description: EcomaxEntityDescription
+    ) -> None:
+        """Initialize a new regdata entity."""
+        self._regdata_key = int(description.key)
+        super().__init__(connection, description)
+
+    async def async_update(self, regdata: dict[int, Any]) -> None:
         """Update entity state."""
-        self._attr_native_value = (
-            self.entity_description.value_fn(value[self.entity_description.key])
-            if self.entity_description.key in value
-            else None
+        self._attr_native_value = self.entity_description.value_fn(
+            regdata.get(self._regdata_key, None)
         )
         self.async_write_ha_state()
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to regdata event."""
+        description = self.entity_description
+        handler = description.filter_fn(self.async_update)
 
         async def async_set_available(regdata: dict[int, Any]) -> None:
             """Mark entity as available."""
-            if self.entity_description.key in regdata:
+            if self._regdata_key in regdata:
                 self._attr_available = True
-
-        func = self.entity_description.filter_fn(self.async_update)
-        self.device.subscribe_once(ATTR_REGDATA, async_set_available)
-        self.device.subscribe(ATTR_REGDATA, func)
 
         if ATTR_REGDATA in self.device.data:
             await async_set_available(self.device.data[ATTR_REGDATA])
-            await func(self.device.data[ATTR_REGDATA])
+            await handler(self.device.data[ATTR_REGDATA])
+
+        self.device.subscribe_once(ATTR_REGDATA, async_set_available)
+        self.device.subscribe(ATTR_REGDATA, handler)
 
     async def async_will_remove_from_hass(self) -> None:
         """Unsubscribe from regdata event."""
@@ -573,21 +574,12 @@ class RegdataSensor(EcomaxSensor):
 
         This only applies when fist added to the entity registry.
         """
-        return self.entity_description.key in self.device.data.get(ATTR_REGDATA, {})
-
-
-def get_by_product_model(
-    product_model: str, descriptions: Iterable[RegdataSensorEntityDescription]
-) -> Generator[RegdataSensorEntityDescription, None, None]:
-    """Get descriptions by the product model."""
-    for description in descriptions:
-        if product_model in description.product_models:
-            yield description
+        return self._regdata_key in self.device.data.get(ATTR_REGDATA, {})
 
 
 def get_by_product_type(
-    product_type: ProductType, descriptions: Iterable[EcomaxSensorEntityDescription]
-) -> Generator[EcomaxSensorEntityDescription, None, None]:
+    product_type: ProductType, descriptions: Iterable[DescriptorT]
+) -> Generator[DescriptorT, None, None]:
     """Get descriptions by the product type."""
     for description in descriptions:
         if (
@@ -599,11 +591,20 @@ def get_by_product_type(
 
 def get_by_modules(
     connected_modules: ConnectedModules,
-    descriptions: Iterable[EcomaxSensorEntityDescription],
-) -> Generator[EcomaxSensorEntityDescription, None, None]:
+    descriptions: Iterable[DescriptorT],
+) -> Generator[DescriptorT, None, None]:
     """Get descriptions by connected modules."""
     for description in descriptions:
         if getattr(connected_modules, description.module, None) is not None:
+            yield description
+
+
+def get_by_product_model(
+    product_model: str, descriptions: Iterable[RegdataSensorEntityDescription]
+) -> Generator[RegdataSensorEntityDescription, None, None]:
+    """Get descriptions by the product model."""
+    for description in descriptions:
+        if product_model in description.product_models:
             yield description
 
 
@@ -645,7 +646,6 @@ def async_setup_regdata_sensors(connection: EcomaxConnection) -> list[RegdataSen
 
 def async_setup_mixer_sensors(connection: EcomaxConnection) -> list[MixerSensor]:
     """Set up the mixer sensors."""
-    """Set up the mixer sensors."""
     entities: list[MixerSensor] = []
     for index in connection.device.mixers:
         entities.extend(
@@ -661,11 +661,11 @@ def async_setup_mixer_sensors(connection: EcomaxConnection) -> list[MixerSensor]
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigType,
+    entry: PlumEcomaxConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the sensor platform."""
-    connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
+    connection = entry.runtime_data.connection
     _LOGGER.debug("Starting setup of sensor platform...")
 
     entities: list[EcomaxSensor] = []

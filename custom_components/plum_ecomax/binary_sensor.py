@@ -1,4 +1,5 @@
 """Platform for binary sensor integration."""
+
 from __future__ import annotations
 
 from collections.abc import Callable, Generator, Iterable
@@ -14,50 +15,43 @@ from homeassistant.components.binary_sensor import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType
 from pyplumio.const import ProductType
 from pyplumio.structures.modules import ConnectedModules
 
-from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity
+from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import ALL, DOMAIN
+from .const import ALL
+from .entity import DescriptorT, EcomaxEntity, EcomaxEntityDescription, MixerEntity
 
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True, frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class EcomaxBinarySensorEntityDescription(
-    BinarySensorEntityDescription, EcomaxEntityDescription
+    EcomaxEntityDescription, BinarySensorEntityDescription
 ):
     """Describes an ecoMAX binary sensor."""
 
-    icon_off: str | None = None
     value_fn: Callable[[Any], Any]
 
 
 BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     EcomaxBinarySensorEntityDescription(
         key="heating_pump",
-        translation_key="heating_pump",
         device_class=BinarySensorDeviceClass.RUNNING,
-        icon_off="mdi:pump-off",
-        icon="mdi:pump",
+        translation_key="heating_pump",
         value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="water_heater_pump",
-        translation_key="water_heater_pump",
         device_class=BinarySensorDeviceClass.RUNNING,
-        icon_off="mdi:pump-off",
-        icon="mdi:pump",
+        translation_key="water_heater_pump",
         value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="circulation_pump",
-        translation_key="circulation_pump",
         device_class=BinarySensorDeviceClass.RUNNING,
-        icon_off="mdi:pump-off",
-        icon="mdi:pump",
+        translation_key="circulation_pump",
         value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
@@ -69,63 +63,52 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
     ),
     EcomaxBinarySensorEntityDescription(
         key="connected",
-        translation_key="connection_status",
         always_available=True,
         device_class=BinarySensorDeviceClass.CONNECTIVITY,
         entity_category=EntityCategory.DIAGNOSTIC,
+        translation_key="connection_status",
         value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="fan",
-        translation_key="fan",
         device_class=BinarySensorDeviceClass.RUNNING,
-        icon_off="mdi:fan-off",
-        icon="mdi:fan",
         product_types={ProductType.ECOMAX_P},
+        translation_key="fan",
         value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="fan2_exhaust",
-        translation_key="exhaust_fan",
         device_class=BinarySensorDeviceClass.RUNNING,
-        icon_off="mdi:fan-off",
-        icon="mdi:fan",
         product_types={ProductType.ECOMAX_P},
+        translation_key="exhaust_fan",
         value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="feeder",
-        translation_key="feeder",
         device_class=BinarySensorDeviceClass.RUNNING,
-        icon="mdi:screw-lag",
         product_types={ProductType.ECOMAX_P},
+        translation_key="feeder",
         value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="lighter",
-        translation_key="lighter",
         device_class=BinarySensorDeviceClass.RUNNING,
-        icon_off="mdi:fire-off",
-        icon="mdi:fire",
         product_types={ProductType.ECOMAX_P},
+        translation_key="lighter",
         value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="solar_pump",
-        translation_key="solar_pump",
         device_class=BinarySensorDeviceClass.RUNNING,
-        icon_off="mdi:pump-off",
-        icon="mdi:pump",
         product_types={ProductType.ECOMAX_I},
+        translation_key="solar_pump",
         value_fn=lambda x: x,
     ),
     EcomaxBinarySensorEntityDescription(
         key="fireplace_pump",
-        translation_key="fireplace_pump",
         device_class=BinarySensorDeviceClass.RUNNING,
-        icon_off="mdi:pump-off",
-        icon="mdi:pump",
         product_types={ProductType.ECOMAX_I},
+        translation_key="fireplace_pump",
         value_fn=lambda x: x,
     ),
 )
@@ -136,31 +119,13 @@ class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
 
     entity_description: EcomaxBinarySensorEntityDescription
 
-    def __init__(
-        self,
-        connection: EcomaxConnection,
-        description: EcomaxBinarySensorEntityDescription,
-    ):
-        """Initialize a new ecoMAX binary sensor."""
-        self.connection = connection
-        self.entity_description = description
-
     async def async_update(self, value: Any) -> None:
         """Update entity state."""
         self._attr_is_on = self.entity_description.value_fn(value)
         self.async_write_ha_state()
 
-    @property
-    def icon(self) -> str | None:
-        """Return the icon to use in the frontend."""
-        return (
-            self.entity_description.icon_off
-            if self.entity_description.icon_off is not None and not self.is_on
-            else self.entity_description.icon
-        )
 
-
-@dataclass(kw_only=True, frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class MixerBinarySensorEntityDescription(EcomaxBinarySensorEntityDescription):
     """Describes a mixer binary sensor."""
 
@@ -168,20 +133,16 @@ class MixerBinarySensorEntityDescription(EcomaxBinarySensorEntityDescription):
 MIXER_BINARY_SENSOR_TYPES: tuple[MixerBinarySensorEntityDescription, ...] = (
     MixerBinarySensorEntityDescription(
         key="pump",
-        translation_key="mixer_pump",
         device_class=BinarySensorDeviceClass.RUNNING,
-        icon_off="mdi:pump-off",
-        icon="mdi:pump",
         product_types={ProductType.ECOMAX_P},
+        translation_key="mixer_pump",
         value_fn=lambda x: x,
     ),
     MixerBinarySensorEntityDescription(
         key="pump",
-        translation_key="circuit_pump",
         device_class=BinarySensorDeviceClass.RUNNING,
-        icon_off="mdi:pump-off",
-        icon="mdi:pump",
         product_types={ProductType.ECOMAX_I},
+        translation_key="circuit_pump",
         value_fn=lambda x: x,
     ),
 )
@@ -189,6 +150,8 @@ MIXER_BINARY_SENSOR_TYPES: tuple[MixerBinarySensorEntityDescription, ...] = (
 
 class MixerBinarySensor(MixerEntity, EcomaxBinarySensor):
     """Represents a mixer binary sensor."""
+
+    entity_description: MixerBinarySensorEntityDescription
 
     def __init__(
         self,
@@ -203,8 +166,8 @@ class MixerBinarySensor(MixerEntity, EcomaxBinarySensor):
 
 def get_by_product_type(
     product_type: ProductType,
-    descriptions: Iterable[EcomaxBinarySensorEntityDescription],
-) -> Generator[EcomaxBinarySensorEntityDescription, None, None]:
+    descriptions: Iterable[DescriptorT],
+) -> Generator[DescriptorT, None, None]:
     """Filter descriptions by the product type."""
     for description in descriptions:
         if (
@@ -216,8 +179,8 @@ def get_by_product_type(
 
 def get_by_modules(
     connected_modules: ConnectedModules,
-    descriptions: Iterable[EcomaxBinarySensorEntityDescription],
-) -> Generator[EcomaxBinarySensorEntityDescription, None, None]:
+    descriptions: Iterable[DescriptorT],
+) -> Generator[DescriptorT, None, None]:
     """Filter descriptions by connected modules."""
     for description in descriptions:
         if getattr(connected_modules, description.module, None) is not None:
@@ -257,11 +220,11 @@ def async_setup_mixer_binary_sensors(
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigType,
+    entry: PlumEcomaxConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the binary sensor platform."""
-    connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
+    connection = entry.runtime_data.connection
     _LOGGER.debug("Starting setup of binary sensor platform...")
 
     entities: list[EcomaxBinarySensor] = []

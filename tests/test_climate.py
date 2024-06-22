@@ -23,7 +23,7 @@ from homeassistant.components.climate import (
     HVACMode,
 )
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_FRIENDLY_NAME
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
 from pyplumio.helpers.parameter import ParameterValues
 from pyplumio.structures.thermostat_parameters import (
@@ -34,10 +34,13 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.climate import (
-    CLIMATE_MODES,
     HA_PRESET_TO_EM_TEMP,
     HA_TO_EM_MODE,
     PRESET_AIRING,
+    PRESET_ANTIFREEZE,
+    PRESET_AWAY,
+    PRESET_HOLIDAYS,
+    PRESET_PARTY,
     PRESET_SCHEDULE,
 )
 from custom_components.plum_ecomax.connection import EcomaxConnection
@@ -137,12 +140,22 @@ async def test_thermostat(
 
     # Get initial value.
     state = hass.states.get(thermostat_entity_id)
+    assert isinstance(state, State)
     assert state.state == HVACMode.HEAT
     assert state.attributes[ATTR_HVAC_MODES] == [HVACMode.HEAT]
     assert state.attributes[ATTR_MIN_TEMP] == 10
     assert state.attributes[ATTR_MAX_TEMP] == 35
     assert state.attributes[ATTR_TARGET_TEMP_STEP] == 0.1
-    assert state.attributes[ATTR_PRESET_MODES] == CLIMATE_MODES
+    assert state.attributes[ATTR_PRESET_MODES] == [
+        PRESET_SCHEDULE,
+        PRESET_ECO,
+        PRESET_COMFORT,
+        PRESET_AWAY,
+        PRESET_AIRING,
+        PRESET_PARTY,
+        PRESET_HOLIDAYS,
+        PRESET_ANTIFREEZE,
+    ]
     assert state.attributes[ATTR_CURRENT_TEMPERATURE] == 0
     assert state.attributes[ATTR_HVAC_ACTION] == HVACAction.IDLE
     assert state.attributes[ATTR_PRESET_MODE] == PRESET_SCHEDULE
@@ -154,6 +167,7 @@ async def test_thermostat(
         thermostat_current_temperature_key, 18
     )
     state = hass.states.get(thermostat_entity_id)
+    assert isinstance(state, State)
     assert state.attributes[ATTR_CURRENT_TEMPERATURE] == 18
 
     # Dispatch new thermostat state.
@@ -161,6 +175,7 @@ async def test_thermostat(
         thermostat_state_key, HA_TO_EM_MODE[PRESET_ECO]
     )
     state = hass.states.get(thermostat_entity_id)
+    assert isinstance(state, State)
     assert state.attributes[ATTR_PRESET_MODE] == PRESET_ECO
 
     # Dispatch unknown thermostat state and check for log message.
@@ -170,6 +185,7 @@ async def test_thermostat(
     # Dispatch new thermostat contacts state.
     await connection.device.thermostats[0].dispatch(thermostat_contacts_key, True)
     state = hass.states.get(thermostat_entity_id)
+    assert isinstance(state, State)
     assert state.attributes[ATTR_HVAC_ACTION] == HVACAction.HEATING
 
     # Dispatch new thermostat target temperature.
@@ -188,12 +204,14 @@ async def test_thermostat(
         thermostat_target_temperature_key, 11
     )
     state = hass.states.get(thermostat_entity_id)
+    assert isinstance(state, State)
     assert state.attributes[ATTR_TEMPERATURE] == 11
 
     # Test that thermostat preset mode can be set.
     with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
         state = await async_set_preset_mode(hass, thermostat_entity_id, PRESET_COMFORT)
 
+    assert isinstance(state, State)
     mock_set_nowait.assert_called_once_with(
         thermostat_mode_key, HA_TO_EM_MODE[PRESET_COMFORT]
     )
@@ -262,6 +280,7 @@ async def test_thermostat_presets(
         )
 
     state = hass.states.get(thermostat_entity_id)
+    assert isinstance(state, State)
     assert state.attributes[ATTR_PRESET_MODE] == PRESET_AIRING
 
     # Test that exiting airing mode works.
@@ -279,6 +298,7 @@ async def test_thermostat_presets(
         )
 
     state = hass.states.get(thermostat_entity_id)
+    assert isinstance(state, State)
     assert state.attributes[ATTR_PRESET_MODE] == PRESET_SCHEDULE
 
     # Test that target temperature name is correct when

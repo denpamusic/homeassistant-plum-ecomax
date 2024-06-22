@@ -1,0 +1,168 @@
+{
+  "entity": {
+    "binary_sensor": {
+      "circuit_pump": {
+        "default": "mdi:pump",
+        "state": {
+          "off": "mdi:pump-off",
+          "on": "mdi:pump"
+        }
+      },
+      "circulation_pump": {
+        "default": "mdi:pump",
+        "state": {
+          "off": "mdi:pump-off",
+          "on": "mdi:pump"
+        }
+      },
+      "exhaust_fan": {
+        "default": "mdi:fan",
+        "state": {
+          "off": "mdi:fan-off",
+          "on": "mdi:fan"
+        }
+      },
+      "fan": {
+        "default": "mdi:fan",
+        "state": {
+          "off": "mdi:fan-off",
+          "on": "mdi:fan"
+        }
+      },
+      "feeder": {
+        "default": "mdi:screw-lag"
+      },
+      "fireplace_pump": {
+        "default": "mdi:pump",
+        "state": {
+          "off": "mdi:pump-off",
+          "on": "mdi:pump"
+        }
+      },
+      "heating_pump": {
+        "default": "mdi:pump",
+        "state": {
+          "off": "mdi:pump-off",
+          "on": "mdi:pump"
+        }
+      },
+      "lighter": {
+        "default": "mdi:fire",
+        "state": {
+          "off": "mdi:fire-off",
+          "on": "mdi:fire"
+        }
+      },
+      "mixer_pump": {
+        "default": "mdi:pump",
+        "state": {
+          "off": "mdi:pump-off",
+          "on": "mdi:pump"
+        }
+      },
+      "solar_pump": {
+        "default": "mdi:pump",
+        "state": {
+          "off": "mdi:pump-off",
+          "on": "mdi:pump"
+        }
+      },
+      "water_heater_pump": {
+        "default": "mdi:pump",
+        "state": {
+          "off": "mdi:pump-off",
+          "on": "mdi:pump"
+        }
+      }
+    },
+    "climate": {
+      "thermostat": {
+        "state_attributes": {
+          "preset_mode": {
+            "default": "mdi:emoticon-confused",
+            "state": {
+              "airing": "mdi:weather-windy",
+              "antifreeze": "mdi:snowflake-thermometer",
+              "away": "mdi:home-export-outline",
+              "comfort": "mdi:emoticon-happy",
+              "eco": "mdi:leaf",
+              "holidays": "mdi:firework",
+              "party": "mdi:glass-cocktail",
+              "schedule": "mdi:timetable"
+            }
+          }
+        }
+      }
+    },
+    "select": {
+      "summer_mode": {
+        "default": "mdi:weather-sunny"
+      }
+    },
+    "sensor": {
+      "ash_pan_full": {
+        "default": "mdi:tray-alert"
+      },
+      "boiler_load": {
+        "default": "mdi:gauge"
+      },
+      "boiler_power": {
+        "default": "mdi:radiator"
+      },
+      "connected_modules": {
+        "default": "mdi:raspberry-pi"
+      },
+      "ecomax_state": {
+        "default": "mdi:eye",
+        "state": {
+          "alert": "mdi:fire-alert",
+          "burning_off": "mdi:fire-extinguisher",
+          "heating": "mdi:fire",
+          "idle": "mdi:power-sleep",
+          "kindling": "mdi:fan",
+          "off": "mdi:power-off",
+          "paused": "mdi:smoke",
+          "stabilization": "mdi:weather-windy",
+          "standby": "mdi:power-standby"
+        }
+      },
+      "fan_power": {
+        "default": "mdi:fan"
+      },
+      "flame_intensity": {
+        "default": "mdi:fire"
+      },
+      "fuel_consumption": {
+        "default": "mdi:fire"
+      },
+      "fuel_level": {
+        "default": "mdi:gas-station"
+      },
+      "mixer_valve_state": {
+        "default": "mdi:valve",
+        "state": {
+          "closing": "mdi:valve-closed",
+          "off": "mdi:valve",
+          "opening": "mdi:valve-open"
+        }
+      },
+      "oxygen_level": {
+        "default": "mdi:weather-windy-variant"
+      },
+      "service_password": {
+        "default": "mdi:form-textbox-password"
+      },
+      "total_fuel_burned": {
+        "default": "mdi:counter"
+      }
+    }
+  },
+  "services": {
+    "calibrate_meter": "mdi:counter",
+    "get_parameter": "mdi:cog",
+    "get_schedule": "mdi:timetable",
+    "reset_meter": "mdi:refresh",
+    "set_parameter": "mdi:pencil",
+    "set_schedule": "mdi:timetable"
+  }
+}

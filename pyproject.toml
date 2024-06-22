@@ -13,9 +13,11 @@ skip = ".git,.mypy_cache,.pytest_cache,.ruff_cache,.tox,.vscode,build,*/translat
 ignore-words-list = "hass"
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
+platform = "linux"
 show_error_codes = true
-follow_imports = "silent"
+follow_imports = "normal"
+enable_incomplete_feature = "NewGenericSyntax"
 local_partial_types = true
 strict_equality = true
 no_implicit_optional = true
@@ -36,7 +38,9 @@ disable_error_code = [
 extra_checks = false
 check_untyped_defs = true
 disallow_incomplete_defs = true
+disallow_subclassing_any = true
 disallow_untyped_calls = true
+disallow_untyped_decorators = true
 disallow_untyped_defs = true
 warn_return_any = true
 warn_unreachable = true
@@ -202,7 +206,7 @@ exclude_lines = [
 [tool.tox]
 legacy_tox_ini = """
     [tox]
-    envlist = py311, lint, type
+    envlist = py312, lint, type
     isolated_build = True
     skip_missing_interpreters = True
     ignore_basepython_conflict = True
@@ -210,7 +214,7 @@ legacy_tox_ini = """
 
     [gh-actions]
     python =
-        3.11: py311, lint, type
+        3.12: py312, lint, type
 
     [testenv]
     deps =
@@ -228,7 +232,7 @@ legacy_tox_ini = """
 
     commands =
         codespell
-        ruff .
+        ruff check .
 
     [testenv:test]
     deps =

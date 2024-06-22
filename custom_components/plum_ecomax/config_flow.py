@@ -1,4 +1,5 @@
 """Config flow for Plum ecoMAX integration."""
+
 from __future__ import annotations
 
 import asyncio
@@ -33,6 +34,9 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.const import CONF_BASE
+from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er, selector
 import homeassistant.helpers.config_validation as cv
@@ -123,7 +127,7 @@ async def validate_input(
     return connection
 
 
-class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
+class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Plum ecoMAX integration."""
 
     VERSION = 8
@@ -132,13 +136,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         """Initialize a new config flow."""
         self.connection: Connection | None = None
         self.device: AddressableDevice | None = None
-        self.identify_task: asyncio.Task | None = None
         self.discover_task: asyncio.Task | None = None
+        self.identify_task: asyncio.Task | None = None
         self.init_info: dict[str, Any] = {}
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle initial step."""
         return self.async_show_menu(
             step_id="user",
@@ -147,7 +151,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
     async def async_step_tcp(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle TCP connection setup."""
         if user_input is None:
             return self.async_show_form(step_id="tcp", data_schema=STEP_TCP_DATA_SCHEMA)
@@ -166,7 +170,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             errors[CONF_BASE] = "cannot_connect"
         except TimeoutConnect:
             errors[CONF_BASE] = "timeout_connect"
-        except Exception:  # pylint: disable=broad-except
+        except Exception:
             _LOGGER.exception("Unexpected exception")
             errors[CONF_BASE] = "unknown"
 
@@ -176,7 +180,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
     async def async_step_serial(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle serial connection setup."""
         if user_input is None:
             return self.async_show_form(
@@ -197,7 +201,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             errors[CONF_BASE] = "cannot_connect"
         except TimeoutConnect:
             errors[CONF_BASE] = "timeout_connect"
-        except Exception:  # pylint: disable=broad-except
+        except Exception:
             _LOGGER.exception("Unexpected exception")
             errors[CONF_BASE] = "unknown"
 
@@ -207,11 +211,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
     async def async_step_identify(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Identify the device."""
-        if self.identify_task is None:
+        if not self.identify_task:
             self.identify_task = self.hass.async_create_task(
-                self._async_identify_device()
+                self._async_identify_device(), eager_start=False
             )
 
         if not self.identify_task.done():
@@ -235,13 +239,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
     async def async_step_discover(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Discover connected modules."""
         await self._async_set_unique_id(self.init_info[CONF_UID])
 
-        if self.discover_task is None:
+        if not self.discover_task:
             self.discover_task = self.hass.async_create_task(
-                self._async_discover_modules()
+                self._async_discover_modules(), eager_start=False
             )
 
         if not self.discover_task.done():
@@ -264,7 +268,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
     async def async_step_finish(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Finish integration config."""
         if self.connection:
             await self.connection.close()
@@ -275,24 +279,21 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
     async def async_step_device_not_found(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle issues that need transition await from progress step."""
         return self.async_abort(reason="no_devices_found")
 
     async def async_step_unsupported_device(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle issues that need transition await from progress step."""
         return self.async_abort(reason="unsupported_device")
 
     async def async_step_discovery_failed(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle issues that need transition await from progress step."""
         return self.async_abort(reason="discovery_failed")
-
-    async def _async_wait_for_device(self) -> None:
-        """Task to wait until the device is available."""
 
     async def _async_identify_device(self) -> None:
         """Task to identify the device."""

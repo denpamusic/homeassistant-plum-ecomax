@@ -122,7 +122,6 @@ async def test_async_setup(
     assert connection.software == tcp_config_data.get(CONF_SOFTWARE)
     assert connection.name == config_entry.title
     assert connection.device == mock_ecomax
-    assert connection.connection == mock_connection
     assert connection.product_type == tcp_config_data.get(CONF_PRODUCT_TYPE)
     assert connection.product_id == tcp_config_data.get(CONF_PRODUCT_ID)
 

@@ -166,7 +166,8 @@ def fixture_connection(
 ) -> EcomaxConnection:
     """Get ecoMAX connection."""
     connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=Connection))
-    hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = connection
+    config_entry.runtime_data = Mock()
+    config_entry.runtime_data.connection = connection
     return connection
 
 

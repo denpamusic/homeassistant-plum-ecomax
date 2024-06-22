@@ -1,10 +1,12 @@
 """Platform for water heater integration."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import Any, Final, cast
+from typing import Any, Final
 
+from homeassistant.components.climate import ATTR_TARGET_TEMP_STEP
 from homeassistant.components.water_heater import (
     STATE_ECO,
     STATE_PERFORMANCE,
@@ -14,58 +16,54 @@ from homeassistant.components.water_heater import (
 )
 from homeassistant.const import (
     ATTR_TEMPERATURE,
-    PRECISION_WHOLE,
+    PRECISION_TENTHS,
     STATE_OFF,
     UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType
 from pyplumio.filters import on_change, throttle
 from pyplumio.helpers.parameter import Parameter
 
-from . import EcomaxEntity, EcomaxEntityDescription
-from .connection import EcomaxConnection
-from .const import DOMAIN
+from . import PlumEcomaxConfigEntry
+from .entity import EcomaxEntity, EcomaxEntityDescription
+
+TEMPERATURE_STEP: Final = 1
 
 EM_TO_HA_STATE: Final = {0: STATE_OFF, 1: STATE_PERFORMANCE, 2: STATE_ECO}
 HA_TO_EM_STATE: Final = {v: k for k, v in EM_TO_HA_STATE.items()}
 
-WATER_HEATER_MODES: Final = [STATE_OFF, STATE_PERFORMANCE, STATE_ECO]
-
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True, frozen=True, slots=True)
+@dataclass(frozen=True, kw_only=True)
 class EcomaxWaterHeaterEntityDescription(
-    WaterHeaterEntityEntityDescription, EcomaxEntityDescription
+    EcomaxEntityDescription, WaterHeaterEntityEntityDescription
 ):
     """Describes an ecoMAX water heater."""
+
+
+ENTITY_DESCRIPTION = EcomaxWaterHeaterEntityDescription(
+    key="water_heater",
+    always_available=True,
+    entity_registry_enabled_default=True,
+    translation_key="indirect_water_heater",
+)
 
 
 class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     """Represents an ecoMAX water heater."""
 
-    _attr_available = True
-    _attr_entity_registry_enabled_default = True
-    _attr_hysteresis: int = 0
-    _attr_max_temp: float | None = None
-    _attr_min_temp: float | None = None
-    _attr_operation_list = WATER_HEATER_MODES
-    _attr_precision = PRECISION_WHOLE
-    _attr_supported_features: WaterHeaterEntityFeature = (
+    _attr_extra_state_attributes = {ATTR_TARGET_TEMP_STEP: TEMPERATURE_STEP}
+    _attr_hysteresis = 0
+    _attr_operation_list = list(HA_TO_EM_STATE)
+    _attr_precision = PRECISION_TENTHS
+    _attr_supported_features = (
         WaterHeaterEntityFeature.TARGET_TEMPERATURE
         | WaterHeaterEntityFeature.OPERATION_MODE
     )
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
-
-    def __init__(self, connection: EcomaxConnection):
-        """Initialize a new ecoMAX water heater."""
-        self.connection = connection
-        self.entity_description = EcomaxWaterHeaterEntityDescription(
-            key="water_heater",
-            translation_key="indirect_water_heater",
-        )
+    entity_description: EcomaxWaterHeaterEntityDescription
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
@@ -86,9 +84,9 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
 
     async def async_update_target_temp(self, value: Parameter) -> None:
         """Update target temperature."""
-        self._attr_min_temp = cast(float, value.min_value)
-        self._attr_max_temp = cast(float, value.max_value)
-        target_temperature = cast(float, value.value)
+        self._attr_min_temp = float(value.min_value)
+        self._attr_max_temp = float(value.max_value)
+        target_temperature = float(value.value)
         self._attr_target_temperature = target_temperature
         self._attr_target_temperature_high = target_temperature
         self._attr_target_temperature_low = target_temperature - self.hysteresis
@@ -96,7 +94,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
 
     async def async_update_hysteresis(self, value: Parameter) -> None:
         """Update lower target temperature bound."""
-        self._attr_hysteresis = cast(int, value.value)
+        self._attr_hysteresis = int(value.value)
         if self.target_temperature is not None:
             self._attr_target_temperature_low = (
                 int(self.target_temperature) - self.hysteresis
@@ -146,15 +144,17 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigType,
+    entry: PlumEcomaxConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the water heater platform."""
-    connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
+    connection = entry.runtime_data.connection
     _LOGGER.debug("Starting setup of water heater platform...")
 
     if connection.has_water_heater:
-        async_add_entities([EcomaxWaterHeater(connection)])
+        async_add_entities(
+            [EcomaxWaterHeater(connection, description=ENTITY_DESCRIPTION)]
+        )
         return True
 
     return False

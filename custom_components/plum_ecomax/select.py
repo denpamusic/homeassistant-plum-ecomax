@@ -1,22 +1,30 @@
 """Platform for select integration."""
+
 from __future__ import annotations
 
 from collections.abc import Generator, Iterable
 from dataclasses import dataclass
 import logging
-from typing import Any, Final, Literal
+from typing import Any, Final
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.const import STATE_OFF
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType
 from pyplumio.const import ProductType
 from pyplumio.structures.modules import ConnectedModules
 
-from . import EcomaxEntity, EcomaxEntityDescription, MixerEntity
+from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import ALL, DOMAIN
+from .const import ALL
+from .entity import (
+    DescriptorT,
+    EcomaxEntity,
+    EcomaxEntityDescription,
+    MixerEntity,
+    SubDescriptorT,
+    SubdeviceEntityDescription,
+)
 
 STATE_SUMMER: Final = "summer"
 STATE_WINTER: Final = "winter"
@@ -28,17 +36,16 @@ STATE_PUMP_ONLY: Final = "pump_only"
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True, frozen=True, slots=True)
-class EcomaxSelectEntityDescription(SelectEntityDescription, EcomaxEntityDescription):
+@dataclass(frozen=True, kw_only=True)
+class EcomaxSelectEntityDescription(EcomaxEntityDescription, SelectEntityDescription):
     """Describes an ecoMAX select."""
 
 
 SELECT_TYPES: tuple[EcomaxSelectEntityDescription, ...] = (
     EcomaxSelectEntityDescription(
         key="summer_mode",
-        translation_key="summer_mode",
-        icon="mdi:weather-sunny",
         options=[STATE_WINTER, STATE_SUMMER, STATE_AUTO],
+        translation_key="summer_mode",
     ),
 )
 
@@ -46,46 +53,42 @@ SELECT_TYPES: tuple[EcomaxSelectEntityDescription, ...] = (
 class EcomaxSelect(EcomaxEntity, SelectEntity):
     """Represents an ecoMAX select."""
 
-    def __init__(
-        self, connection: EcomaxConnection, description: EcomaxSelectEntityDescription
-    ):
-        """Initialize a new ecoMAX select."""
-        self.connection = connection
-        self.entity_description = description
+    entity_description: EcomaxSelectEntityDescription
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
-        options: list[str] = self.entity_description.options
-        self.device.set_nowait(self.entity_description.key, options.index(option))
-        self._attr_current_option = option
-        self.async_write_ha_state()
+        if options := self.entity_description.options:
+            self.device.set_nowait(self.entity_description.key, options.index(option))
+            self._attr_current_option = option
+            self.async_write_ha_state()
 
     async def async_update(self, value: Any) -> None:
         """Update entity state."""
-        self._attr_current_option = self.entity_description.options[int(value)]
-        self.async_write_ha_state()
+        if self.entity_description.options:
+            self._attr_current_option = self.entity_description.options[int(value)]
+            self.async_write_ha_state()
 
 
-@dataclass(kw_only=True, frozen=True, slots=True)
-class EcomaxMixerSelectEntityDescription(EcomaxSelectEntityDescription):
+@dataclass(frozen=True, kw_only=True)
+class EcomaxMixerSelectEntityDescription(
+    EcomaxSelectEntityDescription, SubdeviceEntityDescription
+):
     """Describes a mixer select."""
-
-    indexes: set[int] | Literal["all"] = ALL
 
 
 MIXER_SELECT_TYPES: tuple[EcomaxMixerSelectEntityDescription, ...] = (
     EcomaxMixerSelectEntityDescription(
         key="work_mode",
-        translation_key="mixer_work_mode",
         options=[STATE_OFF, STATE_HEATING, STATE_HEATED_FLOOR, STATE_PUMP_ONLY],
         product_types={ProductType.ECOMAX_P},
+        translation_key="mixer_work_mode",
     ),
     EcomaxMixerSelectEntityDescription(
         key="enable_circuit",
-        translation_key="mixer_work_mode",
+        indexes={2, 3},
         options=[STATE_OFF, STATE_HEATING, STATE_HEATED_FLOOR],
         product_types={ProductType.ECOMAX_I},
-        indexes={2, 3},
+        translation_key="mixer_work_mode",
     ),
 )
 
@@ -93,10 +96,12 @@ MIXER_SELECT_TYPES: tuple[EcomaxMixerSelectEntityDescription, ...] = (
 class MixerSelect(MixerEntity, EcomaxSelect):
     """Represents a mixer select."""
 
+    entity_description: EcomaxMixerSelectEntityDescription
+
     def __init__(
         self,
         connection: EcomaxConnection,
-        description: EcomaxSelectEntityDescription,
+        description: EcomaxMixerSelectEntityDescription,
         index: int,
     ):
         """Initialize a new mixer select."""
@@ -106,8 +111,8 @@ class MixerSelect(MixerEntity, EcomaxSelect):
 
 def get_by_product_type(
     product_type: ProductType,
-    descriptions: Iterable[EcomaxSelectEntityDescription],
-) -> Generator[EcomaxSelectEntityDescription, None, None]:
+    descriptions: Iterable[DescriptorT],
+) -> Generator[DescriptorT, None, None]:
     """Filter descriptions by the product type."""
     for description in descriptions:
         if (
@@ -119,8 +124,8 @@ def get_by_product_type(
 
 def get_by_modules(
     connected_modules: ConnectedModules,
-    descriptions: Iterable[EcomaxSelectEntityDescription],
-) -> Generator[EcomaxSelectEntityDescription, None, None]:
+    descriptions: Iterable[DescriptorT],
+) -> Generator[DescriptorT, None, None]:
     """Filter descriptions by connected modules."""
     for description in descriptions:
         if getattr(connected_modules, description.module, None) is not None:
@@ -128,8 +133,8 @@ def get_by_modules(
 
 
 def get_by_index(
-    index: int, descriptions: Iterable[EcomaxMixerSelectEntityDescription]
-) -> Generator[EcomaxMixerSelectEntityDescription, None, None]:
+    index: int, descriptions: Iterable[SubDescriptorT]
+) -> Generator[SubDescriptorT, None, None]:
     """Filter mixer/circuit descriptions by the index."""
     index += 1
     for description in descriptions:
@@ -168,11 +173,11 @@ def async_setup_mixer_selects(connection: EcomaxConnection) -> list[MixerSelect]
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigType,
+    entry: PlumEcomaxConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the select platform."""
-    connection: EcomaxConnection = hass.data[DOMAIN][config_entry.entry_id]
+    connection = entry.runtime_data.connection
     _LOGGER.debug("Starting setup of select platform...")
 
     entities: list[EcomaxSelect] = []

@@ -21,7 +21,7 @@ from homeassistant.const import (
     PERCENTAGE,
     UnitOfTemperature,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
 from pyplumio.helpers.parameter import ParameterValues
 from pyplumio.structures.ecomax_parameters import (
@@ -91,6 +91,7 @@ async def test_target_heating_temperature_number(
 
     # Get initial state.
     state = hass.states.get(target_heating_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Target heating temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
@@ -110,6 +111,7 @@ async def test_target_heating_temperature_number(
         ),
     )
     state = hass.states.get(target_heating_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "65"
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 80
@@ -119,6 +121,7 @@ async def test_target_heating_temperature_number(
         state = await async_set_value(hass, target_heating_temperature_entity_id, 70)
 
     mock_set_nowait.assert_called_once_with(target_heating_temperature_key, 70)
+    assert isinstance(state, State)
     assert state.state == "70.0"
 
 
@@ -143,6 +146,7 @@ async def test_minimum_heating_temperature_number(
 
     # Get initial state.
     state = hass.states.get(minimum_heating_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Minimum heating temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
@@ -162,6 +166,7 @@ async def test_minimum_heating_temperature_number(
         ),
     )
     state = hass.states.get(minimum_heating_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "30"
     assert state.attributes[ATTR_MIN] == 10
     assert state.attributes[ATTR_MAX] == 40
@@ -171,6 +176,7 @@ async def test_minimum_heating_temperature_number(
         state = await async_set_value(hass, minimum_heating_temperature_entity_id, 40)
 
     mock_set_nowait.assert_called_once_with(minimum_heating_temperature_key, 40)
+    assert isinstance(state, State)
     assert state.state == "40.0"
 
 
@@ -195,6 +201,7 @@ async def test_maximum_heating_temperature_number(
 
     # Get initial state.
     state = hass.states.get(maximum_heating_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Maximum heating temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
@@ -214,6 +221,7 @@ async def test_maximum_heating_temperature_number(
         ),
     )
     state = hass.states.get(maximum_heating_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "90"
     assert state.attributes[ATTR_MIN] == 60
     assert state.attributes[ATTR_MAX] == 90
@@ -223,6 +231,7 @@ async def test_maximum_heating_temperature_number(
         state = await async_set_value(hass, maximum_heating_temperature_entity_id, 70)
 
     mock_set_nowait.assert_called_once_with(maximum_heating_temperature_key, 70)
+    assert isinstance(state, State)
     assert state.state == "70.0"
 
 
@@ -247,6 +256,7 @@ async def test_grate_mode_temperature_number(
 
     # Get initial state.
     state = hass.states.get(grate_mode_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Grate mode temperature"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
@@ -266,6 +276,7 @@ async def test_grate_mode_temperature_number(
         ),
     )
     state = hass.states.get(grate_mode_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "65"
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 80
@@ -275,6 +286,7 @@ async def test_grate_mode_temperature_number(
         state = await async_set_value(hass, grate_mode_temperature_entity_id, 70)
 
     mock_set_nowait.assert_called_once_with(grate_mode_temperature_key, 70)
+    assert isinstance(state, State)
     assert state.state == "70.0"
 
 
@@ -299,6 +311,7 @@ async def test_fuzzy_logic_minimum_power_number(
 
     # Get initial state.
     state = hass.states.get(fuzzy_logic_minimum_power_entity_id)
+    assert isinstance(state, State)
     assert state.state == "0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fuzzy logic minimum power"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
@@ -317,6 +330,7 @@ async def test_fuzzy_logic_minimum_power_number(
         ),
     )
     state = hass.states.get(fuzzy_logic_minimum_power_entity_id)
+    assert isinstance(state, State)
     assert state.state == "30"
     assert state.attributes[ATTR_MIN] == 0
     assert state.attributes[ATTR_MAX] == 50
@@ -326,6 +340,7 @@ async def test_fuzzy_logic_minimum_power_number(
         state = await async_set_value(hass, fuzzy_logic_minimum_power_entity_id, 10)
 
     mock_set_nowait.assert_called_once_with(fuzzy_logic_minimum_power_key, 10)
+    assert isinstance(state, State)
     assert state.state == "10.0"
 
 
@@ -350,6 +365,7 @@ async def test_fuzzy_logic_maximum_power_number(
 
     # Get initial state.
     state = hass.states.get(fuzzy_logic_maximum_power_entity_id)
+    assert isinstance(state, State)
     assert state.state == "0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fuzzy logic maximum power"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == PERCENTAGE
@@ -368,6 +384,7 @@ async def test_fuzzy_logic_maximum_power_number(
         ),
     )
     state = hass.states.get(fuzzy_logic_maximum_power_entity_id)
+    assert isinstance(state, State)
     assert state.state == "50"
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 100
@@ -377,6 +394,7 @@ async def test_fuzzy_logic_maximum_power_number(
         state = await async_set_value(hass, fuzzy_logic_maximum_power_entity_id, 45)
 
     mock_set_nowait.assert_called_once_with(fuzzy_logic_maximum_power_key, 45)
+    assert isinstance(state, State)
     assert state.state == "45.0"
 
 
@@ -401,6 +419,7 @@ async def test_fuel_calorific_value_number(
 
     # Get initial state.
     state = hass.states.get(fuel_calorific_value_entity_id)
+    assert isinstance(state, State)
     assert state.state == "0.0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fuel calorific value"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == CALORIFIC_KWH_KG
@@ -421,6 +440,7 @@ async def test_fuel_calorific_value_number(
         ),
     )
     state = hass.states.get(fuel_calorific_value_entity_id)
+    assert isinstance(state, State)
     assert state.state == "4.7"
     assert state.attributes[ATTR_MIN] == 4.0
     assert state.attributes[ATTR_MAX] == 5.0
@@ -430,6 +450,7 @@ async def test_fuel_calorific_value_number(
         state = await async_set_value(hass, fuel_calorific_value_entity_id, 4.8)
 
     mock_set_nowait.assert_called_once_with(fuel_calorific_value_key, 4.8)
+    assert isinstance(state, State)
     assert state.state == "4.8"
 
 
@@ -456,6 +477,7 @@ async def test_mixer_target_mixer_temperature_number(
 
     # Get initial state.
     state = hass.states.get(target_mixer_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
@@ -478,6 +500,7 @@ async def test_mixer_target_mixer_temperature_number(
         ),
     )
     state = hass.states.get(target_mixer_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "65"
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 80
@@ -487,6 +510,7 @@ async def test_mixer_target_mixer_temperature_number(
         state = await async_set_value(hass, target_mixer_temperature_entity_id, 70)
 
     mock_set_nowait.assert_called_once_with(target_mixer_temperature_key, 70)
+    assert isinstance(state, State)
     assert state.state == "70.0"
 
 
@@ -513,6 +537,7 @@ async def test_mixer_minimum_mixer_temperature_number(
 
     # Get initial state.
     state = hass.states.get(minimum_mixer_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
@@ -535,6 +560,7 @@ async def test_mixer_minimum_mixer_temperature_number(
         ),
     )
     state = hass.states.get(minimum_mixer_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "30"
     assert state.attributes[ATTR_MIN] == 10
     assert state.attributes[ATTR_MAX] == 40
@@ -544,6 +570,7 @@ async def test_mixer_minimum_mixer_temperature_number(
         state = await async_set_value(hass, minimum_mixer_temperature_entity_id, 40)
 
     mock_set_nowait.assert_called_once_with(minimum_mixer_temperature_key, 40)
+    assert isinstance(state, State)
     assert state.state == "40.0"
 
 
@@ -570,6 +597,7 @@ async def test_mixer_maximum_mixer_temperature_number(
 
     # Get initial state.
     state = hass.states.get(maximum_mixer_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
@@ -592,6 +620,7 @@ async def test_mixer_maximum_mixer_temperature_number(
         ),
     )
     state = hass.states.get(maximum_mixer_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "90"
     assert state.attributes[ATTR_MIN] == 60
     assert state.attributes[ATTR_MAX] == 90
@@ -601,6 +630,7 @@ async def test_mixer_maximum_mixer_temperature_number(
         state = await async_set_value(hass, maximum_mixer_temperature_entity_id, 70)
 
     mock_set_nowait.assert_called_once_with(maximum_mixer_temperature_key, 70)
+    assert isinstance(state, State)
     assert state.state == "70.0"
 
 
@@ -627,6 +657,7 @@ async def test_circuit_target_circuit_temperature_number(
 
     # Get initial state.
     state = hass.states.get(target_circuit_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
@@ -649,6 +680,7 @@ async def test_circuit_target_circuit_temperature_number(
         ),
     )
     state = hass.states.get(target_circuit_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "65"
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 80
@@ -658,6 +690,7 @@ async def test_circuit_target_circuit_temperature_number(
         state = await async_set_value(hass, target_circuit_temperature_entity_id, 70)
 
     mock_set_nowait.assert_called_once_with(target_circuit_temperature_key, 70)
+    assert isinstance(state, State)
     assert state.state == "70.0"
 
 
@@ -684,6 +717,7 @@ async def test_circuit_minimum_circuit_temperature_number(
 
     # Get initial state.
     state = hass.states.get(minimum_circuit_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
@@ -706,6 +740,7 @@ async def test_circuit_minimum_circuit_temperature_number(
         ),
     )
     state = hass.states.get(minimum_circuit_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "30"
     assert state.attributes[ATTR_MIN] == 10
     assert state.attributes[ATTR_MAX] == 40
@@ -715,6 +750,7 @@ async def test_circuit_minimum_circuit_temperature_number(
         state = await async_set_value(hass, minimum_circuit_temperature_entity_id, 40)
 
     mock_set_nowait.assert_called_once_with(minimum_circuit_temperature_key, 40)
+    assert isinstance(state, State)
     assert state.state == "40.0"
 
 
@@ -741,6 +777,7 @@ async def test_circuit_maximum_circuit_temperature_number(
 
     # Get initial state.
     state = hass.states.get(maximum_circuit_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
@@ -763,6 +800,7 @@ async def test_circuit_maximum_circuit_temperature_number(
         ),
     )
     state = hass.states.get(maximum_circuit_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "90"
     assert state.attributes[ATTR_MIN] == 60
     assert state.attributes[ATTR_MAX] == 90
@@ -772,6 +810,7 @@ async def test_circuit_maximum_circuit_temperature_number(
         state = await async_set_value(hass, maximum_circuit_temperature_entity_id, 70)
 
     mock_set_nowait.assert_called_once_with(maximum_circuit_temperature_key, 70)
+    assert isinstance(state, State)
     assert state.state == "70.0"
 
 
@@ -798,6 +837,7 @@ async def test_circuit_day_target_circuit_temperature_number(
 
     # Get initial state.
     state = hass.states.get(day_target_circuit_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
@@ -820,6 +860,7 @@ async def test_circuit_day_target_circuit_temperature_number(
         ),
     )
     state = hass.states.get(day_target_circuit_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "65"
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 80
@@ -831,6 +872,7 @@ async def test_circuit_day_target_circuit_temperature_number(
         )
 
     mock_set_nowait.assert_called_once_with(day_target_circuit_temperature_key, 70)
+    assert isinstance(state, State)
     assert state.state == "70.0"
 
 
@@ -857,6 +899,7 @@ async def test_circuit_night_target_circuit_temperature_number(
 
     # Get initial state.
     state = hass.states.get(night_target_circuit_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "0"
     assert (
         state.attributes[ATTR_FRIENDLY_NAME]
@@ -881,6 +924,7 @@ async def test_circuit_night_target_circuit_temperature_number(
         ),
     )
     state = hass.states.get(night_target_circuit_temperature_entity_id)
+    assert isinstance(state, State)
     assert state.state == "65"
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 80
@@ -892,4 +936,5 @@ async def test_circuit_night_target_circuit_temperature_number(
         )
 
     mock_set_nowait.assert_called_once_with(night_target_circuit_temperature_key, 70)
+    assert isinstance(state, State)
     assert state.state == "70.0"
