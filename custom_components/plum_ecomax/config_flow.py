@@ -55,7 +55,7 @@ from pyplumio.structures.thermostat_parameters import (
 )
 import voluptuous as vol
 
-from . import async_reload_config
+from . import PlumEcomaxConfigEntry, async_reload_config
 from .connection import (
     DEFAULT_TIMEOUT,
     EcomaxConnection,
@@ -344,9 +344,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(
-        config_entry: ConfigEntry,
-    ) -> OptionsFlow:
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
         """Create the options flow."""
         return OptionsFlowHandler(config_entry)
 
@@ -366,11 +364,7 @@ class UnsupportedProduct(HomeAssistantError):
 SOURCE_TYPES: dict[Platform, tuple[type, ...]] = {
     Platform.BINARY_SENSOR: (bool,),
     Platform.SENSOR: (int, float, str),
-    Platform.NUMBER: (
-        EcomaxParameter,
-        MixerParameter,
-        ThermostatParameter,
-    ),
+    Platform.NUMBER: (EcomaxParameter, MixerParameter, ThermostatParameter),
     Platform.SWITCH: (
         EcomaxBinaryParameter,
         MixerBinaryParameter,
@@ -386,6 +380,7 @@ def async_get_source_options(
     """Return source options."""
     data = dict(sorted(data.items()))
 
+    @callback
     def _async_format_value(value: Any) -> Any:
         """Format the value."""
         if isinstance(value, float):
@@ -417,7 +412,7 @@ def async_get_source_device_options(
     connection: EcomaxConnection,
 ) -> list[selector.SelectOptionDict]:
     """Return the source devices."""
-    sources: dict[str, str] = {DeviceType.ECOMAX: f"Common ({connection.model})"}
+    sources = {DeviceType.ECOMAX.value: f"Common ({connection.model})"}
 
     if connection.device.get_nowait(REGDATA, None):
         sources[REGDATA] = f"Extended ({connection.model})"
@@ -439,21 +434,20 @@ def async_get_source_device_options(
 class OptionsFlowHandler(OptionsFlow):
     """Represents an options flow."""
 
-    config_entry: ConfigEntry
-    connection: EcomaxConnection | None
+    config_entry: PlumEcomaxConfigEntry
+    connection: EcomaxConnection
     platform: Platform | None
 
-    def __init__(self, config_entry: ConfigEntry) -> None:
+    def __init__(self, entry: PlumEcomaxConfigEntry) -> None:
         """Initialize a new options flow."""
-        self.config_entry = config_entry
-        self.connection = None
+        self.config_entry = entry
+        self.connection = entry.runtime_data.connection
         self.platform = None
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Manage the options."""
-        self.connection = self.hass.data[DOMAIN][self.config_entry.entry_id]
         return self.async_show_menu(
             step_id="init",
             menu_options=["add_entity", "edit_entity", "reload"],
@@ -467,7 +461,6 @@ class OptionsFlowHandler(OptionsFlow):
             self.source_device: str = user_input[CONF_SOURCE]
             return await self.async_step_entity_type()
 
-        assert self.connection
         return self.async_show_form(
             step_id="add_entity",
             data_schema=vol.Schema(
@@ -524,7 +517,7 @@ class OptionsFlowHandler(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle new entity details."""
-        assert self.platform and self.connection
+        assert self.platform
         if user_input is not None:
             user_input["source_device"] = self.source_device
             options = deepcopy({**self.config_entry.options})
@@ -676,7 +669,6 @@ class OptionsFlowHandler(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle reloading config."""
-        assert self.connection
         self.hass.async_create_task(
             async_reload_config(self.hass, self.config_entry, self.connection)
         )
