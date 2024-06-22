@@ -298,8 +298,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
     async def _async_identify_device(self) -> None:
         """Task to identify the device."""
         # Tell mypy that once we here, connection is not None
-        assert isinstance(self.connection, Connection)
-
+        assert self.connection
         self.device = cast(
             AddressableDevice,
             await self.connection.get(DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT),
@@ -325,8 +324,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
     async def _async_discover_modules(self) -> None:
         """Task to discover modules."""
         # Tell mypy that once we here, device is not None
-        assert isinstance(self.device, AddressableDevice)
-
+        assert self.device
         modules: ConnectedModules = await self.device.get(
             ATTR_MODULES, timeout=DEFAULT_TIMEOUT
         )
@@ -469,6 +467,7 @@ class OptionsFlowHandler(OptionsFlow):
             self.source_device: str = user_input[CONF_SOURCE]
             return await self.async_step_entity_type()
 
+        assert self.connection
         return self.async_show_form(
             step_id="add_entity",
             data_schema=vol.Schema(
@@ -525,11 +524,14 @@ class OptionsFlowHandler(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle new entity details."""
+        assert self.platform and self.connection
         if user_input is not None:
             user_input["source_device"] = self.source_device
             options = deepcopy({**self.config_entry.options})
             entities: dict[str, Any] = options.setdefault("entities", {})
-            platform: list[dict[str, Any]] = entities.setdefault(self.platform, [])
+            platform: list[dict[str, Any]] = entities.setdefault(
+                self.platform.value, []
+            )
             platform.append(user_input)
             return self.async_create_entry(title="", data=options)
 
@@ -674,6 +676,7 @@ class OptionsFlowHandler(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle reloading config."""
+        assert self.connection
         self.hass.async_create_task(
             async_reload_config(self.hass, self.config_entry, self.connection)
         )
@@ -681,7 +684,7 @@ class OptionsFlowHandler(OptionsFlow):
 
     @callback
     def async_get_sources(self, device: AddressableDevice) -> dict[str, Any]:
-        """Get entity sources."""
+        """Get the entity sources."""
         entity_registry = er.async_get(self.hass)
         entities = er.async_entries_for_config_entry(
             entity_registry, self.config_entry.entry_id
@@ -698,7 +701,7 @@ class OptionsFlowHandler(OptionsFlow):
 
         elif self.source_device == REGDATA:
             data = device.get_nowait(REGDATA, {})
-            existing_entities = [int(key) for key in entity_keys if key.isnumeric()]
+            existing_entities = [key for key in entity_keys if key.isnumeric()]
 
         elif self.source_device.startswith((DeviceType.MIXER, DeviceType.THERMOSTAT)):
             device_type, index = self.source_device.split("_", 1)
