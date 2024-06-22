@@ -1,4 +1,5 @@
 """Describe Plum ecoMAX logbook events."""
+
 from __future__ import annotations
 
 from collections.abc import Callable

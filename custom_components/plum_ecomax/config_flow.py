@@ -22,6 +22,7 @@ from homeassistant.components.sensor.const import (
     SensorDeviceClass,
     SensorStateClass,
 )
+from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import (
     CONF_BASE,
     CONF_DEVICE_CLASS,
@@ -34,9 +35,6 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
-from homeassistant.const import CONF_BASE
-from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er, selector
 import homeassistant.helpers.config_validation as cv
