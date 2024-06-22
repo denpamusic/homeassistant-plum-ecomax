@@ -436,13 +436,11 @@ class OptionsFlowHandler(OptionsFlow):
 
     config_entry: PlumEcomaxConfigEntry
     connection: EcomaxConnection
-    platform: Platform | None
 
     def __init__(self, entry: PlumEcomaxConfigEntry) -> None:
         """Initialize a new options flow."""
         self.config_entry = entry
         self.connection = entry.runtime_data.connection
-        self.platform = None
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -517,7 +515,6 @@ class OptionsFlowHandler(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle new entity details."""
-        assert self.platform
         if user_input is not None:
             user_input["source_device"] = self.source_device
             options = deepcopy({**self.config_entry.options})
