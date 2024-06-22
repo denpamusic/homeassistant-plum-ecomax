@@ -6,11 +6,9 @@ import asyncio
 from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import asdict
-from functools import cache
 import logging
 from typing import Any, cast
 
-from homeassistant import config_entries
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.number import NumberDeviceClass, NumberMode
 from homeassistant.components.number.const import (
@@ -349,8 +347,8 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(
-        config_entry: config_entries.ConfigEntry,
-    ) -> config_entries.OptionsFlow:
+        config_entry: ConfigEntry,
+    ) -> OptionsFlow:
         """Create the options flow."""
         return OptionsFlowHandler(config_entry)
 
@@ -416,7 +414,6 @@ def async_get_source_options(
     ]
 
 
-@cache
 @callback
 def async_get_source_device_options(
     connection: EcomaxConnection,
@@ -448,7 +445,7 @@ class OptionsFlowHandler(OptionsFlow):
     connection: EcomaxConnection | None
     platform: Platform | None
 
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+    def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialize a new options flow."""
         self.config_entry = config_entry
         self.connection = None
@@ -668,7 +665,9 @@ class OptionsFlowHandler(OptionsFlow):
         return self.async_show_form(
             step_id="entity_details",
             data_schema=vol.Schema(schema),
-            description_placeholders={"platform": str(self.platform).replace("_", " ")},
+            description_placeholders={
+                "platform": self.platform.value.replace("_", " ")
+            },
         )
 
     async def async_step_reload(
