@@ -22,7 +22,12 @@ from homeassistant.components.sensor.const import (
     SensorDeviceClass,
     SensorStateClass,
 )
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlow,
+)
 from homeassistant.const import (
     CONF_BASE,
     CONF_DEVICE_CLASS,
@@ -34,7 +39,6 @@ from homeassistant.const import (
     UnitOfTime,
 )
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er, selector
 import homeassistant.helpers.config_validation as cv
@@ -379,6 +383,7 @@ SOURCE_TYPES: dict[Platform, tuple[type, ...]] = {
 }
 
 
+@callback
 def async_get_source_options(
     data: dict[str, Any], platform_types: tuple[type, ...]
 ) -> list[selector.SelectOptionDict]:
@@ -412,10 +417,11 @@ def async_get_source_options(
 
 
 @cache
+@callback
 def async_get_source_device_options(
     connection: EcomaxConnection,
 ) -> list[selector.SelectOptionDict]:
-    """Return source devices."""
+    """Return the source devices."""
     sources: dict[str, str] = {DeviceType.ECOMAX: f"Common ({connection.model})"}
 
     if connection.device.get_nowait(REGDATA, None):
@@ -435,20 +441,22 @@ def async_get_source_device_options(
     return [selector.SelectOptionDict(value=k, label=v) for k, v in sources.items()]
 
 
-class OptionsFlowHandler(config_entries.OptionsFlow):
+class OptionsFlowHandler(OptionsFlow):
     """Represents an options flow."""
 
-    config_entry: config_entries.ConfigEntry
-    connection: EcomaxConnection
-    platform: Platform
+    config_entry: ConfigEntry
+    connection: EcomaxConnection | None
+    platform: Platform | None
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize a new options flow."""
         self.config_entry = config_entry
+        self.connection = None
+        self.platform = None
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Manage the options."""
         self.connection = self.hass.data[DOMAIN][self.config_entry.entry_id]
         return self.async_show_menu(
@@ -458,7 +466,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_add_entity(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle adding a new entity."""
         if user_input is not None:
             self.source_device: str = user_input[CONF_SOURCE]
@@ -479,7 +487,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_entity_type(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle selecting entity type."""
         menu_options = ["add_sensor", "add_binary_sensor"]
 
@@ -490,35 +498,35 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_add_sensor(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle adding a new sensor."""
         self.platform = Platform.SENSOR
         return await self.async_step_entity_details()
 
     async def async_step_add_binary_sensor(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle adding a new binary sensor."""
         self.platform = Platform.BINARY_SENSOR
         return await self.async_step_entity_details()
 
     async def async_step_add_number(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle adding a new number."""
         self.platform = Platform.NUMBER
         return await self.async_step_entity_details()
 
     async def async_step_add_switch(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle adding a new switch."""
         self.platform = Platform.SWITCH
         return await self.async_step_entity_details()
 
     async def async_step_entity_details(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle new entity details."""
         if user_input is not None:
             user_input["source_device"] = self.source_device
@@ -616,11 +624,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 ),
                 vol.Required(CONF_MODE): selector.SelectSelector(
                     selector.SelectSelectorConfig(
-                        options=[
-                            NumberMode.AUTO,
-                            NumberMode.BOX,
-                            NumberMode.SLIDER,
-                        ],
+                        options=[NumberMode.AUTO, NumberMode.BOX, NumberMode.SLIDER],
                         translation_key="number_mode",
                     )
                 ),
@@ -669,13 +673,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
     async def async_step_reload(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Handle reloading config."""
         self.hass.async_create_task(
             async_reload_config(self.hass, self.config_entry, self.connection)
         )
         return self.async_create_entry(title="Reload complete", data={})
 
+    @callback
     def async_get_sources(self, device: AddressableDevice) -> dict[str, Any]:
         """Get entity sources."""
         entity_registry = er.async_get(self.hass)
