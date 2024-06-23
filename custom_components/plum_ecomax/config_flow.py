@@ -132,6 +132,12 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
 
     VERSION = 8
 
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+        """Create the options flow."""
+        return OptionsFlowHandler(config_entry)
+
     def __init__(self) -> None:
         """Initialize a new config flow."""
         self.connection: Connection | None = None
@@ -342,12 +348,6 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
         await self.async_set_unique_id(uid)
         self._abort_if_unique_id_configured()
 
-    @staticmethod
-    @callback
-    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
-        """Create the options flow."""
-        return OptionsFlowHandler(config_entry)
-
 
 class CannotConnect(HomeAssistantError):
     """Error to indicate we cannot connect."""
@@ -371,64 +371,6 @@ SOURCE_TYPES: dict[Platform, tuple[type, ...]] = {
         ThermostatBinaryParameter,
     ),
 }
-
-
-@callback
-def async_get_source_options(
-    data: dict[str, Any], platform_types: tuple[type, ...]
-) -> list[selector.SelectOptionDict]:
-    """Return source options."""
-    data = dict(sorted(data.items()))
-
-    @callback
-    def _async_format_value(value: Any) -> Any:
-        """Format the value."""
-        if isinstance(value, float):
-            return round(value, 2)
-
-        if isinstance(value, Parameter):
-            if isinstance(value.unit_of_measurement, UnitOfMeasurement):
-                unit_of_measurement = f" {value.unit_of_measurement.value}"
-            elif isinstance(value.unit_of_measurement, str):
-                unit_of_measurement = f" {value.unit_of_measurement}"
-            elif value.unit_of_measurement is None:
-                unit_of_measurement = ""
-
-            return f"{value.value}{unit_of_measurement}"
-
-        return value
-
-    return [
-        selector.SelectOptionDict(
-            value=str(k), label=f"{k} (value: {_async_format_value(v)})"
-        )
-        for k, v in data.items()
-        if type(v) in platform_types
-    ]
-
-
-@callback
-def async_get_source_device_options(
-    connection: EcomaxConnection,
-) -> list[selector.SelectOptionDict]:
-    """Return the source devices."""
-    sources = {DeviceType.ECOMAX.value: f"Common ({connection.model})"}
-
-    if connection.device.get_nowait(REGDATA, None):
-        sources[REGDATA] = f"Extended ({connection.model})"
-
-    if mixers := connection.device.get_nowait(ATTR_MIXERS, None):
-        sources |= {
-            f"{DeviceType.MIXER}_{mixer}": f"Mixer {mixer + 1}" for mixer in mixers
-        }
-
-    if thermostats := connection.device.get_nowait(ATTR_THERMOSTATS, None):
-        sources |= {
-            f"{DeviceType.THERMOSTAT}_{thermostat}": f"Thermostat {thermostat + 1}"
-            for thermostat in thermostats
-        }
-
-    return [selector.SelectOptionDict(value=k, label=v) for k, v in sources.items()]
 
 
 class OptionsFlowHandler(OptionsFlow):
@@ -465,7 +407,7 @@ class OptionsFlowHandler(OptionsFlow):
                 {
                     vol.Required(CONF_SOURCE): selector.SelectSelector(
                         selector.SelectSelectorConfig(
-                            options=async_get_source_device_options(self.connection)
+                            options=self._async_get_source_device_options()
                         )
                     )
                 }
@@ -525,12 +467,7 @@ class OptionsFlowHandler(OptionsFlow):
             platform.append(user_input)
             return self.async_create_entry(title="", data=options)
 
-        sources = self.async_get_sources(self.connection.device)
-        if not (
-            source_options := async_get_source_options(
-                sources, platform_types=SOURCE_TYPES[self.platform]
-            )
-        ):
+        if not (source_options := self._async_get_source_options()):
             raise vol.Invalid(
                 f"Cannot add any more {str(self.platform).replace('_', ' ')}s for "
                 f"the selected source. Please select a different source and try again"
@@ -672,8 +609,9 @@ class OptionsFlowHandler(OptionsFlow):
         return self.async_create_entry(title="Reload complete", data={})
 
     @callback
-    def async_get_sources(self, device: AddressableDevice) -> dict[str, Any]:
+    def _async_get_sources(self) -> dict[str, Any]:
         """Get the entity sources."""
+        device = self.connection.device
         entity_registry = er.async_get(self.hass)
         entities = er.async_entries_for_config_entry(
             entity_registry, self.config_entry.entry_id
@@ -704,3 +642,57 @@ class OptionsFlowHandler(OptionsFlow):
             raise HomeAssistantError
 
         return {k: v for k, v in data.items() if k not in existing_entities}
+
+    @callback
+    def _async_get_source_device_options(self) -> list[selector.SelectOptionDict]:
+        """Return the source devices."""
+        connection = self.connection
+        sources = {DeviceType.ECOMAX.value: f"Common ({connection.model})"}
+
+        if connection.device.get_nowait(REGDATA, None):
+            sources[REGDATA] = f"Extended ({connection.model})"
+
+        if mixers := connection.device.get_nowait(ATTR_MIXERS, None):
+            sources |= {
+                f"{DeviceType.MIXER}_{mixer}": f"Mixer {mixer + 1}" for mixer in mixers
+            }
+
+        if thermostats := connection.device.get_nowait(ATTR_THERMOSTATS, None):
+            sources |= {
+                f"{DeviceType.THERMOSTAT}_{thermostat}": f"Thermostat {thermostat + 1}"
+                for thermostat in thermostats
+            }
+
+        return [selector.SelectOptionDict(value=k, label=v) for k, v in sources.items()]
+
+    @callback
+    def _async_get_source_options(self) -> list[selector.SelectOptionDict]:
+        """Return source options."""
+        sources = self._async_get_sources()
+        data = dict(sorted(sources.items()))
+
+        @callback
+        def _async_format_value(value: Any) -> Any:
+            """Format the value."""
+            if isinstance(value, float):
+                return round(value, 2)
+
+            if not isinstance(value, Parameter):
+                return value
+
+            if isinstance(value.unit_of_measurement, UnitOfMeasurement):
+                unit_of_measurement = f" {value.unit_of_measurement.value}"
+            elif isinstance(value.unit_of_measurement, str):
+                unit_of_measurement = f" {value.unit_of_measurement}"
+            elif value.unit_of_measurement is None:
+                unit_of_measurement = ""
+
+            return f"{value.value}{unit_of_measurement}"
+
+        return [
+            selector.SelectOptionDict(
+                value=str(k), label=f"{k} (value: {_async_format_value(v)})"
+            )
+            for k, v in data.items()
+            if type(v) in SOURCE_TYPES[self.platform]
+        ]
