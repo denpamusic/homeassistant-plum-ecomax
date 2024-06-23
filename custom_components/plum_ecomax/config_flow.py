@@ -41,10 +41,10 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er, selector
 import homeassistant.helpers.config_validation as cv
 from pyplumio.connection import Connection
-from pyplumio.const import ProductType, UnitOfMeasurement
+from pyplumio.const import ProductType
 from pyplumio.devices import AddressableDevice, SubDevice
 from pyplumio.exceptions import ConnectionFailedError
-from pyplumio.helpers.parameter import Parameter
+from pyplumio.helpers.parameter import Parameter, UnitOfMeasurement
 from pyplumio.structures.ecomax_parameters import EcomaxBinaryParameter, EcomaxParameter
 from pyplumio.structures.mixer_parameters import MixerBinaryParameter, MixerParameter
 from pyplumio.structures.modules import ConnectedModules
@@ -672,26 +672,21 @@ class OptionsFlowHandler(OptionsFlow):
         data = dict(sorted(sources.items()))
 
         @callback
-        def _async_format_value(value: Any) -> Any:
-            """Format the value."""
+        def _async_format_source_value(value: Any) -> Any:
+            """Format the source value."""
+            if isinstance(value, Parameter):
+                unit = value.unit_of_measurement
+                unit2 = unit.value if isinstance(unit, UnitOfMeasurement) else unit
+                value = f"{value.value} {'' if unit2 is None else unit2}".rstrip()
+
             if isinstance(value, float):
-                return round(value, 2)
+                value = round(value, 2)
 
-            if not isinstance(value, Parameter):
-                return value
-
-            if isinstance(value.unit_of_measurement, UnitOfMeasurement):
-                unit_of_measurement = f" {value.unit_of_measurement.value}"
-            elif isinstance(value.unit_of_measurement, str):
-                unit_of_measurement = f" {value.unit_of_measurement}"
-            elif value.unit_of_measurement is None:
-                unit_of_measurement = ""
-
-            return f"{value.value}{unit_of_measurement}"
+            return value
 
         return [
             selector.SelectOptionDict(
-                value=str(k), label=f"{k} (value: {_async_format_value(v)})"
+                value=str(k), label=f"{k} (value: {_async_format_source_value(v)})"
             )
             for k, v in data.items()
             if type(v) in SOURCE_TYPES[self.platform]
