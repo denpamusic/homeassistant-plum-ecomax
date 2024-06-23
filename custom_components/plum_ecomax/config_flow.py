@@ -7,7 +7,7 @@ from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import asdict
 import logging
-from typing import Any, cast
+from typing import Any, TypeVar, cast, overload
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.number import NumberDeviceClass, NumberMode
@@ -372,6 +372,8 @@ SOURCE_TYPES: dict[Platform, tuple[type, ...]] = {
     ),
 }
 
+T = TypeVar("T")
+
 
 class OptionsFlowHandler(OptionsFlow):
     """Represents an options flow."""
@@ -671,23 +673,32 @@ class OptionsFlowHandler(OptionsFlow):
         sources = self._async_get_sources()
         data = dict(sorted(sources.items()))
 
-        @callback
-        def _async_format_source_value(value: Any) -> Any:
-            """Format the source value."""
-            if isinstance(value, Parameter):
-                unit = value.unit_of_measurement
-                unit2 = unit.value if isinstance(unit, UnitOfMeasurement) else unit
-                value = f"{value.value} {'' if unit2 is None else unit2}".rstrip()
-
-            if isinstance(value, float):
-                value = round(value, 2)
-
-            return value
-
         return [
             selector.SelectOptionDict(
-                value=str(k), label=f"{k} (value: {_async_format_source_value(v)})"
+                value=str(k), label=f"{k} (value: {self._async_format_source_value(v)})"
             )
             for k, v in data.items()
             if type(v) in SOURCE_TYPES[self.platform]
         ]
+
+    @overload
+    @staticmethod
+    def _async_format_source_value(value: Parameter) -> str: ...
+
+    @overload
+    @staticmethod
+    def _async_format_source_value(value: T) -> T: ...
+
+    @callback
+    @staticmethod
+    def _async_format_source_value(value: Any) -> Any:
+        """Format the source value."""
+        if isinstance(value, Parameter):
+            unit = value.unit_of_measurement
+            unit2 = unit.value if isinstance(unit, UnitOfMeasurement) else unit
+            return f"{value.value} {'' if unit2 is None else unit2}".rstrip()
+
+        if isinstance(value, float):
+            value = round(value, 2)
+
+        return value
