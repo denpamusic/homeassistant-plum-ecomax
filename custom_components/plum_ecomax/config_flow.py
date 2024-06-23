@@ -4,36 +4,74 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Mapping
+from copy import deepcopy
 from dataclasses import asdict
 import logging
-from typing import Any, cast
+from typing import Any, TypeVar, cast, overload
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
-from homeassistant.const import CONF_BASE
-from homeassistant.core import HomeAssistant
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+from homeassistant.components.number import NumberDeviceClass, NumberMode
+from homeassistant.components.number.const import (
+    DEVICE_CLASS_UNITS as NUMBER_DEVICE_CLASS_UNITS,
+)
+from homeassistant.components.sensor.const import (
+    CONF_STATE_CLASS,
+    DEVICE_CLASS_UNITS as SENSOR_DEVICE_CLASS_UNITS,
+    SensorDeviceClass,
+    SensorStateClass,
+)
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlow,
+)
+from homeassistant.const import (
+    CONF_BASE,
+    CONF_DEVICE_CLASS,
+    CONF_MODE,
+    CONF_NAME,
+    CONF_SOURCE,
+    CONF_UNIT_OF_MEASUREMENT,
+    Platform,
+    UnitOfTime,
+)
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import entity_registry as er, selector
 import homeassistant.helpers.config_validation as cv
 from pyplumio.connection import Connection
 from pyplumio.const import ProductType
-from pyplumio.devices import AddressableDevice
+from pyplumio.devices import AddressableDevice, SubDevice
 from pyplumio.exceptions import ConnectionFailedError
+from pyplumio.helpers.parameter import Parameter, UnitOfMeasurement
+from pyplumio.structures.ecomax_parameters import EcomaxBinaryParameter, EcomaxParameter
+from pyplumio.structures.mixer_parameters import MixerBinaryParameter, MixerParameter
 from pyplumio.structures.modules import ConnectedModules
 from pyplumio.structures.product_info import ProductInfo
+from pyplumio.structures.thermostat_parameters import (
+    ThermostatBinaryParameter,
+    ThermostatParameter,
+)
 import voluptuous as vol
 
+from . import PlumEcomaxConfigEntry, async_reload_config
 from .connection import (
     DEFAULT_TIMEOUT,
     async_get_connection_handler,
     async_get_sub_devices,
 )
 from .const import (
+    ATTR_MIXERS,
     ATTR_MODULES,
     ATTR_PRODUCT,
+    ATTR_THERMOSTATS,
     BAUDRATES,
     CONF_BAUDRATE,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
     CONF_HOST,
+    CONF_KEY,
     CONF_MODEL,
     CONF_PORT,
     CONF_PRODUCT_ID,
@@ -41,12 +79,14 @@ from .const import (
     CONF_SOFTWARE,
     CONF_SUB_DEVICES,
     CONF_UID,
+    CONF_UPDATE_INTERVAL,
     CONNECTION_TYPE_SERIAL,
     CONNECTION_TYPE_TCP,
     DEFAULT_BAUDRATE,
     DEFAULT_DEVICE,
     DEFAULT_PORT,
     DOMAIN,
+    REGDATA,
     DeviceType,
 )
 
@@ -90,6 +130,12 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Plum ecoMAX integration."""
 
     VERSION = 8
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+        """Create the options flow."""
+        return OptionsFlowHandler(config_entry)
 
     def __init__(self) -> None:
         """Initialize a new config flow."""
@@ -257,8 +303,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
     async def _async_identify_device(self) -> None:
         """Task to identify the device."""
         # Tell mypy that once we here, connection is not None
-        assert isinstance(self.connection, Connection)
-
+        assert self.connection
         self.device = cast(
             AddressableDevice,
             await self.connection.get(DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT),
@@ -284,8 +329,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
     async def _async_discover_modules(self) -> None:
         """Task to discover modules."""
         # Tell mypy that once we here, device is not None
-        assert isinstance(self.device, AddressableDevice)
-
+        assert self.device
         modules: ConnectedModules = await self.device.get(
             ATTR_MODULES, timeout=DEFAULT_TIMEOUT
         )
@@ -314,3 +358,344 @@ class TimeoutConnect(HomeAssistantError):
 
 class UnsupportedProduct(HomeAssistantError):
     """Error to indicate that product is not supported."""
+
+
+SOURCE_TYPES: dict[Platform, tuple[type, ...]] = {
+    Platform.BINARY_SENSOR: (bool,),
+    Platform.SENSOR: (int, float, str),
+    Platform.NUMBER: (EcomaxParameter, MixerParameter, ThermostatParameter),
+    Platform.SWITCH: (
+        EcomaxBinaryParameter,
+        MixerBinaryParameter,
+        ThermostatBinaryParameter,
+    ),
+}
+
+ValueT = TypeVar("ValueT", str, int, float)
+
+
+class OptionsFlowHandler(OptionsFlow):
+    """Represents an options flow."""
+
+    def __init__(self, entry: PlumEcomaxConfigEntry) -> None:
+        """Initialize a new options flow."""
+        self.config_entry = entry
+        self.connection = entry.runtime_data.connection
+        self.options = deepcopy(dict(self.config_entry.options))
+        self.entities: dict[str, dict[str, Any]] = self.options.setdefault(
+            "entities", {}
+        )
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Manage the options."""
+        return self.async_show_menu(
+            step_id="init",
+            menu_options=["add_entity", "edit_entity", "reload"],
+        )
+
+    async def async_step_add_entity(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle adding a new entity."""
+        if user_input is not None:
+            self.source_device: str = user_input[CONF_SOURCE]
+            return await self.async_step_entity_type()
+
+        return self.async_show_form(
+            step_id="add_entity",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_SOURCE): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=self._async_get_source_device_options()
+                        )
+                    )
+                }
+            ),
+        )
+
+    async def async_step_entity_type(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle selecting entity type."""
+        menu_options = ["add_sensor", "add_binary_sensor"]
+
+        if self.source_device != REGDATA:
+            menu_options.extend(["add_number", "add_switch"])
+
+        return self.async_show_menu(step_id="entity_type", menu_options=menu_options)
+
+    async def async_step_add_sensor(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle adding a new sensor."""
+        self.platform = Platform.SENSOR
+        return await self.async_step_entity_details()
+
+    async def async_step_add_binary_sensor(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle adding a new binary sensor."""
+        self.platform = Platform.BINARY_SENSOR
+        return await self.async_step_entity_details()
+
+    async def async_step_add_number(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle adding a new number."""
+        self.platform = Platform.NUMBER
+        return await self.async_step_entity_details()
+
+    async def async_step_add_switch(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle adding a new switch."""
+        self.platform = Platform.SWITCH
+        return await self.async_step_entity_details()
+
+    async def async_step_entity_details(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle new entity details."""
+        if user_input is not None:
+            user_input["source_device"] = self.source_device
+            key = user_input.pop(CONF_KEY)
+            platform = self.entities.setdefault(self.platform.value, {})
+            platform[key] = user_input
+            return self.async_create_entry(title="", data=self.options)
+
+        if not (source_options := self._async_get_source_options()):
+            raise vol.Invalid(
+                f"Cannot add any more {str(self.platform).replace('_', ' ')}s for "
+                f"the selected source. Please select a different source and try again"
+            )
+
+        if self.platform == Platform.SENSOR:
+            schema = {
+                vol.Required(CONF_NAME): str,
+                vol.Required(CONF_KEY): selector.SelectSelector(
+                    selector.SelectSelectorConfig(options=source_options)
+                ),
+                vol.Optional(CONF_UNIT_OF_MEASUREMENT): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=list(
+                            {
+                                str(unit)
+                                for units in SENSOR_DEVICE_CLASS_UNITS.values()
+                                for unit in units
+                                if unit is not None
+                            }
+                        ),
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                        translation_key="sensor_unit_of_measurement",
+                        custom_value=True,
+                        sort=True,
+                    ),
+                ),
+                vol.Optional(CONF_DEVICE_CLASS): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=[
+                            cls.value
+                            for cls in SensorDeviceClass
+                            if cls != SensorDeviceClass.ENUM
+                        ],
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                        translation_key="sensor_device_class",
+                        sort=True,
+                    ),
+                ),
+                vol.Optional(CONF_STATE_CLASS): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=[cls.value for cls in SensorStateClass],
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                        translation_key="sensor_state_class",
+                        sort=True,
+                    ),
+                ),
+                vol.Optional(CONF_UPDATE_INTERVAL, default=10): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=10,
+                        max=60,
+                        step=1,
+                        unit_of_measurement=UnitOfTime.SECONDS,
+                        mode=selector.NumberSelectorMode.BOX,
+                    )
+                ),
+            }
+
+        elif self.platform == Platform.BINARY_SENSOR:
+            schema = {
+                vol.Required(CONF_NAME): str,
+                vol.Required(CONF_KEY): selector.SelectSelector(
+                    selector.SelectSelectorConfig(options=source_options)
+                ),
+                vol.Optional(CONF_DEVICE_CLASS): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=[cls.value for cls in BinarySensorDeviceClass],
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                        translation_key="binary_sensor_device_class",
+                        sort=True,
+                    ),
+                ),
+            }
+
+        elif self.platform == Platform.NUMBER:
+            schema = {
+                vol.Required(CONF_NAME): str,
+                vol.Required(CONF_KEY): selector.SelectSelector(
+                    selector.SelectSelectorConfig(options=source_options)
+                ),
+                vol.Required(CONF_MODE): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=[NumberMode.AUTO, NumberMode.BOX, NumberMode.SLIDER],
+                        translation_key="number_mode",
+                    )
+                ),
+                vol.Optional(CONF_UNIT_OF_MEASUREMENT): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=list(
+                            {
+                                str(unit)
+                                for units in NUMBER_DEVICE_CLASS_UNITS.values()
+                                for unit in units
+                                if unit is not None
+                            }
+                        ),
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                        translation_key="number_unit_of_measurement",
+                        custom_value=True,
+                        sort=True,
+                    ),
+                ),
+                vol.Optional(CONF_DEVICE_CLASS): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=[cls.value for cls in NumberDeviceClass],
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                        translation_key="number_device_class",
+                        sort=True,
+                    ),
+                ),
+            }
+
+        elif self.platform == Platform.SWITCH:
+            schema = {
+                vol.Required(CONF_NAME): str,
+                vol.Required(CONF_KEY): selector.SelectSelector(
+                    selector.SelectSelectorConfig(options=source_options)
+                ),
+            }
+
+        else:
+            raise HomeAssistantError
+
+        return self.async_show_form(
+            step_id="entity_details",
+            data_schema=vol.Schema(schema),
+            description_placeholders={
+                "platform": self.platform.value.replace("_", " ")
+            },
+        )
+
+    async def async_step_reload(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle reloading config."""
+        self.hass.async_create_task(
+            async_reload_config(self.hass, self.config_entry, self.connection)
+        )
+        return self.async_create_entry(title="Reload complete", data={})
+
+    @callback
+    def _async_get_sources(self) -> dict[str, Any]:
+        """Get the entity sources."""
+        device = self.connection.device
+        entity_registry = er.async_get(self.hass)
+        entities = er.async_entries_for_config_entry(
+            entity_registry, self.config_entry.entry_id
+        )
+        entity_keys = [entity.unique_id.split("-")[-1] for entity in entities]
+
+        if self.source_device == DeviceType.ECOMAX:
+            data = device.data
+            existing_entities = [
+                key
+                for key in entity_keys
+                if not key.startswith((DeviceType.MIXER, DeviceType.THERMOSTAT))
+            ]
+
+        elif self.source_device == REGDATA:
+            data = device.get_nowait(REGDATA, {})
+            existing_entities = [key for key in entity_keys if key.isnumeric()]
+
+        elif self.source_device.startswith((DeviceType.MIXER, DeviceType.THERMOSTAT)):
+            device_type, index = self.source_device.split("_", 1)
+            devices: dict[int, SubDevice] = device.get_nowait(f"{device_type}s", {})
+            data = devices[int(index)].data
+            existing_entities = [
+                key for key in entity_keys if f"{device_type}-{index}" in key
+            ]
+
+        else:
+            raise HomeAssistantError
+
+        return {k: v for k, v in data.items() if k not in existing_entities}
+
+    @callback
+    def _async_get_source_device_options(self) -> list[selector.SelectOptionDict]:
+        """Return the source devices."""
+        connection = self.connection
+        sources = {DeviceType.ECOMAX.value: f"Common ({connection.model})"}
+
+        if connection.device.get_nowait(REGDATA, None):
+            sources[REGDATA] = f"Extended ({connection.model})"
+
+        if mixers := connection.device.get_nowait(ATTR_MIXERS, None):
+            sources |= {
+                f"{DeviceType.MIXER}_{mixer}": f"Mixer {mixer + 1}" for mixer in mixers
+            }
+
+        if thermostats := connection.device.get_nowait(ATTR_THERMOSTATS, None):
+            sources |= {
+                f"{DeviceType.THERMOSTAT}_{thermostat}": f"Thermostat {thermostat + 1}"
+                for thermostat in thermostats
+            }
+
+        return [selector.SelectOptionDict(value=k, label=v) for k, v in sources.items()]
+
+    @callback
+    def _async_get_source_options(self) -> list[selector.SelectOptionDict]:
+        """Return source options."""
+        sources = self._async_get_sources()
+        data = dict(sorted(sources.items()))
+
+        return [
+            selector.SelectOptionDict(
+                value=str(k), label=f"{k} (value: {self._async_format_source_value(v)})"
+            )
+            for k, v in data.items()
+            if type(v) in SOURCE_TYPES[self.platform]
+        ]
+
+    @overload
+    @staticmethod
+    def _async_format_source_value(value: Parameter) -> str: ...
+
+    @overload
+    @staticmethod
+    def _async_format_source_value(value: ValueT) -> ValueT: ...
+
+    @callback
+    @staticmethod
+    def _async_format_source_value(value: Any) -> Any:
+        """Format the source value."""
+        if isinstance(value, Parameter):
+            unit = value.unit_of_measurement
+            unit2 = unit.value if isinstance(unit, UnitOfMeasurement) else unit
+            return f"{value.value} {'' if unit2 is None else unit2}".rstrip()
+
+        if isinstance(value, float):
+            value = round(value, 2)
+
+        return value
