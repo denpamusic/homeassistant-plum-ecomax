@@ -58,7 +58,6 @@ import voluptuous as vol
 from . import PlumEcomaxConfigEntry, async_reload_config
 from .connection import (
     DEFAULT_TIMEOUT,
-    EcomaxConnection,
     async_get_connection_handler,
     async_get_sub_devices,
 )
@@ -378,18 +377,14 @@ ValueT = TypeVar("ValueT", str, int, float)
 class OptionsFlowHandler(OptionsFlow):
     """Represents an options flow."""
 
-    config_entry: PlumEcomaxConfigEntry
-    connection: EcomaxConnection
-    options: dict[str, Any]
-    entities: dict[str, list]
-    platforms = list(SOURCE_TYPES)
-
     def __init__(self, entry: PlumEcomaxConfigEntry) -> None:
         """Initialize a new options flow."""
         self.config_entry = entry
         self.connection = entry.runtime_data.connection
         self.options = deepcopy(dict(self.config_entry.options))
-        self.entities = self.options.setdefault("entities", {})
+        self.entities: dict[str, dict[str, Any]] = self.options.setdefault(
+            "entities", {}
+        )
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -466,8 +461,9 @@ class OptionsFlowHandler(OptionsFlow):
         """Handle new entity details."""
         if user_input is not None:
             user_input["source_device"] = self.source_device
-            platform = self.entities.setdefault(self.platform.value, [])
-            platform.append(user_input)
+            key = user_input.pop(CONF_KEY)
+            platform = self.entities.setdefault(self.platform.value, {})
+            platform[key] = user_input
             return self.async_create_entry(title="", data=self.options)
 
         if not (source_options := self._async_get_source_options()):
