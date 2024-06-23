@@ -372,7 +372,7 @@ SOURCE_TYPES: dict[Platform, tuple[type, ...]] = {
     ),
 }
 
-T = TypeVar("T")
+ValueT = TypeVar("ValueT", str, int, float)
 
 
 class OptionsFlowHandler(OptionsFlow):
@@ -687,7 +687,7 @@ class OptionsFlowHandler(OptionsFlow):
 
     @overload
     @staticmethod
-    def _async_format_source_value(value: T) -> T: ...
+    def _async_format_source_value(value: ValueT) -> ValueT: ...
 
     @callback
     @staticmethod
