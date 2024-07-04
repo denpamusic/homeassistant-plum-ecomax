@@ -771,7 +771,7 @@ class OptionsFlowHandler(OptionsFlow):
 
     @callback
     def _async_get_entity_options(self) -> list[selector.SelectOptionDict]:
-        """Get user-added entites."""
+        """Get user-added entities."""
         platforms = list(SOURCE_TYPES)
         entities = {
             f"{platform}-{key}": entity[CONF_NAME]
