@@ -48,6 +48,13 @@ def bypass_async_setup_services():
 
 
 @pytest.fixture(autouse=True)
+def bypass_async_forward_entry_setups():
+    """Bypass forwarding entry setup to platforms."""
+    with patch("homeassistant.config_entries.ConfigEntries.async_forward_entry_setups"):
+        yield
+
+
+@pytest.fixture(autouse=True)
 def bypass_connect_and_close():
     """Bypass initiating and closing connection.."""
     with (
