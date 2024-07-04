@@ -382,7 +382,7 @@ class OptionsFlowHandler(OptionsFlow):
         self.config_entry = entry
         self.connection = entry.runtime_data.connection
         self.options = deepcopy(dict(self.config_entry.options))
-        self.entities: dict[str, dict[str, Any]] = self.options.setdefault(
+        self.entities: dict[str, dict[str, dict[str, Any]]] = self.options.setdefault(
             "entities", {}
         )
 
@@ -459,12 +459,12 @@ class OptionsFlowHandler(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle new entity details."""
+        entity = self.entity if hasattr(self, "entity") else {}
         if user_input is not None:
             user_input["source_device"] = self.source_device
-            key = user_input.pop(CONF_KEY)
-            platform = self.entities.setdefault(self.platform.value, {})
-            platform[key] = user_input
-            return self.async_create_entry(title="", data=self.options)
+            return self._async_step_create_entry(
+                key=entity.get(CONF_KEY, user_input[CONF_KEY]), data=user_input
+            )
 
         if not (source_options := self._async_get_source_options()):
             raise vol.Invalid(
@@ -472,13 +472,21 @@ class OptionsFlowHandler(OptionsFlow):
                 f"the selected source. Please select a different source and try again"
             )
 
+        schema = {
+            vol.Required(CONF_NAME, default=entity.get(CONF_NAME, vol.UNDEFINED)): str,
+            vol.Required(
+                CONF_KEY, default=entity.get(CONF_KEY, vol.UNDEFINED)
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(options=source_options)
+            ),
+        }
+
         if self.platform == Platform.SENSOR:
-            schema = {
-                vol.Required(CONF_NAME): str,
-                vol.Required(CONF_KEY): selector.SelectSelector(
-                    selector.SelectSelectorConfig(options=source_options)
-                ),
-                vol.Optional(CONF_UNIT_OF_MEASUREMENT): selector.SelectSelector(
+            schema |= {
+                vol.Optional(
+                    CONF_UNIT_OF_MEASUREMENT,
+                    default=entity.get(CONF_UNIT_OF_MEASUREMENT, vol.UNDEFINED),
+                ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=list(
                             {
@@ -494,7 +502,10 @@ class OptionsFlowHandler(OptionsFlow):
                         sort=True,
                     ),
                 ),
-                vol.Optional(CONF_DEVICE_CLASS): selector.SelectSelector(
+                vol.Optional(
+                    CONF_DEVICE_CLASS,
+                    default=entity.get(CONF_DEVICE_CLASS, vol.UNDEFINED),
+                ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=[
                             cls.value
@@ -506,7 +517,10 @@ class OptionsFlowHandler(OptionsFlow):
                         sort=True,
                     ),
                 ),
-                vol.Optional(CONF_STATE_CLASS): selector.SelectSelector(
+                vol.Optional(
+                    CONF_STATE_CLASS,
+                    default=entity.get(CONF_STATE_CLASS, vol.UNDEFINED),
+                ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=[cls.value for cls in SensorStateClass],
                         mode=selector.SelectSelectorMode.DROPDOWN,
@@ -514,7 +528,9 @@ class OptionsFlowHandler(OptionsFlow):
                         sort=True,
                     ),
                 ),
-                vol.Optional(CONF_UPDATE_INTERVAL, default=10): selector.NumberSelector(
+                vol.Optional(
+                    CONF_UPDATE_INTERVAL, default=entity.get(CONF_UPDATE_INTERVAL, 10)
+                ): selector.NumberSelector(
                     selector.NumberSelectorConfig(
                         min=10,
                         max=60,
@@ -526,12 +542,11 @@ class OptionsFlowHandler(OptionsFlow):
             }
 
         elif self.platform == Platform.BINARY_SENSOR:
-            schema = {
-                vol.Required(CONF_NAME): str,
-                vol.Required(CONF_KEY): selector.SelectSelector(
-                    selector.SelectSelectorConfig(options=source_options)
-                ),
-                vol.Optional(CONF_DEVICE_CLASS): selector.SelectSelector(
+            schema |= {
+                vol.Optional(
+                    CONF_DEVICE_CLASS,
+                    default=entity.get(CONF_DEVICE_CLASS, vol.UNDEFINED),
+                ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=[cls.value for cls in BinarySensorDeviceClass],
                         mode=selector.SelectSelectorMode.DROPDOWN,
@@ -542,18 +557,19 @@ class OptionsFlowHandler(OptionsFlow):
             }
 
         elif self.platform == Platform.NUMBER:
-            schema = {
-                vol.Required(CONF_NAME): str,
-                vol.Required(CONF_KEY): selector.SelectSelector(
-                    selector.SelectSelectorConfig(options=source_options)
-                ),
-                vol.Required(CONF_MODE): selector.SelectSelector(
+            schema |= {
+                vol.Required(
+                    CONF_MODE, default=entity.get(CONF_MODE, vol.UNDEFINED)
+                ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=[NumberMode.AUTO, NumberMode.BOX, NumberMode.SLIDER],
                         translation_key="number_mode",
                     )
                 ),
-                vol.Optional(CONF_UNIT_OF_MEASUREMENT): selector.SelectSelector(
+                vol.Optional(
+                    CONF_UNIT_OF_MEASUREMENT,
+                    default=entity.get(CONF_UNIT_OF_MEASUREMENT, vol.UNDEFINED),
+                ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=list(
                             {
@@ -569,7 +585,10 @@ class OptionsFlowHandler(OptionsFlow):
                         sort=True,
                     ),
                 ),
-                vol.Optional(CONF_DEVICE_CLASS): selector.SelectSelector(
+                vol.Optional(
+                    CONF_DEVICE_CLASS,
+                    default=entity.get(CONF_DEVICE_CLASS, vol.UNDEFINED),
+                ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=[cls.value for cls in NumberDeviceClass],
                         mode=selector.SelectSelectorMode.DROPDOWN,
@@ -580,15 +599,13 @@ class OptionsFlowHandler(OptionsFlow):
             }
 
         elif self.platform == Platform.SWITCH:
-            schema = {
-                vol.Required(CONF_NAME): str,
-                vol.Required(CONF_KEY): selector.SelectSelector(
-                    selector.SelectSelectorConfig(options=source_options)
-                ),
-            }
+            pass
 
         else:
             raise HomeAssistantError
+
+        if entity:
+            schema |= {vol.Optional("remove_entity", default=False): bool}
 
         return self.async_show_form(
             step_id="entity_details",
@@ -596,7 +613,26 @@ class OptionsFlowHandler(OptionsFlow):
             description_placeholders={
                 "platform": self.platform.value.replace("_", " ")
             },
+            last_step=True,
         )
+
+    @callback
+    def _async_step_create_entry(
+        self, key: str, data: dict[str, Any]
+    ) -> ConfigFlowResult:
+        """Save the options."""
+        entities = self.entities.setdefault(self.platform.value, {})
+        removing = data.get("remove_entity", False)
+        renaming = True if key != data[CONF_KEY] else False
+
+        if removing or renaming:
+            entities.pop(key, None)
+
+        if not removing:
+            key = data[CONF_KEY]
+            entities[key] = data
+
+        return self.async_create_entry(title="", data=self.options)
 
     async def async_step_reload(
         self, user_input: dict[str, Any] | None = None
@@ -699,3 +735,52 @@ class OptionsFlowHandler(OptionsFlow):
             value = round(value, 2)
 
         return value
+
+    async def async_step_edit_entity(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle editing an entity."""
+        if user_input is not None:
+            entity: str = user_input["entity"]
+            platform, key = entity.split("-", 2)
+            self.entity = self.entities[platform][key]
+            self.platform = Platform(platform)
+            self.source_device = self.entity["source_device"]
+            return await self.async_step_entity_details()
+
+        if not (options := self._async_get_entity_options()):
+            return await self.async_step_entities_not_found()
+
+        return self.async_show_form(
+            step_id="edit_entity",
+            data_schema=vol.Schema(
+                {
+                    vol.Required("entity"): selector.SelectSelector(
+                        selector.SelectSelectorConfig(options=options)
+                    )
+                }
+            ),
+            last_step=False,
+        )
+
+    async def async_step_entities_not_found(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle issues that need transition await from progress step."""
+        return self.async_abort(reason="no_entities_found")
+
+    @callback
+    def _async_get_entity_options(self) -> list[selector.SelectOptionDict]:
+        """Get user-added entites."""
+        platforms = list(SOURCE_TYPES)
+        entities = {
+            f"{platform}-{key}": entity[CONF_NAME]
+            for platform, entities in self.entities.items()
+            if platform in platforms
+            for key, entity in entities.items()
+        }
+        entities = dict(sorted(entities.items(), key=lambda item: item[1]))
+
+        return [
+            selector.SelectOptionDict(value=k, label=v) for k, v in entities.items()
+        ]
