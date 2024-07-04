@@ -152,7 +152,7 @@ async def async_migrate_entry(
     handler = await async_get_connection_handler(connection_type, hass, entry.data)
     connection = EcomaxConnection(hass, entry, connection=handler)
     await connection.connect()
-    data = {**entry.data}
+    data = dict(entry.data)
 
     try:
         device = await connection.get(DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT)
