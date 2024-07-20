@@ -12,8 +12,7 @@ from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.const import ProductType
-from pyplumio.helpers.parameter import Parameter
-from pyplumio.helpers.typing import ParameterValueType
+from pyplumio.helpers.parameter import Parameter, ParameterValueType
 from pyplumio.structures.modules import ConnectedModules
 
 from . import PlumEcomaxConfigEntry
