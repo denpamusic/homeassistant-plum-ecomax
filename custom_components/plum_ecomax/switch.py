@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Generator, Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import logging
 from typing import Any
 
@@ -36,6 +36,7 @@ class EcomaxSwitchEntityDescription(EcomaxEntityDescription, SwitchEntityDescrip
 
     state_off: ParameterValueType = STATE_OFF
     state_on: ParameterValueType = STATE_ON
+    extra_states: dict[ParameterValueType, bool] = field(default_factory=dict)
 
 
 SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
@@ -51,6 +52,7 @@ SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
         key="water_heater_work_mode",
         state_off=0,
         state_on=2,
+        extra_states={1: True},
         translation_key="water_heater_pump_switch",
     ),
     EcomaxSwitchEntityDescription(
@@ -104,7 +106,7 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
             self.entity_description.state_on: True,
             self.entity_description.state_off: False,
         }
-
+        states |= self.entity_description.extra_states
         self._attr_is_on = states.get(value.value, None)
         self.async_write_ha_state()
 
