@@ -189,14 +189,6 @@ class EcomaxConnection:
             _LOGGER.error("Timed out while trying to setup regulator data.")
             return False
 
-    async def async_update_sub_devices(self) -> None:
-        """Update sub-devices."""
-        data = dict(self.entry.data)
-        data[CONF_SUB_DEVICES] = await async_get_sub_devices(self.device)
-        self._hass.config_entries.async_update_entry(self.entry, data=data)
-        _LOGGER.info("Updated sub-devices, reloading config entry...")
-        await self._hass.config_entries.async_reload(self.entry.entry_id)
-
     async def async_close(self) -> None:
         """Close ecoMAX connection."""
         await self._connection.close()
