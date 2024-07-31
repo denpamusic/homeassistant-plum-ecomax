@@ -25,7 +25,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.filters import Filter, on_change, throttle
-from pyplumio.structures.thermostat_parameters import ThermostatParameter
+from pyplumio.structures.thermostat_parameters import ThermostatNumber
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
@@ -143,11 +143,11 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
     async def async_update_preset_mode(self, mode: int) -> None: ...
 
     @overload
-    async def async_update_preset_mode(self, mode: ThermostatParameter) -> None: ...
+    async def async_update_preset_mode(self, mode: ThermostatNumber) -> None: ...
 
-    async def async_update_preset_mode(self, mode: ThermostatParameter | int) -> None:
+    async def async_update_preset_mode(self, mode: ThermostatNumber | int) -> None:
         """Update preset mode."""
-        if isinstance(mode, ThermostatParameter):
+        if isinstance(mode, ThermostatNumber):
             mode = int(mode.value)
 
         try:
@@ -198,7 +198,7 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
             # Target temperature parameter name is unchanged.
             return
 
-        target_temperature_parameter: ThermostatParameter = await self.device.get(
+        target_temperature_parameter: ThermostatNumber = await self.device.get(
             target_temperature_name
         )
         self._attr_target_temperature_name = target_temperature_name
@@ -212,10 +212,10 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
         if target_temp is None:
             target_temp = await self.device.get("target_temp")
 
-        comfort_temp: ThermostatParameter = await self.device.get(
+        comfort_temp: ThermostatNumber = await self.device.get(
             HA_PRESET_TO_EM_TEMP[PRESET_COMFORT]
         )
-        eco_temp: ThermostatParameter = await self.device.get(
+        eco_temp: ThermostatNumber = await self.device.get(
             HA_PRESET_TO_EM_TEMP[PRESET_ECO]
         )
 

@@ -12,14 +12,8 @@ from homeassistant.const import ATTR_ENTITY_ID, ATTR_FRIENDLY_NAME, STATE_OFF
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
 from pyplumio.helpers.parameter import ParameterValues
-from pyplumio.structures.ecomax_parameters import (
-    EcomaxParameter,
-    EcomaxParameterDescription,
-)
-from pyplumio.structures.mixer_parameters import (
-    MixerParameter,
-    MixerParameterDescription,
-)
+from pyplumio.structures.ecomax_parameters import EcomaxNumber, EcomaxNumberDescription
+from pyplumio.structures.mixer_parameters import MixerNumber, MixerNumberDescription
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -99,10 +93,10 @@ async def test_summer_mode_select(
     # Dispatch new value.
     await connection.device.dispatch(
         summer_mode_select_key,
-        EcomaxParameter(
+        EcomaxNumber(
             device=connection.device,
             values=ParameterValues(value=2, min_value=0, max_value=2),
-            description=EcomaxParameterDescription(summer_mode_select_key),
+            description=EcomaxNumberDescription(summer_mode_select_key),
         ),
     )
     state = hass.states.get(summer_mode_entity_id)
@@ -155,10 +149,10 @@ async def test_mixer_work_mode_select(
     # Dispatch new value.
     await connection.device.mixers[0].dispatch(
         work_mode_select_key,
-        MixerParameter(
+        MixerNumber(
             device=connection.device,
             values=ParameterValues(value=0, min_value=0, max_value=2),
-            description=MixerParameterDescription(work_mode_select_key),
+            description=MixerNumberDescription(work_mode_select_key),
         ),
     )
     state = hass.states.get(work_mode_entity_id)
@@ -210,10 +204,10 @@ async def test_circuit_work_mode_select(
     # Dispatch new value.
     await connection.device.mixers[1].dispatch(
         work_mode_select_key,
-        MixerParameter(
+        MixerNumber(
             device=connection.device,
             values=ParameterValues(value=0, min_value=0, max_value=2),
-            description=MixerParameterDescription(work_mode_select_key),
+            description=MixerNumberDescription(work_mode_select_key),
         ),
     )
     state = hass.states.get(work_mode_entity_id)

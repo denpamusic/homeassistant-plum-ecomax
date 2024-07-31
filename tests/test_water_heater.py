@@ -25,10 +25,7 @@ from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_registry import RegistryEntry
 from pyplumio.helpers.parameter import ParameterValues
-from pyplumio.structures.ecomax_parameters import (
-    EcomaxParameter,
-    EcomaxParameterDescription,
-)
+from pyplumio.structures.ecomax_parameters import EcomaxNumber, EcomaxNumberDescription
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -157,10 +154,10 @@ async def test_indirect_water_heater(
     frozen_time.move_to("12:00:10")
     await connection.device.dispatch(
         water_heater_target_temperature_key,
-        EcomaxParameter(
+        EcomaxNumber(
             device=connection.device,
             values=ParameterValues(value=55, min_value=10, max_value=80),
-            description=EcomaxParameterDescription(water_heater_target_temperature_key),
+            description=EcomaxNumberDescription(water_heater_target_temperature_key),
         ),
     )
     state = hass.states.get(indirect_water_heater_entity_id)
@@ -171,10 +168,10 @@ async def test_indirect_water_heater(
     # Dispatch new operation mode.
     await connection.device.dispatch(
         water_heater_operation_mode_key,
-        EcomaxParameter(
+        EcomaxNumber(
             device=connection.device,
             values=ParameterValues(value=1, min_value=0, max_value=2),
-            description=EcomaxParameterDescription(water_heater_operation_mode_key),
+            description=EcomaxNumberDescription(water_heater_operation_mode_key),
         ),
     )
     state = hass.states.get(indirect_water_heater_entity_id)
@@ -185,10 +182,10 @@ async def test_indirect_water_heater(
     # Dispatch new hysteresis value.
     await connection.device.dispatch(
         water_heater_hysteresis_key,
-        EcomaxParameter(
+        EcomaxNumber(
             device=connection.device,
             values=ParameterValues(value=10, min_value=0, max_value=15),
-            description=EcomaxParameterDescription(water_heater_hysteresis_key),
+            description=EcomaxNumberDescription(water_heater_hysteresis_key),
         ),
     )
     state = hass.states.get(indirect_water_heater_entity_id)
