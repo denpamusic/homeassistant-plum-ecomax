@@ -1,7 +1,7 @@
 """Test Plum ecoMAX config flow."""
 
 from collections.abc import Generator
-from typing import Any
+from typing import Any, cast
 from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant import config_entries
@@ -12,6 +12,7 @@ from pyplumio.connection import SerialConnection, TcpConnection
 from pyplumio.const import ProductType
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.exceptions import ConnectionFailedError
+from pyplumio.structures.product_info import ProductInfo
 import pytest
 
 from custom_components.plum_ecomax.const import (
@@ -412,7 +413,8 @@ async def test_abort_already_configured(
 
     # Fail with device already configured.
     mock_config_entry = Mock(spec=config_entries.ConfigEntry)
-    mock_config_entry.unique_id = ecomax_p.get_nowait("product").uid
+    product = cast(ProductInfo, ecomax_p.get_nowait("product"))
+    mock_config_entry.unique_id = product.uid
     mock_config_entry.source = config_entries.SOURCE_USER
     with patch(
         "homeassistant.config_entries.ConfigEntries.async_entry_for_domain_unique_id",
