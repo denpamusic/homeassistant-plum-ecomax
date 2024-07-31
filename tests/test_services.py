@@ -122,6 +122,34 @@ async def test_get_parameter_service(
         ]
     }
 
+    # Test getting switch for EM device.
+    response = await hass.services.async_call(
+        DOMAIN,
+        SERVICE_GET_PARAMETER,
+        {
+            ATTR_ENTITY_ID: heating_temperature_entity_id,
+            ATTR_NAME: "weather_control",
+        },
+        blocking=True,
+        return_response=True,
+    )
+    await hass.async_block_till_done()
+
+    assert response == {
+        "parameters": [
+            {
+                "name": "weather_control",
+                "value": "off",
+                "min_value": "off",
+                "max_value": "on",
+                "unit_of_measurement": None,
+                "device_type": DeviceType.ECOMAX,
+                "device_uid": "TEST",
+                "device_index": 0,
+            }
+        ]
+    }
+
     # Test getting parameter for mixer.
     mixer_temperature_entity_id = "sensor.ecomax_mixer_1_mixer_temperature"
     response = await hass.services.async_call(
