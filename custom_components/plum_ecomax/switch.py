@@ -207,20 +207,17 @@ def async_setup_ecomax_switches(connection: EcomaxConnection) -> list[EcomaxSwit
 
 def async_setup_mixer_switches(connection: EcomaxConnection) -> list[MixerSwitch]:
     """Set up the mixers switches."""
-    entities: list[MixerSwitch] = []
-    for index in connection.device.mixers:
-        entities.extend(
-            MixerSwitch(connection, description, index)
-            for description in get_by_index(
-                index,
-                get_by_modules(
-                    connection.device.modules,
-                    get_by_product_type(connection.product_type, MIXER_SWITCH_TYPES),
-                ),
-            )
+    return [
+        MixerSwitch(connection, description, index)
+        for index in connection.device.mixers
+        for description in get_by_index(
+            index,
+            get_by_modules(
+                connection.device.modules,
+                get_by_product_type(connection.product_type, MIXER_SWITCH_TYPES),
+            ),
         )
-
-    return entities
+    ]
 
 
 async def async_setup_entry(
@@ -228,18 +225,15 @@ async def async_setup_entry(
     entry: PlumEcomaxConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
-    """Set up the sensor platform."""
-    connection = entry.runtime_data.connection
+    """Set up the switch platform."""
     _LOGGER.debug("Starting setup of switch platform...")
 
-    entities: list[EcomaxSwitch] = []
-
-    # Add ecoMAX switches.
-    entities.extend(async_setup_ecomax_switches(connection))
+    connection = entry.runtime_data.connection
+    entities = async_setup_ecomax_switches(connection)
 
     # Add mixer/circuit switches.
     if connection.has_mixers and await connection.async_setup_mixers():
-        entities.extend(async_setup_mixer_switches(connection))
+        entities += async_setup_mixer_switches(connection)
 
     async_add_entities(entities)
     return True
