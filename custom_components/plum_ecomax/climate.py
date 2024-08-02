@@ -240,8 +240,9 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the climate platform."""
-    connection = entry.runtime_data.connection
     _LOGGER.debug("Starting setup of climate platform...")
+
+    connection = entry.runtime_data.connection
 
     if connection.has_thermostats and await connection.async_setup_thermostats():
         async_add_entities(
