@@ -27,12 +27,12 @@ from pyplumio.const import UnitOfMeasurement
 from pyplumio.devices import Device
 from pyplumio.helpers.parameter import Number, Parameter
 from pyplumio.helpers.schedule import (
-    START_OF_DAY,
     STATE_DAY,
     STATE_NIGHT,
     TIME_FORMAT,
     Schedule,
     ScheduleDay,
+    start_of_day_dt,
 )
 import voluptuous as vol
 
@@ -94,8 +94,6 @@ SERVICE_SET_SCHEDULE_SCHEMA = vol.Schema(
         vol.Optional(ATTR_END, default="00:00:00"): vol.Datetime("%H:%M:%S"),
     }
 )
-
-START_OF_DAY_DT = dt.datetime.strptime(START_OF_DAY, TIME_FORMAT)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -286,7 +284,7 @@ def async_get_schedule_day_data(
 ) -> JsonObjectType:
     """Format the schedule day as a dictionary."""
     return {
-        (START_OF_DAY_DT + dt.timedelta(minutes=30 * index)).strftime(TIME_FORMAT): (
+        (start_of_day_dt + dt.timedelta(minutes=30 * index)).strftime(TIME_FORMAT): (
             STATE_DAY if value else STATE_NIGHT
         )
         for index, value in enumerate(schedule_day.intervals)

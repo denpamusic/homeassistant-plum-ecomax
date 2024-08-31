@@ -16,7 +16,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 import pyplumio
 from pyplumio.connection import Connection
 from pyplumio.const import FrameType, ProductType
-from pyplumio.devices import AddressableDevice
+from pyplumio.devices import PhysicalDevice
 from pyplumio.structures.ecomax_parameters import ATTR_ECOMAX_PARAMETERS
 from pyplumio.structures.mixer_parameters import ATTR_MIXER_PARAMETERS
 from pyplumio.structures.mixer_sensors import ATTR_MIXERS_CONNECTED
@@ -80,7 +80,7 @@ async def async_get_connection_handler(
     )
 
 
-async def async_get_sub_devices(device: AddressableDevice) -> list[str]:
+async def async_get_sub_devices(device: PhysicalDevice) -> list[str]:
     """Return the sub-devices."""
     _LOGGER.debug("Checking connected sub-devices...")
 
@@ -118,7 +118,7 @@ class EcomaxConnection:
     """Represents an ecoMAX connection."""
 
     _connection: Connection
-    _device: AddressableDevice | None
+    _device: PhysicalDevice | None
     _hass: HomeAssistant
     entry: ConfigEntry
 
@@ -139,7 +139,7 @@ class EcomaxConnection:
     async def async_setup(self) -> None:
         """Set up ecoMAX connection."""
         await self._connection.connect()
-        device: AddressableDevice = await self.get(
+        device: PhysicalDevice = await self.get(
             DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT
         )
         for required in (ATTR_LOADED, ATTR_SENSORS, ATTR_ECOMAX_PARAMETERS):
@@ -202,7 +202,7 @@ class EcomaxConnection:
         await self._connection.close()
 
     @property
-    def device(self) -> AddressableDevice:
+    def device(self) -> PhysicalDevice:
         """Return the device handler."""
         if self._device is None:
             raise ConfigEntryNotReady(
