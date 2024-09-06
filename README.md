@@ -22,7 +22,7 @@ It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and sup
   - [Controller](#controller-hub)
   - [Water Heater](#water-heater)
   - [Thermostats](#thermostats)
-  - [Mixers/Circuits](#mixers-circuits)
+  - [Mixers](#mixers-circuits)
 - [Events](#events)
 - [Actions](#actions)
 - [License](#license)
@@ -79,7 +79,6 @@ cp -r ./homeassistant-plum-ecomax/custom_components ~/.homeassistant
 
 Adding Plum ecoMAX integration to your Home Assistant instance can be done via user interface, by using this My button:
 
-
 [![Add integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start?domain=plum_ecomax)
 
 <details>
@@ -120,21 +119,21 @@ This integration provides the following entities, split between controller devic
 
 Not all entities might be available for your controller model and entities that are deemed as unsupported during initial setup will be disabled.
 
-ecoMAX pellet boiler controller model names has a `p` suffix (e. g. ecoMAX 850**p**), while ecoMAX installation controller model names have an `i` suffix (e. g. ecoMAX 850**i**).
+ecoMAX pellet boiler controller model names has a <kbd>p</kbd> suffix (e. g. ecoMAX 850**p**), while ecoMAX installation controller model names have an <kbd>i</kbd> suffix (e. g. ecoMAX 850**i**).
 
-### Controller (Hub)
-Following section lists entities that are added to the ecoMAX device.
+### Controller
+The following section lists entities that are added to the ecoMAX device.
 
 Legend:
-- ℹ️ - supported only by ecoMAX installation controller
-- 🅿️ - supported only by ecoMAX pellet controller
+- <kbd>i</kbd> - ecoMAX installation controller
+- <kbd>p</kbd> - ecoMAX pellet boiler controller
 
 ---
 
 <details>
-  <summary><b>🌡️Sensors</b> <i>(click to expand)</i></summary>
+  <summary><b>🌡️Sensors</b> <i>(click to expand)</i></summary><br>
 
-> ⚠️ Temperature changes of less than 0.1°C are ignored.
+> ℹ️ Temperature changes of **less than 0.1°C** are ignored.
 
 - Heating temperature
 - Water heater temperature
@@ -158,12 +157,12 @@ Legend:
 - Upper buffer temperature <sup>2</sup>
 - Flame intensity <sup>2</sup>
 - Oxygen level <sup>3</sup>
-- Solar temperature ℹ️
-- Fireplace temperature ℹ️
+- Solar temperature <kbd>i</kbd>
+- Fireplace temperature <kbd>i</kbd>
 
-<sup>1</sup> Special meter entity. It counts burned fuel when HomeAssistant is running.  
-<sup>2</sup> Controller support is required.  
-<sup>3</sup> ecoLAMBDA module is required.  
+<sup>1</sup> *Special meter entity. It counts burned fuel when HomeAssistant is running.*  
+<sup>2</sup> *Controller support is required.*  
+<sup>3</sup> *ecoLAMBDA module is required.*  
 
 </details>
 <details>
@@ -175,8 +174,8 @@ Legend:
 - Fan state
 - Lighter state
 - Exhaust fan state
-- Fireplace pump state ℹ️
-- Solar pump state ℹ️
+- Fireplace pump state <kbd>i</kbd>
+- Solar pump state <kbd>i</kbd>
 
 </details>
 <details>
@@ -191,22 +190,22 @@ Legend:
 - Controller power switch
 - Water heater disinfection switch
 - Water heater pump switch
-- Weather control switch 🅿️
-- Fuzzy logic switch 🅿️
-- Heating schedule switch 🅿️
-- Water heater schedule switch 🅿️
+- Weather control switch <kbd>p</kbd>
+- Fuzzy logic switch <kbd>p</kbd>
+- Heating schedule switch <kbd>p</kbd>
+- Water heater schedule switch <kbd>p</kbd>
 
 </details>
 <details>
   <summary><b>🔢Numbers</b> <i>(click to expand)</i></summary>
 
-- Heating temperature 🅿️
-- Minimum heating power 🅿️
-- Maximum heating power 🅿️
-- Minimum heating temperature 🅿️
-- Maximum heating temperature 🅿️
-- Grate mode temperature 🅿️
-- Fuel calorific value 🅿️
+- Heating temperature <kbd>p</kbd>
+- Minimum heating power <kbd>p</kbd>
+- Maximum heating power <kbd>p</kbd>
+- Minimum heating temperature <kbd>p</kbd>
+- Maximum heating temperature <kbd>p</kbd>
+- Grate mode temperature <kbd>p</kbd>
+- Fuel calorific value <kbd>p</kbd>
 
 </details>
 
@@ -227,10 +226,13 @@ The integration provides full control for the connected indirect water heater us
 This includes ability to set target temperature, switch into priority, non-priority mode or turn off.
 
 Please note, that due to the way base water heater entity is implemented, custom modes [are not allowed](https://developers.home-assistant.io/docs/core/entity/water-heater/#states).
-Please use the following reference  to convert between water heater operation modes displayed in Home Assistant and ecoMAX.
+Please use the following reference to convert between water heater operation modes displayed in Home Assistant and ecoMAX.
 
-**Performance** (HA) = **Priority mode** (EM)  
-**Eco** (HA) = **Non-priority** (EM)
+```
+HA heater state ->  ecoMAX heater mode
+[Performance]   ->  [Priority mode]
+[Eco]           ->  [Non-priority mode]
+```
 
 ### Thermostats
 This integration provides Home Assistant's [climate platform](https://www.home-assistant.io/integrations/climate/) entity for each ecoSTER thermostat connected to the ecoMAX controller.
@@ -244,13 +246,13 @@ Following section lists entities that are added to each virtual device.
 
 Please note, that for the ecoMAX installation controllers `mixers` are listed as `circuits`.
 
-Mixers (circuits) are added as sub-devices for the ecoMAX controller. They are detected only once, when integration is added to HomeAssistant.
+Mixers are added as sub-devices for the ecoMAX controller. They are detected only once, when integration is added to HomeAssistant.
 
 If you connected them after setting up the integration, you can use `Detect sub-devices` button in Diagnostics section to force re-detection.
 
 Legend:
-- ℹ️ - supported only by ecoMAX installation controller
-- 🅿️ - supported only by ecoMAX pellet controller
+- <kbd>i</kbd> - ecoMAX installation controller
+- <kbd>p</kbd> - ecoMAX pellet boiler controller
 
 ---
 
@@ -268,15 +270,15 @@ Legend:
 </details>
 <details> <summary><b>✅Selects</b> <i>(click to expand)</i></summary>
 
-- Work mode (off, heating, floor, pump_only) 🅿️
+- Work mode (off, heating, floor, pump_only) <kbd>p</kbd>
 
 </details>
 <details> <summary><b>💡Switches</b> <i>(click to expand)</i></summary>
 
-- Enable mixer ℹ️
+- Enable mixer <kbd>i</kbd>
 - Enable in summer mode
-- Weather control 🅿️
-- Disable pump on thermostat 🅿️
+- Weather control <kbd>p</kbd>
+- Disable pump on thermostat <kbd>p</kbd>
 
 </details>
 <details> <summary><b>🔢Numbers</b> <i>(click to expand)</i></summary>
@@ -284,11 +286,10 @@ Legend:
 - Mixer temperature
 - Minimum mixer temperature
 - Maximum mixer temperature
-- Day target mixer temperature <sup>1</sup> ℹ️
-- Night target mixer temperature <sup>1</sup> ℹ️
+- Day target mixer temperature <sup>1</sup> <kbd>i</kbd>
+- Night target mixer temperature <sup>1</sup> <kbd>i</kbd>
 
----
-<sup>1</sup> Only available on second circuit.
+<sup>1</sup> *Only available on second circuit.*
 
 </details>
 
@@ -304,8 +305,7 @@ Event is fired when ecoMAX controller issues an alert.
 - from (datetime object representing the alert start time)
 - to <sup>1</sup> (datetime object representing the alert end time)
 
----
-<sup>1</sup> Only present if the alert has already ended.
+<sup>1</sup> *Only present if the alert has already ended.*
 
 ## Actions
 This integration provides following actions:
@@ -323,13 +323,13 @@ Provides ability to get the device parameter by name.
 #### Response
 - name
 - value
-- min_value (minimum allowed value)
-- max_value (maximum allowed value)
+- min_value
+- max_value
 - device_type
 - device_uid
 - device_index <sup>1</sup>
 
-<sup>1</sup> This will help identify which sub-device (mixer) this parameter belongs to. Root device (controller) is always 0, while connected mixers can have 1-5.
+<sup>1</sup> *This will help identify which sub-device (mixer) this parameter belongs to. Root device (controller) is always 0, while connected mixers can have 1-5.*
 
 ### Set parameter
 Provides ability to set device/sub-device parameter by name. Any parameter that is supported by the device/sub-device can be used with this service. To get parameter names, please download and open diagnostics data.
@@ -350,7 +350,7 @@ Allows to get different schedules from the device.
 - weekdays (monday, tuesday, ..., etc)
 
 #### Response
-- schedules (dictionary, that contains schedule keyed by start times)
+- schedules (dictionary containing schedule states, keyed by start times)
 
 ### Set schedule.
 Allows to set different schedules on the device.
