@@ -50,21 +50,6 @@ async def test_base_entity(ecomax_p: EcoMAX, config_entry: MockConfigEntry) -> N
     # Test device property.
     assert entity.device == mock_connection.device
 
-    # Test available property.
-    mock_connection.connected = Mock(spec=asyncio.Event)
-    mock_connection.connected.is_set.return_value = True
-    assert entity.available
-    mock_connection.connected.is_set.return_value = False
-    assert not entity.available
-    entity.entity_description = EcomaxEntityDescription(  # type: ignore[unreachable]
-        key="heating_temp",
-        name="Heating temperature",
-        always_available=True,
-        filter_fn=Mock(return_value=mock_filter),
-    )
-    assert entity.available
-    mock_connection.reset_mock()
-
     # Test device info property.
     assert entity.device_info == DeviceInfo(
         configuration_url="http://localhost",
@@ -91,5 +76,35 @@ async def test_base_entity(ecomax_p: EcoMAX, config_entry: MockConfigEntry) -> N
     assert not entity.entity_registry_enabled_default
 
     # Test exception when calling update on base entity class.
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(NotImplementedError):  # type: ignore[unreachable]
         await entity.async_update("test")
+
+    # Test availability.
+    mock_connection.connected = Mock(spec=asyncio.Event)
+    mock_connection.connected.is_set.return_value = True
+    assert entity.available
+    mock_connection.connected.is_set.return_value = False
+    assert not entity.available
+    entity.entity_description = EcomaxEntityDescription(
+        key="heating_temp",
+        name="Heating temperature",
+        always_available=True,
+        filter_fn=Mock(return_value=mock_filter),
+    )
+    assert entity.available
+    mock_connection.reset_mock()
+
+    # Test availability when source data is not available right away.
+    entity2 = EcomaxEntity(
+        connection=mock_connection,
+        description=EcomaxEntityDescription(
+            key="not_available_right_away",
+            name="Not available right away",
+            always_available=False,
+            filter_fn=Mock(return_value=mock_filter),
+        ),
+    )
+    with patch.object(mock_connection.device, "subscribe_once") as mock_subscribe_once:
+        await entity2.async_added_to_hass()
+
+    mock_subscribe_once.assert_called_once()
