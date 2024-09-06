@@ -1,4 +1,5 @@
 """Describe Plum ecoMAX logbook events."""
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -25,7 +26,84 @@ ALERT_MESSAGES: dict[AlertType, str] = {
     AlertType.EXHAUST_TEMP_SENSOR_FAILURE: "exhaust temperature sensor failed",
     AlertType.KINDLING_FAILURE: "encountered kindling failure",
     AlertType.NO_FUEL: "fuel not detected",
+    AlertType.LEAK_DETECTED: "detected leak",
+    AlertType.PRESSURE_SENSOR_FAILURE: "encountered pressure sensor failure",
     AlertType.FAN_FAILURE: "encountered fan failure",
+    AlertType.INSUFFICIENT_AIR_PRESSURE: "detected insufficient air pressure",
+    AlertType.BURN_OFF_FAILURE: "encountered failure while burning off",
+    AlertType.FLAME_SENSOR_FAILURE: "encountered flame sensor failure",
+    AlertType.LINEAR_ACTUATOR_BLOCKED: "linear actuator jammed",
+    AlertType.INCORRECT_PARAMETERS: "detected incorrect parameters",
+    AlertType.CONDENSATION_WARNING: "detected possible condensation",
+    AlertType.BOILER_STB_TRIPPED: "boiler STB tripped",
+    AlertType.FEEDER_STB_TRIPPED: "feeder STB tripped",
+    AlertType.MIN_WATER_PRESSURE_EXCEEDED: "minimum water pressure exceeded",
+    AlertType.MAX_WATER_PRESSURE_EXCEEDED: "maximum water pressure exceeded",
+    AlertType.FEEDER_JAMMED: "feeder jammed",
+    AlertType.FLAMEOUT: "detected flameout",
+    AlertType.EXHAUST_FAN_FAILURE: "encountered exhaust fan failure",
+    AlertType.EXTERNAL_FEEDER_FAILURE: "encountered external feeder failure",
+    AlertType.SOLAR_COLLECTOR_TEMP_SENSOR_FAILURE: (
+        "encountered solar collector temperature sensor failure"
+    ),
+    AlertType.SOLAR_CIRCUIT_TEMP_SENSOR_FAILURE: (
+        "encountered solar circuit temperature sensor failure"
+    ),
+    AlertType.H1_CIRCUIT_TEMP_SENSOR_FAILURE: (
+        "encountered temperature sensor failure in H1 circuit"
+    ),
+    AlertType.H2_CIRCUIT_TEMP_SENSOR_FAILURE: (
+        "encountered temperature sensor failure in H2 circuit"
+    ),
+    AlertType.H3_CIRCUIT_TEMP_SENSOR_FAILURE: (
+        "encountered temperature sensor failure in H3 circuit"
+    ),
+    AlertType.OUTDOOR_TEMP_SENSOR_FAILURE: (
+        "encountered outdoor temperature sensor failure"
+    ),
+    AlertType.WATER_HEATER_TEMP_SENSOR_FAILURE: (
+        "encountered water heater temperature sensor failure"
+    ),
+    AlertType.H0_CIRCUIT_TEMP_SENSOR_FAILURE: (
+        "encountered temperature sensor failure in H0 circuit"
+    ),
+    AlertType.FROST_PROTECTION_RUNNING_WO_HS: (
+        "frost protection is running without heat source"
+    ),
+    AlertType.FROST_PROTECTION_RUNNING_W_HS: (
+        "frost protection is running with heat source"
+    ),
+    AlertType.MAX_SOLAR_COLLECTOR_TEMP_EXCEEDED: (
+        "max solar collector temperature exceeded"
+    ),
+    AlertType.MAX_HEATED_FLOOR_TEMP_EXCEEDED: (
+        "maximum heated floor temperature exceeded"
+    ),
+    AlertType.BOILER_COOLING_RUNNING: "boiler cooling is running",
+    AlertType.ECOLAMBDA_CONNECTION_FAILURE: "encountered ecoLAMBDA connection failure",
+    AlertType.PRIMARY_AIR_THROTTLE_JAMMED: "primary air throttle jammed",
+    AlertType.SECONDARY_AIR_THROTTLE_JAMMED: "secondary air throttle jammed",
+    AlertType.FEEDER_OVERFLOW: "detected feeder overflow",
+    AlertType.FURNANCE_OVERFLOW: "detected furnance overflow",
+    AlertType.MODULE_B_CONNECTION_FAILURE: "encountered module B connection failure",
+    AlertType.CLEANING_ACTUATOR_FAILURE: "encountered cleaning actuator failure",
+    AlertType.MIN_PRESSURE_EXCEEDED: "minimum pressure exceeded",
+    AlertType.MAX_PRESSURE_EXCEEDED: "maximum pressure exceeded",
+    AlertType.PRESSURE_SENSOR_DAMAGED: "pressure sensor damage detected",
+    AlertType.MAX_MAIN_HS_TEMP_EXCEEDED: (
+        "maximum main heat source temperature exceeded"
+    ),
+    AlertType.MAX_ADDITIONAL_HS_TEMP_EXCEEDED: (
+        "maximum additional heat source temperature exceeded"
+    ),
+    AlertType.SOLAR_PANEL_OFFLINE: "solar panel overheated",
+    AlertType.FEEDER_CONTROL_FAILURE: "encountered feeder control system failure",
+    AlertType.FEEDER_BLOCKED: "feeder blocked",
+    AlertType.MAX_THERMOCOPLE_TEMP_EXCEEDED: (
+        "maximum thermocouple temperature exceeded"
+    ),
+    AlertType.THERMOCOUPLE_WIRING_FAILURE: "detected incorrect thermocouple wiring",
+    AlertType.UNKNOWN_ERROR: "encountered unknown error",
 }
 
 
