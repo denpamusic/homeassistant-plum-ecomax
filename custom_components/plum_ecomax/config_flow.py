@@ -355,14 +355,14 @@ class UnsupportedProduct(HomeAssistantError):
     """Error to indicate that product is not supported."""
 
 
-SOURCE_TYPES: dict[Platform, tuple[type, ...]] = {
+PLATFORM_TYPES: dict[Platform, tuple[type, ...]] = {
     Platform.BINARY_SENSOR: (bool,),
-    Platform.SENSOR: (int, float, str),
+    Platform.SENSOR: (str, int, float),
     Platform.NUMBER: (Number,),
     Platform.SWITCH: (Switch,),
 }
 
-ValueT = TypeVar("ValueT", str, int, float)
+SensorValue = TypeVar("SensorValue", str, int, float)
 
 
 class OptionsFlowHandler(OptionsFlow):
@@ -634,6 +634,39 @@ class OptionsFlowHandler(OptionsFlow):
         )
         return self.async_create_entry(title="Reload complete", data={})
 
+    async def async_step_edit_entity(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle editing an entity."""
+        if user_input is not None:
+            entity: str = user_input["entity"]
+            platform, key = entity.split("-", 2)
+            self.entity = self.entities[platform][key]
+            self.platform = Platform(platform)
+            self.source_device = self.entity["source_device"]
+            return await self.async_step_entity_details()
+
+        if not (options := self._async_get_entity_options()):
+            return await self.async_step_entities_not_found()
+
+        return self.async_show_form(
+            step_id="edit_entity",
+            data_schema=vol.Schema(
+                {
+                    vol.Required("entity"): selector.SelectSelector(
+                        selector.SelectSelectorConfig(options=options)
+                    )
+                }
+            ),
+            last_step=False,
+        )
+
+    async def async_step_entities_not_found(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle issues that need transition await from progress step."""
+        return self.async_abort(reason="no_entities_found")
+
     @callback
     def _async_get_sources(self) -> dict[str, Any]:
         """Get the entity sources."""
@@ -702,7 +735,7 @@ class OptionsFlowHandler(OptionsFlow):
                 value=str(k), label=f"{k} (value: {self._async_format_source_value(v)})"
             )
             for k, v in data.items()
-            if type(v) in SOURCE_TYPES[self.platform]
+            if type(v) in PLATFORM_TYPES[self.platform]
         ]
 
     @overload
@@ -711,7 +744,7 @@ class OptionsFlowHandler(OptionsFlow):
 
     @overload
     @staticmethod
-    def _async_format_source_value(value: ValueT) -> ValueT: ...
+    def _async_format_source_value(value: SensorValue) -> SensorValue: ...
 
     @callback
     @staticmethod
@@ -727,43 +760,10 @@ class OptionsFlowHandler(OptionsFlow):
 
         return value
 
-    async def async_step_edit_entity(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        """Handle editing an entity."""
-        if user_input is not None:
-            entity: str = user_input["entity"]
-            platform, key = entity.split("-", 2)
-            self.entity = self.entities[platform][key]
-            self.platform = Platform(platform)
-            self.source_device = self.entity["source_device"]
-            return await self.async_step_entity_details()
-
-        if not (options := self._async_get_entity_options()):
-            return await self.async_step_entities_not_found()
-
-        return self.async_show_form(
-            step_id="edit_entity",
-            data_schema=vol.Schema(
-                {
-                    vol.Required("entity"): selector.SelectSelector(
-                        selector.SelectSelectorConfig(options=options)
-                    )
-                }
-            ),
-            last_step=False,
-        )
-
-    async def async_step_entities_not_found(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        """Handle issues that need transition await from progress step."""
-        return self.async_abort(reason="no_entities_found")
-
     @callback
     def _async_get_entity_options(self) -> list[selector.SelectOptionDict]:
         """Get user-added entities."""
-        platforms = list(SOURCE_TYPES)
+        platforms = list(PLATFORM_TYPES)
         entities = {
             f"{platform}-{key}": entity[CONF_NAME]
             for platform, entities in self.entities.items()
