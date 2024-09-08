@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Generator, Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import logging
 from typing import Any
 
@@ -12,8 +12,7 @@ from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.const import ProductType
-from pyplumio.helpers.parameter import Parameter
-from pyplumio.helpers.typing import ParameterValueType
+from pyplumio.helpers.parameter import Parameter, ParameterValue
 from pyplumio.structures.modules import ConnectedModules
 
 from . import PlumEcomaxConfigEntry
@@ -35,8 +34,9 @@ _LOGGER = logging.getLogger(__name__)
 class EcomaxSwitchEntityDescription(EcomaxEntityDescription, SwitchEntityDescription):
     """Describes an ecoMAX switch."""
 
-    state_off: ParameterValueType = STATE_OFF
-    state_on: ParameterValueType = STATE_ON
+    state_off: ParameterValue = STATE_OFF
+    state_on: ParameterValue = STATE_ON
+    extra_states: dict[ParameterValue, bool] = field(default_factory=dict)
 
 
 SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
@@ -52,6 +52,7 @@ SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
         key="water_heater_work_mode",
         state_off=0,
         state_on=2,
+        extra_states={1: True},
         translation_key="water_heater_pump_switch",
     ),
     EcomaxSwitchEntityDescription(
@@ -105,7 +106,7 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
             self.entity_description.state_on: True,
             self.entity_description.state_off: False,
         }
-
+        states |= self.entity_description.extra_states
         self._attr_is_on = states.get(value.value, None)
         self.async_write_ha_state()
 
@@ -206,20 +207,17 @@ def async_setup_ecomax_switches(connection: EcomaxConnection) -> list[EcomaxSwit
 
 def async_setup_mixer_switches(connection: EcomaxConnection) -> list[MixerSwitch]:
     """Set up the mixers switches."""
-    entities: list[MixerSwitch] = []
-    for index in connection.device.mixers:
-        entities.extend(
-            MixerSwitch(connection, description, index)
-            for description in get_by_index(
-                index,
-                get_by_modules(
-                    connection.device.modules,
-                    get_by_product_type(connection.product_type, MIXER_SWITCH_TYPES),
-                ),
-            )
+    return [
+        MixerSwitch(connection, description, index)
+        for index in connection.device.mixers
+        for description in get_by_index(
+            index,
+            get_by_modules(
+                connection.device.modules,
+                get_by_product_type(connection.product_type, MIXER_SWITCH_TYPES),
+            ),
         )
-
-    return entities
+    ]
 
 
 async def async_setup_entry(
@@ -227,18 +225,15 @@ async def async_setup_entry(
     entry: PlumEcomaxConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
-    """Set up the sensor platform."""
-    connection = entry.runtime_data.connection
+    """Set up the switch platform."""
     _LOGGER.debug("Starting setup of switch platform...")
 
-    entities: list[EcomaxSwitch] = []
-
-    # Add ecoMAX switches.
-    entities.extend(async_setup_ecomax_switches(connection))
+    connection = entry.runtime_data.connection
+    entities = async_setup_ecomax_switches(connection)
 
     # Add mixer/circuit switches.
     if connection.has_mixers and await connection.async_setup_mixers():
-        entities.extend(async_setup_mixer_switches(connection))
+        entities += async_setup_mixer_switches(connection)
 
     async_add_entities(entities)
     return True

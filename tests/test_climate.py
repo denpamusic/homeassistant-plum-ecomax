@@ -27,8 +27,8 @@ from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
 from pyplumio.helpers.parameter import ParameterValues
 from pyplumio.structures.thermostat_parameters import (
-    ThermostatParameter,
-    ThermostatParameterDescription,
+    ThermostatNumber,
+    ThermostatNumberDescription,
 )
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -191,11 +191,11 @@ async def test_thermostat(
     # Dispatch new thermostat target temperature.
     await connection.device.thermostats[0].dispatch(
         thermostat_night_target_temperature_key,
-        ThermostatParameter(
+        ThermostatNumber(
             offset=0,
             device=connection.device.thermostats[0],
             values=ParameterValues(value=110, min_value=100, max_value=350),
-            description=ThermostatParameterDescription(
+            description=ThermostatNumberDescription(
                 thermostat_night_target_temperature_key, multiplier=10, size=2
             ),
         ),
@@ -269,11 +269,11 @@ async def test_thermostat_presets(
     with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
         await connection.device.thermostats[0].dispatch(
             thermostat_mode_key,
-            ThermostatParameter(
+            ThermostatNumber(
                 offset=0,
                 device=connection.device.thermostats[0],
                 values=ParameterValues(value=4, min_value=0, max_value=7),
-                description=ThermostatParameterDescription(
+                description=ThermostatNumberDescription(
                     thermostat_mode_key, multiplier=1, size=2
                 ),
             ),
@@ -287,11 +287,11 @@ async def test_thermostat_presets(
     with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
         await connection.device.thermostats[0].dispatch(
             thermostat_mode_key,
-            ThermostatParameter(
+            ThermostatNumber(
                 offset=0,
                 device=connection.device.thermostats[0],
                 values=ParameterValues(value=0, min_value=0, max_value=7),
-                description=ThermostatParameterDescription(
+                description=ThermostatNumberDescription(
                     thermostat_mode_key, multiplier=1, size=2
                 ),
             ),

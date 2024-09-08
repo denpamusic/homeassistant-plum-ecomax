@@ -68,10 +68,12 @@ class EcomaxEntity(Entity):
             self._attr_available = True
 
         if description.key in self.device.data:
-            await _async_set_available()
-            await handler(self.device.get_nowait(description.key, None))
+            value = self.device.get_nowait(description.key, None)
+            await _async_set_available(value)
+            await handler(value)
+        else:
+            self.device.subscribe_once(description.key, _async_set_available)
 
-        self.device.subscribe_once(description.key, _async_set_available)
         self.device.subscribe(description.key, handler)
 
     async def async_will_remove_from_hass(self) -> None:

@@ -22,10 +22,9 @@ It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and sup
   - [Controller](#controller-hub)
   - [Water Heater](#water-heater)
   - [Thermostats](#thermostats)
-  - [Mixers/Circuits](#mixerscircuits-sub-devices)
-  - [Device-specific entities](#device-specific-entities)
+  - [Mixers](#mixers-circuits)
 - [Events](#events)
-- [Services](#services)
+- [Actions](#actions)
 - [License](#license)
 
 ## Connect the ecoMAX
@@ -80,11 +79,11 @@ cp -r ./homeassistant-plum-ecomax/custom_components ~/.homeassistant
 
 Adding Plum ecoMAX integration to your Home Assistant instance can be done via user interface, by using this My button:
 
-
 [![Add integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start?domain=plum_ecomax)
+
 <details>
-  <summary><b>Manual Configuration Steps</b></summary>
-  
+  <summary><b>Manual configuration</b> <i>(click to expand)</i></summary>
+
 If the above My button doesn’t work, you can also perform the following steps manually:
 
 1. Browse to your Home Assistant instance.
@@ -112,124 +111,128 @@ To connect via serial port you'll need to fill in the Device path and Baudrate:
 7. Your device should now be available in your Home Assistant installation.
 
 ![Success](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/success.png)
+
 </details>
 
 ## Entities
 This integration provides the following entities, split between controller device and sub-devices.
 
-Not all entities might be available for your controller model and entities that are deemed as unsupported during
-initial setup will be disabled.
+Not all entities might be available for your controller model and entities that are deemed as unsupported during initial setup will be disabled.
 
-ecoMAX pellet boiler controller model names has a "**p**" suffix (e. g. ecoMAX 850p), ecoMAX installation controller model names have an "**i**" suffix (e. g. ecoMAX 850i).
+ecoMAX pellet boiler controller model names has a <kbd>p</kbd> suffix (e. g. ecoMAX 850**p**), while ecoMAX installation controller model names have an <kbd>i</kbd> suffix (e. g. ecoMAX 850**i**).
 
-### Controller (Hub)
-Following section lists entities that are added to the ecoMAX device.
+### Controller
+The following section lists entities that are added to the ecoMAX device.
 
-#### Sensors
-Sensors can have numerical or text state.
-Temperature changes that are less than 0.1°C are ignored. 
+Legend:
+- <kbd>i</kbd> - ecoMAX installation controller
+- <kbd>p</kbd> - ecoMAX pellet boiler controller
 
-| Name                                  | Unit | ecoMAX pellet      | ecoMAX installation |
-|---------------------------------------|:----:|:------------------:|:-------------------:|
-| Heating temperature                   | °C   | :white_check_mark: | :white_check_mark:  |
-| Water heater temperature              | °C   | :white_check_mark: | :white_check_mark:  |
-| Outside temperature                   | °C   | :white_check_mark: | :white_check_mark:  |
-| Heating target temperature            | °C   | :white_check_mark: | :white_check_mark:  |
-| Water heater target temperature       | °C   | :white_check_mark: | :white_check_mark:  |
-| Heating mode                          | n/a  | :white_check_mark: | :white_check_mark:  |
-| Solar temperature                     | °C   | :x:                | :white_check_mark:  |
-| Fireplace temperature                 | °C   | :x:                | :white_check_mark:  |
-| Exhaust temperature                   | °C   | :white_check_mark: | :x:                 |
-| Feeder temperature                    | °C   | :white_check_mark: | :x:                 |
-| Return temperature                    | °C   | :white_check_mark: | :x:                 |
-| Heating load                          | %    | :white_check_mark: | :x:                 |
-| Fan power                             | %    | :white_check_mark: | :x:                 |
-| Fuel level                            | %    | :white_check_mark: | :x:                 |
-| Fuel consumption                      | kg   | :white_check_mark: | :x:                 |
-| Total fuel burned <sup>1</sup>        | kg   | :white_check_mark: | :x:                 |
-| Heating power                         | kW   | :white_check_mark: | :x:                 |
-| Lower buffer temperature <sup>2</sup> | °C   | :white_check_mark: | :x:                 |
-| Upper buffer temperature <sup>2</sup> | °C   | :white_check_mark: | :x:                 |
-| Flame intensity <sup>2</sup>          | %    | :white_check_mark: | :x:                 |
-| Oxygen level <sup>3</sup>             | %    | :white_check_mark: | :white_check_mark:  |
- 
-<small><sup>1</sup> Special meter entity. It counts burned fuel when HomeAssistant is running.</small><br>
-<small><sup>2</sup> Controller support is required.</small><br>
-<small><sup>3</sup> ecoLAMBDA module is required.</small>
+---
 
-#### Binary sensors
-Binary sensors have two states (on/off, running/not running, etc.).
+<details>
+  <summary><b>🌡️Sensors</b> <i>(click to expand)</i></summary><br>
 
-| Name                    | ecoMAX pellet      | ecoMAX installation |
-|-------------------------|:------------------:|:-------------------:|
-| Heating pump state      | :white_check_mark: | :white_check_mark:  |
-| Water heater pump state | :white_check_mark: | :white_check_mark:  |
-| Circulation pump state  | :white_check_mark: | :white_check_mark:  |
-| Fireplace pump state    | :x:                | :white_check_mark:  |
-| Solar pump state        | :x:                | :white_check_mark:  |
-| Fan state               | :white_check_mark: | :x:                 |
-| Lighter state           | :white_check_mark: | :x:                 |
-| Exhaust fan state       | :white_check_mark: | :x:                 |
+> ℹ️ Temperature changes of **less than 0.1°C** are ignored.
 
-#### Selects
-Select entities can have multiple options to choose from.
+- Heating temperature
+- Water heater temperature
+- Outside temperature
+- Heating target temperature
+- Water heater target temperature
+- Heating mode
+- Exhaust temperature
+- Feeder temperature
+- Return temperature
+- Heating load
+- Fan power
+- Fuel level
+- Fuel consumption
+- Total fuel burned <sup>1</sup>
+- Heating power
+- Lower buffer temperature <sup>2</sup>
+- Upper buffer temperature <sup>2</sup>
+- Flame intensity <sup>2</sup>
+- Lower buffer temperature <sup>2</sup>
+- Upper buffer temperature <sup>2</sup>
+- Flame intensity <sup>2</sup>
+- Oxygen level <sup>3</sup>
+- Solar temperature <kbd>i</kbd>
+- Fireplace temperature <kbd>i</kbd>
 
-| Name        | Options         | ecoMAX pellet      | ecoMAX installation |
-|-------------|:---------------:|:------------------:|:-------------------:|
-| Summer mode | Off, Auto, On   | :white_check_mark: | :white_check_mark:  |
+<sup>1</sup> *Special meter entity. It counts burned fuel when HomeAssistant is running.*  
+<sup>2</sup> *Controller support is required.*  
+<sup>3</sup> *ecoLAMBDA module is required.*  
 
-#### Switches
-Switches have two states (on/off) that can be switched between.
+</details>
+<details>
+  <summary><b>🔛Binary sensors</b> <i>(click to expand)</i></summary>
 
-| Name                             | ecoMAX pellet      | ecoMAX installation |
-|----------------------------------|:------------------:|:-------------------:|
-| Controller power switch          | :white_check_mark: | :white_check_mark:  |
-| Water heater disinfection switch | :white_check_mark: | :white_check_mark:  |
-| Water heater pump switch         | :white_check_mark: | :white_check_mark:  |
-| Weather control switch           | :white_check_mark: | :x:                 |
-| Fuzzy logic switch               | :white_check_mark: | :x:                 |
-| Heating schedule switch          | :white_check_mark: | :x:                 |
-| Water heater schedule switch     | :white_check_mark: | :x:                 |
+- Heating pump state
+- Water heater pump state
+- Circulation pump state
+- Fan state
+- Lighter state
+- Exhaust fan state
+- Fireplace pump state <kbd>i</kbd>
+- Solar pump state <kbd>i</kbd>
 
-#### Numbers
-Numbers are represented as changeable sliders or input boxes.
+</details>
+<details>
+  <summary><b>✅Selects</b> <i>(click to expand)</i></summary>
 
-| Name                        | Unit   | Style  | ecoMAX pellet      | ecoMAX installation |
-|-----------------------------|:------:|:------:|:------------------:|:-------------------:|
-| Heating temperature         | °C     | slider | :white_check_mark: | :x:                 |
-| Minimum heating power       | %      | slider | :white_check_mark: | :x:                 |
-| Maximum heating power       | %      | slider | :white_check_mark: | :x:                 |
-| Minimum heating temperature | °C     | slider | :white_check_mark: | :x:                 |
-| Maximum heating temperature | °C     | slider | :white_check_mark: | :x:                 |
-| Grate mode temperature      | °C     | slider | :white_check_mark: | :x:                 |
-| Fuel calorific value        | kWh/kg | box    | :white_check_mark: | :x:                 |
+- Summer mode (on, off, auto)
 
-#### Diagnostics
-Diagnostics are random entities that provide you with service and debug information.
+</details>
+<details>
+  <summary><b>💡Switches</b> <i>(click to expand)</i></summary>
 
-| Name               | Type          | ecoMAX pellet      | ecoMAX installation |
-|--------------------|:-------------:|:------------------:|:-------------------:|
-| Alert              | Binary sensor | :white_check_mark: | :white_check_mark:  |
-| Connection status  | Binary sensor | :white_check_mark: | :white_check_mark:  |
-| Service password   | Text sensor   | :white_check_mark: | :white_check_mark:  |
-| UID                | Text sensor   | :white_check_mark: | :white_check_mark:  |
-| Software version   | Text sensor   | :white_check_mark: | :white_check_mark:  |
-| Detect sub-devices | Button        | :white_check_mark: | :white_check_mark:  |
+- Controller power switch
+- Water heater disinfection switch
+- Water heater pump switch
+- Weather control switch <kbd>p</kbd>
+- Fuzzy logic switch <kbd>p</kbd>
+- Heating schedule switch <kbd>p</kbd>
+- Water heater schedule switch <kbd>p</kbd>
+
+</details>
+<details>
+  <summary><b>🔢Numbers</b> <i>(click to expand)</i></summary>
+
+- Heating temperature <kbd>p</kbd>
+- Minimum heating power <kbd>p</kbd>
+- Maximum heating power <kbd>p</kbd>
+- Minimum heating temperature <kbd>p</kbd>
+- Maximum heating temperature <kbd>p</kbd>
+- Grate mode temperature <kbd>p</kbd>
+- Fuel calorific value <kbd>p</kbd>
+
+</details>
+
+<details>
+  <summary><b>🛠️Diagnostics</b> <i>(click to expand)</i></summary>
+
+- Alert
+- Connection status
+- Service password
+- Connected modules
+- Detect sub-devices
+
+</details>
 
 ### Water heater
 The integration provides full control for the connected indirect water heater using Home Assistant's [internal water heater platform](https://www.home-assistant.io/integrations/water_heater/).
 
 This includes ability to set target temperature, switch into priority, non-priority mode or turn off.
 
-Please note, that due to the way base water heater entity is implemented,
-custom modes [are not allowed](https://developers.home-assistant.io/docs/core/entity/water-heater/#states).
-Please use the following reference table to convert between water heater operation modes displayed in Home Assistant and ecoMAX.
+Please note, that due to the way base water heater entity is implemented, custom modes [are not allowed](https://developers.home-assistant.io/docs/core/entity/water-heater/#states).
+Please use the following reference to convert between water heater operation modes displayed in Home Assistant and ecoMAX.
 
-| HomeAssistant | ecoMAX            |
-|---------------|-------------------|
-| Off           | On                |
-| Performance   | Priority mode     |
-| Eco           | Non-priority mode |
+```
+HA heater state ->  ecoMAX heater mode
+[Performance]   ->  [Priority mode]
+[Eco]           ->  [Non-priority mode]
+```
 
 ### Thermostats
 This integration provides Home Assistant's [climate platform](https://www.home-assistant.io/integrations/climate/) entity for each ecoSTER thermostat connected to the ecoMAX controller.
@@ -238,190 +241,141 @@ This allows to check current room temperature, set target room temperature and c
 
 ![Climate card](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/climate-card.png)
 
-### Mixers/Circuits (Sub-devices)
-Following section lists entities that are added to each sub-device.
+### Mixers (Circuits)
+Following section lists entities that are added to each virtual device.
 
-Please note, that for ecoMAX installation ("**i**") controllers mixers are renamed to circuits.
+Please note, that for the ecoMAX installation controllers `mixers` are listed as `circuits`.
 
-Mixers/Circuits are added as sub-devices for the ecoMAX controller.<br>
-Sub-devices detected only once, when integration is added to HomeAssistant.<br>
-If you connected them after setting up the integration, you can use `Detect sub-devices` button in Diagnostics section to force detection of new sub-devices.
+Mixers are added as sub-devices for the ecoMAX controller. They are detected only once, when integration is added to HomeAssistant.
 
-### Sensors
+If you connected them after setting up the integration, you can use `Detect sub-devices` button in Diagnostics section to force re-detection.
 
-| Name                     | Unit | ecoMAX pellet      | ecoMAX installation |
-|--------------------------|:----:|:------------------:|:-------------------:|
-| Mixer temperature        | °C   | :white_check_mark: | :white_check_mark:  |
-| Target mixer temperature | °C   | :white_check_mark: | :white_check_mark:  |
+Legend:
+- <kbd>i</kbd> - ecoMAX installation controller
+- <kbd>p</kbd> - ecoMAX pellet boiler controller
 
+---
 
-#### Binary sensors
+<details>
+  <summary><b>🌡️Sensors</b> <i>(click to expand)</i></summary>
 
-| Name       | ecoMAX pellet      | ecoMAX installation |
-|------------|:------------------:|:-------------------:|
-| Mixer pump | :white_check_mark: | :white_check_mark:  |
+- Mixer temperature
+- Target mixer temperature
 
-#### Selects
+</details>
+<details> <summary><b>🔛Binary sensors</b> <i>(click to expand)</i></summary>
 
-| Name       | Options                          | ecoMAX pellet      | ecoMAX installation |
-|------------|:--------------------------------:|:------------------:|:-------------------:|
-| Work mode  | Off, Heating, Floor, Pump only   | :white_check_mark: | :x:                 |
+- Mixer pump
 
-#### Switches
+</details>
+<details> <summary><b>✅Selects</b> <i>(click to expand)</i></summary>
 
-| Name                       | ecoMAX pellet      | ecoMAX installation |
-|----------------------------|:------------------:|:-------------------:|
-| Enable in summer mode      | :white_check_mark: | :white_check_mark:  |
-| Enable mixer               | :x:                | :white_check_mark:  |
-| Weather control            | :white_check_mark: | :x:                 |
-| Disable pump on thermostat | :white_check_mark: | :x:                 |
+- Work mode (off, heating, floor, pump_only) <kbd>p</kbd>
 
-#### Numbers
+</details>
+<details> <summary><b>💡Switches</b> <i>(click to expand)</i></summary>
 
-| Name                                        | Unit | Style  | ecoMAX pellet      | ecoMAX installation |
-|---------------------------------------------|:----:|:------:|:------------------:|:-------------------:|
-| Mixer temperature                           | °C   | slider | :white_check_mark: | :white_check_mark:  |
-| Minimum mixer temperature                   | °C   | slider | :white_check_mark: | :white_check_mark:  |
-| Maximum mixer temperature                   | °C   | slider | :white_check_mark: | :white_check_mark:  |
-| Day target mixer temperature <sup>1</sup>   | °C   | slider | :x:                | :white_check_mark:  |
-| Night target mixer temperature <sup>1</sup> | °C   | slider | :x:                | :white_check_mark:  |
+- Enable mixer <kbd>i</kbd>
+- Enable in summer mode
+- Weather control <kbd>p</kbd>
+- Disable pump on thermostat <kbd>p</kbd>
 
-<small><sup>1</sup> Only available on second circuit.</small>
+</details>
+<details> <summary><b>🔢Numbers</b> <i>(click to expand)</i></summary>
 
-### Device-specific entities
-These entities are only available for specific devices.
+- Mixer temperature
+- Minimum mixer temperature
+- Maximum mixer temperature
+- Day target mixer temperature <sup>1</sup> <kbd>i</kbd>
+- Night target mixer temperature <sup>1</sup> <kbd>i</kbd>
 
-#### Sensors
+<sup>1</sup> *Only available on second circuit.*
 
-| Name         | Unit | Model          | Product ID | Data key | 
-|--------------|:----:|:--------------:|:----------:|:--------:|
-| Ash pan full | %    | ecoMAX 860P3-O | 51         | 227      |
+</details>
 
 ## Events
-This integration fires following events:
+The integration uses following events:
 
 ### plum_ecomax_alert
-This event is fired when ecoMAX controller issues an alert.
+Event is fired when ecoMAX controller issues an alert.
 
 #### Event data
-| Name            | Description                                                                                                                    |
-|-----------------|--------------------------------------------------------------------------------------------------------------------------------|
-| name            | Config entry name. By default is set to the device model.                                                                      |
-| code            | Alert code. List of known codes is available [here](https://github.com/denpamusic/PyPlumIO/blob/v0.3.5/pyplumio/const.py#L73). |
-| from            | Datetime object representing the alert start time.                                                                             |
-| to <sup>1</sup> | Datetime object representing the alert end time.                                                                               |
+- name (config entry name)
+- code (alert code)
+- from (datetime object representing the alert start time)
+- to <sup>1</sup> (datetime object representing the alert end time)
 
-<small><sup>1</sup> Only present if the alert has already ended.</small>
+<sup>1</sup> *Only present if the alert has already ended.*
 
-
-## Services
-This integration provides following services:
+## Actions
+This integration provides following actions:
 
 ### Get parameter
-Provides ability to get device/sub-device parameter by name. 
+Provides ability to get the device parameter by name. 
 
 #### Fields
-
-| Field | Type                | Description             |
-|-------|---------------------|-------------------------|
-| name  | string              | Name of the parameter.  |
+- name
 
 #### Targets
-
-| Device <sup>1</sup> | Description                             |
-|---------------------|-----------------------------------------|
-| ecoMAX              | Set parameter on the ecoMAX controller. |
-| Mixer               | Set parameter on the mixer sub-device.  |
-
-<small><sup>1</sup> Device can be targeted via any selector: area, device or entity.</small>
+- ecomax
+- mixer
 
 #### Response
+- name
+- value
+- min_value
+- max_value
+- device_type
+- device_uid
+- device_index <sup>1</sup>
 
-| Field                     | Type   | Description                    | Example               |
-|---------------------------|--------|--------------------------------|-----------------------|
-| name                      | string | Name of the parameter.         | heating_target_temp   |
-| value                     | number | Value of the parameter.        | 65                    |
-| min_value                 | number | Minimum allowed value.         | 40                    |
-| max_value                 | number | Maximum allowed value.         | 80                    |
-| device_type               | string | Device type. ecomax or mixer.  | ecomax                |
-| device_uid                | string | UID of device.                 | N271PAKR2NCP31K8G05G0 |
-| device_index <sup>1</sup> | number | Connected device number.       | 0                     |
-
-<small><sup>1</sup> This will help identify which sub-device (mixer) this parameter belongs to.
-Root device (controller) is always 0, while connected mixers can have 1-5.</small>
-
+<sup>1</sup> *This will help identify which sub-device (mixer) this parameter belongs to. Root device (controller) is always 0, while connected mixers can have 1-5.*
 
 ### Set parameter
 Provides ability to set device/sub-device parameter by name. Any parameter that is supported by the device/sub-device can be used with this service. To get parameter names, please download and open diagnostics data.
 
 #### Fields
-
-| Field | Type                | Description             |
-|-------|---------------------|-------------------------|
-| name  | string              | Name of the parameter.  |
-| value | number, "on", "off" | Value of the parameter. |
+- name
+- value
 
 #### Targets
-
-| Device <sup>1</sup> | Description                             |
-|---------------------|-----------------------------------------|
-| ecoMAX              | Set parameter on the ecoMAX controller. |
-| Mixer               | Set parameter on the mixer sub-device.  |
-
-<small><sup>1</sup> Device can be targeted via any selector: area, device or entity.</small>
+- ecomax
+- mixer
 
 ### Get schedule.
 Allows to get different schedules from the device.
 
 #### Fields
-
-| Field    | Type                      | Description              |
-|----------|---------------------------|--------------------------|
-| type     | "heating", "water_heater" | Type of the schedule.    |
-| weekdays | "monday", "tuesday", ...  | Weekdays of the schedule. |
+- type (heating, water_heater)
+- weekdays (monday, tuesday, ..., etc)
 
 #### Response
-
-| Field                     | Type       | Description                        | Example                           |
-|---------------------------|------------|------------------------------------|-----------------------------------|
-| schedule                  | dictionary | Dictionary that contains schedule. | {"00:00": true, 00:30: true, ...} |
+- schedules (dictionary containing schedule states, keyed by start times)
 
 ### Set schedule.
 Allows to set different schedules on the device.
 
 #### Fields
-
-| Field    | Type                      | Description               |
-|----------|---------------------------|---------------------------|
-| type     | "heating", "water_heater" | Type of the schedule.     |
-| weekdays | "monday", "tuesday", ...  | Weekdays of the schedule.  |
-| preset   | "day", "night"            | Preset at scheduled time. |
-| start    | time                      | Time of schedule start.   |
-| end      | time                      | Time of schedule end.     |
+- type (heating, water_heater)
+- weekdays (monday, tuesday, ..., etc)
+- preset (day, night)
+- start
+- end
 
 ### Calibrate meter
-Allows to set meter entity to a specific value.<br>
-Currently this can be used to set a value of a `Total fuel burned` sensor which is only available on pellet burner controllers.
+Allows to set meter entity to a specific value. This can be used to set a value of a `Total fuel burned` sensor which is only available on pellet burner controllers.
 
 #### Fields
-| Field  | Type    | Description                       |
-|--------|---------|-----------------------------------|
-| value  | integer | Set target sensor to this value.  |
+- value
 
 #### Targets
-| Entity            | Description                            |
-|-------------------|----------------------------------------|
-| total_fuel_burned | Counts total burned fuel in kilograms. |
-
+- total_fuel_burned
 
 ### Reset meter
-Allows to reset the meter entity value.<br>
-Currently this can be used to reset a value of the `Total fuel burned` sensor which is only available on pellet burner controllers.
+Allows to reset the meter entity value. This can be used to reset a value of the `Total fuel burned` sensor which is only available on pellet burner controllers.
 
 #### Targets
-| Entity            | Description                            |
-|-------------------|----------------------------------------|
-| total_fuel_burned | Counts total burned fuel in kilograms. |
+- total_fuel_burned
 
 ## License
 This product is distributed under MIT license.

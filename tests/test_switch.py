@@ -13,15 +13,16 @@ from homeassistant.helpers import entity_registry as er
 from pyplumio.helpers.parameter import ParameterValues
 from pyplumio.structures.ecomax_parameters import (
     ATTR_ECOMAX_CONTROL,
-    EcomaxBinaryParameter,
-    EcomaxBinaryParameterDescription,
-    EcomaxParameter,
-    EcomaxParameterDescription,
+    EcomaxNumber,
+    EcomaxNumberDescription,
+    EcomaxSwitch,
+    EcomaxSwitchDescription,
 )
 from pyplumio.structures.mixer_parameters import (
-    MixerBinaryParameter,
-    MixerParameter,
-    MixerParameterDescription,
+    MixerNumber,
+    MixerNumberDescription,
+    MixerSwitch,
+    MixerSwitchDescription,
 )
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -108,10 +109,10 @@ async def test_ecomax_control_switch(
     # Dispatch new value.
     await connection.device.dispatch(
         ATTR_ECOMAX_CONTROL,
-        EcomaxBinaryParameter(
+        EcomaxSwitch(
             device=connection.device,
             values=ParameterValues(value=1, min_value=0, max_value=1),
-            description=EcomaxParameterDescription(ATTR_ECOMAX_CONTROL),
+            description=EcomaxNumberDescription(ATTR_ECOMAX_CONTROL),
         ),
     )
     state = hass.states.get(controller_switch_entity_id)
@@ -169,12 +170,10 @@ async def test_water_heater_disinfection_switch(
     # Dispatch new value.
     await connection.device.dispatch(
         water_heater_disinfection_switch_key,
-        EcomaxBinaryParameter(
+        EcomaxSwitch(
             device=connection.device,
             values=ParameterValues(value=1, min_value=0, max_value=1),
-            description=EcomaxBinaryParameterDescription(
-                water_heater_disinfection_switch_key
-            ),
+            description=EcomaxSwitchDescription(water_heater_disinfection_switch_key),
         ),
     )
     state = hass.states.get(water_heater_disinfection_switch_entity_id)
@@ -231,10 +230,10 @@ async def test_water_heater_pump_switch(
     # Dispatch new value.
     await connection.device.dispatch(
         water_heater_pump_switch_key,
-        EcomaxParameter(
+        EcomaxNumber(
             device=connection.device,
             values=ParameterValues(value=2, min_value=0, max_value=2),
-            description=EcomaxParameterDescription(water_heater_pump_switch_key),
+            description=EcomaxNumberDescription(water_heater_pump_switch_key),
         ),
     )
     state = hass.states.get(water_heater_pump_switch_entity_id)
@@ -287,10 +286,10 @@ async def test_weather_control_switch(
     # Dispatch new value.
     await connection.device.dispatch(
         weather_control_switch_key,
-        EcomaxBinaryParameter(
+        EcomaxSwitch(
             device=connection.device,
             values=ParameterValues(value=1, min_value=0, max_value=1),
-            description=EcomaxParameterDescription(weather_control_switch_key),
+            description=EcomaxNumberDescription(weather_control_switch_key),
         ),
     )
     state = hass.states.get(weather_control_switch_entity_id)
@@ -343,10 +342,10 @@ async def test_fuzzy_logic_switch(
     # Dispatch new value.
     await connection.device.dispatch(
         fuzzy_logic_switch_key,
-        EcomaxBinaryParameter(
+        EcomaxSwitch(
             device=connection.device,
             values=ParameterValues(value=1, min_value=0, max_value=1),
-            description=EcomaxParameterDescription(fuzzy_logic_switch_key),
+            description=EcomaxNumberDescription(fuzzy_logic_switch_key),
         ),
     )
     state = hass.states.get(fuzzy_logic_switch_entity_id)
@@ -399,10 +398,10 @@ async def test_heating_schedule_switch(
     # Dispatch new value.
     await connection.device.dispatch(
         heating_schedule_switch_key,
-        EcomaxBinaryParameter(
+        EcomaxSwitch(
             device=connection.device,
             values=ParameterValues(value=1, min_value=0, max_value=1),
-            description=EcomaxParameterDescription(heating_schedule_switch_key),
+            description=EcomaxNumberDescription(heating_schedule_switch_key),
         ),
     )
     state = hass.states.get(heating_schedule_switch_entity_id)
@@ -457,10 +456,10 @@ async def test_water_heater_schedule_switch(
     # Dispatch new value.
     await connection.device.dispatch(
         water_heater_schedule_switch_key,
-        EcomaxBinaryParameter(
+        EcomaxSwitch(
             device=connection.device,
             values=ParameterValues(value=1, min_value=0, max_value=1),
-            description=EcomaxParameterDescription(water_heater_schedule_switch_key),
+            description=EcomaxNumberDescription(water_heater_schedule_switch_key),
         ),
     )
     state = hass.states.get(water_heater_schedule_switch_entity_id)
@@ -515,10 +514,10 @@ async def test_mixer_enable_in_summer_mode_switch(
     # Dispatch new value.
     await connection.device.mixers[0].dispatch(
         enable_in_summer_mode_key,
-        MixerBinaryParameter(
+        MixerSwitch(
             device=connection.device,
             values=ParameterValues(value=1, min_value=0, max_value=1),
-            description=MixerParameterDescription(enable_in_summer_mode_key),
+            description=MixerSwitchDescription(enable_in_summer_mode_key),
         ),
     )
 
@@ -574,10 +573,10 @@ async def test_circuit_enable_in_summer_mode_switch(
     # Dispatch new value.
     await connection.device.mixers[0].dispatch(
         enable_in_summer_mode_key,
-        MixerBinaryParameter(
+        MixerSwitch(
             device=connection.device,
             values=ParameterValues(value=1, min_value=0, max_value=1),
-            description=MixerParameterDescription(enable_in_summer_mode_key),
+            description=MixerSwitchDescription(enable_in_summer_mode_key),
         ),
     )
 
@@ -635,10 +634,10 @@ async def test_mixer_weather_control_switch(
     # Dispatch new value.
     await connection.device.mixers[0].dispatch(
         mixer_weather_control_switch_key,
-        MixerBinaryParameter(
+        MixerSwitch(
             device=connection.device,
             values=ParameterValues(value=1, min_value=0, max_value=1),
-            description=MixerParameterDescription(mixer_weather_control_switch_key),
+            description=MixerSwitchDescription(mixer_weather_control_switch_key),
         ),
     )
     state = hass.states.get(mixer_weather_control_switch_entity_id)
@@ -696,10 +695,10 @@ async def test_mixer_disable_pump_on_thermostat_switch(
     # Dispatch new value.
     await connection.device.mixers[0].dispatch(
         disable_pump_on_thermostat_key,
-        MixerBinaryParameter(
+        MixerSwitch(
             device=connection.device,
             values=ParameterValues(value=1, min_value=0, max_value=1),
-            description=MixerParameterDescription(disable_pump_on_thermostat_key),
+            description=MixerSwitchDescription(disable_pump_on_thermostat_key),
         ),
     )
 
@@ -753,10 +752,10 @@ async def test_circuit_enable_circuit_switch(
     # Dispatch new value.
     await connection.device.mixers[0].dispatch(
         enable_circuit_key,
-        MixerParameter(
+        MixerNumber(
             device=connection.device,
             values=ParameterValues(value=1, min_value=0, max_value=1),
-            description=MixerParameterDescription(enable_circuit_key),
+            description=MixerNumberDescription(enable_circuit_key),
         ),
     )
 

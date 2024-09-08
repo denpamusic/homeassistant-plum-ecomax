@@ -646,17 +646,14 @@ def async_setup_regdata_sensors(connection: EcomaxConnection) -> list[RegdataSen
 
 def async_setup_mixer_sensors(connection: EcomaxConnection) -> list[MixerSensor]:
     """Set up the mixer sensors."""
-    entities: list[MixerSensor] = []
-    for index in connection.device.mixers:
-        entities.extend(
-            MixerSensor(connection, description, index)
-            for description in get_by_modules(
-                connection.device.modules,
-                get_by_product_type(connection.product_type, MIXER_SENSOR_TYPES),
-            )
+    return [
+        MixerSensor(connection, description, index)
+        for index in connection.device.mixers
+        for description in get_by_modules(
+            connection.device.modules,
+            get_by_product_type(connection.product_type, MIXER_SENSOR_TYPES),
         )
-
-    return entities
+    ]
 
 
 async def async_setup_entry(
@@ -665,28 +662,25 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the sensor platform."""
-    connection = entry.runtime_data.connection
     _LOGGER.debug("Starting setup of sensor platform...")
 
-    entities: list[EcomaxSensor] = []
-
-    # Add ecoMAX sensors.
-    entities.extend(async_setup_ecomax_sensors(connection))
+    connection = entry.runtime_data.connection
+    entities = async_setup_ecomax_sensors(connection)
 
     # Add regulator data (device-specific) sensors.
     if (
         regdata := async_setup_regdata_sensors(connection)
     ) and await connection.async_setup_regdata():
         # Set up the regulator data sensors, if there are any.
-        entities.extend(regdata)
+        entities += regdata
 
     # Add mixer/circuit sensors.
     if connection.has_mixers and await connection.async_setup_mixers():
-        entities.extend(async_setup_mixer_sensors(connection))
+        entities += async_setup_mixer_sensors(connection)
 
     # Add ecoMAX meters.
     if meters := async_setup_ecomax_meters(connection):
-        entities.extend(meters)
+        entities += meters
         platform = async_get_current_platform()
         platform.async_register_entity_service(
             SERVICE_RESET_METER, {}, "async_reset_meter"

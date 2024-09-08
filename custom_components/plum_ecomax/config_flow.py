@@ -42,7 +42,7 @@ from homeassistant.helpers import entity_registry as er, selector
 import homeassistant.helpers.config_validation as cv
 from pyplumio.connection import Connection
 from pyplumio.const import ProductType
-from pyplumio.devices import AddressableDevice, SubDevice
+from pyplumio.devices import PhysicalDevice
 from pyplumio.exceptions import ConnectionFailedError
 from pyplumio.helpers.parameter import Parameter, UnitOfMeasurement
 from pyplumio.structures.ecomax_parameters import EcomaxBinaryParameter, EcomaxParameter
@@ -140,7 +140,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
     def __init__(self) -> None:
         """Initialize a new config flow."""
         self.connection: Connection | None = None
-        self.device: AddressableDevice | None = None
+        self.device: PhysicalDevice | None = None
         self.discover_task: asyncio.Task | None = None
         self.identify_task: asyncio.Task | None = None
         self.init_info: dict[str, Any] = {}
@@ -305,7 +305,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
         # Tell mypy that once we here, connection is not None
         assert self.connection
         self.device = cast(
-            AddressableDevice,
+            PhysicalDevice,
             await self.connection.get(DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT),
         )
         product: ProductInfo = await self.device.get(
@@ -329,7 +329,8 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
     async def _async_discover_modules(self) -> None:
         """Task to discover modules."""
         # Tell mypy that once we here, device is not None
-        assert self.device
+        assert isinstance(self.device, PhysicalDevice)
+
         modules: ConnectedModules = await self.device.get(
             ATTR_MODULES, timeout=DEFAULT_TIMEOUT
         )

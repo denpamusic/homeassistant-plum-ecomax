@@ -155,20 +155,17 @@ def async_setup_ecomax_selects(connection: EcomaxConnection) -> list[EcomaxSelec
 
 def async_setup_mixer_selects(connection: EcomaxConnection) -> list[MixerSelect]:
     """Set up the mixer selects."""
-    entities: list[MixerSelect] = []
-    for index in connection.device.mixers:
-        entities.extend(
-            MixerSelect(connection, description, index)
-            for description in get_by_index(
-                index,
-                get_by_modules(
-                    connection.device.modules,
-                    get_by_product_type(connection.product_type, MIXER_SELECT_TYPES),
-                ),
-            )
+    return [
+        MixerSelect(connection, description, index)
+        for index in connection.device.mixers
+        for description in get_by_index(
+            index,
+            get_by_modules(
+                connection.device.modules,
+                get_by_product_type(connection.product_type, MIXER_SELECT_TYPES),
+            ),
         )
-
-    return entities
+    ]
 
 
 async def async_setup_entry(
@@ -177,17 +174,14 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the select platform."""
-    connection = entry.runtime_data.connection
     _LOGGER.debug("Starting setup of select platform...")
 
-    entities: list[EcomaxSelect] = []
-
-    # Add ecoMAX selects.
-    entities.extend(async_setup_ecomax_selects(connection))
+    connection = entry.runtime_data.connection
+    entities = async_setup_ecomax_selects(connection)
 
     # Add mixer/circuit selects.
     if connection.has_mixers and await connection.async_setup_mixers():
-        entities.extend(async_setup_mixer_selects(connection))
+        entities += async_setup_mixer_selects(connection)
 
     async_add_entities(entities)
     return True

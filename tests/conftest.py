@@ -14,22 +14,23 @@ from pyplumio.devices.thermostat import Thermostat
 from pyplumio.helpers.parameter import ParameterValues
 from pyplumio.structures.ecomax_parameters import (
     ATTR_ECOMAX_CONTROL,
-    EcomaxBinaryParameter,
-    EcomaxBinaryParameterDescription,
-    EcomaxParameter,
-    EcomaxParameterDescription,
+    EcomaxNumber,
+    EcomaxNumberDescription,
+    EcomaxSwitch,
+    EcomaxSwitchDescription,
 )
 from pyplumio.structures.mixer_parameters import (
-    MixerBinaryParameter,
-    MixerParameter,
-    MixerParameterDescription,
+    MixerNumber,
+    MixerNumberDescription,
+    MixerSwitch,
+    MixerSwitchDescription,
 )
 from pyplumio.structures.modules import ConnectedModules
 from pyplumio.structures.network_info import NetworkInfo
 from pyplumio.structures.product_info import ProductInfo
 from pyplumio.structures.thermostat_parameters import (
-    ThermostatParameter,
-    ThermostatParameterDescription,
+    ThermostatNumber,
+    ThermostatNumberDescription,
 )
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -188,13 +189,16 @@ def connected():
 def fixture_ecomax_base() -> Generator[EcoMAX, None, None]:
     """Return base ecoMAX device with no data."""
     ecomax = EcoMAX(queue=Mock(), network=NetworkInfo())
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.device", ecomax
-    ), patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.get",
-        return_value=ecomax,
-        new_callable=AsyncMock,
-        create=True,
+    with (
+        patch(
+            "custom_components.plum_ecomax.connection.EcomaxConnection.device", ecomax
+        ),
+        patch(
+            "custom_components.plum_ecomax.connection.EcomaxConnection.get",
+            return_value=ecomax,
+            new_callable=AsyncMock,
+            create=True,
+        ),
     ):
         yield ecomax
 
@@ -215,10 +219,10 @@ def fixture_ecomax_common(ecomax_base: EcoMAX):
             "heating_target": 0,
             "state": DeviceState.OFF,
             "password": "0000",
-            "summer_mode": EcomaxParameter(
+            "summer_mode": EcomaxNumber(
                 device=ecomax_base,
                 values=ParameterValues(value=0, min_value=0, max_value=2),
-                description=EcomaxParameterDescription("summer_mode"),
+                description=EcomaxNumberDescription("summer_mode"),
             ),
         }
     )
@@ -230,10 +234,10 @@ def ecomax_control(ecomax_common: EcoMAX):
     """Inject ecomax control parameter."""
     ecomax_common.data.update(
         {
-            ATTR_ECOMAX_CONTROL: EcomaxBinaryParameter(
+            ATTR_ECOMAX_CONTROL: EcomaxSwitch(
                 device=ecomax_common,
                 values=ParameterValues(value=0, min_value=0, max_value=1),
-                description=EcomaxBinaryParameterDescription(ATTR_ECOMAX_CONTROL),
+                description=EcomaxSwitchDescription(ATTR_ECOMAX_CONTROL),
             )
         }
     )
@@ -275,85 +279,88 @@ def fixture_ecomax_p(ecomax_common: EcoMAX):
             "optical_temp": 0.0,
             "return_temp": 0.0,
             "fuel_burned": 0.0,
-            "heating_target_temp": EcomaxParameter(
+            "heating_target_temp": EcomaxNumber(
                 device=ecomax_common,
                 values=ParameterValues(value=0, min_value=0, max_value=1),
-                description=EcomaxParameterDescription(
+                description=EcomaxNumberDescription(
                     "heating_target_temp", unit_of_measurement=UnitOfMeasurement.CELSIUS
                 ),
             ),
-            "min_heating_target_temp": EcomaxParameter(
+            "min_heating_target_temp": EcomaxNumber(
                 device=ecomax_common,
                 values=ParameterValues(value=0, min_value=0, max_value=1),
-                description=EcomaxParameterDescription(
+                description=EcomaxNumberDescription(
                     "min_heating_target_temp",
                     unit_of_measurement=UnitOfMeasurement.CELSIUS,
                 ),
             ),
-            "max_heating_target_temp": EcomaxParameter(
+            "max_heating_target_temp": EcomaxNumber(
                 device=ecomax_common,
                 values=ParameterValues(value=0, min_value=0, max_value=1),
-                description=EcomaxParameterDescription(
+                description=EcomaxNumberDescription(
                     "max_heating_target_temp",
                     unit_of_measurement=UnitOfMeasurement.CELSIUS,
                 ),
             ),
-            "grate_heating_temp": EcomaxParameter(
+            "grate_heating_temp": EcomaxNumber(
                 device=ecomax_common,
                 values=ParameterValues(value=0, min_value=0, max_value=1),
-                description=EcomaxParameterDescription(
+                description=EcomaxNumberDescription(
                     "grate_heating_temp", unit_of_measurement=UnitOfMeasurement.CELSIUS
                 ),
             ),
-            "min_fuzzy_logic_power": EcomaxParameter(
+            "min_fuzzy_logic_power": EcomaxNumber(
                 device=ecomax_common,
                 values=ParameterValues(value=0, min_value=0, max_value=1),
-                description=EcomaxParameterDescription(
+                description=EcomaxNumberDescription(
                     "min_fuzzy_logic_power",
                     unit_of_measurement=UnitOfMeasurement.CELSIUS,
                 ),
             ),
-            "max_fuzzy_logic_power": EcomaxParameter(
+            "max_fuzzy_logic_power": EcomaxNumber(
                 device=ecomax_common,
                 values=ParameterValues(value=0, min_value=0, max_value=1),
-                description=EcomaxParameterDescription(
+                description=EcomaxNumberDescription(
                     "max_fuzzy_logic_power",
                     unit_of_measurement=UnitOfMeasurement.CELSIUS,
                 ),
             ),
-            "fuel_calorific_value": EcomaxParameter(
+            "fuel_calorific_value": EcomaxNumber(
                 device=ecomax_common,
                 values=ParameterValues(value=0, min_value=0, max_value=1),
-                description=EcomaxParameterDescription(
+                description=EcomaxNumberDescription(
                     "fuel_calorific_value",
                     multiplier=0.1,
                     unit_of_measurement=UnitOfMeasurement.KILO_WATT_HOUR_PER_KILOGRAM,
                 ),
             ),
-            "weather_control": EcomaxBinaryParameter(
+            "weather_control": EcomaxSwitch(
                 device=ecomax_common,
                 values=ParameterValues(value=0, min_value=0, max_value=1),
-                description=EcomaxParameterDescription("weather_control"),
+                description=EcomaxSwitchDescription("weather_control"),
             ),
-            "heating_schedule_switch": EcomaxBinaryParameter(
+            "heating_schedule_switch": EcomaxSwitch(
                 device=ecomax_common,
                 values=ParameterValues(value=0, min_value=0, max_value=1),
-                description=EcomaxParameterDescription("heating_schedule_switch"),
+                description=EcomaxSwitchDescription("heating_schedule_switch"),
             ),
-            "fuzzy_logic": EcomaxBinaryParameter(
+            "fuzzy_logic": EcomaxSwitch(
                 device=ecomax_common,
                 values=ParameterValues(value=0, min_value=0, max_value=1),
-                description=EcomaxParameterDescription("fuzzy_logic"),
+                description=EcomaxSwitchDescription("fuzzy_logic"),
             ),
         }
     )
 
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
-        ProductType.ECOMAX_P,
-    ), patch(
-        "custom_components.plum_ecomax.EcomaxConnection.async_setup_mixers",
-        return_value=False,
+    with (
+        patch(
+            "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
+            ProductType.ECOMAX_P,
+        ),
+        patch(
+            "custom_components.plum_ecomax.EcomaxConnection.async_setup_mixers",
+            return_value=False,
+        ),
     ):
         yield ecomax_common
 
@@ -385,12 +392,15 @@ def fixture_ecomax_i(ecomax_common: EcoMAX):
         }
     )
 
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
-        ProductType.ECOMAX_I,
-    ), patch(
-        "custom_components.plum_ecomax.EcomaxConnection.async_setup_mixers",
-        return_value=False,
+    with (
+        patch(
+            "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
+            ProductType.ECOMAX_I,
+        ),
+        patch(
+            "custom_components.plum_ecomax.EcomaxConnection.async_setup_mixers",
+            return_value=False,
+        ),
     ):
         yield ecomax_common
 
@@ -493,38 +503,36 @@ def water_heater(ecomax_common: EcoMAX):
             "water_heater_pump": False,
             "water_heater_temp": 0.0,
             "water_heater_target": 0,
-            "water_heater_target_temp": EcomaxParameter(
+            "water_heater_target_temp": EcomaxNumber(
                 device=ecomax_common,
                 values=ParameterValues(value=50, min_value=10, max_value=80),
-                description=EcomaxParameterDescription(
+                description=EcomaxNumberDescription(
                     "water_heater_target_temp",
                     unit_of_measurement=UnitOfMeasurement.CELSIUS,
                 ),
             ),
-            "water_heater_work_mode": EcomaxParameter(
+            "water_heater_work_mode": EcomaxNumber(
                 device=ecomax_common,
                 values=ParameterValues(value=0, min_value=0, max_value=2),
-                description=EcomaxParameterDescription("water_heater_work_mode"),
+                description=EcomaxNumberDescription("water_heater_work_mode"),
             ),
-            "water_heater_hysteresis": EcomaxParameter(
+            "water_heater_hysteresis": EcomaxNumber(
                 device=ecomax_common,
                 values=ParameterValues(value=5, min_value=0, max_value=10),
-                description=EcomaxParameterDescription(
+                description=EcomaxNumberDescription(
                     "water_heater_hysteresis",
                     unit_of_measurement=UnitOfMeasurement.CELSIUS,
                 ),
             ),
-            "water_heater_disinfection": EcomaxBinaryParameter(
+            "water_heater_disinfection": EcomaxSwitch(
                 device=ecomax_common,
                 values=ParameterValues(value=0, min_value=0, max_value=1),
-                description=EcomaxBinaryParameterDescription(
-                    "water_heater_disinfection"
-                ),
+                description=EcomaxSwitchDescription("water_heater_disinfection"),
             ),
-            "water_heater_schedule_switch": EcomaxBinaryParameter(
+            "water_heater_schedule_switch": EcomaxSwitch(
                 device=ecomax_common,
                 values=ParameterValues(value=0, min_value=0, max_value=1),
-                description=EcomaxParameterDescription("water_heater_schedule_switch"),
+                description=EcomaxNumberDescription("water_heater_schedule_switch"),
             ),
         }
     )
@@ -541,93 +549,93 @@ def mixers(ecomax_common: EcoMAX):
         "pump": False,
         "current_temp": 0.0,
         "target_temp": 0,
-        "work_mode": MixerParameter(
+        "work_mode": MixerNumber(
             device=ecomax_common,
             values=ParameterValues(value=0, min_value=0, max_value=3),
-            description=MixerParameterDescription("work_mode"),
+            description=MixerNumberDescription("work_mode"),
         ),
-        "mixer_target_temp": MixerParameter(
+        "mixer_target_temp": MixerNumber(
             device=ecomax_common,
             values=ParameterValues(value=0, min_value=0, max_value=1),
-            description=MixerParameterDescription(
+            description=MixerNumberDescription(
                 "mixer_target_temp", unit_of_measurement=UnitOfMeasurement.CELSIUS
             ),
         ),
-        "circuit_target_temp": MixerParameter(
+        "circuit_target_temp": MixerNumber(
             device=ecomax_common,
             values=ParameterValues(value=0, min_value=0, max_value=1),
-            description=MixerParameterDescription(
+            description=MixerNumberDescription(
                 "circuit_target_temp", unit_of_measurement=UnitOfMeasurement.CELSIUS
             ),
         ),
-        "min_target_temp": EcomaxParameter(
+        "min_target_temp": MixerNumber(
             device=ecomax_common,
             values=ParameterValues(value=0, min_value=0, max_value=1),
-            description=EcomaxParameterDescription(
+            description=MixerNumberDescription(
                 "min_target_temp", unit_of_measurement=UnitOfMeasurement.CELSIUS
             ),
         ),
-        "max_target_temp": EcomaxParameter(
+        "max_target_temp": MixerNumber(
             device=ecomax_common,
             values=ParameterValues(value=0, min_value=0, max_value=1),
-            description=EcomaxParameterDescription(
+            description=MixerNumberDescription(
                 "max_target_temp", unit_of_measurement=UnitOfMeasurement.CELSIUS
             ),
         ),
-        "weather_control": MixerBinaryParameter(
+        "weather_control": MixerSwitch(
             device=ecomax_common,
             values=ParameterValues(value=0, min_value=0, max_value=1),
-            description=MixerParameterDescription("weather_control"),
+            description=MixerSwitchDescription("weather_control"),
         ),
-        "disable_pump_on_thermostat": MixerBinaryParameter(
+        "disable_pump_on_thermostat": MixerSwitch(
             device=ecomax_common,
             values=ParameterValues(value=0, min_value=0, max_value=1),
-            description=MixerParameterDescription("disable_pump_on_thermostat"),
+            description=MixerSwitchDescription("disable_pump_on_thermostat"),
         ),
-        "summer_work": MixerBinaryParameter(
+        "summer_work": MixerSwitch(
             device=ecomax_common,
             values=ParameterValues(value=0, min_value=0, max_value=1),
-            description=MixerParameterDescription("summer_work"),
+            description=MixerSwitchDescription("summer_work"),
         ),
-        "enable_circuit": MixerParameter(
+        "enable_circuit": MixerNumber(
             device=ecomax_common,
             values=ParameterValues(value=0, min_value=0, max_value=1),
-            description=MixerParameterDescription("enable_circuit"),
+            description=MixerNumberDescription("enable_circuit"),
         ),
     }
 
     mixer_1 = Mixer(queue=Mock(spec=asyncio.Queue), parent=ecomax_common)
     mixer_1.data = {
-        "enable_circuit": MixerParameter(
+        "enable_circuit": MixerNumber(
             device=ecomax_common,
             values=ParameterValues(value=0, min_value=0, max_value=2),
-            description=MixerParameterDescription("enable_circuit"),
+            description=MixerNumberDescription("enable_circuit"),
         ),
-        "day_target_temp": MixerParameter(
+        "day_target_temp": MixerNumber(
             device=ecomax_common,
             values=ParameterValues(value=0, min_value=0, max_value=1),
-            description=MixerParameterDescription(
+            description=MixerNumberDescription(
                 "day_target_temp", unit_of_measurement=UnitOfMeasurement.CELSIUS
             ),
         ),
-        "night_target_temp": MixerParameter(
+        "night_target_temp": MixerNumber(
             device=ecomax_common,
             values=ParameterValues(value=0, min_value=0, max_value=1),
-            description=MixerParameterDescription(
+            description=MixerNumberDescription(
                 "night_target_temp", unit_of_measurement=UnitOfMeasurement.CELSIUS
             ),
         ),
-        "min_target_temp": EcomaxParameter(
+        "min_target_temp": EcomaxNumber(
             device=ecomax_common,
             values=ParameterValues(value=0, min_value=0, max_value=1),
-            description=EcomaxParameterDescription(
+            description=MixerNumberDescription(
                 "min_target_temp", unit_of_measurement=UnitOfMeasurement.CELSIUS
             ),
         ),
-        "max_target_temp": EcomaxParameter(
+        "max_target_temp": EcomaxNumber(
             device=ecomax_common,
             values=ParameterValues(value=0, min_value=0, max_value=1),
-            description=EcomaxParameterDescription(
+            description=MixerNumberDescription(
                 "max_target_temp", unit_of_measurement=UnitOfMeasurement.CELSIUS
             ),
         ),
@@ -646,11 +654,14 @@ def mixers(ecomax_common: EcoMAX):
         }
     )
 
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.has_mixers", True
-    ), patch(
-        "custom_components.plum_ecomax.EcomaxConnection.async_setup_mixers",
-        return_value=True,
+    with (
+        patch(
+            "custom_components.plum_ecomax.connection.EcomaxConnection.has_mixers", True
+        ),
+        patch(
+            "custom_components.plum_ecomax.EcomaxConnection.async_setup_mixers",
+            return_value=True,
+        ),
     ):
         yield ecomax_common
 
@@ -665,71 +676,71 @@ def thermostats(ecomax_common: EcoMAX):
         "target_temp": 16.0,
         "contacts": False,
         "schedule": False,
-        "mode": ThermostatParameter(
+        "mode": ThermostatNumber(
             offset=0,
             device=thermostat,
             values=ParameterValues(value=0, min_value=0, max_value=7),
-            description=ThermostatParameterDescription("mode"),
+            description=ThermostatNumberDescription("mode"),
         ),
-        "hysteresis": ThermostatParameter(
+        "hysteresis": ThermostatNumber(
             offset=0,
             device=thermostat,
             values=ParameterValues(value=5, min_value=0, max_value=50),
-            description=ThermostatParameterDescription(
+            description=ThermostatNumberDescription(
                 "hysteresis",
                 multiplier=0.1,
                 unit_of_measurement=UnitOfMeasurement.CELSIUS,
             ),
         ),
-        "party_target_temp": ThermostatParameter(
+        "party_target_temp": ThermostatNumber(
             offset=0,
             device=thermostat,
             values=ParameterValues(value=100, min_value=100, max_value=350),
-            description=ThermostatParameterDescription(
+            description=ThermostatNumberDescription(
                 "party_target_temp",
                 multiplier=0.1,
                 size=2,
                 unit_of_measurement=UnitOfMeasurement.DAYS,
             ),
         ),
-        "holidays_target_temp": ThermostatParameter(
+        "holidays_target_temp": ThermostatNumber(
             offset=0,
             device=thermostat,
             values=ParameterValues(value=70, min_value=0, max_value=600),
-            description=ThermostatParameterDescription(
+            description=ThermostatNumberDescription(
                 "holidays_target_temp",
                 multiplier=0.1,
                 size=2,
                 unit_of_measurement=UnitOfMeasurement.DAYS,
             ),
         ),
-        "antifreeze_target_temp": ThermostatParameter(
+        "antifreeze_target_temp": ThermostatNumber(
             offset=0,
             device=thermostat,
             values=ParameterValues(value=90, min_value=50, max_value=300),
-            description=ThermostatParameterDescription(
+            description=ThermostatNumberDescription(
                 "antifreeze_target_temp",
                 multiplier=0.1,
                 size=2,
                 unit_of_measurement=UnitOfMeasurement.CELSIUS,
             ),
         ),
-        "day_target_temp": ThermostatParameter(
+        "day_target_temp": ThermostatNumber(
             offset=0,
             device=thermostat,
             values=ParameterValues(value=160, min_value=100, max_value=350),
-            description=ThermostatParameterDescription(
+            description=ThermostatNumberDescription(
                 "day_target_temp",
                 multiplier=0.1,
                 size=2,
                 unit_of_measurement=UnitOfMeasurement.CELSIUS,
             ),
         ),
-        "night_target_temp": ThermostatParameter(
+        "night_target_temp": ThermostatNumber(
             offset=0,
             device=thermostat,
             values=ParameterValues(value=100, min_value=100, max_value=200),
-            description=ThermostatParameterDescription(
+            description=ThermostatNumberDescription(
                 "night_target_temp",
                 multiplier=0.1,
                 size=2,
@@ -748,10 +759,11 @@ def thermostats(ecomax_common: EcoMAX):
         }
     )
 
-    with patch(
-        "custom_components.plum_ecomax.EcomaxConnection.has_thermostats", True
-    ), patch(
-        "custom_components.plum_ecomax.EcomaxConnection.async_setup_thermostats",
-        return_value=True,
+    with (
+        patch("custom_components.plum_ecomax.EcomaxConnection.has_thermostats", True),
+        patch(
+            "custom_components.plum_ecomax.EcomaxConnection.async_setup_thermostats",
+            return_value=True,
+        ),
     ):
         yield ecomax_common

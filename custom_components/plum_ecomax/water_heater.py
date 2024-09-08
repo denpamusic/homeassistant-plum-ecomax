@@ -22,8 +22,10 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyplumio.filters import on_change, throttle
+from pyplumio.filters import Filter, on_change, throttle
 from pyplumio.helpers.parameter import Parameter
+
+from custom_components.plum_ecomax.connection import EcomaxConnection
 
 from . import PlumEcomaxConfigEntry
 from .entity import EcomaxEntity, EcomaxEntityDescription
@@ -63,7 +65,22 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         | WaterHeaterEntityFeature.OPERATION_MODE
     )
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _callbacks: dict[str, Filter]
     entity_description: EcomaxWaterHeaterEntityDescription
+
+    def __init__(
+        self,
+        connection: EcomaxConnection,
+        description: EcomaxWaterHeaterEntityDescription,
+    ):
+        """Initialize a new ecoMAX climate entity."""
+        self._callbacks = {
+            "water_heater_temp": throttle(on_change(self.async_update), seconds=10),
+            "water_heater_target_temp": on_change(self.async_update_target_temp),
+            "water_heater_work_mode": on_change(self.async_update_work_mode),
+            "water_heater_hysteresis": on_change(self.async_update_hysteresis),
+        }
+        super().__init__(connection, description)
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
@@ -113,28 +130,16 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to water heater events."""
-        key = self.entity_description.key
-        callbacks = {
-            f"{key}_temp": throttle(on_change(self.async_update), seconds=10),
-            f"{key}_target_temp": on_change(self.async_update_target_temp),
-            f"{key}_work_mode": on_change(self.async_update_work_mode),
-            f"{key}_hysteresis": on_change(self.async_update_hysteresis),
-        }
-
-        for name, func in callbacks.items():
-            # Feed initial value to the callback function.
+        for name, handler in self._callbacks.items():
             if name in self.device.data:
-                await func(self.device.data[name])
+                await handler(self.device.data[name])
 
-            self.device.subscribe(name, func)
+            self.device.subscribe(name, handler)
 
     async def async_will_remove_from_hass(self) -> None:
         """Unsubscribe to water heater events."""
-        key = self.entity_description.key
-        self.device.unsubscribe(f"{key}_temp", self.async_update)
-        self.device.unsubscribe(f"{key}_target_temp", self.async_update_target_temp)
-        self.device.unsubscribe(f"{key}_work_mode", self.async_update_work_mode)
-        self.device.unsubscribe(f"{key}_hysteresis", self.async_update_hysteresis)
+        for name, handler in self._callbacks.items():
+            self.device.unsubscribe(name, handler)
 
     @property
     def hysteresis(self) -> int:

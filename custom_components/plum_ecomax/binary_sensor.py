@@ -204,18 +204,14 @@ def async_setup_mixer_binary_sensors(
     connection: EcomaxConnection,
 ) -> list[MixerBinarySensor]:
     """Set up the mixer binary sensors."""
-    entities: list[MixerBinarySensor] = []
-
-    for index in connection.device.mixers:
-        entities.extend(
-            MixerBinarySensor(connection, description, index)
-            for description in get_by_modules(
-                connection.device.modules,
-                get_by_product_type(connection.product_type, MIXER_BINARY_SENSOR_TYPES),
-            )
+    return [
+        MixerBinarySensor(connection, description, index)
+        for index in connection.device.mixers
+        for description in get_by_modules(
+            connection.device.modules,
+            get_by_product_type(connection.product_type, MIXER_BINARY_SENSOR_TYPES),
         )
-
-    return entities
+    ]
 
 
 async def async_setup_entry(
@@ -224,17 +220,14 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> bool:
     """Set up the binary sensor platform."""
-    connection = entry.runtime_data.connection
     _LOGGER.debug("Starting setup of binary sensor platform...")
 
-    entities: list[EcomaxBinarySensor] = []
-
-    # Add ecoMAX binary sensors.
-    entities.extend(async_setup_ecomax_binary_sensors(connection))
+    connection = entry.runtime_data.connection
+    entities = async_setup_ecomax_binary_sensors(connection)
 
     # Add mixer/circuit binary sensors.
     if connection.has_mixers and await connection.async_setup_mixers():
-        entities.extend(async_setup_mixer_binary_sensors(connection))
+        entities += async_setup_mixer_binary_sensors(connection)
 
     async_add_entities(entities)
     return True
