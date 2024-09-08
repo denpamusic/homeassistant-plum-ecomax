@@ -42,17 +42,11 @@ from homeassistant.helpers import entity_registry as er, selector
 import homeassistant.helpers.config_validation as cv
 from pyplumio.connection import Connection
 from pyplumio.const import ProductType
-from pyplumio.devices import PhysicalDevice
+from pyplumio.devices import PhysicalDevice, VirtualDevice
 from pyplumio.exceptions import ConnectionFailedError
-from pyplumio.helpers.parameter import Parameter, UnitOfMeasurement
-from pyplumio.structures.ecomax_parameters import EcomaxBinaryParameter, EcomaxParameter
-from pyplumio.structures.mixer_parameters import MixerBinaryParameter, MixerParameter
+from pyplumio.helpers.parameter import Number, Switch, UnitOfMeasurement
 from pyplumio.structures.modules import ConnectedModules
 from pyplumio.structures.product_info import ProductInfo
-from pyplumio.structures.thermostat_parameters import (
-    ThermostatBinaryParameter,
-    ThermostatParameter,
-)
 import voluptuous as vol
 
 from . import PlumEcomaxConfigEntry, async_reload_config
@@ -364,12 +358,8 @@ class UnsupportedProduct(HomeAssistantError):
 SOURCE_TYPES: dict[Platform, tuple[type, ...]] = {
     Platform.BINARY_SENSOR: (bool,),
     Platform.SENSOR: (int, float, str),
-    Platform.NUMBER: (EcomaxParameter, MixerParameter, ThermostatParameter),
-    Platform.SWITCH: (
-        EcomaxBinaryParameter,
-        MixerBinaryParameter,
-        ThermostatBinaryParameter,
-    ),
+    Platform.NUMBER: (Number,),
+    Platform.SWITCH: (Switch,),
 }
 
 ValueT = TypeVar("ValueT", str, int, float)
@@ -473,7 +463,7 @@ class OptionsFlowHandler(OptionsFlow):
                 f"the selected source. Please select a different source and try again"
             )
 
-        schema = {
+        schema: dict[vol.Marker, object] = {
             vol.Required(CONF_NAME, default=entity.get(CONF_NAME, vol.UNDEFINED)): str,
             vol.Required(
                 CONF_KEY, default=entity.get(CONF_KEY, vol.UNDEFINED)
@@ -668,7 +658,7 @@ class OptionsFlowHandler(OptionsFlow):
 
         elif self.source_device.startswith((DeviceType.MIXER, DeviceType.THERMOSTAT)):
             device_type, index = self.source_device.split("_", 1)
-            devices: dict[int, SubDevice] = device.get_nowait(f"{device_type}s", {})
+            devices: dict[int, VirtualDevice] = device.get_nowait(f"{device_type}s", {})
             data = devices[int(index)].data
             existing_entities = [
                 key for key in entity_keys if f"{device_type}-{index}" in key
@@ -717,7 +707,7 @@ class OptionsFlowHandler(OptionsFlow):
 
     @overload
     @staticmethod
-    def _async_format_source_value(value: Parameter) -> str: ...
+    def _async_format_source_value(value: Number) -> str: ...
 
     @overload
     @staticmethod
@@ -727,7 +717,7 @@ class OptionsFlowHandler(OptionsFlow):
     @staticmethod
     def _async_format_source_value(value: Any) -> Any:
         """Format the source value."""
-        if isinstance(value, Parameter):
+        if isinstance(value, Number):
             unit = value.unit_of_measurement
             unit2 = unit.value if isinstance(unit, UnitOfMeasurement) else unit
             return f"{value.value} {'' if unit2 is None else unit2}".rstrip()
