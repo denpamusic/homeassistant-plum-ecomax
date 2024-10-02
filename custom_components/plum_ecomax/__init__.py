@@ -166,29 +166,29 @@ async def async_migrate_entry(
     try:
         device = await connection.get(DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT)
 
-        if entry.version in (1, 2):
+        if entry.version < 3:
+            # Product type was added in version 3.
             product = await device.get(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
             data[CONF_PRODUCT_TYPE] = product.type
-            entry.version = 3
 
-        if entry.version in (3, 4, 5):
+        if entry.version < 5:
+            # Capabilities got removed to sub_devices in version 5.
             with suppress(KeyError):
                 del data[CONF_CAPABILITIES]
 
             data[CONF_SUB_DEVICES] = await async_get_sub_devices(device)
-            entry.version = 6
 
-        if entry.version == 6:
+        if entry.version < 7:
+            # Product id were added in version 7.
             product = await device.get(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
             data[CONF_PRODUCT_ID] = product.id
-            entry.version = 7
 
-        if entry.version == 7:
+        if entry.version < 8:
+            # Software versions were added in version 8.
             modules = await device.get(ATTR_MODULES, timeout=DEFAULT_TIMEOUT)
             data[CONF_SOFTWARE] = asdict(modules)
-            entry.version = 8
 
-        hass.config_entries.async_update_entry(entry, data=data)
+        hass.config_entries.async_update_entry(entry, data=data, version=8)
         await connection.close()
         _LOGGER.info("Migration to version %s successful", entry.version)
     except TimeoutError:

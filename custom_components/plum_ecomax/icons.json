@@ -158,11 +158,23 @@
     }
   },
   "services": {
-    "calibrate_meter": "mdi:counter",
-    "get_parameter": "mdi:cog",
-    "get_schedule": "mdi:timetable",
-    "reset_meter": "mdi:refresh",
-    "set_parameter": "mdi:pencil",
-    "set_schedule": "mdi:timetable"
+    "calibrate_meter": {
+      "service": "mdi:counter"
+    },
+    "get_parameter": {
+      "service": "mdi:cog"
+    },
+    "get_schedule": {
+      "service": "mdi:timetable"
+    },
+    "reset_meter": {
+      "service": "mdi:refresh"
+    },
+    "set_parameter": {
+      "service": "mdi:pencil"
+    },
+    "set_schedule": {
+      "service": "mdi:timetable"
+    }
   }
 }
