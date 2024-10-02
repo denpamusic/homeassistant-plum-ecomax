@@ -171,10 +171,9 @@ async def test_migrate_entry_v1_2_to_v8(
     hass: HomeAssistant, config_entry: ConfigEntry, caplog
 ) -> None:
     """Test migrating entry from version 1 or 2 to version 8."""
-    config_entry.version = 1
     data = dict(config_entry.data)
     data.update({CONF_CAPABILITIES: {"test_capability"}})
-    hass.config_entries.async_update_entry(config_entry, data=data)
+    hass.config_entries.async_update_entry(config_entry, data=data, version=1)
     assert await async_migrate_entry(hass, config_entry)
     data = dict(config_entry.data)
     assert CONF_CAPABILITIES not in data
@@ -188,9 +187,8 @@ async def test_migrate_entry_v3_to_v8(
     hass: HomeAssistant, config_entry: ConfigEntry, caplog
 ) -> None:
     """Test migrating entry from version 3 to version 8."""
-    config_entry.version = 3
     data = dict(config_entry.data)
-    hass.config_entries.async_update_entry(config_entry, data=data)
+    hass.config_entries.async_update_entry(config_entry, data=data, version=3)
     assert await async_migrate_entry(hass, config_entry)
     data = dict(config_entry.data)
     assert config_entry.version == 8
@@ -202,10 +200,9 @@ async def test_migrate_entry_v4_5_to_v8(
     hass: HomeAssistant, config_entry: ConfigEntry, caplog
 ) -> None:
     """Test migrating entry from version 4 or 5 to version 8."""
-    config_entry.version = 4
     data = dict(config_entry.data)
     del data[CONF_SUB_DEVICES]
-    hass.config_entries.async_update_entry(config_entry, data=data)
+    hass.config_entries.async_update_entry(config_entry, data=data, version=4)
     assert await async_migrate_entry(hass, config_entry)
     data = dict(config_entry.data)
     assert CONF_CAPABILITIES not in data
@@ -219,7 +216,7 @@ async def test_migrate_entry_v6_to_v8(
     hass: HomeAssistant, config_entry: ConfigEntry, caplog
 ) -> None:
     """Test migrating entry from version 6 to version 8."""
-    config_entry.version = 6
+    hass.config_entries.async_update_entry(config_entry, version=6)
     assert await async_migrate_entry(hass, config_entry)
     data = dict(config_entry.data)
     assert CONF_PRODUCT_ID in data
@@ -233,7 +230,7 @@ async def test_migrate_entry_v7_to_v8(
     hass: HomeAssistant, config_entry: ConfigEntry, caplog
 ) -> None:
     """Test migrating entry from version 7 to version 8."""
-    config_entry.version = 7
+    hass.config_entries.async_update_entry(config_entry, version=7)
     assert await async_migrate_entry(hass, config_entry)
     data = dict(config_entry.data)
     assert CONF_SOFTWARE in data
