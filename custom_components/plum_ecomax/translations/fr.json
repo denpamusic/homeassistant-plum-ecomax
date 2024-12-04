@@ -118,7 +118,8 @@
         "name": "Température de jour cible"
       },
       "fuel_calorific_value": {
-        "name": "Pouvoir calorifique du combustible"
+        "name": "Pouvoir calorifique du combustible",
+        "unit_of_measurement": "kWh/kg"
       },
       "fuzzy_logic_max_power": {
         "name": "Puissance maximale par logique floue"
@@ -254,7 +255,8 @@
         "name": "Intensité des flammes"
       },
       "fuel_consumption": {
-        "name": "Consommation de combustible"
+        "name": "Consommation de combustible",
+        "unit_of_measurement": "kg/h"
       },
       "fuel_level": {
         "name": "Niveau de combustible"

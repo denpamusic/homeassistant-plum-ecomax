@@ -118,7 +118,8 @@
         "name": "Day target circuit temperature"
       },
       "fuel_calorific_value": {
-        "name": "Fuel calorific value"
+        "name": "Fuel calorific value",
+        "unit_of_measurement": "kWh/kg"
       },
       "fuzzy_logic_max_power": {
         "name": "Fuzzy logic maximum power"
@@ -254,7 +255,8 @@
         "name": "Flame intensity"
       },
       "fuel_consumption": {
-        "name": "Fuel consumption"
+        "name": "Fuel consumption",
+        "unit_of_measurement": "kg/h"
       },
       "fuel_level": {
         "name": "Fuel level"

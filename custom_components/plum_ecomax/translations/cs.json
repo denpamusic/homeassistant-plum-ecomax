@@ -118,7 +118,8 @@
         "name": "Denní cílová teplota okruhu"
       },
       "fuel_calorific_value": {
-        "name": "Výhřevnost paliva"
+        "name": "Výhřevnost paliva",
+        "unit_of_measurement": "kWh/kg"
       },
       "fuzzy_logic_max_power": {
         "name": "Maximální výkon fuzzy logiky"
@@ -254,7 +255,8 @@
         "name": "Intenzita plamene"
       },
       "fuel_consumption": {
-        "name": "Spotřeba paliva"
+        "name": "Spotřeba paliva",
+        "unit_of_measurement": "kg/h"
       },
       "fuel_level": {
         "name": "Úroveň paliva"

@@ -118,7 +118,8 @@
         "name": "Дневная температура контура"
       },
       "fuel_calorific_value": {
-        "name": "Теплотворность топлива"
+        "name": "Теплотворность топлива",
+        "unit_of_measurement": "кВтч/кг"
       },
       "fuzzy_logic_max_power": {
         "name": "Максимальная мощность Fuzzy logic"
@@ -254,7 +255,8 @@
         "name": "Интенсивность пламени"
       },
       "fuel_consumption": {
-        "name": "Потребление топлива"
+        "name": "Потребление топлива",
+        "unit_of_measurement": "кг/ч"
       },
       "fuel_level": {
         "name": "Уровень топлива"

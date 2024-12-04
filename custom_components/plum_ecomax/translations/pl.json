@@ -118,7 +118,8 @@
         "name": "Temperatura zadana dzień"
       },
       "fuel_calorific_value": {
-        "name": "Kaloryczność paliwa"
+        "name": "Kaloryczność paliwa",
+        "unit_of_measurement": "kWh/kg"
       },
       "fuzzy_logic_max_power": {
         "name": "Max. moc kotła FL"
@@ -254,7 +255,8 @@
         "name": "Intensywność płomienia"
       },
       "fuel_consumption": {
-        "name": "Zużycie paliwa"
+        "name": "Zużycie paliwa",
+        "unit_of_measurement": "kg/h"
       },
       "fuel_level": {
         "name": "Poziom paliwa"
