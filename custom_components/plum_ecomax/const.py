@@ -80,10 +80,6 @@ DEFAULT_CONNECTION_TYPE: Final = CONNECTION_TYPE_TCP
 DEFAULT_DEVICE: Final = "/dev/ttyUSB0"
 DEFAULT_PORT: Final = 8899
 
-# Units of measurement.
-CALORIFIC_KWH_KG: Final = "kWh/kg"
-FLOW_KGH: Final = "kg/h"
-
 # Events.
 EVENT_PLUM_ECOMAX_ALERT: Final = "plum_ecomax_alert"
 

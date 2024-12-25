@@ -46,7 +46,6 @@ from .const import (
     ATTR_REGDATA,
     ATTR_VALUE,
     DEVICE_CLASS_METER,
-    FLOW_KGH,
     ModuleType,
     ProductModel,
 )
@@ -184,7 +183,6 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
     EcomaxSensorEntityDescription(
         key="fuel_consumption",
-        native_unit_of_measurement=FLOW_KGH,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=2,
