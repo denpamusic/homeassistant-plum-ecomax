@@ -11,7 +11,7 @@ from homeassistant.components.water_heater import (
     STATE_ECO,
     STATE_PERFORMANCE,
     WaterHeaterEntity,
-    WaterHeaterEntityEntityDescription,
+    WaterHeaterEntityDescription,
     WaterHeaterEntityFeature,
 )
 from homeassistant.const import (
@@ -40,7 +40,7 @@ _LOGGER = logging.getLogger(__name__)
 
 @dataclass(frozen=True, kw_only=True)
 class EcomaxWaterHeaterEntityDescription(
-    EcomaxEntityDescription, WaterHeaterEntityEntityDescription
+    EcomaxEntityDescription, WaterHeaterEntityDescription
 ):
     """Describes an ecoMAX water heater."""
 
