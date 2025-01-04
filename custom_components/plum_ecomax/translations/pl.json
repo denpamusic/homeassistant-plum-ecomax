@@ -329,7 +329,7 @@
     },
     "switch": {
       "controller_switch": {
-        "name": "Przełącznik regulatora"
+        "name": "Włącznik kotła"
       },
       "disable_pump_on_thermostat": {
         "name": "Blokada pompy od termostatu"
