@@ -113,7 +113,8 @@
         "name": "Denní cílová teplota okruhu"
       },
       "fuel_calorific_value": {
-        "name": "Výhřevnost paliva"
+        "name": "Výhřevnost paliva",
+        "unit_of_measurement": "kWh/kg"
       },
       "fuzzy_logic_max_power": {
         "name": "Maximální výkon fuzzy logiky"
@@ -249,7 +250,8 @@
         "name": "Intenzita plamene"
       },
       "fuel_consumption": {
-        "name": "Spotřeba paliva"
+        "name": "Spotřeba paliva",
+        "unit_of_measurement": "kg/h"
       },
       "fuel_level": {
         "name": "Úroveň paliva"
@@ -385,9 +387,6 @@
     },
     "schedule_not_found": {
       "message": "Požadovaný rozvrh nebyl nalezen ({schedule})"
-    },
-    "set_parameter_failed": {
-      "message": "Požadavek na nastavení parametru se nezdařil ({parameter})"
     },
     "set_parameter_timeout": {
       "message": "Časový limit požadavku na nastavení parametru vypršel ({parameter})"

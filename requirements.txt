@@ -1,2 +1,2 @@
-homeassistant>=2024.9.0
-pyplumio==0.5.28
+homeassistant>=2025.1.0
+pyplumio==0.5.33

@@ -29,7 +29,6 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import CALORIFIC_KWH_KG
 
 
 @pytest.fixture(autouse=True)
@@ -419,7 +418,7 @@ async def test_fuel_calorific_value_number(
     assert isinstance(state, State)
     assert state.state == "0.0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fuel calorific value"
-    assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == CALORIFIC_KWH_KG
+    assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == "kWh/kg"
     assert state.attributes[ATTR_MIN] == 0
     assert state.attributes[ATTR_MAX] == 0.1
     assert state.attributes[ATTR_STEP] == 0.1

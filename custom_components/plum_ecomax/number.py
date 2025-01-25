@@ -22,7 +22,7 @@ from pyplumio.structures.modules import ConnectedModules
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import ALL, CALORIFIC_KWH_KG
+from .const import ALL
 from .entity import (
     DescriptorT,
     EcomaxEntity,
@@ -91,7 +91,6 @@ NUMBER_TYPES: tuple[EcomaxNumberEntityDescription, ...] = (
         key="fuel_calorific_value",
         mode=NumberMode.BOX,
         native_step=0.1,
-        native_unit_of_measurement=CALORIFIC_KWH_KG,
         product_types={ProductType.ECOMAX_P},
         translation_key="fuel_calorific_value",
     ),

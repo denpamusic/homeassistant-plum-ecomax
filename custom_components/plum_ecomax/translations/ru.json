@@ -113,7 +113,8 @@
         "name": "Дневная температура контура"
       },
       "fuel_calorific_value": {
-        "name": "Теплотворность топлива"
+        "name": "Теплотворность топлива",
+        "unit_of_measurement": "кВтч/кг"
       },
       "fuzzy_logic_max_power": {
         "name": "Максимальная мощность Fuzzy logic"
@@ -249,7 +250,8 @@
         "name": "Интенсивность пламени"
       },
       "fuel_consumption": {
-        "name": "Потребление топлива"
+        "name": "Потребление топлива",
+        "unit_of_measurement": "кг/ч"
       },
       "fuel_level": {
         "name": "Уровень топлива"
@@ -385,9 +387,6 @@
     },
     "schedule_not_found": {
       "message": "Requested schedule not found ({schedule})"
-    },
-    "set_parameter_failed": {
-      "message": "Request to set a parameter failed ({parameter})"
     },
     "set_parameter_timeout": {
       "message": "Request to set a parameter timed out ({parameter})"

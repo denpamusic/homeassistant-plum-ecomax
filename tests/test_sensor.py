@@ -65,7 +65,6 @@ from custom_components.plum_ecomax.const import (
     ATTR_VALUE,
     DEVICE_CLASS_METER,
     DOMAIN,
-    FLOW_KGH,
     ModuleType,
 )
 from custom_components.plum_ecomax.sensor import (
@@ -599,7 +598,7 @@ async def test_fuel_consumption_sensor(
     assert isinstance(state, State)
     assert state.state == "0.0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fuel consumption"
-    assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == FLOW_KGH
+    assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == "kg/h"
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
     # Dispatch new value.

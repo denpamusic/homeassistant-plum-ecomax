@@ -113,7 +113,8 @@
         "name": "Temperatura zadana dzień"
       },
       "fuel_calorific_value": {
-        "name": "Kaloryczność paliwa"
+        "name": "Kaloryczność paliwa",
+        "unit_of_measurement": "kWh/kg"
       },
       "fuzzy_logic_max_power": {
         "name": "Max. moc kotła FL"
@@ -249,7 +250,8 @@
         "name": "Intensywność płomienia"
       },
       "fuel_consumption": {
-        "name": "Zużycie paliwa"
+        "name": "Zużycie paliwa",
+        "unit_of_measurement": "kg/h"
       },
       "fuel_level": {
         "name": "Poziom paliwa"
@@ -322,7 +324,7 @@
     },
     "switch": {
       "controller_switch": {
-        "name": "Przełącznik regulatora"
+        "name": "Włącznik kotła"
       },
       "disable_pump_on_thermostat": {
         "name": "Blokada pompy od termostatu"
@@ -385,9 +387,6 @@
     },
     "schedule_not_found": {
       "message": "Requested schedule not found ({schedule})"
-    },
-    "set_parameter_failed": {
-      "message": "Request to set a parameter failed ({parameter})"
     },
     "set_parameter_timeout": {
       "message": "Request to set a parameter timed out ({parameter})"

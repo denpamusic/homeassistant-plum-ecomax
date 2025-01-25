@@ -21,21 +21,21 @@
           "baudrate": "Débit en bauds",
           "device": "Chemin de l'appareil"
         },
-        "title": "Serial settings"
+        "title": "Paramètres série"
       },
       "tcp": {
         "data": {
           "host": "Hôte",
           "port": "Port"
         },
-        "title": "Network settings"
+        "title": "Paramètres réseau"
       },
       "user": {
         "menu_options": {
           "serial": "Se connecter via le port série (RS-485)",
           "tcp": "Se connecter via le réseau (TCP)"
         },
-        "title": "Choose a connection type"
+        "title": "Choix d'un type de connexion"
       }
     }
   },
@@ -44,7 +44,7 @@
       "name": "{device_name} Circuit {mixer_number}"
     },
     "mixer": {
-      "name": "{device_name} Mixér {mixer_number}"
+      "name": "{device_name} Mixer {mixer_number}"
     },
     "thermostat": {
       "name": "{device_name} Termostat {thermostat_number}"
@@ -53,43 +53,43 @@
   "entity": {
     "binary_sensor": {
       "alert": {
-        "name": "Alert"
+        "name": "Alerte"
       },
       "circuit_pump": {
-        "name": "Circuit pump"
+        "name": "Pompe de circuit"
       },
       "circulation_pump": {
-        "name": "Circulation pump"
+        "name": "Pompe de circulation"
       },
       "connection_status": {
-        "name": "Connection status"
+        "name": "État de la connexion"
       },
       "exhaust_fan": {
-        "name": "Exhaust fan"
+        "name": "Ventilateur d'extraction"
       },
       "fan": {
-        "name": "Fan"
+        "name": "Ventilateur"
       },
       "feeder": {
-        "name": "Feeder"
+        "name": "Alimentation"
       },
       "fireplace_pump": {
-        "name": "Fireplace pump"
+        "name": "Pompe de cheminée"
       },
       "heating_pump": {
-        "name": "Heating pump"
+        "name": "Pome à chaleur"
       },
       "lighter": {
         "name": "Lighter"
       },
       "mixer_pump": {
-        "name": "Mixer pump"
+        "name": "Pompe de mélange"
       },
       "solar_pump": {
-        "name": "Solar pump"
+        "name": "Pompe solaire"
       },
       "water_heater_pump": {
-        "name": "Water heater pump"
+        "name": "Pompe du chauffe eau"
       }
     },
     "climate": {
@@ -101,7 +101,7 @@
               "airing": "Aération",
               "antifreeze": "Antigel",
               "holidays": "Vacances",
-              "party": "Party",
+              "party": "Fête",
               "schedule": "Programme"
             }
           }
@@ -110,111 +110,112 @@
     },
     "number": {
       "day_target_circuit_temp": {
-        "name": "Day target circuit temperature"
+        "name": "Température de jour cible"
       },
       "fuel_calorific_value": {
-        "name": "Fuel calorific value"
+        "name": "Pouvoir calorifique du combustible",
+        "unit_of_measurement": "kWh/kg"
       },
       "fuzzy_logic_max_power": {
-        "name": "Fuzzy logic maximum power"
+        "name": "Puissance maximale par logique floue"
       },
       "fuzzy_logic_min_power": {
-        "name": "Fuzzy logic minimum power"
+        "name": "Puissance minimale par logique floue"
       },
       "grate_mode_temp": {
         "name": "Grate mode temperature"
       },
       "max_circuit_temp": {
-        "name": "Maximum circuit temperature"
+        "name": "Température maximale du circuit"
       },
       "max_heating_temp": {
-        "name": "Maximum heating temperature"
+        "name": "Température maximale de chauffage"
       },
       "max_mixer_temp": {
-        "name": "Maximum mixer temperature"
+        "name": "Température maximale du mélangeur"
       },
       "min_circuit_temp": {
-        "name": "Minimum circuit temperature"
+        "name": "Température minimale du circuit"
       },
       "min_heating_temp": {
-        "name": "Minimum heating temperature"
+        "name": "Température minimale de chauffage"
       },
       "min_mixer_temp": {
-        "name": "Minimum mixer temperature"
+        "name": "Température minimale du mélangeur"
       },
       "night_target_circuit_temp": {
-        "name": "Night target circuit temperature"
+        "name": "Température de nuit cible"
       },
       "target_circuit_temp": {
-        "name": "Target circuit temperature"
+        "name": "Température de circuit cible"
       },
       "target_heating_temp": {
-        "name": "Target heating temperature"
+        "name": "Température de chauffage cible"
       },
       "target_mixer_temp": {
-        "name": "Target mixer temperature"
+        "name": "Température de mélangeur cible"
       }
     },
     "select": {
       "mixer_work_mode": {
-        "name": "Work mode",
+        "name": "Mode travail",
         "state": {
-          "heated_floor": "Heated floor",
-          "heating": "Heating",
+          "heated_floor": "Plancher chauffant",
+          "heating": "En chauffe",
           "off": "Off",
-          "pump_only": "Pump only"
+          "pump_only": "Pompe seulement"
         }
       },
       "summer_mode": {
-        "name": "Summer mode",
+        "name": "Mode été",
         "state": {
           "auto": "Auto",
-          "summer": "Summer",
-          "winter": "Winter"
+          "summer": "Été",
+          "winter": "Hiver"
         }
       }
     },
     "sensor": {
       "ash_pan_full": {
-        "name": "Ash pan full"
+        "name": "Cendrier plein"
       },
       "boiler_load": {
-        "name": "Boiler load"
+        "name": "Charge de la chaudière"
       },
       "boiler_power": {
-        "name": "Boiler power"
+        "name": "Puissance de la chaudière"
       },
       "circuit_target_temp": {
-        "name": "Circuit target temperature"
+        "name": "Temperature cible du circuit"
       },
       "circuit_temp": {
-        "name": "Circuit temperature"
+        "name": "Température du circuit"
       },
       "connected_modules": {
-        "name": "Connected modules",
+        "name": "Modules connectés",
         "state_attributes": {
           "ecolambda": {
-            "name": "ecoLAMBDA software version"
+            "name": "Version du logiciel ecoLAMBDA"
           },
           "ecoster": {
-            "name": "ecoSTER software version"
+            "name": "Version du logiciel ecoSTER"
           },
           "module_a": {
-            "name": "Module A software version"
+            "name": "Version du logiciel du module A"
           },
           "module_b": {
-            "name": "Module B software version"
+            "name": "Version du logiciel du module B"
           },
           "module_c": {
-            "name": "Module C software version"
+            "name": "Version du logiciel du module C"
           },
           "panel": {
-            "name": "Panel software version"
+            "name": "Version du logiciel du panneauPanel"
           }
         }
       },
       "ecomax_state": {
-        "name": "State",
+        "name": "Etat",
         "state": {
           "alert": "Alerte",
           "burning_off": "Brulage",
@@ -225,82 +226,83 @@
           "paused": "Pause",
           "stabilization": "Ventilation",
           "standby": "En attente",
-          "unknown": "Unknown"
+          "unknown": "Inconnu"
         },
         "state_attributes": {
           "numeric_state": {
-            "name": "Numeric state"
+            "name": "Etat numérique"
           }
         }
       },
       "exhaust_temp": {
-        "name": "Exhaust temperature"
+        "name": "Température des fumées"
       },
       "fan_power": {
-        "name": "Fan power"
+        "name": "Puissence du ventilateur"
       },
       "feeder_temp": {
-        "name": "Feeder temperature"
+        "name": "Température de l'alimentation"
       },
       "fireplace_temp": {
-        "name": "Fireplace temperature"
+        "name": "Température du foyer"
       },
       "flame_intensity": {
-        "name": "Flame intensity"
+        "name": "Intensité des flammes"
       },
       "fuel_consumption": {
-        "name": "Fuel consumption"
+        "name": "Consommation de combustible",
+        "unit_of_measurement": "kg/h"
       },
       "fuel_level": {
-        "name": "Fuel level"
+        "name": "Niveau de combustible"
       },
       "heating_target": {
-        "name": "Heating target temperature"
+        "name": "Température de chauffage cible"
       },
       "heating_temp": {
-        "name": "Heating temperature"
+        "name": "Température de chauffage"
       },
       "lower_buffer_temp": {
-        "name": "Lower buffer temperature"
+        "name": "Température du ballon bas"
       },
       "lower_solar_temp": {
-        "name": "Lower solar temperature"
+        "name": "Température solaire bas"
       },
       "mixer_target_temp": {
-        "name": "Mixer target temperature"
+        "name": "Température du mélangeur cible"
       },
       "mixer_temp": {
-        "name": "Mixer temperature"
+        "name": "Température du mélanger"
       },
       "mixer_valve_opening_percentage": {
-        "name": "Mixer valve opening percentage"
+        "name": "Pourcentage d'ouverture de la vane du mélangeur"
       },
       "mixer_valve_state": {
-        "name": "Mixer valve state",
+        "name": "État de la vanne du mélangeur",
         "state": {
-          "closing": "Closing",
+          "closing": "Fermeture",
           "off": "Off",
-          "opening": "Opening",
-          "unknown": "Unknown"
+          "opening": "Ouverture",
+          "unknown": "Inconnu"
         }
       },
       "outside_temp": {
-        "name": "Outside temperature"
+        "name": "Température extérieure"
       },
       "oxygen_level": {
-        "name": "Oxygen level"
+        "name": "Niveau d'oxygène"
       },
       "return_temp": {
-        "name": "Return temperature"
+        "name": "Température de retour"
       },
       "service_password": {
-        "name": "Service password"
+        "name": "Mot de passe de service"
       },
       "total_fuel_burned": {
-        "name": "Total fuel burned",
+        "name": "Total du combustible brûlé",
         "state_attributes": {
           "burned_since_last_update": {
-            "name": "Burned since last update, g"
+            "name": "Brûlé depuis la dernière mise à jour, g"
           }
         }
       },
@@ -308,16 +310,16 @@
         "name": "UID"
       },
       "upper_buffer_temp": {
-        "name": "Upper buffer temperature"
+        "name": "Température du ballon haut"
       },
       "upper_solar_temp": {
-        "name": "Upper solar temperature"
+        "name": "Température solaire haute"
       },
       "water_heater_target": {
-        "name": "Water heater target temperature"
+        "name": "Température du chauffe eau cible"
       },
       "water_heater_temp": {
-        "name": "Water heater temperature"
+        "name": "Température du chauffe eauw"
       }
     },
     "switch": {
@@ -325,31 +327,31 @@
         "name": "Controller switch"
       },
       "disable_pump_on_thermostat": {
-        "name": "Disable pump on thermostat"
+        "name": "Désactiver la pompe du thermostat"
       },
       "enable_circuit": {
-        "name": "Enable circuit"
+        "name": "Activer le circuit"
       },
       "enable_in_summer_mode": {
-        "name": "Enable in summer mode"
+        "name": "Activer en mode été"
       },
       "fuzzy_logic_switch": {
         "name": "Fuzzy logic switch"
       },
       "heating_schedule_switch": {
-        "name": "Heating schedule switch"
+        "name": "Commutateur de programmation de chauffage"
       },
       "water_heater_disinfection_switch": {
-        "name": "Water heater disinfection switch"
+        "name": "Commutateur de désinfection du chauffe eau"
       },
       "water_heater_pump_switch": {
-        "name": "Water heater pump switch"
+        "name": "Commutateur de la pompe du chauffe-eau"
       },
       "water_heater_schedule_switch": {
-        "name": "Water heater schedule switch"
+        "name": "Commutateur de programmation du chauffe-eau"
       },
       "weather_control_switch": {
-        "name": "Weather control switch"
+        "name": "Commutateur de contrôle de la météo"
       }
     },
     "water_heater": {
@@ -360,37 +362,34 @@
   },
   "exceptions": {
     "connection_timeout": {
-      "message": "Timed out while trying to connect ({connection})"
+      "message": "Le délai d'attente a expiré lors de la tentative de connexion ({connection})"
     },
     "device_not_found": {
-      "message": "Requested device not found ({device})"
+      "message": "L'appareil demandé n'a pas été trouvé ({device})"
     },
     "device_not_ready": {
-      "message": "Device not ready ({device})"
+      "message": "L'appareil n'est pas prêt ({device})"
     },
     "get_parameter_timeout": {
-      "message": "Request to get a parameter timed out ({parameter})"
+      "message": "La demande d'obtention d'un paramètre a expiré ({parameter})"
     },
     "invalid_parameter": {
-      "message": "Invalid parameter selected ({parameter})"
+      "message": "Paramètre sélectionné invalide ({parameter})"
     },
     "invalid_parameter_value": {
-      "message": "Invalid value {value} for the {parameter} parameter"
+      "message": "Valeur {value} invalide  pour le paramètre {parameter}"
     },
     "invalid_schedule_interval": {
-      "message": "Invalid interval selected for {schedule}. Got {start} to {end}."
+      "message": "Interval sélectionné invalide pour {schedule}. De {start} à {end}."
     },
     "parameter_not_found": {
-      "message": "Requested parameter not found ({parameter})"
+      "message": "Le paramètre demandé n'a pas été trouvé ({parameter})"
     },
     "schedule_not_found": {
-      "message": "Requested schedule not found ({schedule})"
-    },
-    "set_parameter_failed": {
-      "message": "Request to set a parameter failed ({parameter})"
+      "message": "La programmation demandée n'a pas été trouvée ({schedule})"
     },
     "set_parameter_timeout": {
-      "message": "Request to set a parameter timed out ({parameter})"
+      "message": "La définition d'un paramètre a expiré ({parameter})"
     }
   },
   "options": {
@@ -518,14 +517,14 @@
     },
     "preset": {
       "options": {
-        "day": "Day",
-        "night": "Night"
+        "day": "Jour",
+        "night": "Nuit"
       }
     },
     "schedule_type": {
       "options": {
-        "heating": "Heating",
-        "water_heater": "Water heater"
+        "heating": "Chauffage",
+        "water_heater": "Chauffe-eau"
       }
     },
     "sensor_device_class": {
@@ -593,94 +592,94 @@
     },
     "weekdays": {
       "options": {
-        "friday": "Friday",
-        "monday": "Monday",
-        "saturday": "Saturday",
-        "sunday": "Sunday",
-        "thursday": "Thursday",
-        "tuesday": "Tuesday",
-        "wednesday": "Wednesday"
+        "friday": "Vendredi",
+        "monday": "Lundi",
+        "saturday": "Samedi",
+        "sunday": "Dimanche",
+        "thursday": "Jeudi",
+        "tuesday": "Mardi",
+        "wednesday": "Vendredi"
       }
     }
   },
   "services": {
     "calibrate_meter": {
-      "description": "Allows to calibrate meter by pre-setting it's value.",
+      "description": "Permet de calibrer le capteur en préréglant sa valeur.",
       "fields": {
         "value": {
-          "description": "Sets meter to this value.",
-          "name": "Value"
+          "description": "Calibre le capteur pour cette valeur.",
+          "name": "Valeur"
         }
       },
-      "name": "Calibrate meter"
+      "name": "Calibration du capteur"
     },
     "get_parameter": {
-      "description": "Gets device parameter.",
+      "description": "Obtient le paramètre de l'appareil.",
       "fields": {
         "name": {
-          "description": "Name of the parameter.",
-          "name": "Name"
+          "description": "Nom du paramètre",
+          "name": "Nom"
         }
       },
-      "name": "Get parameter"
+      "name": "Obtenir un paramètre"
     },
     "get_schedule": {
-      "description": "Gets device schedule.",
+      "description": "Permet d'obtenir la programmation de l'appareil.",
       "fields": {
         "type": {
-          "description": "Type of the schedule.",
+          "description": "Type de programmation",
           "name": "Type"
         },
         "weekdays": {
-          "description": "Weekdays for which to get the schedules.",
-          "name": "Weekdays"
+          "description": "Jours de la semaine pour lesquels obtenir la programmation.",
+          "name": "Jour de la semaine"
         }
       },
-      "name": "Get schedule"
+      "name": "Obtenir la programmation"
     },
     "reset_meter": {
-      "description": "Resets meter value.",
-      "name": "Reset meter"
+      "description": "Réinitialise la valeur du capteur",
+      "name": "Réinitialisation de capteur"
     },
     "set_parameter": {
-      "description": "Sets device parameter.",
+      "description": "Définie la valeur du capteur.",
       "fields": {
         "name": {
-          "description": "Name of the parameter.",
-          "name": "Name"
+          "description": "Nom du paramètre",
+          "name": "Nom"
         },
         "value": {
-          "description": "A value that parameter will be set to.",
-          "name": "Value"
+          "description": "Valeur à laquelle le paramètre sera défini.",
+          "name": "Valeur"
         }
       },
-      "name": "Set parameter"
+      "name": "Définir un paramètre"
     },
     "set_schedule": {
-      "description": "Sets device schedule.",
+      "description": "Définit la programmation de l'appareil.",
       "fields": {
         "end": {
-          "description": "Time at which scheduled state will be cleared.",
-          "name": "End time"
+          "description": "Heure à laquelle l'état programmé sera effacé.",
+          "name": "Heure de fin"
         },
         "preset": {
-          "description": "Preset at scheduled time.",
-          "name": "Preset"
+          "description": "Prédéfini à l'heure programmée.",
+          "name": "Préréglage"
         },
         "start": {
-          "description": "Time at which scheduled state will be set.",
-          "name": "Start time"
+          "description": "Heure à laquelle l'état programmé sera défini.",
+          "name": "Heure de début"
         },
         "type": {
-          "description": "Type of the schedule.",
+          "description": "Type de programmation.",
           "name": "Type"
         },
         "weekdays": {
-          "description": "Weekdays for which to set the schedules.",
-          "name": "Weekdays"
+          "description": "Jours de la semaine pour lesquels les horaires doivent être définis.",
+          "name": "Jours de la semaine"
         }
       },
-      "name": "Set schedule"
+      "name": "Définir la programmation"
     }
   }
 }
