@@ -393,9 +393,6 @@
     "schedule_not_found": {
       "message": "Požadovaný rozvrh nebyl nalezen ({schedule})"
     },
-    "set_parameter_failed": {
-      "message": "Požadavek na nastavení parametru se nezdařil ({parameter})"
-    },
     "set_parameter_timeout": {
       "message": "Časový limit požadavku na nastavení parametru vypršel ({parameter})"
     }

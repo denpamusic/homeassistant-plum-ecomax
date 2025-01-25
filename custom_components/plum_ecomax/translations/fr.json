@@ -393,9 +393,6 @@
     "schedule_not_found": {
       "message": "La programmation demandée n'a pas été trouvée ({schedule})"
     },
-    "set_parameter_failed": {
-      "message": "La définition d'un paramètre a échoué ({parameter})"
-    },
     "set_parameter_timeout": {
       "message": "La définition d'un paramètre a expiré ({parameter})"
     }

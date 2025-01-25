@@ -260,18 +260,8 @@ def async_setup_set_parameter_service(
         value = service_call.data[ATTR_VALUE]
         selected = async_extract_referenced_entity_ids(hass, service_call)
         devices = async_extract_referenced_devices(hass, connection, selected)
-
-        if not any(
-            {
-                await async_set_device_parameter(device, name, value)
-                for device in devices
-            }
-        ):
-            raise HomeAssistantError(
-                translation_domain=DOMAIN,
-                translation_key="set_parameter_failed",
-                translation_placeholders={"parameter": name},
-            )
+        for device in devices:
+            await async_set_device_parameter(device, name, value)
 
     hass.services.async_register(
         DOMAIN,
