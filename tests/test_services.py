@@ -260,7 +260,7 @@ async def test_set_parameter_service(
     heating_temperature_entity_id = "sensor.ecomax_heating_temperature"
 
     # Test setting parameter for EM device.
-    with patch("pyplumio.devices.Device.set") as mock_set:
+    with patch("pyplumio.helpers.parameter.Parameter.set_nowait") as mock_set_nowait:
         await hass.services.async_call(
             DOMAIN,
             SERVICE_SET_PARAMETER,
@@ -273,11 +273,11 @@ async def test_set_parameter_service(
         )
         await hass.async_block_till_done()
 
-    mock_set.assert_awaited_once_with("heating_target_temp", 0, timeout=15)
+    mock_set_nowait.assert_called_once_with(0.0, 5, 15)
 
     # Test setting parameter for a mixer.
     mixer_temperature_entity_id = "sensor.ecomax_mixer_1_mixer_temperature"
-    with patch("pyplumio.devices.Device.set") as mock_set:
+    with patch("pyplumio.helpers.parameter.Parameter.set_nowait") as mock_set_nowait:
         await hass.services.async_call(
             DOMAIN,
             SERVICE_SET_PARAMETER,
@@ -290,12 +290,14 @@ async def test_set_parameter_service(
         )
         await hass.async_block_till_done()
 
-    mock_set.assert_awaited_once_with("mixer_target_temp", 0, timeout=15)
+    mock_set_nowait.assert_called_once_with(0.0, 5, 15)
 
     # Test setting a parameter to an invalid value.
     with (
         pytest.raises(ServiceValidationError) as exc_info,
-        patch("pyplumio.devices.Device.set", side_effect=ValueError) as mock_set,
+        patch(
+            "pyplumio.helpers.parameter.Parameter.set_nowait", side_effect=ValueError
+        ) as mock_set_nowait,
     ):
         await hass.services.async_call(
             DOMAIN,
@@ -308,7 +310,7 @@ async def test_set_parameter_service(
             blocking=True,
         )
 
-    mock_set.assert_awaited_once_with("heating_target_temp", 100, timeout=15)
+    mock_set_nowait.assert_called_once_with(100.0, 5, 15)
     assert exc_info.value.translation_key == "invalid_parameter_value"
     assert exc_info.value.translation_placeholders == {
         "parameter": "heating_target_temp",
@@ -318,26 +320,26 @@ async def test_set_parameter_service(
     # Test setting an invalid parameter.
     with (
         pytest.raises(ServiceValidationError) as exc_info,
-        patch("pyplumio.devices.Device.set", side_effect=TypeError) as mock_set,
+        patch("pyplumio.devices.Device.get", side_effect="not_a_parameter"),
     ):
         await hass.services.async_call(
             DOMAIN,
             SERVICE_SET_PARAMETER,
             {
                 ATTR_ENTITY_ID: heating_temperature_entity_id,
-                ATTR_NAME: "nonexistent",
+                ATTR_NAME: "not_a_parameter",
                 ATTR_VALUE: 0,
             },
             blocking=True,
         )
 
     assert exc_info.value.translation_key == "invalid_parameter"
-    assert exc_info.value.translation_placeholders == {"parameter": "nonexistent"}
+    assert exc_info.value.translation_placeholders == {"parameter": "not_a_parameter"}
 
     # Test timing out while trying to set a parameter.
     with (
         pytest.raises(HomeAssistantError) as exc2_info,
-        patch("pyplumio.devices.Device.set", side_effect=TimeoutError) as mock_set,
+        patch("pyplumio.devices.Device.get", side_effect=TimeoutError),
     ):
         await hass.services.async_call(
             DOMAIN,
@@ -351,25 +353,6 @@ async def test_set_parameter_service(
         )
 
     assert exc2_info.value.translation_key == "set_parameter_timeout"
-    assert exc2_info.value.translation_placeholders == {"parameter": "nonexistent"}
-
-    # Test failure while trying to set a parameter.
-    with (
-        pytest.raises(HomeAssistantError) as exc2_info,
-        patch("pyplumio.devices.Device.set", return_value=False) as mock_set,
-    ):
-        await hass.services.async_call(
-            DOMAIN,
-            SERVICE_SET_PARAMETER,
-            {
-                ATTR_ENTITY_ID: heating_temperature_entity_id,
-                ATTR_NAME: "nonexistent",
-                ATTR_VALUE: 0,
-            },
-            blocking=True,
-        )
-
-    assert exc2_info.value.translation_key == "set_parameter_failed"
     assert exc2_info.value.translation_placeholders == {"parameter": "nonexistent"}
 
 

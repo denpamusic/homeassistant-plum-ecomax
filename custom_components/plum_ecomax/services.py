@@ -222,14 +222,16 @@ def async_setup_get_parameter_service(
 async def async_set_device_parameter(device: Device, name: str, value: float) -> bool:
     """Set device parameter."""
     try:
-        return await device.set(name, value, timeout=DEFAULT_TIMEOUT)
-    except TypeError as e:
-        raise ServiceValidationError(
-            str(e),
-            translation_domain=DOMAIN,
-            translation_key="invalid_parameter",
-            translation_placeholders={"parameter": name},
-        ) from e
+        parameter = await device.get(name, timeout=DEFAULT_TIMEOUT)
+        if not isinstance(parameter, Parameter):
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="invalid_parameter",
+                translation_placeholders={"parameter": name},
+            )
+
+        parameter.set_nowait(value, timeout=DEFAULT_TIMEOUT)
+        return True
     except ValueError as e:
         raise ServiceValidationError(
             str(e),
