@@ -49,7 +49,7 @@ from pyplumio.structures.modules import ConnectedModules
 from pyplumio.structures.product_info import ProductInfo
 import voluptuous as vol
 
-from . import PlumEcomaxConfigEntry, async_reload_config
+from . import async_reload_config
 from .connection import (
     DEFAULT_TIMEOUT,
     async_get_connection_handler,
@@ -129,7 +129,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
         """Create the options flow."""
-        return OptionsFlowHandler(config_entry)
+        return OptionsFlowHandler()
 
     def __init__(self) -> None:
         """Initialize a new config flow."""
@@ -368,19 +368,15 @@ SensorValue = TypeVar("SensorValue", str, int, float)
 class OptionsFlowHandler(OptionsFlow):
     """Represents an options flow."""
 
-    def __init__(self, entry: PlumEcomaxConfigEntry) -> None:
-        """Initialize a new options flow."""
-        self.config_entry = entry
-        self.connection = entry.runtime_data.connection
-        self.options = deepcopy(dict(self.config_entry.options))
-        self.entities: dict[str, dict[str, dict[str, Any]]] = self.options.setdefault(
-            "entities", {}
-        )
-
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Manage the options."""
+        self.connection = self.config_entry.runtime_data.connection
+        self.options = deepcopy(dict(self.config_entry.options))
+        self.entities: dict[str, dict[str, dict[str, Any]]] = self.options.setdefault(
+            "entities", {}
+        )
         return self.async_show_menu(
             step_id="init",
             menu_options=["add_entity", "edit_entity", "reload"],
