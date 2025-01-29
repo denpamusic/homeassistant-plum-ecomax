@@ -44,7 +44,13 @@ from pyplumio.connection import Connection
 from pyplumio.const import ProductType
 from pyplumio.devices import PhysicalDevice, VirtualDevice
 from pyplumio.exceptions import ConnectionFailedError
-from pyplumio.helpers.parameter import Number, Switch, UnitOfMeasurement
+from pyplumio.helpers.parameter import (
+    Number,
+    NumericType,
+    State,
+    Switch,
+    UnitOfMeasurement,
+)
 from pyplumio.structures.modules import ConnectedModules
 from pyplumio.structures.product_info import ProductInfo
 import voluptuous as vol
@@ -745,7 +751,11 @@ class OptionsFlowHandler(OptionsFlow):
 
     @overload
     @staticmethod
-    def _async_format_source_value(value: Number) -> str: ...
+    def _async_format_source_value(value: Number) -> NumericType | str: ...
+
+    @overload
+    @staticmethod
+    def _async_format_source_value(value: Switch) -> State: ...
 
     @overload
     @staticmethod
@@ -759,6 +769,9 @@ class OptionsFlowHandler(OptionsFlow):
             unit = value.unit_of_measurement
             unit2 = unit.value if isinstance(unit, UnitOfMeasurement) else unit
             return f"{value.value} {unit2}" if unit2 else value.value
+
+        if isinstance(value, Switch):
+            return value.value
 
         if isinstance(value, float):
             value = round(value, 2)
