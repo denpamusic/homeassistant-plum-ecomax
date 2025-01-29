@@ -758,7 +758,7 @@ class OptionsFlowHandler(OptionsFlow):
         if isinstance(value, Number):
             unit = value.unit_of_measurement
             unit2 = unit.value if isinstance(unit, UnitOfMeasurement) else unit
-            return f"{value.value} {unit2 if unit2 else ''}".rstrip()
+            return f"{value.value} {unit2}" if unit2 else value.value
 
         if isinstance(value, float):
             value = round(value, 2)
