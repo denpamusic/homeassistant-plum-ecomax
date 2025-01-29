@@ -394,9 +394,16 @@
   },
   "options": {
     "step": {
+      "add_entity": {
+        "title": "Select source"
+      },
+      "edit_entity": {
+        "title": "Select entity"
+      },
       "entity_details": {
         "data": {
           "device_class": "Device class",
+          "remove_entity": "Remove entity?",
           "key": "Key",
           "mode": "Mode",
           "name": "Name",
@@ -404,7 +411,7 @@
           "unit_of_measurement": "Unit of measurement",
           "update_interval": "Update interval"
         },
-        "title": "Add a new {platform}"
+        "title": "Edit {platform} details"
       },
       "entity_type": {
         "menu_options": {
@@ -413,15 +420,18 @@
           "add_sensor": "Sensor",
           "add_switch": "Switch"
         },
-        "title": "Select an entity type"
+        "title": "Select entity type"
       },
       "init": {
         "menu_options": {
-          "add_entity": "Add a new entity",
-          "edit_entity": "Edit/delete an entity",
+          "add_entity": "Add new entity",
+          "edit_entity": "Edit/delete entity",
           "reload": "Reload configuration"
         }
       }
+    },
+    "abort": {
+      "no_entities_found": "No entities to edit"
     }
   },
   "selector": {

@@ -397,6 +397,7 @@
       "entity_details": {
         "data": {
           "device_class": "Device class",
+          "remove_entity": "Remove entity?",
           "key": "Key",
           "mode": "Mode",
           "name": "[%key:common::config_flow::data::name%]",
