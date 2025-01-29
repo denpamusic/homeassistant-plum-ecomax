@@ -7,7 +7,7 @@ from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import asdict
 import logging
-from typing import Any, TypeVar, cast, overload
+from typing import Any, Final, TypeVar, cast, overload
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.number import NumberDeviceClass, NumberMode
@@ -355,11 +355,13 @@ class UnsupportedProduct(HomeAssistantError):
     """Error to indicate that product is not supported."""
 
 
-PLATFORM_TYPES: dict[Platform, tuple[type, ...]] = {
-    Platform.BINARY_SENSOR: (bool,),
-    Platform.SENSOR: (str, int, float),
-    Platform.NUMBER: (Number,),
-    Platform.SWITCH: (Switch,),
+VIRTUAL_DEVICES: Final = (DeviceType.MIXER, DeviceType.THERMOSTAT)
+
+PLATFORM_TYPES: dict[Platform, type | set[type]] = {
+    Platform.BINARY_SENSOR: bool,
+    Platform.SENSOR: {str, int, float},
+    Platform.NUMBER: Number,
+    Platform.SWITCH: Switch,
 }
 
 SensorValue = TypeVar("SensorValue", str, int, float)
@@ -676,16 +678,14 @@ class OptionsFlowHandler(OptionsFlow):
         if self.source_device == DeviceType.ECOMAX:
             data = device.data
             existing_entities = [
-                key
-                for key in entity_keys
-                if not key.startswith((DeviceType.MIXER, DeviceType.THERMOSTAT))
+                key for key in entity_keys if not key.startswith(VIRTUAL_DEVICES)
             ]
 
         elif self.source_device == REGDATA:
             data = device.get_nowait(REGDATA, {})
             existing_entities = [key for key in entity_keys if key.isnumeric()]
 
-        elif self.source_device.startswith((DeviceType.MIXER, DeviceType.THERMOSTAT)):
+        elif self.source_device.startswith(VIRTUAL_DEVICES):
             device_type, index = self.source_device.split("_", 1)
             devices: dict[int, VirtualDevice] = device.get_nowait(f"{device_type}s", {})
             data = devices[int(index)].data
@@ -701,18 +701,18 @@ class OptionsFlowHandler(OptionsFlow):
     @callback
     def _async_get_source_device_options(self) -> list[selector.SelectOptionDict]:
         """Return the source devices."""
-        connection = self.connection
-        sources = {DeviceType.ECOMAX.value: f"Common ({connection.model})"}
+        device = self.connection.device
+        sources = {DeviceType.ECOMAX.value: f"Common ({self.connection.model})"}
 
-        if connection.device.get_nowait(REGDATA, None):
-            sources[REGDATA] = f"Extended ({connection.model})"
+        if device.get_nowait(REGDATA, None):
+            sources[REGDATA] = f"Extended ({self.connection.model})"
 
-        if mixers := connection.device.get_nowait(ATTR_MIXERS, None):
+        if mixers := device.get_nowait(ATTR_MIXERS, None):
             sources |= {
                 f"{DeviceType.MIXER}_{mixer}": f"Mixer {mixer + 1}" for mixer in mixers
             }
 
-        if thermostats := connection.device.get_nowait(ATTR_THERMOSTATS, None):
+        if thermostats := device.get_nowait(ATTR_THERMOSTATS, None):
             sources |= {
                 f"{DeviceType.THERMOSTAT}_{thermostat}": f"Thermostat {thermostat + 1}"
                 for thermostat in thermostats
@@ -731,7 +731,8 @@ class OptionsFlowHandler(OptionsFlow):
                 value=str(k), label=f"{k} (value: {self._async_format_source_value(v)})"
             )
             for k, v in data.items()
-            if type(v) in PLATFORM_TYPES[self.platform]
+            if type(v) is PLATFORM_TYPES[self.platform]
+            or type(v) in PLATFORM_TYPES[self.platform]
         ]
 
     @overload
