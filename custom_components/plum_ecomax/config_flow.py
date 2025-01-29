@@ -364,7 +364,7 @@ PLATFORM_TYPES: dict[Platform, type | set[type]] = {
     Platform.SWITCH: Switch,
 }
 
-SensorValue = TypeVar("SensorValue", str, int, float)
+SensorValueT = TypeVar("SensorValueT", str, int, float)
 
 
 class OptionsFlowHandler(OptionsFlow):
@@ -741,7 +741,7 @@ class OptionsFlowHandler(OptionsFlow):
 
     @overload
     @staticmethod
-    def _async_format_source_value(value: SensorValue) -> SensorValue: ...
+    def _async_format_source_value(value: SensorValueT) -> SensorValueT: ...
 
     @callback
     @staticmethod
