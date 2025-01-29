@@ -734,7 +734,7 @@ class OptionsFlowHandler(OptionsFlow):
 
         return [
             selector.SelectOptionDict(
-                value=str(k), label=f"{k} (value: {self._async_format_source_value(v)})"
+                value=k, label=f"{k} (value: {self._async_format_source_value(v)})"
             )
             for k, v in data.items()
             if self._async_is_valid_source(v, self.platform)
