@@ -357,11 +357,11 @@ class UnsupportedProduct(HomeAssistantError):
 
 VIRTUAL_DEVICES: Final = (DeviceType.MIXER, DeviceType.THERMOSTAT)
 
-PLATFORM_TYPES: dict[Platform, type | set[type]] = {
-    Platform.BINARY_SENSOR: bool,
-    Platform.SENSOR: {str, int, float},
-    Platform.NUMBER: Number,
-    Platform.SWITCH: Switch,
+PLATFORM_TYPES: dict[Platform, tuple[type, ...]] = {
+    Platform.BINARY_SENSOR: (bool,),
+    Platform.SENSOR: (str, int, float),
+    Platform.NUMBER: (Number,),
+    Platform.SWITCH: (Switch,),
 }
 
 SensorValueT = TypeVar("SensorValueT", str, int, float)
@@ -457,8 +457,8 @@ class OptionsFlowHandler(OptionsFlow):
 
         if not (source_options := self._async_get_source_options()):
             raise vol.Invalid(
-                f"Cannot add any more {str(self.platform).replace('_', ' ')}s for "
-                f"the selected source. Please select a different source and try again"
+                f"Can not add any more {str(self.platform).replace('_', ' ')}s for "
+                f"the selected source. Please select a different source and try again."
             )
 
         schema: dict[vol.Marker, object] = {
@@ -731,9 +731,17 @@ class OptionsFlowHandler(OptionsFlow):
                 value=str(k), label=f"{k} (value: {self._async_format_source_value(v)})"
             )
             for k, v in data.items()
-            if type(v) is PLATFORM_TYPES[self.platform]
-            or type(v) in PLATFORM_TYPES[self.platform]
+            if self._async_is_valid_source(v)
         ]
+
+    @callback
+    def _async_is_valid_source(self, value: Any) -> bool:
+        """Check if the value is a valid source for platform type."""
+        platform_types = PLATFORM_TYPES[self.platform]
+        if isinstance(value, bool):
+            return True if bool in platform_types else False
+
+        return isinstance(value, platform_types)
 
     @overload
     @staticmethod
@@ -750,7 +758,7 @@ class OptionsFlowHandler(OptionsFlow):
         if isinstance(value, Number):
             unit = value.unit_of_measurement
             unit2 = unit.value if isinstance(unit, UnitOfMeasurement) else unit
-            return f"{value.value} {'' if unit2 is None else unit2}".rstrip()
+            return f"{value.value} {unit2 if unit2 else ''}".rstrip()
 
         if isinstance(value, float):
             value = round(value, 2)
