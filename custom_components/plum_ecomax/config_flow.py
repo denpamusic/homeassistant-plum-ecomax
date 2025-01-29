@@ -731,17 +731,17 @@ class OptionsFlowHandler(OptionsFlow):
                 value=str(k), label=f"{k} (value: {self._async_format_source_value(v)})"
             )
             for k, v in data.items()
-            if self._async_is_valid_source(v)
+            if self._async_is_valid_source(v, self.platform)
         ]
 
     @callback
-    def _async_is_valid_source(self, value: Any) -> bool:
+    def _async_is_valid_source(self, source: Any, platform: Platform) -> bool:
         """Check if the value is a valid source for platform type."""
-        platform_types = PLATFORM_TYPES[self.platform]
-        if isinstance(value, bool):
+        platform_types = PLATFORM_TYPES[platform]
+        if isinstance(source, bool):
             return True if bool in platform_types else False
 
-        return isinstance(value, platform_types)
+        return isinstance(source, platform_types)
 
     @overload
     @staticmethod
