@@ -17,7 +17,6 @@ python_version = "3.12"
 platform = "linux"
 show_error_codes = true
 follow_imports = "normal"
-enable_incomplete_feature = "NewGenericSyntax"
 local_partial_types = true
 strict_equality = true
 no_implicit_optional = true
