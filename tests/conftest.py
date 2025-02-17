@@ -186,7 +186,7 @@ def connected():
 
 
 @pytest.fixture(name="ecomax_base")
-def fixture_ecomax_base() -> Generator[EcoMAX, None, None]:
+def fixture_ecomax_base() -> Generator[EcoMAX]:
     """Return base ecoMAX device with no data."""
     ecomax = EcoMAX(queue=Mock(), network=NetworkInfo())
     with (

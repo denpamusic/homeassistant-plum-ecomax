@@ -164,7 +164,7 @@ class MixerSwitch(MixerEntity, EcomaxSwitch):
 def get_by_product_type(
     product_type: ProductType,
     descriptions: Iterable[DescriptorT],
-) -> Generator[DescriptorT, None, None]:
+) -> Generator[DescriptorT]:
     """Filter descriptions by the product type."""
     for description in descriptions:
         if (
@@ -177,7 +177,7 @@ def get_by_product_type(
 def get_by_modules(
     connected_modules: ConnectedModules,
     descriptions: Iterable[DescriptorT],
-) -> Generator[DescriptorT, None, None]:
+) -> Generator[DescriptorT]:
     """Filter descriptions by connected modules."""
     for description in descriptions:
         if getattr(connected_modules, description.module, None) is not None:
@@ -186,7 +186,7 @@ def get_by_modules(
 
 def get_by_index(
     index: int, descriptions: Iterable[SubDescriptorT]
-) -> Generator[SubDescriptorT, None, None]:
+) -> Generator[SubDescriptorT]:
     """Filter mixer/circuit descriptions by the index."""
     index += 1
     for description in descriptions:
