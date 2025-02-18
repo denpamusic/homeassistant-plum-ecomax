@@ -626,13 +626,13 @@ class OptionsFlowHandler(OptionsFlow):
     ) -> ConfigFlowResult:
         """Save the options."""
         entities = self.entities.setdefault(self.platform.value, {})
-        removing = data.get("remove_entity", False)
-        renaming = True if key != data[CONF_KEY] else False
+        removing_entity = data.get("remove_entity", False)
+        renaming_entity = True if key != data[CONF_KEY] else False
 
-        if removing or renaming:
+        if removing_entity or renaming_entity:
             entities.pop(key, None)
 
-        if not removing:
+        if not removing_entity:
             key = data[CONF_KEY]
             entities[key] = data
 
