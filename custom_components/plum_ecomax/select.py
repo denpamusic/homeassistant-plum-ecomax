@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import Any, Final
+from typing import Any, Final, cast
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.const import STATE_OFF
@@ -124,7 +124,7 @@ def async_setup_mixer_selects(connection: EcomaxConnection) -> list[MixerSelect]
     """Set up the mixer selects."""
     return [
         MixerSelect(connection, description, index)
-        for index in connection.device.mixers
+        for index in cast(dict[int, Any], connection.device.mixers)
         for description in async_get_by_index(
             index,
             async_get_by_modules(

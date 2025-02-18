@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import logging
-from typing import Any
+from typing import Any, cast
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.const import STATE_OFF, STATE_ON
@@ -176,7 +176,7 @@ def async_setup_mixer_switches(connection: EcomaxConnection) -> list[MixerSwitch
     """Set up the mixers switches."""
     return [
         MixerSwitch(connection, description, index)
-        for index in connection.device.mixers
+        for index in cast(dict[int, Any], connection.device.mixers)
         for description in async_get_by_index(
             index,
             async_get_by_modules(
