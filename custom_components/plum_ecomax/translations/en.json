@@ -395,10 +395,16 @@
   "options": {
     "step": {
       "add_entity": {
-        "title": "Select source"
+        "title": "Select source",
+        "data": {
+          "source": "Source"
+        }
       },
       "edit_entity": {
-        "title": "Select entity"
+        "title": "Select entity",
+        "data": {
+          "entity": "Entity"
+        }
       },
       "entity_details": {
         "data": {

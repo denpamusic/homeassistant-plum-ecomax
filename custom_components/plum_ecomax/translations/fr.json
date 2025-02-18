@@ -394,6 +394,18 @@
   },
   "options": {
     "step": {
+      "add_entity": {
+        "title": "Select source",
+        "data": {
+          "source": "Source"
+        }
+      },
+      "edit_entity": {
+        "title": "Select entity",
+        "data": {
+          "entity": "Entity"
+        }
+      },
       "entity_details": {
         "data": {
           "device_class": "Device class",
