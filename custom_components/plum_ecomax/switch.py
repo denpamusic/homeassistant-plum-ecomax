@@ -12,7 +12,7 @@ from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.const import ProductType
-from pyplumio.helpers.parameter import Parameter, State
+from pyplumio.helpers.parameter import NumericType, Parameter, State
 from pyplumio.structures.modules import ConnectedModules
 
 from . import PlumEcomaxConfigEntry
@@ -34,9 +34,9 @@ _LOGGER = logging.getLogger(__name__)
 class EcomaxSwitchEntityDescription(EcomaxEntityDescription, SwitchEntityDescription):
     """Describes an ecoMAX switch."""
 
-    state_off: State | int = STATE_OFF
-    state_on: State | int = STATE_ON
-    extra_states: dict[State | int, bool] = field(default_factory=dict)
+    state_off: State | NumericType = STATE_OFF
+    state_on: State | NumericType = STATE_ON
+    extra_states: dict[State | NumericType, bool] = field(default_factory=dict)
 
 
 SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
@@ -164,7 +164,7 @@ class MixerSwitch(MixerEntity, EcomaxSwitch):
 def get_by_product_type(
     product_type: ProductType,
     descriptions: Iterable[DescriptorT],
-) -> Generator[DescriptorT, None, None]:
+) -> Generator[DescriptorT]:
     """Filter descriptions by the product type."""
     for description in descriptions:
         if (
@@ -177,7 +177,7 @@ def get_by_product_type(
 def get_by_modules(
     connected_modules: ConnectedModules,
     descriptions: Iterable[DescriptorT],
-) -> Generator[DescriptorT, None, None]:
+) -> Generator[DescriptorT]:
     """Filter descriptions by connected modules."""
     for description in descriptions:
         if getattr(connected_modules, description.module, None) is not None:
@@ -186,7 +186,7 @@ def get_by_modules(
 
 def get_by_index(
     index: int, descriptions: Iterable[SubDescriptorT]
-) -> Generator[SubDescriptorT, None, None]:
+) -> Generator[SubDescriptorT]:
     """Filter mixer/circuit descriptions by the index."""
     index += 1
     for description in descriptions:
