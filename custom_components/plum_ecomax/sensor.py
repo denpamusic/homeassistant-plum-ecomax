@@ -40,7 +40,6 @@ import voluptuous as vol
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
 from .const import (
-    ALL,
     ATTR_BURNED_SINCE_LAST_UPDATE,
     ATTR_NUMERIC_STATE,
     ATTR_REGDATA,
@@ -49,7 +48,13 @@ from .const import (
     ModuleType,
     ProductModel,
 )
-from .entity import DescriptorT, EcomaxEntity, EcomaxEntityDescription, MixerEntity
+from .entity import (
+    EcomaxEntity,
+    EcomaxEntityDescription,
+    MixerEntity,
+    get_by_modules,
+    get_by_product_type,
+)
 
 SERVICE_RESET_METER: Final = "reset_meter"
 SERVICE_CALIBRATE_METER: Final = "calibrate_meter"
@@ -573,28 +578,6 @@ class RegdataSensor(EcomaxSensor):
         This only applies when fist added to the entity registry.
         """
         return self._regdata_key in self.device.data.get(ATTR_REGDATA, {})
-
-
-def get_by_product_type(
-    product_type: ProductType, descriptions: Iterable[DescriptorT]
-) -> Generator[DescriptorT]:
-    """Get descriptions by the product type."""
-    for description in descriptions:
-        if (
-            description.product_types == ALL
-            or product_type in description.product_types
-        ):
-            yield description
-
-
-def get_by_modules(
-    connected_modules: ConnectedModules,
-    descriptions: Iterable[DescriptorT],
-) -> Generator[DescriptorT]:
-    """Get descriptions by connected modules."""
-    for description in descriptions:
-        if getattr(connected_modules, description.module, None) is not None:
-            yield description
 
 
 def get_by_product_model(
