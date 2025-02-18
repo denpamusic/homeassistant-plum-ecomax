@@ -8,7 +8,7 @@ from typing import Any, Final
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.const import STATE_OFF
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.const import ProductType
 
@@ -19,9 +19,9 @@ from .entity import (
     EcomaxEntityDescription,
     MixerEntity,
     SubdeviceEntityDescription,
-    get_by_index,
-    get_by_modules,
-    get_by_product_type,
+    async_get_by_index,
+    async_get_by_modules,
+    async_get_by_product_type,
 )
 
 STATE_SUMMER: Final = "summer"
@@ -107,27 +107,29 @@ class MixerSelect(MixerEntity, EcomaxSelect):
         super().__init__(connection, description)
 
 
+@callback
 def async_setup_ecomax_selects(connection: EcomaxConnection) -> list[EcomaxSelect]:
     """Set up the ecoMAX selects."""
     return [
         EcomaxSelect(connection, description)
-        for description in get_by_modules(
+        for description in async_get_by_modules(
             connection.device.modules,
-            get_by_product_type(connection.product_type, SELECT_TYPES),
+            async_get_by_product_type(connection.product_type, SELECT_TYPES),
         )
     ]
 
 
+@callback
 def async_setup_mixer_selects(connection: EcomaxConnection) -> list[MixerSelect]:
     """Set up the mixer selects."""
     return [
         MixerSelect(connection, description, index)
         for index in connection.device.mixers
-        for description in get_by_index(
+        for description in async_get_by_index(
             index,
-            get_by_modules(
+            async_get_by_modules(
                 connection.device.modules,
-                get_by_product_type(connection.product_type, MIXER_SELECT_TYPES),
+                async_get_by_product_type(connection.product_type, MIXER_SELECT_TYPES),
             ),
         )
     ]

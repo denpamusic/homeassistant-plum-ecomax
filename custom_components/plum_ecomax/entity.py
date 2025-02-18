@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, Literal, TypeVar, cast, final, override
 
+from homeassistant.core import callback
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
 from pyplumio.const import ProductType
 from pyplumio.devices import Device
@@ -42,7 +43,8 @@ class EcomaxEntityDescription(EntityDescription):
 DescriptorT = TypeVar("DescriptorT", bound=EcomaxEntityDescription)
 
 
-def get_by_product_type(
+@callback
+def async_get_by_product_type(
     product_type: ProductType,
     descriptions: Iterable[DescriptorT],
 ) -> Generator[DescriptorT]:
@@ -55,7 +57,8 @@ def get_by_product_type(
             yield description
 
 
-def get_by_modules(
+@callback
+def async_get_by_modules(
     connected_modules: ConnectedModules,
     descriptions: Iterable[DescriptorT],
 ) -> Generator[DescriptorT]:
@@ -170,7 +173,8 @@ class SubdeviceEntityDescription(EcomaxEntityDescription):
 SubDescriptorT = TypeVar("SubDescriptorT", bound=SubdeviceEntityDescription)
 
 
-def get_by_index(
+@callback
+def async_get_by_index(
     index: int, descriptions: Iterable[SubDescriptorT]
 ) -> Generator[SubDescriptorT]:
     """Filter mixer/circuit descriptions by the index."""

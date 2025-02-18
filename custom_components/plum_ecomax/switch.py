@@ -8,7 +8,7 @@ from typing import Any
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.const import STATE_OFF, STATE_ON
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.const import ProductType
 from pyplumio.helpers.parameter import NumericType, Parameter, State
@@ -20,9 +20,9 @@ from .entity import (
     EcomaxEntityDescription,
     MixerEntity,
     SubdeviceEntityDescription,
-    get_by_index,
-    get_by_modules,
-    get_by_product_type,
+    async_get_by_index,
+    async_get_by_modules,
+    async_get_by_product_type,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -159,27 +159,29 @@ class MixerSwitch(MixerEntity, EcomaxSwitch):
         super().__init__(connection, description)
 
 
+@callback
 def async_setup_ecomax_switches(connection: EcomaxConnection) -> list[EcomaxSwitch]:
     """Set up the ecoMAX switches."""
     return [
         EcomaxSwitch(connection, description)
-        for description in get_by_modules(
+        for description in async_get_by_modules(
             connection.device.modules,
-            get_by_product_type(connection.product_type, SWITCH_TYPES),
+            async_get_by_product_type(connection.product_type, SWITCH_TYPES),
         )
     ]
 
 
+@callback
 def async_setup_mixer_switches(connection: EcomaxConnection) -> list[MixerSwitch]:
     """Set up the mixers switches."""
     return [
         MixerSwitch(connection, description, index)
         for index in connection.device.mixers
-        for description in get_by_index(
+        for description in async_get_by_index(
             index,
-            get_by_modules(
+            async_get_by_modules(
                 connection.device.modules,
-                get_by_product_type(connection.product_type, MIXER_SWITCH_TYPES),
+                async_get_by_product_type(connection.product_type, MIXER_SWITCH_TYPES),
             ),
         )
     ]

@@ -24,7 +24,7 @@ from homeassistant.const import (
     UnitOfPower,
     UnitOfTemperature,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import (
@@ -52,8 +52,8 @@ from .entity import (
     EcomaxEntity,
     EcomaxEntityDescription,
     MixerEntity,
-    get_by_modules,
-    get_by_product_type,
+    async_get_by_modules,
+    async_get_by_product_type,
 )
 
 SERVICE_RESET_METER: Final = "reset_meter"
@@ -580,7 +580,8 @@ class RegdataSensor(EcomaxSensor):
         return self._regdata_key in self.device.data.get(ATTR_REGDATA, {})
 
 
-def get_by_product_model(
+@callback
+def async_get_by_product_model(
     product_model: str, descriptions: Iterable[RegdataSensorEntityDescription]
 ) -> Generator[RegdataSensorEntityDescription]:
     """Get descriptions by the product model."""
@@ -589,50 +590,54 @@ def get_by_product_model(
             yield description
 
 
+@callback
 def async_setup_ecomax_sensors(connection: EcomaxConnection) -> list[EcomaxSensor]:
     """Set up the ecoMAX sensors."""
     return [
         EcomaxSensor(connection, description)
-        for description in get_by_modules(
+        for description in async_get_by_modules(
             connection.device.modules,
-            get_by_product_type(connection.product_type, SENSOR_TYPES),
+            async_get_by_product_type(connection.product_type, SENSOR_TYPES),
         )
     ]
 
 
+@callback
 def async_setup_ecomax_meters(connection: EcomaxConnection) -> list[EcomaxMeter]:
     """Set up the ecoMAX meters."""
     return [
         EcomaxMeter(connection, description)
-        for description in get_by_modules(
+        for description in async_get_by_modules(
             connection.device.modules,
-            get_by_product_type(connection.product_type, METER_TYPES),
+            async_get_by_product_type(connection.product_type, METER_TYPES),
         )
     ]
 
 
+@callback
 def async_setup_regdata_sensors(connection: EcomaxConnection) -> list[RegdataSensor]:
     """Set up the regulator data sensors."""
     return [
         RegdataSensor(connection, description)
-        for description in get_by_modules(
+        for description in async_get_by_modules(
             connection.device.modules,
-            get_by_product_type(
+            async_get_by_product_type(
                 connection.product_type,
-                get_by_product_model(connection.model, REGDATA_SENSOR_TYPES),
+                async_get_by_product_model(connection.model, REGDATA_SENSOR_TYPES),
             ),
         )
     ]
 
 
+@callback
 def async_setup_mixer_sensors(connection: EcomaxConnection) -> list[MixerSensor]:
     """Set up the mixer sensors."""
     return [
         MixerSensor(connection, description, index)
         for index in connection.device.mixers
-        for description in get_by_modules(
+        for description in async_get_by_modules(
             connection.device.modules,
-            get_by_product_type(connection.product_type, MIXER_SENSOR_TYPES),
+            async_get_by_product_type(connection.product_type, MIXER_SENSOR_TYPES),
         )
     ]
 

@@ -271,9 +271,8 @@ def async_setup_set_parameter_service(
     )
 
 
-def async_get_schedule_day_data(
-    schedule_day: ScheduleDay,
-) -> JsonObjectType:
+@callback
+def async_get_schedule_day_data(schedule_day: ScheduleDay) -> JsonObjectType:
     """Format the schedule day as a dictionary."""
     return {
         (start_of_day_dt + dt.timedelta(minutes=30 * index)).strftime(TIME_FORMAT): (
