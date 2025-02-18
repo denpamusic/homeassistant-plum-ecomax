@@ -1,16 +1,18 @@
 """Contains base entity classes."""
 
-from collections.abc import Callable
+from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, Literal, TypeVar, cast, final, override
 
+from homeassistant.core import callback
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
 from pyplumio.const import ProductType
 from pyplumio.devices import Device
 from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
 from pyplumio.filters import Filter, on_change
+from pyplumio.structures.modules import ConnectedModules
 
 from .connection import EcomaxConnection
 from .const import (
@@ -39,6 +41,31 @@ class EcomaxEntityDescription(EntityDescription):
 
 
 DescriptorT = TypeVar("DescriptorT", bound=EcomaxEntityDescription)
+
+
+@callback
+def async_get_by_product_type(
+    product_type: ProductType,
+    descriptions: Iterable[DescriptorT],
+) -> Generator[DescriptorT]:
+    """Filter descriptions by the product type."""
+    for description in descriptions:
+        if (
+            description.product_types == ALL
+            or product_type in description.product_types
+        ):
+            yield description
+
+
+@callback
+def async_get_by_modules(
+    connected_modules: ConnectedModules,
+    descriptions: Iterable[DescriptorT],
+) -> Generator[DescriptorT]:
+    """Filter descriptions by connected modules."""
+    for description in descriptions:
+        if getattr(connected_modules, description.module, None) is not None:
+            yield description
 
 
 class EcomaxEntity(Entity):
@@ -144,6 +171,17 @@ class SubdeviceEntityDescription(EcomaxEntityDescription):
 
 
 SubDescriptorT = TypeVar("SubDescriptorT", bound=SubdeviceEntityDescription)
+
+
+@callback
+def async_get_by_index(
+    index: int, descriptions: Iterable[SubDescriptorT]
+) -> Generator[SubDescriptorT]:
+    """Filter mixer/circuit descriptions by the index."""
+    index += 1
+    for description in descriptions:
+        if description.indexes == ALL or index in description.indexes:
+            yield description
 
 
 class ThermostatEntity(EcomaxEntity):

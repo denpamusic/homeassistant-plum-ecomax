@@ -2,29 +2,27 @@
 
 from __future__ import annotations
 
-from collections.abc import Generator, Iterable
 from dataclasses import dataclass, field
 import logging
 from typing import Any
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.const import STATE_OFF, STATE_ON
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.const import ProductType
 from pyplumio.helpers.parameter import NumericType, Parameter, State
-from pyplumio.structures.modules import ConnectedModules
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import ALL
 from .entity import (
-    DescriptorT,
     EcomaxEntity,
     EcomaxEntityDescription,
     MixerEntity,
-    SubDescriptorT,
     SubdeviceEntityDescription,
+    async_get_by_index,
+    async_get_by_modules,
+    async_get_by_product_type,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -161,60 +159,29 @@ class MixerSwitch(MixerEntity, EcomaxSwitch):
         super().__init__(connection, description)
 
 
-def get_by_product_type(
-    product_type: ProductType,
-    descriptions: Iterable[DescriptorT],
-) -> Generator[DescriptorT]:
-    """Filter descriptions by the product type."""
-    for description in descriptions:
-        if (
-            description.product_types == ALL
-            or product_type in description.product_types
-        ):
-            yield description
-
-
-def get_by_modules(
-    connected_modules: ConnectedModules,
-    descriptions: Iterable[DescriptorT],
-) -> Generator[DescriptorT]:
-    """Filter descriptions by connected modules."""
-    for description in descriptions:
-        if getattr(connected_modules, description.module, None) is not None:
-            yield description
-
-
-def get_by_index(
-    index: int, descriptions: Iterable[SubDescriptorT]
-) -> Generator[SubDescriptorT]:
-    """Filter mixer/circuit descriptions by the index."""
-    index += 1
-    for description in descriptions:
-        if description.indexes == ALL or index in description.indexes:
-            yield description
-
-
+@callback
 def async_setup_ecomax_switches(connection: EcomaxConnection) -> list[EcomaxSwitch]:
     """Set up the ecoMAX switches."""
     return [
         EcomaxSwitch(connection, description)
-        for description in get_by_modules(
+        for description in async_get_by_modules(
             connection.device.modules,
-            get_by_product_type(connection.product_type, SWITCH_TYPES),
+            async_get_by_product_type(connection.product_type, SWITCH_TYPES),
         )
     ]
 
 
+@callback
 def async_setup_mixer_switches(connection: EcomaxConnection) -> list[MixerSwitch]:
     """Set up the mixers switches."""
     return [
         MixerSwitch(connection, description, index)
         for index in connection.device.mixers
-        for description in get_by_index(
+        for description in async_get_by_index(
             index,
-            get_by_modules(
+            async_get_by_modules(
                 connection.device.modules,
-                get_by_product_type(connection.product_type, MIXER_SWITCH_TYPES),
+                async_get_by_product_type(connection.product_type, MIXER_SWITCH_TYPES),
             ),
         )
     ]
