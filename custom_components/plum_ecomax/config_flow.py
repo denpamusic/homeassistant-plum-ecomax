@@ -10,9 +10,10 @@ import logging
 from typing import Any, Final, TypeVar, cast, overload
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
-from homeassistant.components.number import NumberDeviceClass, NumberMode
 from homeassistant.components.number.const import (
     DEVICE_CLASS_UNITS as NUMBER_DEVICE_CLASS_UNITS,
+    NumberDeviceClass,
+    NumberMode,
 )
 from homeassistant.components.sensor.const import (
     CONF_STATE_CLASS,
