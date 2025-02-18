@@ -76,6 +76,7 @@ from .const import (
     CONF_PORT,
     CONF_PRODUCT_ID,
     CONF_PRODUCT_TYPE,
+    CONF_REMOVE_ENTITY,
     CONF_SOFTWARE,
     CONF_SUB_DEVICES,
     CONF_UID,
@@ -372,6 +373,148 @@ PLATFORM_TYPES: dict[Platform, tuple[type, ...]] = {
 
 SensorValueT = TypeVar("SensorValueT", str, int, float)
 
+_REMOVE_ENTITY: dict[vol.Marker, Any] = {
+    vol.Optional(CONF_REMOVE_ENTITY, default=False): selector.BooleanSelector()
+}
+
+
+def generate_schema(
+    platform: Platform,
+    source_options: list[selector.SelectOptionDict],
+    entity: dict[str, Any],
+) -> vol.Schema:
+    """Generate schema."""
+
+    schema: dict[vol.Marker, Any] = {
+        vol.Required(
+            CONF_NAME, default=entity.get(CONF_NAME, vol.UNDEFINED)
+        ): selector.TextSelector(),
+        vol.Required(
+            CONF_KEY, default=entity.get(CONF_KEY, vol.UNDEFINED)
+        ): selector.SelectSelector(
+            selector.SelectSelectorConfig(options=source_options)
+        ),
+    }
+
+    if platform == Platform.SENSOR:
+        schema |= {
+            vol.Optional(
+                CONF_UNIT_OF_MEASUREMENT,
+                default=entity.get(CONF_UNIT_OF_MEASUREMENT, vol.UNDEFINED),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=list(
+                        {
+                            str(unit)
+                            for units in SENSOR_DEVICE_CLASS_UNITS.values()
+                            for unit in units
+                            if unit is not None
+                        }
+                    ),
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    translation_key="sensor_unit_of_measurement",
+                    custom_value=True,
+                    sort=True,
+                ),
+            ),
+            vol.Optional(
+                CONF_DEVICE_CLASS,
+                default=entity.get(CONF_DEVICE_CLASS, vol.UNDEFINED),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=[
+                        cls.value
+                        for cls in SensorDeviceClass
+                        if cls != SensorDeviceClass.ENUM
+                    ],
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    translation_key="sensor_device_class",
+                    sort=True,
+                ),
+            ),
+            vol.Optional(
+                CONF_STATE_CLASS,
+                default=entity.get(CONF_STATE_CLASS, vol.UNDEFINED),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=[cls.value for cls in SensorStateClass],
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    translation_key="sensor_state_class",
+                    sort=True,
+                ),
+            ),
+            vol.Optional(
+                CONF_UPDATE_INTERVAL, default=entity.get(CONF_UPDATE_INTERVAL, 10)
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    min=10,
+                    max=60,
+                    step=1,
+                    unit_of_measurement=UnitOfTime.SECONDS,
+                    mode=selector.NumberSelectorMode.BOX,
+                )
+            ),
+        }
+
+    elif platform == Platform.BINARY_SENSOR:
+        schema |= {
+            vol.Optional(
+                CONF_DEVICE_CLASS,
+                default=entity.get(CONF_DEVICE_CLASS, vol.UNDEFINED),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=[cls.value for cls in BinarySensorDeviceClass],
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    translation_key="binary_sensor_device_class",
+                    sort=True,
+                ),
+            ),
+        }
+
+    elif platform == Platform.NUMBER:
+        schema |= {
+            vol.Required(
+                CONF_MODE, default=entity.get(CONF_MODE, vol.UNDEFINED)
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=[NumberMode.AUTO, NumberMode.BOX, NumberMode.SLIDER],
+                    translation_key="number_mode",
+                )
+            ),
+            vol.Optional(
+                CONF_UNIT_OF_MEASUREMENT,
+                default=entity.get(CONF_UNIT_OF_MEASUREMENT, vol.UNDEFINED),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=list(
+                        {
+                            str(unit)
+                            for units in NUMBER_DEVICE_CLASS_UNITS.values()
+                            for unit in units
+                            if unit is not None
+                        }
+                    ),
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    translation_key="number_unit_of_measurement",
+                    custom_value=True,
+                    sort=True,
+                ),
+            ),
+            vol.Optional(
+                CONF_DEVICE_CLASS,
+                default=entity.get(CONF_DEVICE_CLASS, vol.UNDEFINED),
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=[cls.value for cls in NumberDeviceClass],
+                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    translation_key="number_device_class",
+                    sort=True,
+                ),
+            ),
+        }
+
+    return vol.Schema(schema | _REMOVE_ENTITY if entity else schema)
+
 
 class OptionsFlowHandler(OptionsFlow):
     """Represents an options flow."""
@@ -467,144 +610,9 @@ class OptionsFlowHandler(OptionsFlow):
                 f"the selected source. Please select a different source and try again."
             )
 
-        schema: dict[vol.Marker, object] = {
-            vol.Required(CONF_NAME, default=entity.get(CONF_NAME, vol.UNDEFINED)): str,
-            vol.Required(
-                CONF_KEY, default=entity.get(CONF_KEY, vol.UNDEFINED)
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=source_options)
-            ),
-        }
-
-        if self.platform == Platform.SENSOR:
-            schema |= {
-                vol.Optional(
-                    CONF_UNIT_OF_MEASUREMENT,
-                    default=entity.get(CONF_UNIT_OF_MEASUREMENT, vol.UNDEFINED),
-                ): selector.SelectSelector(
-                    selector.SelectSelectorConfig(
-                        options=list(
-                            {
-                                str(unit)
-                                for units in SENSOR_DEVICE_CLASS_UNITS.values()
-                                for unit in units
-                                if unit is not None
-                            }
-                        ),
-                        mode=selector.SelectSelectorMode.DROPDOWN,
-                        translation_key="sensor_unit_of_measurement",
-                        custom_value=True,
-                        sort=True,
-                    ),
-                ),
-                vol.Optional(
-                    CONF_DEVICE_CLASS,
-                    default=entity.get(CONF_DEVICE_CLASS, vol.UNDEFINED),
-                ): selector.SelectSelector(
-                    selector.SelectSelectorConfig(
-                        options=[
-                            cls.value
-                            for cls in SensorDeviceClass
-                            if cls != SensorDeviceClass.ENUM
-                        ],
-                        mode=selector.SelectSelectorMode.DROPDOWN,
-                        translation_key="sensor_device_class",
-                        sort=True,
-                    ),
-                ),
-                vol.Optional(
-                    CONF_STATE_CLASS,
-                    default=entity.get(CONF_STATE_CLASS, vol.UNDEFINED),
-                ): selector.SelectSelector(
-                    selector.SelectSelectorConfig(
-                        options=[cls.value for cls in SensorStateClass],
-                        mode=selector.SelectSelectorMode.DROPDOWN,
-                        translation_key="sensor_state_class",
-                        sort=True,
-                    ),
-                ),
-                vol.Optional(
-                    CONF_UPDATE_INTERVAL, default=entity.get(CONF_UPDATE_INTERVAL, 10)
-                ): selector.NumberSelector(
-                    selector.NumberSelectorConfig(
-                        min=10,
-                        max=60,
-                        step=1,
-                        unit_of_measurement=UnitOfTime.SECONDS,
-                        mode=selector.NumberSelectorMode.BOX,
-                    )
-                ),
-            }
-
-        elif self.platform == Platform.BINARY_SENSOR:
-            schema |= {
-                vol.Optional(
-                    CONF_DEVICE_CLASS,
-                    default=entity.get(CONF_DEVICE_CLASS, vol.UNDEFINED),
-                ): selector.SelectSelector(
-                    selector.SelectSelectorConfig(
-                        options=[cls.value for cls in BinarySensorDeviceClass],
-                        mode=selector.SelectSelectorMode.DROPDOWN,
-                        translation_key="binary_sensor_device_class",
-                        sort=True,
-                    ),
-                ),
-            }
-
-        elif self.platform == Platform.NUMBER:
-            schema |= {
-                vol.Required(
-                    CONF_MODE, default=entity.get(CONF_MODE, vol.UNDEFINED)
-                ): selector.SelectSelector(
-                    selector.SelectSelectorConfig(
-                        options=[NumberMode.AUTO, NumberMode.BOX, NumberMode.SLIDER],
-                        translation_key="number_mode",
-                    )
-                ),
-                vol.Optional(
-                    CONF_UNIT_OF_MEASUREMENT,
-                    default=entity.get(CONF_UNIT_OF_MEASUREMENT, vol.UNDEFINED),
-                ): selector.SelectSelector(
-                    selector.SelectSelectorConfig(
-                        options=list(
-                            {
-                                str(unit)
-                                for units in NUMBER_DEVICE_CLASS_UNITS.values()
-                                for unit in units
-                                if unit is not None
-                            }
-                        ),
-                        mode=selector.SelectSelectorMode.DROPDOWN,
-                        translation_key="number_unit_of_measurement",
-                        custom_value=True,
-                        sort=True,
-                    ),
-                ),
-                vol.Optional(
-                    CONF_DEVICE_CLASS,
-                    default=entity.get(CONF_DEVICE_CLASS, vol.UNDEFINED),
-                ): selector.SelectSelector(
-                    selector.SelectSelectorConfig(
-                        options=[cls.value for cls in NumberDeviceClass],
-                        mode=selector.SelectSelectorMode.DROPDOWN,
-                        translation_key="number_device_class",
-                        sort=True,
-                    ),
-                ),
-            }
-
-        elif self.platform == Platform.SWITCH:
-            pass
-
-        else:
-            raise HomeAssistantError
-
-        if entity:
-            schema |= {vol.Optional("remove_entity", default=False): bool}
-
         return self.async_show_form(
             step_id="entity_details",
-            data_schema=vol.Schema(schema),
+            data_schema=generate_schema(self.platform, source_options, entity),
             description_placeholders={
                 "platform": self.platform.value.replace("_", " ")
             },
@@ -734,7 +742,7 @@ class OptionsFlowHandler(OptionsFlow):
 
         return [
             selector.SelectOptionDict(
-                value=k, label=f"{k} (value: {self._async_format_source_value(v)})"
+                value=str(k), label=f"{k} (value: {self._async_format_source_value(v)})"
             )
             for k, v in data.items()
             if self._async_is_valid_source(v, self.platform)
