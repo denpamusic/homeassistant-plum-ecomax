@@ -45,22 +45,18 @@ DescriptorT = TypeVar("DescriptorT", bound=EcomaxEntityDescription)
 
 @callback
 def async_get_by_product_type(
-    product_type: ProductType,
-    descriptions: Iterable[DescriptorT],
+    product_type: ProductType, descriptions: Iterable[DescriptorT]
 ) -> Generator[DescriptorT]:
     """Filter descriptions by the product type."""
     for description in descriptions:
-        if (
-            description.product_types == ALL
-            or product_type in description.product_types
-        ):
+        product_types = description.product_types
+        if product_types == ALL or product_type in product_types:
             yield description
 
 
 @callback
 def async_get_by_modules(
-    connected_modules: ConnectedModules,
-    descriptions: Iterable[DescriptorT],
+    connected_modules: ConnectedModules, descriptions: Iterable[DescriptorT]
 ) -> Generator[DescriptorT]:
     """Filter descriptions by connected modules."""
     for description in descriptions:
