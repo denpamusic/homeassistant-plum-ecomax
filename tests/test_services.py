@@ -21,7 +21,6 @@ from custom_components.plum_ecomax.const import (
     ATTR_WEEKDAYS,
     DOMAIN,
     WEEKDAYS,
-    DeviceType,
 )
 from custom_components.plum_ecomax.services import (
     PRESET_DAY,
