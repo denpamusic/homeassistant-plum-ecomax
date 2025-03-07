@@ -180,7 +180,7 @@ async def async_get_device_parameter(
     else:
         unit_of_measurement = None
 
-    response = {
+    response: dict[str, Any] = {
         "name": name,
         "value": parameter.value,
         "min_value": parameter.min_value,

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from dataclasses import fields, is_dataclass
 from typing import Any
 
@@ -24,7 +23,7 @@ def _async_data_as_dict(data: dict[str, Any]) -> dict[str, Any]:
     for key, value in items.items():
         if isinstance(value, EventManager):
             value = value.data
-        if isinstance(value, Mapping):
+        if isinstance(value, dict):
             items[key] = _async_data_as_dict(value)
         elif is_dataclass(value):
             items[key] = {
