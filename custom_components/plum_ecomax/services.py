@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import datetime as dt
+from dataclasses import dataclass
 import logging
-from typing import Any, Final
+from typing import Any, Final, cast
 
 from homeassistant.const import ATTR_NAME, STATE_OFF, STATE_ON
 from homeassistant.core import (
@@ -22,18 +22,11 @@ from homeassistant.helpers.service import (
     SelectedEntities,
     async_extract_referenced_entity_ids,
 )
-from homeassistant.util.json import JsonObjectType
 from pyplumio.const import UnitOfMeasurement
-from pyplumio.devices import Device
+from pyplumio.devices import Device, VirtualDevice
 from pyplumio.helpers.parameter import Number, Parameter
-from pyplumio.helpers.schedule import (
-    STATE_DAY,
-    STATE_NIGHT,
-    TIME_FORMAT,
-    Schedule,
-    ScheduleDay,
-    start_of_day_dt,
-)
+from pyplumio.helpers.schedule import Schedule, ScheduleDay
+from pyplumio.structures.product_info import ProductInfo
 import voluptuous as vol
 
 from .connection import DEFAULT_TIMEOUT, EcomaxConnection
@@ -51,15 +44,11 @@ from .const import (
     DeviceType,
 )
 
-SCHEDULES: Final = (
-    "heating",
-    "water_heater",
-)
+PRESET_DAY: Final = "day"
+PRESET_NIGHT: Final = "night"
+PRESETS = (PRESET_DAY, PRESET_NIGHT)
 
-PRESETS: Final = (
-    STATE_DAY,
-    STATE_NIGHT,
-)
+SCHEDULES: Final = ("heating", "water_heater")
 
 SERVICE_GET_PARAMETER = "get_parameter"
 SERVICE_GET_PARAMETER_SCHEMA = make_entity_service_schema(
@@ -112,16 +101,17 @@ def async_extract_target_device(
             translation_placeholders={"device": device_id},
         )
 
+    ecomax = connection.device
     identifier = list(device.identifiers)[0][1]
     for device_type in (DeviceType.MIXER, DeviceType.THERMOSTAT):
         if f"-{device_type}-" in identifier:
             index = int(identifier.split("-", 3).pop())
-            sub_devices: dict[int, Device] = connection.device.get_nowait(
-                f"{device_type}s", {}
+            devices = cast(
+                dict[int, VirtualDevice], ecomax.get_nowait(f"{device_type}s", {})
             )
-            return sub_devices.get(index, connection.device)
+            return devices.get(index, ecomax)
 
-    return connection.device
+    return ecomax
 
 
 @callback
@@ -140,6 +130,25 @@ def async_extract_referenced_devices(
             extracted.add(entity.device_id)
 
     return devices
+
+
+UNKNOWN: Final = "unknown"
+
+
+@dataclass
+class DeviceId:
+    """Represents device info."""
+
+    name: str
+    index: int
+
+
+@dataclass
+class ProductId:
+    """Represents product info."""
+
+    model: str
+    uid: str
 
 
 async def async_get_device_parameter(
@@ -162,9 +171,6 @@ async def async_get_device_parameter(
             translation_placeholders={"parameter": name},
         )
 
-    ecomax = device.parent if hasattr(device, "parent") else device
-    product = ecomax.get_nowait(ATTR_PRODUCT, default=None)
-    device_uid = product.uid if product is not None else "unknown"
     if isinstance(parameter, Number):
         unit_of_measurement = (
             parameter.unit_of_measurement.value
@@ -174,16 +180,24 @@ async def async_get_device_parameter(
     else:
         unit_of_measurement = None
 
-    return {
+    response = {
         "name": name,
         "value": parameter.value,
         "min_value": parameter.min_value,
         "max_value": parameter.max_value,
         "unit_of_measurement": unit_of_measurement,
-        "device_type": device.__class__.__name__.lower(),
-        "device_uid": device_uid,
-        "device_index": device.index + 1 if hasattr(device, "index") else 0,
     }
+
+    if isinstance(device, VirtualDevice):
+        response["device"] = DeviceId(
+            name=device.__class__.__name__.lower(), index=device.index + 1
+        )
+        device = device.parent
+
+    if product_info := cast(ProductInfo | None, device.get_nowait(ATTR_PRODUCT)):
+        response["product"] = ProductId(model=product_info.model, uid=product_info.uid)
+
+    return response
 
 
 @callback
@@ -272,17 +286,6 @@ def async_setup_set_parameter_service(
 
 
 @callback
-def async_get_schedule_day_data(schedule_day: ScheduleDay) -> JsonObjectType:
-    """Format the schedule day as a dictionary."""
-    return {
-        (start_of_day_dt + dt.timedelta(minutes=30 * index)).strftime(TIME_FORMAT): (
-            STATE_DAY if value else STATE_NIGHT
-        )
-        for index, value in enumerate(schedule_day.intervals)
-    }
-
-
-@callback
 def async_setup_get_schedule_service(
     hass: HomeAssistant, connection: EcomaxConnection
 ) -> None:
@@ -304,7 +307,10 @@ def async_setup_get_schedule_service(
         schedule = schedules[schedule_type]
         return {
             "schedule": {
-                weekday: async_get_schedule_day_data(getattr(schedule, weekday))
+                weekday: {
+                    interval: PRESET_DAY if state == STATE_ON else PRESET_NIGHT
+                    for interval, state in getattr(schedule, weekday).items()
+                }
                 for weekday in weekdays
             },
         }
@@ -344,7 +350,11 @@ def async_setup_set_schedule_service(
         for weekday in weekdays:
             schedule_day: ScheduleDay = getattr(schedule, weekday)
             try:
-                schedule_day.set_state(preset, start_time[:-3], end_time[:-3])
+                schedule_day.set_state(
+                    STATE_ON if preset == "day" else STATE_OFF,
+                    start_time[:-3],
+                    end_time[:-3],
+                )
             except ValueError as e:
                 raise ServiceValidationError(
                     str(e),
