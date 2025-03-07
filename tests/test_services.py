@@ -7,7 +7,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.device_registry import DeviceEntry
 from pyplumio.devices.ecomax import EcoMAX
-from pyplumio.helpers.schedule import STATE_DAY, STATE_NIGHT, Schedule, ScheduleDay
+from pyplumio.helpers.schedule import Schedule, ScheduleDay
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -24,11 +24,15 @@ from custom_components.plum_ecomax.const import (
     DeviceType,
 )
 from custom_components.plum_ecomax.services import (
+    PRESET_DAY,
+    PRESET_NIGHT,
     SCHEDULES,
     SERVICE_GET_PARAMETER,
     SERVICE_GET_SCHEDULE,
     SERVICE_SET_PARAMETER,
     SERVICE_SET_SCHEDULE,
+    DeviceId,
+    ProductId,
     async_extract_target_device,
 )
 
@@ -115,9 +119,10 @@ async def test_get_parameter_service(
                 "min_value": 0,
                 "max_value": 1,
                 "unit_of_measurement": "°C",
-                "device_type": DeviceType.ECOMAX,
-                "device_uid": "TEST",
-                "device_index": 0,
+                "product": ProductId(
+                    model="ecoMAX 850P2-C",
+                    uid="TEST",
+                ),
             }
         ]
     }
@@ -143,9 +148,10 @@ async def test_get_parameter_service(
                 "min_value": "off",
                 "max_value": "on",
                 "unit_of_measurement": None,
-                "device_type": DeviceType.ECOMAX,
-                "device_uid": "TEST",
-                "device_index": 0,
+                "product": ProductId(
+                    model="ecoMAX 850P2-C",
+                    uid="TEST",
+                ),
             }
         ]
     }
@@ -172,9 +178,11 @@ async def test_get_parameter_service(
                 "min_value": 0,
                 "max_value": 1,
                 "unit_of_measurement": "°C",
-                "device_type": "mixer",
-                "device_uid": "TEST",
-                "device_index": 1,
+                "product": ProductId(
+                    model="ecoMAX 850P2-C",
+                    uid="TEST",
+                ),
+                "device": DeviceId(name="mixer", index=1),
             }
         ]
     }
@@ -217,7 +225,7 @@ async def test_get_parameter_service(
     assert exc_info.value.translation_key == "invalid_parameter"
     assert exc_info.value.translation_placeholders == {"parameter": "nonexistent"}
 
-    # Test getting parameter with unknown device uid.
+    # Test getting parameter with unknown product id.
     with patch("pyplumio.devices.Device.get_nowait", return_value=None):
         response = await hass.services.async_call(
             DOMAIN,
@@ -239,9 +247,6 @@ async def test_get_parameter_service(
                 "min_value": 0,
                 "max_value": 1,
                 "unit_of_measurement": "°C",
-                "device_type": DeviceType.ECOMAX,
-                "device_uid": "unknown",
-                "device_index": 0,
             }
         ]
     }
@@ -367,10 +372,8 @@ async def test_get_schedule_service(
     await setup_integration(hass, config_entry)
 
     mock_schedule = Mock(spec=Schedule)
-    mock_schedule.monday = Mock(spec=ScheduleDay)
-    mock_schedule.monday.intervals = [True, True, False, True]
-    mock_schedule.tuesday = Mock(spec=ScheduleDay)
-    mock_schedule.tuesday.intervals = [True, True, True, True]
+    mock_schedule.monday = ScheduleDay.from_iterable([True, True, False, True])
+    mock_schedule.tuesday = ScheduleDay.from_iterable([True, True, True, True])
     schedules = {SCHEDULES[0]: mock_schedule}
 
     # Test getting schedule for EM device.
@@ -387,16 +390,16 @@ async def test_get_schedule_service(
     assert response == {
         "schedule": {
             "monday": {
-                "00:00": STATE_DAY,
-                "00:30": STATE_DAY,
-                "01:00": STATE_NIGHT,
-                "01:30": STATE_DAY,
+                "00:00": PRESET_DAY,
+                "00:30": PRESET_DAY,
+                "01:00": PRESET_NIGHT,
+                "01:30": PRESET_DAY,
             },
             "tuesday": {
-                "00:00": STATE_DAY,
-                "00:30": STATE_DAY,
-                "01:00": STATE_DAY,
-                "01:30": STATE_DAY,
+                "00:00": PRESET_DAY,
+                "00:30": PRESET_DAY,
+                "01:00": PRESET_DAY,
+                "01:30": PRESET_DAY,
             },
         }
     }
@@ -447,7 +450,7 @@ async def test_set_schedule_service(
             {
                 ATTR_TYPE: SCHEDULES[0],
                 ATTR_WEEKDAYS: [WEEKDAYS[0], WEEKDAYS[1]],
-                ATTR_PRESET: STATE_DAY,
+                ATTR_PRESET: PRESET_DAY,
                 ATTR_START: "00:00:00",
                 ATTR_END: "10:00:00",
             },
@@ -455,8 +458,8 @@ async def test_set_schedule_service(
         )
         await hass.async_block_till_done()
 
-    mock_schedule.monday.set_state.assert_called_once_with(STATE_DAY, "00:00", "10:00")
-    mock_schedule.tuesday.set_state.assert_called_once_with(STATE_DAY, "00:00", "10:00")
+    mock_schedule.monday.set_state.assert_called_once_with("on", "00:00", "10:00")
+    mock_schedule.tuesday.set_state.assert_called_once_with("on", "00:00", "10:00")
     mock_schedule.commit.assert_called_once()
 
     # Test setting a schedule with an invalid time interval.
@@ -471,7 +474,7 @@ async def test_set_schedule_service(
             {
                 ATTR_TYPE: SCHEDULES[0],
                 ATTR_WEEKDAYS: WEEKDAYS[0],
-                ATTR_PRESET: STATE_DAY,
+                ATTR_PRESET: PRESET_DAY,
                 ATTR_START: "00:00:00",
                 ATTR_END: "10:00:00",
             },
@@ -496,7 +499,7 @@ async def test_set_schedule_service(
             {
                 ATTR_TYPE: SCHEDULES[1],
                 ATTR_WEEKDAYS: WEEKDAYS[0],
-                ATTR_PRESET: STATE_DAY,
+                ATTR_PRESET: PRESET_DAY,
                 ATTR_START: "00:00:00",
                 ATTR_END: "10:00:00",
             },
