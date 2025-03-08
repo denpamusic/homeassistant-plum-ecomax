@@ -132,9 +132,6 @@ def async_extract_referenced_devices(
     return devices
 
 
-UNKNOWN: Final = "unknown"
-
-
 @dataclass
 class DeviceId:
     """Represents device info."""
