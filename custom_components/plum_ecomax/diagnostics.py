@@ -9,9 +9,9 @@ from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from pyplumio import __version__ as pyplumio_version
-from pyplumio.devices import PhysicalDevice
 from pyplumio.helpers.event_manager import EventManager
 
+from .connection import EcomaxConnection
 from .const import ATTR_PASSWORD, CONF_HOST, CONF_UID
 
 
@@ -37,8 +37,7 @@ async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: ConfigEntry
 ) -> dict[str, Any]:
     """Return diagnostics for a config entry."""
-    data = entry.runtime_data
-    ecomax: PhysicalDevice = data.connection.device
+    connection: EcomaxConnection = entry.runtime_data.connection
     return {
         "entry": {
             "title": entry.title,
@@ -48,6 +47,7 @@ async def async_get_config_entry_diagnostics(
             "version": pyplumio_version,
         },
         "data": async_redact_data(
-            _async_data_as_dict(ecomax.data), to_redact={CONF_UID, ATTR_PASSWORD}
+            _async_data_as_dict(connection.device.data),
+            to_redact={CONF_UID, ATTR_PASSWORD},
         ),
     }
