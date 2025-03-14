@@ -181,7 +181,7 @@ async def test_get_parameter_service(
                     model="ecoMAX 850P2-C",
                     uid="TEST",
                 ),
-                "device": DeviceId(name="mixer", index=1),
+                "device": DeviceId(type="mixer", index=1),
             }
         ]
     }

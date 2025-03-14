@@ -134,15 +134,15 @@ def async_extract_referenced_devices(
 
 @dataclass
 class DeviceId:
-    """Represents device info."""
+    """Represents a device info."""
 
-    name: str
+    type: str
     index: int
 
 
 @dataclass
 class ProductId:
-    """Represents product info."""
+    """Represents a product info."""
 
     model: str
     uid: str
@@ -199,7 +199,7 @@ async def async_get_device_parameter(
 
     if isinstance(device, VirtualDevice):
         response["device"] = DeviceId(
-            name=device.__class__.__name__.lower(), index=device.index + 1
+            type=device.__class__.__name__.lower(), index=device.index + 1
         )
         device = device.parent
 
