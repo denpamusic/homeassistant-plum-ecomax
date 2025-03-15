@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import Any, Final, TypedDict, cast
+from typing import Any, Final, NotRequired, TypedDict, cast
 
 from homeassistant.const import ATTR_NAME, STATE_OFF, STATE_ON
 from homeassistant.core import (
@@ -156,8 +156,8 @@ class ParameterResponse(TypedDict):
     min_value: float
     max_value: float
     unit_of_measurement: str | None
-    device: DeviceId
-    product: ProductId
+    device: NotRequired[DeviceId]
+    product: NotRequired[ProductId]
 
 
 async def async_get_device_parameter(
