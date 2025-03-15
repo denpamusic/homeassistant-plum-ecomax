@@ -24,7 +24,7 @@ from homeassistant.helpers.service import (
 )
 from pyplumio.const import UnitOfMeasurement
 from pyplumio.devices import Device, VirtualDevice
-from pyplumio.helpers.parameter import Number, Parameter
+from pyplumio.helpers.parameter import Number, NumericType, Parameter, State
 from pyplumio.helpers.schedule import Schedule, ScheduleDay
 from pyplumio.structures.product_info import ProductInfo
 import voluptuous as vol
@@ -152,17 +152,15 @@ class ParameterResponse(TypedDict):
     """Represents a response from get/set parameter services."""
 
     name: str
-    value: float
-    min_value: float
-    max_value: float
+    value: NumericType | State | bool
+    min_value: NumericType | State | bool
+    max_value: NumericType | State | bool
     unit_of_measurement: str | None
     device: NotRequired[DeviceId]
     product: NotRequired[ProductId]
 
 
-async def async_get_device_parameter(
-    device: Device, name: str
-) -> dict[str, Any] | None:
+async def async_get_device_parameter(device: Device, name: str) -> ParameterResponse:
     """Get device parameter."""
     try:
         parameter = await device.get(name, timeout=DEFAULT_TIMEOUT)
@@ -225,11 +223,8 @@ def async_setup_get_parameter_service(
 
         return {
             "parameters": [
-                parameter
-                for parameter in [
-                    await async_get_device_parameter(device, name) for device in devices
-                ]
-                if parameter is not None
+                cast(dict[str, Any], await async_get_device_parameter(device, name))
+                for device in devices
             ]
         }
 
