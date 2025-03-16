@@ -134,7 +134,11 @@ def async_extract_referenced_devices(
 
 @dataclass
 class DeviceId:
-    """Represents a device info."""
+    """Represents a device id.
+
+    This class contains information that can be used to identify
+    a specific device.
+    """
 
     type: str
     index: int
@@ -142,7 +146,11 @@ class DeviceId:
 
 @dataclass
 class ProductId:
-    """Represents a product info."""
+    """Represents a product id.
+
+    This class contains information that can be used to identify
+    a product.
+    """
 
     model: str
     uid: str
