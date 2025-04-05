@@ -430,9 +430,7 @@ async def test_fuel_calorific_value_number(
         EcomaxNumber(
             device=connection.device,
             values=ParameterValues(value=47, min_value=40, max_value=50),
-            description=EcomaxNumberDescription(
-                fuel_calorific_value_key, multiplier=0.1
-            ),
+            description=EcomaxNumberDescription(fuel_calorific_value_key, step=0.1),
         ),
     )
     state = hass.states.get(fuel_calorific_value_entity_id)

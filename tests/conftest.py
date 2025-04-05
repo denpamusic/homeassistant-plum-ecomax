@@ -330,7 +330,7 @@ def fixture_ecomax_p(ecomax_common: EcoMAX):
                 values=ParameterValues(value=0, min_value=0, max_value=1),
                 description=EcomaxNumberDescription(
                     "fuel_calorific_value",
-                    multiplier=0.1,
+                    step=0.1,
                     unit_of_measurement=UnitOfMeasurement.KILO_WATT_HOUR_PER_KILOGRAM,
                 ),
             ),
@@ -688,7 +688,7 @@ def thermostats(ecomax_common: EcoMAX):
             values=ParameterValues(value=5, min_value=0, max_value=50),
             description=ThermostatNumberDescription(
                 "hysteresis",
-                multiplier=0.1,
+                step=0.1,
                 unit_of_measurement=UnitOfMeasurement.CELSIUS,
             ),
         ),
@@ -698,7 +698,7 @@ def thermostats(ecomax_common: EcoMAX):
             values=ParameterValues(value=100, min_value=100, max_value=350),
             description=ThermostatNumberDescription(
                 "party_target_temp",
-                multiplier=0.1,
+                step=0.1,
                 size=2,
                 unit_of_measurement=UnitOfMeasurement.DAYS,
             ),
@@ -709,7 +709,7 @@ def thermostats(ecomax_common: EcoMAX):
             values=ParameterValues(value=70, min_value=0, max_value=600),
             description=ThermostatNumberDescription(
                 "holidays_target_temp",
-                multiplier=0.1,
+                step=0.1,
                 size=2,
                 unit_of_measurement=UnitOfMeasurement.DAYS,
             ),
@@ -720,7 +720,7 @@ def thermostats(ecomax_common: EcoMAX):
             values=ParameterValues(value=90, min_value=50, max_value=300),
             description=ThermostatNumberDescription(
                 "antifreeze_target_temp",
-                multiplier=0.1,
+                step=0.1,
                 size=2,
                 unit_of_measurement=UnitOfMeasurement.CELSIUS,
             ),
@@ -731,7 +731,7 @@ def thermostats(ecomax_common: EcoMAX):
             values=ParameterValues(value=160, min_value=100, max_value=350),
             description=ThermostatNumberDescription(
                 "day_target_temp",
-                multiplier=0.1,
+                step=0.1,
                 size=2,
                 unit_of_measurement=UnitOfMeasurement.CELSIUS,
             ),
@@ -742,7 +742,7 @@ def thermostats(ecomax_common: EcoMAX):
             values=ParameterValues(value=100, min_value=100, max_value=200),
             description=ThermostatNumberDescription(
                 "night_target_temp",
-                multiplier=0.1,
+                step=0.1,
                 size=2,
                 unit_of_measurement=UnitOfMeasurement.CELSIUS,
             ),
