@@ -117,6 +117,7 @@ async def test_get_parameter_service(
                 "value": 0,
                 "min_value": 0,
                 "max_value": 1,
+                "step": 1.0,
                 "unit_of_measurement": "°C",
                 "product": ProductId(
                     model="ecoMAX 850P2-C",
@@ -146,7 +147,6 @@ async def test_get_parameter_service(
                 "value": "off",
                 "min_value": "off",
                 "max_value": "on",
-                "unit_of_measurement": None,
                 "product": ProductId(
                     model="ecoMAX 850P2-C",
                     uid="TEST",
@@ -176,6 +176,7 @@ async def test_get_parameter_service(
                 "value": 0,
                 "min_value": 0,
                 "max_value": 1,
+                "step": 1.0,
                 "unit_of_measurement": "°C",
                 "product": ProductId(
                     model="ecoMAX 850P2-C",
@@ -245,6 +246,7 @@ async def test_get_parameter_service(
                 "value": 0,
                 "min_value": 0,
                 "max_value": 1,
+                "step": 1.0,
                 "unit_of_measurement": "°C",
             }
         ]

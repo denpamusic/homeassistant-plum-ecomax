@@ -163,7 +163,8 @@ class ParameterResponse(TypedDict):
     value: NumericType | State | bool
     min_value: NumericType | State | bool
     max_value: NumericType | State | bool
-    unit_of_measurement: str | None
+    step: NotRequired[float]
+    unit_of_measurement: NotRequired[str | None]
     device: NotRequired[DeviceId]
     product: NotRequired[ProductId]
 
@@ -186,22 +187,20 @@ async def async_get_device_parameter(device: Device, name: str) -> ParameterResp
             translation_placeholders={"parameter": name},
         )
 
-    if isinstance(parameter, Number):
-        unit_of_measurement = (
-            parameter.unit_of_measurement.value
-            if isinstance(parameter.unit_of_measurement, UnitOfMeasurement)
-            else parameter.unit_of_measurement
-        )
-    else:
-        unit_of_measurement = None
-
     response: ParameterResponse = {
         "name": name,
         "value": parameter.value,
         "min_value": parameter.min_value,
         "max_value": parameter.max_value,
-        "unit_of_measurement": unit_of_measurement,
     }
+
+    if isinstance(parameter, Number):
+        response["unit_of_measurement"] = (
+            parameter.unit_of_measurement.value
+            if isinstance(parameter.unit_of_measurement, UnitOfMeasurement)
+            else parameter.unit_of_measurement
+        )
+        response["step"] = parameter.description.step
 
     if isinstance(device, VirtualDevice):
         response["device"] = DeviceId(
