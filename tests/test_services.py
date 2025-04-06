@@ -302,6 +302,22 @@ async def test_set_parameter_service(
         ]
     }
 
+    # Test setting parameter without response.
+    with patch("pyplumio.helpers.parameter.Parameter.set_nowait") as mock_set_nowait:
+        assert not await hass.services.async_call(
+            DOMAIN,
+            SERVICE_SET_PARAMETER,
+            {
+                ATTR_ENTITY_ID: heating_temperature_entity_id,
+                ATTR_NAME: "heating_target_temp",
+                ATTR_VALUE: 5,
+            },
+            blocking=True,
+        )
+        await hass.async_block_till_done()
+
+    mock_set_nowait.assert_called_once_with(5.0, 5, 15)
+
     # Test setting parameter for a mixer.
     mixer_temperature_entity_id = "sensor.ecomax_mixer_1_mixer_temperature"
     with patch("pyplumio.helpers.parameter.Parameter.set_nowait") as mock_set_nowait:
