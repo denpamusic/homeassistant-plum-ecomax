@@ -169,7 +169,8 @@ class ParameterResponse(TypedDict):
     product: NotRequired[ProductId]
 
 
-async def async_get_device_parameter(device: Device, name: str) -> ParameterResponse:
+@callback
+def async_get_device_parameter(device: Device, name: str) -> ParameterResponse:
     """Get device parameter."""
     if not (parameter := device.get_nowait(name, None)):
         raise HomeAssistantError(
@@ -228,7 +229,7 @@ def async_setup_get_parameter_service(
 
         return {
             "parameters": [
-                cast(dict[str, Any], await async_get_device_parameter(device, name))
+                cast(dict[str, Any], async_get_device_parameter(device, name))
                 for device in devices
             ]
         }
@@ -242,7 +243,8 @@ def async_setup_get_parameter_service(
     )
 
 
-async def async_set_device_parameter(device: Device, name: str, value: float) -> bool:
+@callback
+def async_set_device_parameter(device: Device, name: str, value: float) -> bool:
     """Set device parameter."""
     if not (parameter := device.get_nowait(name, None)):
         raise HomeAssistantError(
@@ -284,7 +286,7 @@ def async_setup_set_parameter_service(
         selected = async_extract_referenced_entity_ids(hass, service_call)
         devices = async_extract_referenced_devices(hass, connection, selected)
         for device in devices:
-            await async_set_device_parameter(device, name, value)
+            async_set_device_parameter(device, name, value)
 
     hass.services.async_register(
         DOMAIN,
