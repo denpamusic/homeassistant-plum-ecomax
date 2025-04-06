@@ -204,7 +204,8 @@ def async_make_parameter_response(
 @callback
 def async_get_device_parameter(device: Device, name: str) -> ParameterResponse:
     """Get device parameter."""
-    if not (parameter := device.get_nowait(name, None)):
+    parameter = device.get_nowait(name, None)
+    if not parameter:
         raise HomeAssistantError(
             translation_domain=DOMAIN,
             translation_key="parameter_not_found",
@@ -214,8 +215,8 @@ def async_get_device_parameter(device: Device, name: str) -> ParameterResponse:
     if not isinstance(parameter, Parameter):
         raise ServiceValidationError(
             translation_domain=DOMAIN,
-            translation_key="invalid_parameter",
-            translation_placeholders={"parameter": name},
+            translation_key="property_not_writable",
+            translation_placeholders={"property": name},
         )
 
     return async_make_parameter_response(device, parameter)
@@ -255,7 +256,8 @@ def async_set_device_parameter(
     device: Device, name: str, value: float
 ) -> ParameterResponse:
     """Set device parameter."""
-    if not (parameter := device.get_nowait(name, None)):
+    parameter = device.get_nowait(name, None)
+    if not parameter:
         raise HomeAssistantError(
             translation_domain=DOMAIN,
             translation_key="parameter_not_found",
@@ -265,8 +267,8 @@ def async_set_device_parameter(
     if not isinstance(parameter, Parameter):
         raise ServiceValidationError(
             translation_domain=DOMAIN,
-            translation_key="invalid_parameter",
-            translation_placeholders={"parameter": name},
+            translation_key="property_not_writable",
+            translation_placeholders={"property": name},
         )
 
     try:

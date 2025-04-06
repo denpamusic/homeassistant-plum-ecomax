@@ -375,14 +375,14 @@
     "device_not_ready": {
       "message": "Device not ready ({device})"
     },
-    "invalid_parameter": {
-      "message": "Invalid parameter selected ({parameter})"
+    "property_not_writable": {
+      "message": "Cannot change read-only property ({property})"
     },
     "invalid_parameter_value": {
       "message": "Invalid value {value} for the {parameter} parameter"
     },
     "invalid_schedule_interval": {
-      "message": "Invalid interval selected for {schedule}. Got {start} to {end}."
+      "message": "Invalid interval for {schedule}. Got {start} to {end}."
     },
     "parameter_not_found": {
       "message": "Requested parameter not found ({parameter})"

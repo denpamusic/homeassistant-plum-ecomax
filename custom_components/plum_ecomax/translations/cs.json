@@ -375,8 +375,8 @@
     "device_not_ready": {
       "message": "Zařízení není připraveno ({device})"
     },
-    "invalid_parameter": {
-      "message": "Vybrán neplatný parametr ({parameter})"
+    "property_not_writable": {
+      "message": "Nelze změnit vlastnost pouze pro čtení ({parameter})"
     },
     "invalid_parameter_value": {
       "message": "Neplatná hodnota {value} parametru {parameter}"

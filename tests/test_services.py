@@ -222,8 +222,8 @@ async def test_get_parameter_service(
             return_response=True,
         )
 
-    assert exc_info.value.translation_key == "invalid_parameter"
-    assert exc_info.value.translation_placeholders == {"parameter": "nonexistent"}
+    assert exc_info.value.translation_key == "property_not_writable"
+    assert exc_info.value.translation_placeholders == {"property": "nonexistent"}
 
     # Test getting parameter with unknown product id.
     with patch(
@@ -360,8 +360,8 @@ async def test_set_parameter_service(
             blocking=True,
         )
 
-    assert exc_info.value.translation_key == "invalid_parameter"
-    assert exc_info.value.translation_placeholders == {"parameter": "not_a_parameter"}
+    assert exc_info.value.translation_key == "property_not_writable"
+    assert exc_info.value.translation_placeholders == {"property": "not_a_parameter"}
 
     # Test parameter not found error.
     with (
