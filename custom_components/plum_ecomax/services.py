@@ -182,12 +182,12 @@ def async_make_parameter_response(
     }
 
     if isinstance(parameter, Number):
+        response["step"] = parameter.description.step
         response["unit_of_measurement"] = (
             parameter.unit_of_measurement.value
             if isinstance(parameter.unit_of_measurement, UnitOfMeasurement)
             else parameter.unit_of_measurement
         )
-        response["step"] = parameter.description.step
 
     if isinstance(device, VirtualDevice):
         response["device"] = DeviceId(
