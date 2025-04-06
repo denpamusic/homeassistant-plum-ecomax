@@ -270,7 +270,7 @@ async def test_set_parameter_service(
 
     # Test setting parameter for EM device.
     with patch("pyplumio.helpers.parameter.Parameter.set_nowait") as mock_set_nowait:
-        await hass.services.async_call(
+        response = await hass.services.async_call(
             DOMAIN,
             SERVICE_SET_PARAMETER,
             {
@@ -279,10 +279,28 @@ async def test_set_parameter_service(
                 ATTR_VALUE: 0,
             },
             blocking=True,
+            return_response=True,
         )
         await hass.async_block_till_done()
 
     mock_set_nowait.assert_called_once_with(0.0, 5, 15)
+
+    assert response == {
+        "parameters": [
+            {
+                "name": "heating_target_temp",
+                "value": 0.0,
+                "min_value": 0.0,
+                "max_value": 1.0,
+                "step": 1.0,
+                "unit_of_measurement": "°C",
+                "product": ProductId(
+                    model="ecoMAX 850P2-C",
+                    uid="TEST",
+                ),
+            }
+        ]
+    }
 
     # Test setting parameter for a mixer.
     mixer_temperature_entity_id = "sensor.ecomax_mixer_1_mixer_temperature"

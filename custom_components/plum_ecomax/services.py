@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import Any, Final, NotRequired, TypedDict, cast
+from typing import Final, NotRequired, TypedDict, cast
 
 from homeassistant.const import ATTR_NAME, STATE_OFF, STATE_ON
 from homeassistant.core import (
@@ -170,24 +170,12 @@ class ParameterResponse(TypedDict):
 
 
 @callback
-def async_get_device_parameter(device: Device, name: str) -> ParameterResponse:
-    """Get device parameter."""
-    if not (parameter := device.get_nowait(name, None)):
-        raise HomeAssistantError(
-            translation_domain=DOMAIN,
-            translation_key="parameter_not_found",
-            translation_placeholders={"parameter": name},
-        )
-
-    if not isinstance(parameter, Parameter):
-        raise ServiceValidationError(
-            translation_domain=DOMAIN,
-            translation_key="invalid_parameter",
-            translation_placeholders={"parameter": name},
-        )
-
+def async_make_parameter_response(
+    device: Device, parameter: Parameter
+) -> ParameterResponse:
+    """Make a parameter response."""
     response: ParameterResponse = {
-        "name": name,
+        "name": parameter.description.name,
         "value": parameter.value,
         "min_value": parameter.min_value,
         "max_value": parameter.max_value,
@@ -214,6 +202,26 @@ def async_get_device_parameter(device: Device, name: str) -> ParameterResponse:
 
 
 @callback
+def async_get_device_parameter(device: Device, name: str) -> ParameterResponse:
+    """Get device parameter."""
+    if not (parameter := device.get_nowait(name, None)):
+        raise HomeAssistantError(
+            translation_domain=DOMAIN,
+            translation_key="parameter_not_found",
+            translation_placeholders={"parameter": name},
+        )
+
+    if not isinstance(parameter, Parameter):
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="invalid_parameter",
+            translation_placeholders={"parameter": name},
+        )
+
+    return async_make_parameter_response(device, parameter)
+
+
+@callback
 def async_setup_get_parameter_service(
     hass: HomeAssistant, connection: EcomaxConnection
 ) -> None:
@@ -226,13 +234,12 @@ def async_setup_get_parameter_service(
         name = service_call.data[ATTR_NAME]
         selected = async_extract_referenced_entity_ids(hass, service_call)
         devices = async_extract_referenced_devices(hass, connection, selected)
-
-        return {
+        response = {
             "parameters": [
-                cast(dict[str, Any], async_get_device_parameter(device, name))
-                for device in devices
+                async_get_device_parameter(device, name) for device in devices
             ]
         }
+        return cast(ServiceResponse, response)
 
     hass.services.async_register(
         DOMAIN,
@@ -244,7 +251,9 @@ def async_setup_get_parameter_service(
 
 
 @callback
-def async_set_device_parameter(device: Device, name: str, value: float) -> bool:
+def async_set_device_parameter(
+    device: Device, name: str, value: float
+) -> ParameterResponse:
     """Set device parameter."""
     if not (parameter := device.get_nowait(name, None)):
         raise HomeAssistantError(
@@ -270,7 +279,7 @@ def async_set_device_parameter(device: Device, name: str, value: float) -> bool:
             translation_placeholders={"parameter": name, "value": str(value)},
         ) from e
 
-    return True
+    return async_make_parameter_response(device, parameter)
 
 
 @callback
@@ -279,20 +288,27 @@ def async_setup_set_parameter_service(
 ) -> None:
     """Set up the service to set a device parameter."""
 
-    async def _async_set_parameter_service(service_call: ServiceCall) -> None:
+    async def _async_set_parameter_service(
+        service_call: ServiceCall,
+    ) -> ServiceResponse | None:
         """Service to set a device parameter."""
         name = service_call.data[ATTR_NAME]
         value = service_call.data[ATTR_VALUE]
         selected = async_extract_referenced_entity_ids(hass, service_call)
         devices = async_extract_referenced_devices(hass, connection, selected)
-        for device in devices:
-            async_set_device_parameter(device, name, value)
+        response = {
+            "parameters": [
+                async_set_device_parameter(device, name, value) for device in devices
+            ]
+        }
+        return cast(ServiceResponse, response) if service_call.return_response else None
 
     hass.services.async_register(
         DOMAIN,
         SERVICE_SET_PARAMETER,
         _async_set_parameter_service,
         schema=SERVICE_SET_PARAMETER_SCHEMA,
+        supports_response=SupportsResponse.OPTIONAL,
     )
 
 
