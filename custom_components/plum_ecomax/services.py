@@ -171,14 +171,12 @@ class ParameterResponse(TypedDict):
 
 async def async_get_device_parameter(device: Device, name: str) -> ParameterResponse:
     """Get device parameter."""
-    try:
-        parameter = await device.get(name, timeout=DEFAULT_TIMEOUT)
-    except TimeoutError as e:
+    if not (parameter := device.get_nowait(name, None)):
         raise HomeAssistantError(
             translation_domain=DOMAIN,
-            translation_key="get_parameter_timeout",
+            translation_key="parameter_not_found",
             translation_placeholders={"parameter": name},
-        ) from e
+        )
 
     if not isinstance(parameter, Parameter):
         raise ServiceValidationError(
@@ -246,17 +244,22 @@ def async_setup_get_parameter_service(
 
 async def async_set_device_parameter(device: Device, name: str, value: float) -> bool:
     """Set device parameter."""
-    try:
-        parameter = await device.get(name, timeout=DEFAULT_TIMEOUT)
-        if not isinstance(parameter, Parameter):
-            raise ServiceValidationError(
-                translation_domain=DOMAIN,
-                translation_key="invalid_parameter",
-                translation_placeholders={"parameter": name},
-            )
+    if not (parameter := device.get_nowait(name, None)):
+        raise HomeAssistantError(
+            translation_domain=DOMAIN,
+            translation_key="parameter_not_found",
+            translation_placeholders={"parameter": name},
+        )
 
+    if not isinstance(parameter, Parameter):
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="invalid_parameter",
+            translation_placeholders={"parameter": name},
+        )
+
+    try:
         parameter.set_nowait(value, timeout=DEFAULT_TIMEOUT)
-        return True
     except ValueError as e:
         raise ServiceValidationError(
             str(e),
@@ -264,13 +267,8 @@ async def async_set_device_parameter(device: Device, name: str, value: float) ->
             translation_key="invalid_parameter_value",
             translation_placeholders={"parameter": name, "value": str(value)},
         ) from e
-    except TimeoutError as e:
-        raise HomeAssistantError(
-            str(e),
-            translation_domain=DOMAIN,
-            translation_key="set_parameter_timeout",
-            translation_placeholders={"parameter": name},
-        ) from e
+
+    return True
 
 
 @callback

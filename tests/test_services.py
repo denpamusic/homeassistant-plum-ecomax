@@ -187,10 +187,10 @@ async def test_get_parameter_service(
         ]
     }
 
-    # Test timing out while trying to get a parameter.
+    # Test parameter not found error.
     with (
         pytest.raises(HomeAssistantError) as exc_info,
-        patch("pyplumio.devices.Device.get", side_effect=TimeoutError),
+        patch("pyplumio.devices.Device.get_nowait", return_value=None),
     ):
         await hass.services.async_call(
             DOMAIN,
@@ -203,13 +203,13 @@ async def test_get_parameter_service(
             return_response=True,
         )
 
-    assert exc_info.value.translation_key == "get_parameter_timeout"
+    assert exc_info.value.translation_key == "parameter_not_found"
     assert exc_info.value.translation_placeholders == {"parameter": "nonexistent"}
 
     # Test getting an invalid parameter.
     with (
         pytest.raises(ServiceValidationError) as exc_info,
-        patch("pyplumio.devices.Device.get", return_value="nonexistent"),
+        patch("pyplumio.devices.Device.get_nowait", return_value="nonexistent"),
     ):
         await hass.services.async_call(
             DOMAIN,
@@ -226,7 +226,10 @@ async def test_get_parameter_service(
     assert exc_info.value.translation_placeholders == {"parameter": "nonexistent"}
 
     # Test getting parameter with unknown product id.
-    with patch("pyplumio.devices.Device.get_nowait", return_value=None):
+    with patch(
+        "pyplumio.devices.Device.get_nowait",
+        side_effect=(connection.device.data["heating_target_temp"], None),
+    ):
         response = await hass.services.async_call(
             DOMAIN,
             SERVICE_GET_PARAMETER,
@@ -326,7 +329,7 @@ async def test_set_parameter_service(
     # Test setting an invalid parameter.
     with (
         pytest.raises(ServiceValidationError) as exc_info,
-        patch("pyplumio.devices.Device.get", side_effect="not_a_parameter"),
+        patch("pyplumio.devices.Device.get_nowait", side_effect="not_a_parameter"),
     ):
         await hass.services.async_call(
             DOMAIN,
@@ -342,10 +345,10 @@ async def test_set_parameter_service(
     assert exc_info.value.translation_key == "invalid_parameter"
     assert exc_info.value.translation_placeholders == {"parameter": "not_a_parameter"}
 
-    # Test timing out while trying to set a parameter.
+    # Test parameter not found error.
     with (
         pytest.raises(HomeAssistantError) as exc2_info,
-        patch("pyplumio.devices.Device.get", side_effect=TimeoutError),
+        patch("pyplumio.devices.Device.get_nowait", return_value=None),
     ):
         await hass.services.async_call(
             DOMAIN,
@@ -358,7 +361,7 @@ async def test_set_parameter_service(
             blocking=True,
         )
 
-    assert exc2_info.value.translation_key == "set_parameter_timeout"
+    assert exc2_info.value.translation_key == "parameter_not_found"
     assert exc2_info.value.translation_placeholders == {"parameter": "nonexistent"}
 
 

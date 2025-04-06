@@ -375,9 +375,6 @@
     "device_not_ready": {
       "message": "Zařízení není připraveno ({device})"
     },
-    "get_parameter_timeout": {
-      "message": "Požadavek na získání parametru vypršel ({parameter})"
-    },
     "invalid_parameter": {
       "message": "Vybrán neplatný parametr ({parameter})"
     },

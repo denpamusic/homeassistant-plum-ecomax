@@ -375,9 +375,6 @@
     "device_not_ready": {
       "message": "L'appareil n'est pas prêt ({device})"
     },
-    "get_parameter_timeout": {
-      "message": "La demande d'obtention d'un paramètre a expiré ({parameter})"
-    },
     "invalid_parameter": {
       "message": "Paramètre sélectionné invalide ({parameter})"
     },
