@@ -370,11 +370,8 @@
     "device_not_ready": {
       "message": "L'appareil n'est pas prêt ({device})"
     },
-    "get_parameter_timeout": {
-      "message": "La demande d'obtention d'un paramètre a expiré ({parameter})"
-    },
-    "invalid_parameter": {
-      "message": "Paramètre sélectionné invalide ({parameter})"
+    "property_not_writable": {
+      "message": "Impossible de modifier la propriété en lecture seule ({property})"
     },
     "invalid_parameter_value": {
       "message": "Valeur {value} invalide  pour le paramètre {parameter}"

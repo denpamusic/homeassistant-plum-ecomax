@@ -3,6 +3,7 @@
 from typing import Any
 from unittest.mock import AsyncMock
 
+from homeassistant.components.diagnostics import REDACTED
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from pyplumio import __version__
@@ -26,10 +27,7 @@ from custom_components.plum_ecomax.const import (
     CONF_UID,
     CONNECTION_TYPE_TCP,
 )
-from custom_components.plum_ecomax.diagnostics import (
-    REDACTED,
-    async_get_config_entry_diagnostics,
-)
+from custom_components.plum_ecomax.diagnostics import async_get_config_entry_diagnostics
 
 
 @pytest.mark.usefixtures("ecomax_860p3_o", "mixers", "connection")
@@ -63,7 +61,7 @@ async def test_diagnostics(
     ecomax_data = dict(ecomax_p.data)
     ecomax_data[ATTR_PASSWORD] = REDACTED
     ecomax_data[ATTR_MIXERS] = {x: y.data for x, y in ecomax_data[ATTR_MIXERS].items()}
-    assert result["data"][ATTR_PRODUCT].uid == REDACTED
+    assert result["data"][ATTR_PRODUCT][CONF_UID] == REDACTED
     assert ecomax_data[ATTR_PRODUCT].uid != REDACTED
 
     # Check that redactor doesn't fail on missing key.

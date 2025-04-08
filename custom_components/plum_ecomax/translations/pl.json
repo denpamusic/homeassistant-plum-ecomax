@@ -370,11 +370,8 @@
     "device_not_ready": {
       "message": "Device not ready ({device})"
     },
-    "get_parameter_timeout": {
-      "message": "Request to get a parameter timed out ({parameter})"
-    },
-    "invalid_parameter": {
-      "message": "Invalid parameter selected ({parameter})"
+    "property_not_writable": {
+      "message": "Cannot change read-only property ({property})"
     },
     "invalid_parameter_value": {
       "message": "Invalid value {value} for the {parameter} parameter"

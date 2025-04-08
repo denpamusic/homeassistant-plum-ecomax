@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import cast
+from typing import Any, cast
 
 from homeassistant.components.number import (
     NumberDeviceClass,
@@ -226,7 +226,7 @@ def async_setup_mixer_numbers(connection: EcomaxConnection) -> list[MixerNumber]
     """Set up the mixer numbers."""
     return [
         MixerNumber(connection, description, index)
-        for index in connection.device.mixers
+        for index in cast(dict[int, Any], connection.device.mixers)
         for description in async_get_by_index(
             index,
             async_get_by_modules(

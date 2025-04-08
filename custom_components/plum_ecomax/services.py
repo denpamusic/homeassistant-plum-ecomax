@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import datetime as dt
+from dataclasses import dataclass
 import logging
-from typing import Any, Final
+from typing import Final, NotRequired, TypedDict, cast
 
 from homeassistant.const import ATTR_NAME, STATE_OFF, STATE_ON
 from homeassistant.core import (
@@ -22,18 +22,11 @@ from homeassistant.helpers.service import (
     SelectedEntities,
     async_extract_referenced_entity_ids,
 )
-from homeassistant.util.json import JsonObjectType
 from pyplumio.const import UnitOfMeasurement
-from pyplumio.devices import Device
-from pyplumio.helpers.parameter import Number, Parameter
-from pyplumio.helpers.schedule import (
-    STATE_DAY,
-    STATE_NIGHT,
-    TIME_FORMAT,
-    Schedule,
-    ScheduleDay,
-    start_of_day_dt,
-)
+from pyplumio.devices import Device, VirtualDevice
+from pyplumio.helpers.parameter import Number, NumericType, Parameter, State
+from pyplumio.helpers.schedule import Schedule, ScheduleDay
+from pyplumio.structures.product_info import ProductInfo
 import voluptuous as vol
 
 from .connection import DEFAULT_TIMEOUT, EcomaxConnection
@@ -51,15 +44,11 @@ from .const import (
     DeviceType,
 )
 
-SCHEDULES: Final = (
-    "heating",
-    "water_heater",
-)
+PRESET_DAY: Final = "day"
+PRESET_NIGHT: Final = "night"
+PRESETS = (PRESET_DAY, PRESET_NIGHT)
 
-PRESETS: Final = (
-    STATE_DAY,
-    STATE_NIGHT,
-)
+SCHEDULES: Final = ("heating", "water_heater")
 
 SERVICE_GET_PARAMETER = "get_parameter"
 SERVICE_GET_PARAMETER_SCHEMA = make_entity_service_schema(
@@ -112,16 +101,17 @@ def async_extract_target_device(
             translation_placeholders={"device": device_id},
         )
 
+    ecomax = connection.device
     identifier = list(device.identifiers)[0][1]
     for device_type in (DeviceType.MIXER, DeviceType.THERMOSTAT):
         if f"-{device_type}-" in identifier:
             index = int(identifier.split("-", 3).pop())
-            sub_devices: dict[int, Device] = connection.device.get_nowait(
-                f"{device_type}s", {}
+            devices = cast(
+                dict[int, VirtualDevice], ecomax.get_nowait(f"{device_type}s", {})
             )
-            return sub_devices.get(index, connection.device)
+            return devices.get(index, ecomax)
 
-    return connection.device
+    return ecomax
 
 
 @callback
@@ -142,48 +132,94 @@ def async_extract_referenced_devices(
     return devices
 
 
-async def async_get_device_parameter(
-    device: Device, name: str
-) -> dict[str, Any] | None:
-    """Get device parameter."""
-    try:
-        parameter = await device.get(name, timeout=DEFAULT_TIMEOUT)
-    except TimeoutError as e:
-        raise HomeAssistantError(
-            translation_domain=DOMAIN,
-            translation_key="get_parameter_timeout",
-            translation_placeholders={"parameter": name},
-        ) from e
+@dataclass
+class DeviceId:
+    """Represents a device id.
 
-    if not isinstance(parameter, Parameter):
-        raise ServiceValidationError(
-            translation_domain=DOMAIN,
-            translation_key="invalid_parameter",
-            translation_placeholders={"parameter": name},
-        )
+    This class contains information that can be used to identify
+    a specific device.
+    """
 
-    ecomax = device.parent if hasattr(device, "parent") else device
-    product = ecomax.get_nowait(ATTR_PRODUCT, default=None)
-    device_uid = product.uid if product is not None else "unknown"
+    type: str
+    index: int
+
+
+@dataclass
+class ProductId:
+    """Represents a product id.
+
+    This class contains information that can be used to identify
+    a product.
+    """
+
+    model: str
+    uid: str
+
+
+class ParameterResponse(TypedDict):
+    """Represents a response from get/set parameter services."""
+
+    name: str
+    value: NumericType | State | bool
+    min_value: NumericType | State | bool
+    max_value: NumericType | State | bool
+    step: NotRequired[float]
+    unit_of_measurement: NotRequired[str | None]
+    device: NotRequired[DeviceId]
+    product: NotRequired[ProductId]
+
+
+@callback
+def async_make_parameter_response(
+    device: Device, parameter: Parameter
+) -> ParameterResponse:
+    """Make a parameter response."""
+    response: ParameterResponse = {
+        "name": parameter.description.name,
+        "value": parameter.value,
+        "min_value": parameter.min_value,
+        "max_value": parameter.max_value,
+    }
+
     if isinstance(parameter, Number):
-        unit_of_measurement = (
+        response["step"] = parameter.description.step
+        response["unit_of_measurement"] = (
             parameter.unit_of_measurement.value
             if isinstance(parameter.unit_of_measurement, UnitOfMeasurement)
             else parameter.unit_of_measurement
         )
-    else:
-        unit_of_measurement = None
 
-    return {
-        "name": name,
-        "value": parameter.value,
-        "min_value": parameter.min_value,
-        "max_value": parameter.max_value,
-        "unit_of_measurement": unit_of_measurement,
-        "device_type": device.__class__.__name__.lower(),
-        "device_uid": device_uid,
-        "device_index": device.index + 1 if hasattr(device, "index") else 0,
-    }
+    if isinstance(device, VirtualDevice):
+        response["device"] = DeviceId(
+            type=device.__class__.__name__.lower(), index=device.index + 1
+        )
+        device = device.parent
+
+    if product_info := cast(ProductInfo | None, device.get_nowait(ATTR_PRODUCT)):
+        response["product"] = ProductId(model=product_info.model, uid=product_info.uid)
+
+    return response
+
+
+@callback
+def async_get_device_parameter(device: Device, name: str) -> ParameterResponse:
+    """Get device parameter."""
+    parameter = device.get_nowait(name, None)
+    if not parameter:
+        raise HomeAssistantError(
+            translation_domain=DOMAIN,
+            translation_key="parameter_not_found",
+            translation_placeholders={"parameter": name},
+        )
+
+    if not isinstance(parameter, Parameter):
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="property_not_writable",
+            translation_placeholders={"property": name},
+        )
+
+    return async_make_parameter_response(device, parameter)
 
 
 @callback
@@ -199,16 +235,12 @@ def async_setup_get_parameter_service(
         name = service_call.data[ATTR_NAME]
         selected = async_extract_referenced_entity_ids(hass, service_call)
         devices = async_extract_referenced_devices(hass, connection, selected)
-
-        return {
+        response = {
             "parameters": [
-                parameter
-                for parameter in [
-                    await async_get_device_parameter(device, name) for device in devices
-                ]
-                if parameter is not None
+                async_get_device_parameter(device, name) for device in devices
             ]
         }
+        return cast(ServiceResponse, response)
 
     hass.services.async_register(
         DOMAIN,
@@ -219,19 +251,28 @@ def async_setup_get_parameter_service(
     )
 
 
-async def async_set_device_parameter(device: Device, name: str, value: float) -> bool:
+@callback
+def async_set_device_parameter(
+    device: Device, name: str, value: float
+) -> ParameterResponse:
     """Set device parameter."""
-    try:
-        parameter = await device.get(name, timeout=DEFAULT_TIMEOUT)
-        if not isinstance(parameter, Parameter):
-            raise ServiceValidationError(
-                translation_domain=DOMAIN,
-                translation_key="invalid_parameter",
-                translation_placeholders={"parameter": name},
-            )
+    parameter = device.get_nowait(name, None)
+    if not parameter:
+        raise HomeAssistantError(
+            translation_domain=DOMAIN,
+            translation_key="parameter_not_found",
+            translation_placeholders={"parameter": name},
+        )
 
+    if not isinstance(parameter, Parameter):
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key="property_not_writable",
+            translation_placeholders={"property": name},
+        )
+
+    try:
         parameter.set_nowait(value, timeout=DEFAULT_TIMEOUT)
-        return True
     except ValueError as e:
         raise ServiceValidationError(
             str(e),
@@ -239,13 +280,8 @@ async def async_set_device_parameter(device: Device, name: str, value: float) ->
             translation_key="invalid_parameter_value",
             translation_placeholders={"parameter": name, "value": str(value)},
         ) from e
-    except TimeoutError as e:
-        raise HomeAssistantError(
-            str(e),
-            translation_domain=DOMAIN,
-            translation_key="set_parameter_timeout",
-            translation_placeholders={"parameter": name},
-        ) from e
+
+    return async_make_parameter_response(device, parameter)
 
 
 @callback
@@ -254,32 +290,28 @@ def async_setup_set_parameter_service(
 ) -> None:
     """Set up the service to set a device parameter."""
 
-    async def _async_set_parameter_service(service_call: ServiceCall) -> None:
+    async def _async_set_parameter_service(
+        service_call: ServiceCall,
+    ) -> ServiceResponse | None:
         """Service to set a device parameter."""
         name = service_call.data[ATTR_NAME]
         value = service_call.data[ATTR_VALUE]
         selected = async_extract_referenced_entity_ids(hass, service_call)
         devices = async_extract_referenced_devices(hass, connection, selected)
-        for device in devices:
-            await async_set_device_parameter(device, name, value)
+        response = {
+            "parameters": [
+                async_set_device_parameter(device, name, value) for device in devices
+            ]
+        }
+        return cast(ServiceResponse, response) if service_call.return_response else None
 
     hass.services.async_register(
         DOMAIN,
         SERVICE_SET_PARAMETER,
         _async_set_parameter_service,
         schema=SERVICE_SET_PARAMETER_SCHEMA,
+        supports_response=SupportsResponse.OPTIONAL,
     )
-
-
-@callback
-def async_get_schedule_day_data(schedule_day: ScheduleDay) -> JsonObjectType:
-    """Format the schedule day as a dictionary."""
-    return {
-        (start_of_day_dt + dt.timedelta(minutes=30 * index)).strftime(TIME_FORMAT): (
-            STATE_DAY if value else STATE_NIGHT
-        )
-        for index, value in enumerate(schedule_day.intervals)
-    }
 
 
 @callback
@@ -304,7 +336,10 @@ def async_setup_get_schedule_service(
         schedule = schedules[schedule_type]
         return {
             "schedule": {
-                weekday: async_get_schedule_day_data(getattr(schedule, weekday))
+                weekday: {
+                    interval: PRESET_DAY if state == STATE_ON else PRESET_NIGHT
+                    for interval, state in getattr(schedule, weekday).items()
+                }
                 for weekday in weekdays
             },
         }
@@ -344,7 +379,11 @@ def async_setup_set_schedule_service(
         for weekday in weekdays:
             schedule_day: ScheduleDay = getattr(schedule, weekday)
             try:
-                schedule_day.set_state(preset, start_time[:-3], end_time[:-3])
+                schedule_day.set_state(
+                    STATE_ON if preset == "day" else STATE_OFF,
+                    start_time[:-3],
+                    end_time[:-3],
+                )
             except ValueError as e:
                 raise ServiceValidationError(
                     str(e),

@@ -25,9 +25,8 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.filters import Filter, on_change, throttle
 from pyplumio.helpers.parameter import Parameter
 
-from custom_components.plum_ecomax.connection import EcomaxConnection
-
 from . import PlumEcomaxConfigEntry
+from .connection import EcomaxConnection
 from .entity import EcomaxEntity, EcomaxEntityDescription
 
 TEMPERATURE_STEP: Final = 1
