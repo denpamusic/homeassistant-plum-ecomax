@@ -496,8 +496,8 @@ async def test_set_schedule_service(
         )
         await hass.async_block_till_done()
 
-    mock_schedule.monday.set_state.assert_called_once_with("on", "00:00", "10:00")
-    mock_schedule.tuesday.set_state.assert_called_once_with("on", "00:00", "10:00")
+    mock_schedule.monday.set_state.assert_called_once_with(True, "00:00", "10:00")
+    mock_schedule.tuesday.set_state.assert_called_once_with(True, "00:00", "10:00")
     mock_schedule.commit.assert_called_once()
 
     # Test setting a schedule with an invalid time interval.
