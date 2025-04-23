@@ -366,7 +366,6 @@ def async_setup_set_schedule_service(
         preset = service_call.data[ATTR_PRESET]
         start_time = service_call.data[ATTR_START]
         end_time = service_call.data[ATTR_END]
-
         schedules = connection.device.get_nowait(ATTR_SCHEDULES, {})
         if schedule_type not in schedules:
             raise ServiceValidationError(
@@ -376,14 +375,11 @@ def async_setup_set_schedule_service(
             )
 
         schedule: Schedule = schedules[schedule_type]
+        preset = STATE_ON if preset == "day" else STATE_OFF
         for weekday in weekdays:
             schedule_day: ScheduleDay = getattr(schedule, weekday)
             try:
-                schedule_day.set_state(
-                    STATE_ON if preset == "day" else STATE_OFF,
-                    start_time[:-3],
-                    end_time[:-3],
-                )
+                schedule_day.set_state(preset, start_time[:-3], end_time[:-3])
             except ValueError as e:
                 raise ServiceValidationError(
                     str(e),
