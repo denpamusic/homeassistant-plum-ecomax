@@ -105,7 +105,7 @@ async def test_async_setup(
 
     # Test config not ready when device property is not set.
     with pytest.raises(ConfigEntryNotReady) as exc_info:
-        assert connection.device is None
+        connection.device
 
     assert exc_info.value.translation_key == "device_not_ready"
     assert exc_info.value.translation_placeholders == {"device": "ecoMAX 850P2-C"}

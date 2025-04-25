@@ -257,11 +257,10 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
     async def _async_identify_device(self) -> None:
         """Task to identify the device."""
         # Tell mypy that once we here, connection is not None
-        assert isinstance(self.connection, Connection)
-
+        connection = cast(Connection, self.connection)
         self.device = cast(
             PhysicalDevice,
-            await self.connection.get(DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT),
+            await connection.get(DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT),
         )
         product: ProductInfo = await self.device.get(
             ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT
@@ -284,12 +283,11 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
     async def _async_discover_modules(self) -> None:
         """Task to discover modules."""
         # Tell mypy that once we here, device is not None
-        assert isinstance(self.device, PhysicalDevice)
-
-        modules: ConnectedModules = await self.device.get(
+        device = cast(PhysicalDevice, self.device)
+        modules: ConnectedModules = await device.get(
             ATTR_MODULES, timeout=DEFAULT_TIMEOUT
         )
-        sub_devices = await async_get_sub_devices(self.device)
+        sub_devices = await async_get_sub_devices(device)
 
         self.init_info.update(
             {

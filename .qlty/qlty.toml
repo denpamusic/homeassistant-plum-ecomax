@@ -36,6 +36,21 @@ file_patterns = [".github/workflows/**"]
 rules = ["bandit:B101"]
 file_patterns = ["tests/**"]
 
+# Ignore false trigger (sensor.ecomax_service_password).
+[[ignore]]
+rules = ["bandit:B105"]
+file_patterns = ["tests/**"]
+
+# Ignore duplicated literals, as they make tests more readable.
+[[ignore]]
+rules = ["radarlint-python:python.S1192"]
+file_patterns = ["tests/conftest.py"]
+
+# Ignore correct GitHub markdown.
+[[ignore]]
+rules = ["markdownlint:MD029", "markdownlint:MD033", "markdownlint:MD051"]
+file_patterns = ["README.md"]
+
 # Ignore unused arguments (hass), due to inheritance requirements.
 [[ignore]]
 rules = ["radarlint-python:python.S1172"]

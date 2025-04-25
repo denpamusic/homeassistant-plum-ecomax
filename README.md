@@ -8,9 +8,12 @@
 
 ## Overview
 
-This Home Assistant integration provides support for ecoMAX controllers manufactured by [Plum Sp. z o.o.](https://www.plum.pl/)
+This Home Assistant integration provides support for ecoMAX controllers
+manufactured by [Plum Sp. z o.o.](https://www.plum.pl/)
 
-It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and supports connection to ecoMAX controller via RS-485 to Ethernet/Wifi converters or via RS-485 to USB adapter.
+It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package
+and supports connection to ecoMAX controller via RS-485 to Ethernet/Wifi
+converters or via RS-485 to USB adapter.
 
 ![ecoMAX controllers](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/ecomax.png)
 
@@ -32,18 +35,24 @@ It's based on [PyPlumIO](https://github.com/denpamusic/PyPlumIO) package and sup
 
 ## Connect the ecoMAX
 
-With this integration you have two ways of connecting to your ecoMAX controller. One is directly connecting the PC that runs Home Assistant via **RS485 to USB adapter**.
+With this integration you have two ways of connecting to your ecoMAX
+controller. One is directly connecting the PC that runs Home Assistant
+via **RS485 to USB adapter**.
 
-Other way is to use **RS485 to WiFi converter**. This has a benefit of being able to move PC that runs Home Assistant away from the boiler and connect to it wirelessly.
+Other way is to use **RS485 to WiFi converter**. This has a benefit of being
+able to move PC that runs Home Assistant away from the boiler and connect
+to it wirelessly.
 
 ![RS485 adapter and converters](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/rs485.png)
 
 Regardless of the chosen method, you'll need to find RS485 port on your ecoMAX controller.
-If you have ecoSTER thermostat, it's easy, as ecoSTERs also use RS485 port and you'll just have to connect your adapter/converter in parallel with it.
+If you have ecoSTER thermostat, it's easy, as ecoSTERs also use RS485 port and
+you'll just have to connect your adapter/converter in parallel with it.
 
-If you don't have ecoSTER, look for pins that are labeled as "D+" and "D-" then connect your device as follows:
+If you don't have ecoSTER, look for pins that are labeled as "D+" and
+"D-" then connect your device as follows:
 
-```
+```plaintext
 Adapter ->  ecoMAX
 [A]     ->  [D+]
 [B]     ->  [D-]
@@ -52,10 +61,15 @@ Adapter ->  ecoMAX
 
 ### ecoNET 300
 
-While this integration is built on top of PyPlumIO library, which from the start was intended as ecoNET 300 alternative, **Patryk B** has originally developed awesome HASS integration that communicates with ecoMAX controller via ecoNET 300 device.
+While this integration is built on top of PyPlumIO library, which from the
+start was intended as ecoNET 300 alternative, **Patryk B** has originally
+developed awesome HASS integration that communicates with ecoMAX controller
+via ecoNET 300 device.
 
-Development of this integration has recently been picked up by @jontofront, so it's getting regular updates and fixes again!
-If you have an ecoNET 300 device, be sure to [check it out](https://github.com/jontofront/ecoNET-300-Home-Assistant-Integration)!
+Development of this integration has recently been picked up by @jontofront,
+so it's getting regular updates and fixes again!
+If you have an ecoNET 300 device, be sure to
+[check it out](https://github.com/jontofront/ecoNET-300-Home-Assistant-Integration)!
 
 ## Installation
 
@@ -65,7 +79,8 @@ Click the following My button to install the integration via HACS:
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=denpamusic&repository=homeassistant-plum-ecomax&category=integration)
 
-HACS is **recommended** method to install and update the plum-ecomax integration.  
+HACS is **recommended** method to install and update the
+plum-ecomax integration.  
 If you still don't use it, give it a try, I'm sure you'll love it!
 
 ### Manual
@@ -76,7 +91,8 @@ If you still don't use it, give it a try, I'm sure you'll love it!
 git clone https://github.com/denpamusic/homeassistant-plum-ecomax
 ```
 
-2. Move `custom_components` directory from `homeassistant-plum-ecomax` to your Home Assistant configuration directory. ([next to configuration.yaml](https://www.home-assistant.io/docs/configuration/))
+2. Move `custom_components` directory from `homeassistant-plum-ecomax` to
+   your Home Assistant configuration directory. ([next to configuration.yaml](https://www.home-assistant.io/docs/configuration/))
 
 ```sh
 cp -r ./homeassistant-plum-ecomax/custom_components ~/.homeassistant
@@ -86,7 +102,8 @@ cp -r ./homeassistant-plum-ecomax/custom_components ~/.homeassistant
 
 ## Configuration
 
-Adding Plum ecoMAX integration to your Home Assistant instance can be done via user interface, by using this My button:
+Adding Plum ecoMAX integration to your Home Assistant instance can be
+done via user interface, by using this My button:
 
 [![Add integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start?domain=plum_ecomax)
 
@@ -103,7 +120,9 @@ If the above My button doesn’t work, you can also perform the following steps 
 
 ![Search dialog](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/search.png)
 
-6. Select you connection type. Choose serial port if your ecoMAX controller is connected directly to the PC that is running Home Assistant, choose network if ecoMAX is connected via RS-485 to WiFi converter
+6. Select you connection type. Choose serial port if your ecoMAX controller
+   is connected directly to the PC that is running Home Assistant, choose
+   network if ecoMAX is connected via RS-485 to WiFi converter
 
 ![Menu](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/menu.png)
 
@@ -115,7 +134,9 @@ To connect via serial port you'll need to fill in the Device path and Baudrate:
 
 ![serial](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/serial.png)
 
-> :warning: If you're running your Home Assistant in the docker container, don't forget to map your adapter/converter device, as described [here](https://www.home-assistant.io/installation/raspberrypi#exposing-devices).
+> :warning: If you're running your Home Assistant in the docker container,
+> don't forget to map your adapter/converter device, as described
+> [here](https://www.home-assistant.io/installation/raspberrypi#exposing-devices).
 
 7. Your device should now be available in your Home Assistant installation.
 
@@ -125,11 +146,15 @@ To connect via serial port you'll need to fill in the Device path and Baudrate:
 
 ## Entities
 
-This integration provides the following entities, split between controller device and sub-devices.
+This integration provides the following entities, split between controller
+device and sub-devices.
 
-Not all entities might be available for your controller model and entities that are deemed as unsupported during initial setup will be disabled.
+Not all entities might be available for your controller model and entities
+that are deemed as unsupported during initial setup will be disabled.
 
-ecoMAX pellet boiler controller model names has a <kbd>p</kbd> suffix (e. g. ecoMAX 850**p**), while ecoMAX installation controller model names have an <kbd>i</kbd> suffix (e. g. ecoMAX 850**i**).
+ecoMAX pellet boiler controller model names has a <kbd>p</kbd> suffix
+(e. g. ecoMAX 850**p**), while ecoMAX installation controller model names
+have an <kbd>i</kbd> suffix (e. g. ecoMAX 850**i**).
 
 ### Controller
 
@@ -172,7 +197,8 @@ Legend:
 - Solar temperature <kbd>i</kbd>
 - Fireplace temperature <kbd>i</kbd>
 
-<sup>1</sup> _Special meter entity. It counts burned fuel when HomeAssistant is running._  
+<sup>1</sup> _Special meter entity. It counts burned fuel when
+HomeAssistant is running._  
 <sup>2</sup> _Controller support is required._  
 <sup>3</sup> _ecoLAMBDA module is required._
 
@@ -234,14 +260,20 @@ Legend:
 
 ### Water heater
 
-The integration provides full control for the connected indirect water heater using Home Assistant's [internal water heater platform](https://www.home-assistant.io/integrations/water_heater/).
+The integration provides full control for the connected indirect water
+heater using Home Assistant's
+[internal water heater platform](https://www.home-assistant.io/integrations/water_heater/).
 
-This includes ability to set target temperature, switch into priority, non-priority mode or turn off.
+This includes ability to set target temperature, switch into priority,
+non-priority mode or turn off.
 
-Please note, that due to the way base water heater entity is implemented, custom modes [are not allowed](https://developers.home-assistant.io/docs/core/entity/water-heater/#states).
-Please use the following reference to convert between water heater operation modes displayed in Home Assistant and ecoMAX.
+Please note, that due to the way base water heater entity is implemented,
+custom modes [are not allowed](https://developers.home-assistant.io/docs/core/entity/water-heater/#states).
 
-```
+Please use the following reference to convert between water heater operation
+modes displayed in Home Assistant and ecoMAX.
+
+```plaintext
 HA heater state ->  ecoMAX heater mode
 [Performance]   ->  [Priority mode]
 [Eco]           ->  [Non-priority mode]
@@ -249,9 +281,12 @@ HA heater state ->  ecoMAX heater mode
 
 ### Thermostats
 
-This integration provides Home Assistant's [climate platform](https://www.home-assistant.io/integrations/climate/) entity for each ecoSTER thermostat connected to the ecoMAX controller.
+This integration provides Home Assistant's
+[climate platform](https://www.home-assistant.io/integrations/climate/)
+entity for each ecoSTER thermostat connected to the ecoMAX controller.
 
-This allows to check current room temperature, set target room temperature and change between ecoSTER operation modes.
+This allows to check current room temperature, set target room temperature
+and change between ecoSTER operation modes.
 
 ![Climate card](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/climate-card.png)
 
@@ -259,11 +294,14 @@ This allows to check current room temperature, set target room temperature and c
 
 Following section lists entities that are added to each virtual device.
 
-Please note, that for the ecoMAX installation controllers `mixers` are listed as `circuits`.
+Please note, that for the ecoMAX installation controllers `mixers` are
+listed as `circuits`.
 
-Mixers are added as sub-devices for the ecoMAX controller. They are detected only once, when integration is added to HomeAssistant.
+Mixers are added as sub-devices for the ecoMAX controller.
+They are detected only once, when integration is added to HomeAssistant.
 
-If you connected them after setting up the integration, you can use `Detect sub-devices` button in Diagnostics section to force re-detection.
+If you connected them after setting up the integration, you can use
+`Detect sub-devices` button in Diagnostics section to force re-detection.
 
 Legend:
 
@@ -353,18 +391,22 @@ Provides ability to get the device parameter by name.
 - device_uid
 - device_index <sup>1</sup>
 
-<sup>1</sup> _This will help identify which sub-device (mixer) this parameter belongs to. Root device (controller) is always 0, while connected mixers can have 1-5._
+<sup>1</sup> _This will help identify which sub-device (mixer) this
+parameter belongs to. Root device (controller) is always 0, while
+connected mixers can have 1-5._
 
 ### Set parameter
 
-Provides ability to set device/sub-device parameter by name. Any parameter that is supported by the device/sub-device can be used with this service. To get parameter names, please download and open diagnostics data.
+Provides ability to set device/sub-device parameter by name.
+Any parameter that is supported by the device/sub-device can be used with
+this service. To get parameter names, please download and open diagnostics data.
 
-#### Fields
+#### Set parameter fields
 
 - name
 - value
 
-#### Targets
+#### Set parameter targets
 
 - ecomax
 - mixer
@@ -373,12 +415,12 @@ Provides ability to set device/sub-device parameter by name. Any parameter that 
 
 Allows to get different schedules from the device.
 
-#### Fields
+#### Get schedule fields
 
 - type (heating, water_heater)
 - weekdays (monday, tuesday, ..., etc)
 
-#### Response
+#### Get schedule response
 
 - schedules (dictionary containing schedule states, keyed by start times)
 
@@ -386,7 +428,7 @@ Allows to get different schedules from the device.
 
 Allows to set different schedules on the device.
 
-#### Fields
+#### Set schedule fields
 
 - type (heating, water_heater)
 - weekdays (monday, tuesday, ..., etc)
@@ -396,21 +438,25 @@ Allows to set different schedules on the device.
 
 ### Calibrate meter
 
-Allows to set meter entity to a specific value. This can be used to set a value of a `Total fuel burned` sensor which is only available on pellet burner controllers.
+Allows to set meter entity to a specific value. This can be used to set a
+value of a `Total fuel burned` sensor which is only available on
+pellet burner controllers.
 
-#### Fields
+#### Calibrate meter fields
 
 - value
 
-#### Targets
+#### Calibrate meter targets
 
 - total_fuel_burned
 
 ### Reset meter
 
-Allows to reset the meter entity value. This can be used to reset a value of the `Total fuel burned` sensor which is only available on pellet burner controllers.
+Allows to reset the meter entity value. This can be used to reset a
+value of the `Total fuel burned` sensor which is only available on
+pellet burner controllers.
 
-#### Targets
+#### Reset meter targets
 
 - total_fuel_burned
 

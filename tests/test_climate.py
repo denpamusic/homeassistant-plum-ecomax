@@ -1,5 +1,6 @@
 """Test the climate platform."""
 
+from math import isclose
 from unittest.mock import patch
 
 from freezegun import freeze_time
@@ -41,6 +42,7 @@ from custom_components.plum_ecomax.climate import (
     PRESET_SCHEDULE,
 )
 from custom_components.plum_ecomax.connection import EcomaxConnection
+from tests import FLOAT_TOLERANCE
 
 
 @pytest.fixture(autouse=True)
@@ -142,7 +144,9 @@ async def test_thermostat(
     assert state.attributes[ATTR_HVAC_MODES] == [HVACMode.HEAT]
     assert state.attributes[ATTR_MIN_TEMP] == 10
     assert state.attributes[ATTR_MAX_TEMP] == 35
-    assert state.attributes[ATTR_TARGET_TEMP_STEP] == 0.1
+    assert isclose(
+        state.attributes[ATTR_TARGET_TEMP_STEP], 0.1, rel_tol=FLOAT_TOLERANCE
+    )
     assert state.attributes[ATTR_PRESET_MODES] == [
         PRESET_SCHEDULE,
         PRESET_ECO,

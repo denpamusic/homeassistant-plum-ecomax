@@ -190,7 +190,6 @@ async def test_migrate_entry_v3_to_v8(
     data = dict(config_entry.data)
     hass.config_entries.async_update_entry(config_entry, data=data, version=3)
     assert await async_migrate_entry(hass, config_entry)
-    data = dict(config_entry.data)
     assert config_entry.version == 8
     assert "Migration to version 8 successful" in caplog.text
 

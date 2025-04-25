@@ -1,5 +1,6 @@
 """Test the number platform."""
 
+from math import isclose
 from unittest.mock import patch
 
 from homeassistant.components.number import (
@@ -29,6 +30,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
+from tests import FLOAT_TOLERANCE
 
 
 @pytest.fixture(autouse=True)
@@ -420,8 +422,8 @@ async def test_fuel_calorific_value_number(
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fuel calorific value"
     assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == "kWh/kg"
     assert state.attributes[ATTR_MIN] == 0
-    assert state.attributes[ATTR_MAX] == 0.1
-    assert state.attributes[ATTR_STEP] == 0.1
+    assert isclose(state.attributes[ATTR_MAX], 0.1, rel_tol=FLOAT_TOLERANCE)
+    assert isclose(state.attributes[ATTR_STEP], 0.1, rel_tol=FLOAT_TOLERANCE)
     assert state.attributes[ATTR_MODE] == NumberMode.BOX
 
     # Dispatch new state.
@@ -436,8 +438,8 @@ async def test_fuel_calorific_value_number(
     state = hass.states.get(fuel_calorific_value_entity_id)
     assert isinstance(state, State)
     assert state.state == "4.7"
-    assert state.attributes[ATTR_MIN] == 4.0
-    assert state.attributes[ATTR_MAX] == 5.0
+    assert isclose(state.attributes[ATTR_MIN], 4.0, rel_tol=FLOAT_TOLERANCE)
+    assert isclose(state.attributes[ATTR_MAX], 5.0, rel_tol=FLOAT_TOLERANCE)
 
     # Set new state.
     with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
