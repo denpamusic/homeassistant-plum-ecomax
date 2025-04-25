@@ -13,7 +13,8 @@ body:
       description: |
         Please search issues in this repository and
         [PyPlumIO](https://github.com/denpamusic/PyPlumIO/issues)
-        repository to see if an issue already exists for the bug you've encountered.
+        repository to see if an issue already exists for the bug
+        you've encountered.
       options:
         - label: I have searched the existing issues
           required: true
@@ -64,8 +65,10 @@ body:
     id: terms
     attributes:
       label: Code of Conduct
-      description: By submitting this issue, you agree to follow our
-      [Code of Conduct](https://github.com/denpamusic/homeassistant-plum-ecomax/blob/main/.github/CODE_OF_CONDUCT.md)
+      description: |
+        By submitting this issue, you agree to follow our
+        [Code of Conduct](>
+        https://github.com/denpamusic/homeassistant-plum-ecomax/blob/main/.github/CODE_OF_CONDUCT.md)
       options:
         - label: I agree to follow this project's Code of Conduct
           required: true

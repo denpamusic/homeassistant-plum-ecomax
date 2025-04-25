@@ -8,8 +8,8 @@ body:
       value: |
         Thank you for suggesting new feature for the project.
 
-        Please be aware that the best way to get your feature implemented as fast as
-        possible is by submitting Pull Request.
+        Please be aware that the best way to get your feature implemented
+        as fast as possible is by submitting Pull Request.
   - type: checkboxes
     attributes:
       label: "Is there an existing issue for this?"
@@ -34,7 +34,9 @@ body:
   - type: textarea
     attributes:
       label: "Feature description"
-      description: Describe a feature that you want to suggest with as much detail as you can.
+      description: |
+        Describe a feature that you want to suggest with as
+        much detail as you can.
     validations:
       required: true
   - type: input
@@ -60,7 +62,8 @@ body:
       label: Code of Conduct
       description: |
         By submitting this issue, you agree to follow our
-        [Code of Conduct](https://github.com/denpamusic/homeassistant-plum-ecomax/blob/main/.github/CODE_OF_CONDUCT.md)
+        [Code of Conduct](>
+        https://github.com/denpamusic/homeassistant-plum-ecomax/blob/main/.github/CODE_OF_CONDUCT.md)
       options:
         - label: I agree to follow this project's Code of Conduct
           required: true
