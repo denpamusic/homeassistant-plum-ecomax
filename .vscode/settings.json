@@ -1,24 +1,21 @@
 {
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true,
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-        "source.organizeImports": "explicit"
-    },
-    "editor.rulers": [
-        72,
-        88
-    ],
-    "[python]": {
-        "editor.defaultFormatter": "charliermarsh.ruff",
-        "editor.tabSize": 4
-    },
-    "[json]": {
-        "editor.tabSize": 2
-    },
-    "files.associations": {
-        "*.yaml": "home-assistant"
-    },
-    "json.format.keepLines": true,
-    "python.defaultInterpreterPath": "python3.12"
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "editor.rulers": [72, 88],
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.tabSize": 4
+  },
+  "[json]": {
+    "editor.tabSize": 2
+  },
+  "files.associations": {
+    "*.yaml": "home-assistant"
+  },
+  "json.format.keepLines": true,
+  "python.defaultInterpreterPath": "python3.12"
 }
