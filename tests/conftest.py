@@ -11,27 +11,24 @@ from pyplumio.const import DeviceState, ProductType, UnitOfMeasurement
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
-from pyplumio.helpers.parameter import ParameterValues
-from pyplumio.structures.ecomax_parameters import (
-    ATTR_ECOMAX_CONTROL,
+from pyplumio.parameters import ParameterValues
+from pyplumio.parameters.ecomax import (
     EcomaxNumber,
     EcomaxNumberDescription,
     EcomaxSwitch,
     EcomaxSwitchDescription,
 )
-from pyplumio.structures.mixer_parameters import (
+from pyplumio.parameters.mixer import (
     MixerNumber,
     MixerNumberDescription,
     MixerSwitch,
     MixerSwitchDescription,
 )
+from pyplumio.parameters.thermostat import ThermostatNumber, ThermostatNumberDescription
+from pyplumio.structures.ecomax_parameters import ATTR_ECOMAX_CONTROL
 from pyplumio.structures.modules import ConnectedModules
 from pyplumio.structures.network_info import NetworkInfo
 from pyplumio.structures.product_info import ProductInfo
-from pyplumio.structures.thermostat_parameters import (
-    ThermostatNumber,
-    ThermostatNumberDescription,
-)
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -185,10 +182,16 @@ def connected():
         yield
 
 
+class MutableEcoMAX(EcoMAX):
+    """Allows to set otherwise properties readonly due to __slots__."""
+
+    __slots__ = ("__dict__",)
+
+
 @pytest.fixture(name="ecomax_base")
 def fixture_ecomax_base() -> Generator[EcoMAX]:
     """Return base ecoMAX device with no data."""
-    ecomax = EcoMAX(queue=Mock(), network=NetworkInfo())
+    ecomax = MutableEcoMAX(queue=Mock(), network=NetworkInfo())
     with (
         patch(
             "custom_components.plum_ecomax.connection.EcomaxConnection.device", ecomax

@@ -23,8 +23,8 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
-from pyplumio.helpers.parameter import ParameterValues
-from pyplumio.structures.ecomax_parameters import EcomaxNumber, EcomaxNumberDescription
+from pyplumio.parameters import ParameterValues
+from pyplumio.parameters.ecomax import EcomaxNumber, EcomaxNumberDescription
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 

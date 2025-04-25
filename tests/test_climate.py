@@ -25,11 +25,8 @@ from homeassistant.components.climate import (
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_FRIENDLY_NAME
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
-from pyplumio.helpers.parameter import ParameterValues
-from pyplumio.structures.thermostat_parameters import (
-    ThermostatNumber,
-    ThermostatNumberDescription,
-)
+from pyplumio.parameters import ParameterValues
+from pyplumio.parameters.thermostat import ThermostatNumber, ThermostatNumberDescription
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 

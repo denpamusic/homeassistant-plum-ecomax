@@ -16,7 +16,7 @@ from homeassistant.const import PERCENTAGE, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.const import ProductType
-from pyplumio.helpers.parameter import Parameter
+from pyplumio.parameters import Parameter
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection

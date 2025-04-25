@@ -269,7 +269,7 @@ async def test_set_parameter_service(
     heating_temperature_entity_id = "sensor.ecomax_heating_temperature"
 
     # Test setting parameter for EM device.
-    with patch("pyplumio.helpers.parameter.Parameter.set_nowait") as mock_set_nowait:
+    with patch("pyplumio.parameters.Parameter.set_nowait") as mock_set_nowait:
         response = await hass.services.async_call(
             DOMAIN,
             SERVICE_SET_PARAMETER,
@@ -303,7 +303,7 @@ async def test_set_parameter_service(
     }
 
     # Test setting parameter without response.
-    with patch("pyplumio.helpers.parameter.Parameter.set_nowait") as mock_set_nowait:
+    with patch("pyplumio.parameters.Parameter.set_nowait") as mock_set_nowait:
         assert not await hass.services.async_call(
             DOMAIN,
             SERVICE_SET_PARAMETER,
@@ -320,7 +320,7 @@ async def test_set_parameter_service(
 
     # Test setting parameter for a mixer.
     mixer_temperature_entity_id = "sensor.ecomax_mixer_1_mixer_temperature"
-    with patch("pyplumio.helpers.parameter.Parameter.set_nowait") as mock_set_nowait:
+    with patch("pyplumio.parameters.Parameter.set_nowait") as mock_set_nowait:
         await hass.services.async_call(
             DOMAIN,
             SERVICE_SET_PARAMETER,
@@ -339,7 +339,7 @@ async def test_set_parameter_service(
     with (
         pytest.raises(ServiceValidationError) as exc_info,
         patch(
-            "pyplumio.helpers.parameter.Parameter.set_nowait", side_effect=ValueError
+            "pyplumio.parameters.Parameter.set_nowait", side_effect=ValueError
         ) as mock_set_nowait,
     ):
         await hass.services.async_call(

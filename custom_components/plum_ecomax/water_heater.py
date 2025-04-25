@@ -23,7 +23,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.filters import Filter, on_change, throttle
-from pyplumio.helpers.parameter import Parameter
+from pyplumio.parameters import Parameter
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection

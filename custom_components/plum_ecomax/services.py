@@ -22,10 +22,10 @@ from homeassistant.helpers.service import (
     SelectedEntities,
     async_extract_referenced_entity_ids,
 )
-from pyplumio.const import UnitOfMeasurement
+from pyplumio.const import State, UnitOfMeasurement
 from pyplumio.devices import Device, VirtualDevice
-from pyplumio.helpers.parameter import Number, NumericType, Parameter, State
 from pyplumio.helpers.schedule import Schedule, ScheduleDay
+from pyplumio.parameters import Number, NumericType, Parameter
 from pyplumio.structures.product_info import ProductInfo
 import voluptuous as vol
 
