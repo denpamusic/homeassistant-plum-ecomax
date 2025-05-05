@@ -17,7 +17,6 @@ import pyplumio
 from pyplumio.connection import Connection
 from pyplumio.const import FrameType, ProductType
 from pyplumio.devices import PhysicalDevice
-from pyplumio.structures.ecomax_parameters import ATTR_ECOMAX_PARAMETERS
 from pyplumio.structures.mixer_parameters import ATTR_MIXER_PARAMETERS
 from pyplumio.structures.mixer_sensors import ATTR_MIXERS_CONNECTED
 from pyplumio.structures.temperatures import ATTR_WATER_HEATER_TEMP
@@ -25,10 +24,10 @@ from pyplumio.structures.thermostat_parameters import ATTR_THERMOSTAT_PARAMETERS
 from pyplumio.structures.thermostat_sensors import ATTR_THERMOSTATS_CONNECTED
 
 from .const import (
-    ATTR_LOADED,
     ATTR_MIXERS,
     ATTR_REGDATA,
     ATTR_SENSORS,
+    ATTR_SETUP,
     ATTR_THERMOSTATS,
     ATTR_WATER_HEATER,
     CONF_BAUDRATE,
@@ -142,9 +141,7 @@ class EcomaxConnection:
         device: PhysicalDevice = await self.get(
             DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT
         )
-        for required in (ATTR_LOADED, ATTR_SENSORS, ATTR_ECOMAX_PARAMETERS):
-            await device.wait_for(required, timeout=DEFAULT_TIMEOUT)
-
+        await device.wait_for(ATTR_SETUP, timeout=DEFAULT_TIMEOUT)
         self._device = device
 
     async def async_setup_thermostats(self) -> bool:

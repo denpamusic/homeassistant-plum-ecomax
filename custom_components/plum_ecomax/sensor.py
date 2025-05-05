@@ -412,7 +412,7 @@ METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
     EcomaxMeterEntityDescription(
         key="fuel_burned",
         always_available=True,
-        filter_fn=lambda x: aggregate(x, seconds=30),
+        filter_fn=lambda x: aggregate(x, seconds=30, sample_size=50),
         native_unit_of_measurement=UnitOfMass.KILOGRAMS,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.TOTAL_INCREASING,
