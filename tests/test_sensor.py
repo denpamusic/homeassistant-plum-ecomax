@@ -602,6 +602,7 @@ async def test_fuel_consumption_sensor(
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
     # Dispatch new value.
+    frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_FUEL_CONSUMPTION, 2.5)
     state = hass.states.get(fuel_consumption_entity_id)
     assert isinstance(state, State)
@@ -614,6 +615,7 @@ async def test_boiler_load_sensor(
     connection: EcomaxConnection,
     config_entry: MockConfigEntry,
     setup_integration,
+    frozen_time,
 ) -> None:
     """Test boiler load sensor."""
     await setup_integration(hass, config_entry)
@@ -634,6 +636,7 @@ async def test_boiler_load_sensor(
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
     # Dispatch new value.
+    frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_BOILER_LOAD, 50)
     state = hass.states.get(boiler_load_entity_id)
     assert isinstance(state, State)
@@ -646,6 +649,7 @@ async def test_fan_power_sensor(
     connection: EcomaxConnection,
     config_entry: MockConfigEntry,
     setup_integration,
+    frozen_time,
 ) -> None:
     """Test fan power sensor."""
     await setup_integration(hass, config_entry)
@@ -668,6 +672,7 @@ async def test_fan_power_sensor(
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
     # Dispatch new value.
+    frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_FAN_POWER, 100)
     state = hass.states.get(fan_power_entity_id)
     assert isinstance(state, State)

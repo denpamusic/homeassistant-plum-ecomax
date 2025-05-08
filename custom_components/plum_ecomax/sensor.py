@@ -169,6 +169,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
     EcomaxSensorEntityDescription(
         key="boiler_power",
+        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         device_class=SensorDeviceClass.POWER,
         native_unit_of_measurement=UnitOfPower.KILO_WATT,
         product_types={ProductType.ECOMAX_P},
@@ -188,6 +189,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
     EcomaxSensorEntityDescription(
         key="fuel_consumption",
+        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=2,
@@ -196,6 +198,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
     EcomaxSensorEntityDescription(
         key="boiler_load",
+        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         native_unit_of_measurement=PERCENTAGE,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
@@ -204,6 +207,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
     EcomaxSensorEntityDescription(
         key="fan_power",
+        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
         native_unit_of_measurement=PERCENTAGE,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
