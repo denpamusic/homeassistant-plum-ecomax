@@ -33,7 +33,7 @@ from homeassistant.helpers.entity_platform import (
 )
 from homeassistant.helpers.typing import StateType
 from pyplumio.const import DeviceState, ProductType
-from pyplumio.filters import aggregate, on_change, throttle
+from pyplumio.filters import aggregate, deadband, on_change, throttle
 from pyplumio.structures.modules import ConnectedModules
 import voluptuous as vol
 
@@ -80,6 +80,8 @@ EM_TO_HA_STATE: dict[DeviceState, str] = {
 
 UPDATE_INTERVAL: Final = 10
 
+DEFAULT_TOLERANCE: Final = 0.1
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -94,7 +96,9 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="heating_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
+        filter_fn=lambda x: throttle(
+            deadband(x, tolerance=DEFAULT_TOLERANCE), seconds=UPDATE_INTERVAL
+        ),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
@@ -104,7 +108,9 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="water_heater_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
+        filter_fn=lambda x: throttle(
+            deadband(x, tolerance=DEFAULT_TOLERANCE), seconds=UPDATE_INTERVAL
+        ),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
@@ -114,7 +120,9 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="outside_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
+        filter_fn=lambda x: throttle(
+            deadband(x, tolerance=DEFAULT_TOLERANCE), seconds=UPDATE_INTERVAL
+        ),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
@@ -159,7 +167,9 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
     EcomaxSensorEntityDescription(
         key="lambda_level",
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
+        filter_fn=lambda x: throttle(
+            deadband(x, tolerance=DEFAULT_TOLERANCE), seconds=UPDATE_INTERVAL
+        ),
         module=ModuleType.ECOLAMBDA,
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -169,7 +179,9 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
     EcomaxSensorEntityDescription(
         key="boiler_power",
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
+        filter_fn=lambda x: throttle(
+            deadband(x, tolerance=DEFAULT_TOLERANCE), seconds=UPDATE_INTERVAL
+        ),
         device_class=SensorDeviceClass.POWER,
         native_unit_of_measurement=UnitOfPower.KILO_WATT,
         product_types={ProductType.ECOMAX_P},
@@ -189,7 +201,9 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
     EcomaxSensorEntityDescription(
         key="fuel_consumption",
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
+        filter_fn=lambda x: throttle(
+            deadband(x, tolerance=0.001), seconds=UPDATE_INTERVAL
+        ),
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=2,
@@ -198,7 +212,9 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
     EcomaxSensorEntityDescription(
         key="boiler_load",
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
+        filter_fn=lambda x: throttle(
+            deadband(x, tolerance=DEFAULT_TOLERANCE), seconds=UPDATE_INTERVAL
+        ),
         native_unit_of_measurement=PERCENTAGE,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
@@ -217,7 +233,9 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
     EcomaxSensorEntityDescription(
         key="optical_temp",
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
+        filter_fn=lambda x: throttle(
+            deadband(x, tolerance=DEFAULT_TOLERANCE), seconds=UPDATE_INTERVAL
+        ),
         native_unit_of_measurement=PERCENTAGE,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
@@ -228,7 +246,9 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="feeder_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
+        filter_fn=lambda x: throttle(
+            deadband(x, tolerance=DEFAULT_TOLERANCE), seconds=UPDATE_INTERVAL
+        ),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
@@ -239,7 +259,9 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="exhaust_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
+        filter_fn=lambda x: throttle(
+            deadband(x, tolerance=DEFAULT_TOLERANCE), seconds=UPDATE_INTERVAL
+        ),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
@@ -250,7 +272,9 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="return_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
+        filter_fn=lambda x: throttle(
+            deadband(x, tolerance=DEFAULT_TOLERANCE), seconds=UPDATE_INTERVAL
+        ),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
@@ -261,7 +285,9 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="lower_buffer_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
+        filter_fn=lambda x: throttle(
+            deadband(x, tolerance=DEFAULT_TOLERANCE), seconds=UPDATE_INTERVAL
+        ),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
@@ -272,7 +298,9 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="upper_buffer_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
+        filter_fn=lambda x: throttle(
+            deadband(x, tolerance=DEFAULT_TOLERANCE), seconds=UPDATE_INTERVAL
+        ),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
@@ -283,7 +311,9 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="lower_solar_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
+        filter_fn=lambda x: throttle(
+            deadband(x, tolerance=DEFAULT_TOLERANCE), seconds=UPDATE_INTERVAL
+        ),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
         state_class=SensorStateClass.MEASUREMENT,
@@ -294,7 +324,9 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="upper_solar_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
+        filter_fn=lambda x: throttle(
+            deadband(x, tolerance=DEFAULT_TOLERANCE), seconds=UPDATE_INTERVAL
+        ),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
         state_class=SensorStateClass.MEASUREMENT,
@@ -305,7 +337,9 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     EcomaxSensorEntityDescription(
         key="fireplace_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
+        filter_fn=lambda x: throttle(
+            deadband(x, tolerance=DEFAULT_TOLERANCE), seconds=UPDATE_INTERVAL
+        ),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
         state_class=SensorStateClass.MEASUREMENT,
@@ -347,7 +381,9 @@ MIXER_SENSOR_TYPES: tuple[MixerSensorEntityDescription, ...] = (
     MixerSensorEntityDescription(
         key="current_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
+        filter_fn=lambda x: throttle(
+            deadband(x, tolerance=DEFAULT_TOLERANCE), seconds=UPDATE_INTERVAL
+        ),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,
@@ -369,7 +405,9 @@ MIXER_SENSOR_TYPES: tuple[MixerSensorEntityDescription, ...] = (
     MixerSensorEntityDescription(
         key="current_temp",
         device_class=SensorDeviceClass.TEMPERATURE,
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
+        filter_fn=lambda x: throttle(
+            deadband(x, tolerance=DEFAULT_TOLERANCE), seconds=UPDATE_INTERVAL
+        ),
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
         product_types={ProductType.ECOMAX_I},
         state_class=SensorStateClass.MEASUREMENT,
