@@ -223,15 +223,18 @@ def async_validate_device_parameter(device: Device, name: str) -> Parameter:
     parameter = device.get_nowait(name, None)
     if not parameter:
         suggestion = async_suggest_device_parameter_name(device, name)
-        raise HomeAssistantError(
-            translation_domain=DOMAIN,
-            translation_key=(
-                "parameter_not_found_with_suggestion"
-                if suggestion
-                else "parameter_not_found"
-            ),
-            translation_placeholders={"parameter": name, "suggestion": suggestion},
-        )
+        if suggestion:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="parameter_not_found_with_suggestion",
+                translation_placeholders={"parameter": name, "suggestion": suggestion},
+            )
+        else:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="parameter_not_found",
+                translation_placeholders={"parameter": name},
+            )
 
     if not isinstance(parameter, Parameter):
         raise ServiceValidationError(

@@ -120,7 +120,7 @@ def test_async_validate_device_parameter(
     ecomax_p: EcoMAX,
     name: str,
     expected_result: str | Literal["raises"],
-    exception: Exception | None,
+    exception: type[Exception] | None,
     exception_pattern: str | None,
 ) -> None:
     """Test validating device parameter."""
@@ -253,10 +253,7 @@ async def test_get_parameter_service(
         )
 
     assert exc_info.value.translation_key == "parameter_not_found"
-    assert exc_info.value.translation_placeholders == {
-        "parameter": "nonexistent",
-        "suggestion": None,
-    }
+    assert exc_info.value.translation_placeholders == {"parameter": "nonexistent"}
 
     # Test getting an invalid parameter.
     with (
@@ -448,10 +445,7 @@ async def test_set_parameter_service(
         )
 
     assert exc2_info.value.translation_key == "parameter_not_found"
-    assert exc2_info.value.translation_placeholders == {
-        "parameter": "nonexistent",
-        "suggestion": None,
-    }
+    assert exc2_info.value.translation_placeholders == {"parameter": "nonexistent"}
 
 
 @pytest.mark.usefixtures("ecomax_p")
