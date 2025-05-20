@@ -1,5 +1,6 @@
 """Test Plum ecoMAX services."""
 
+from typing import Final, Literal
 from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_NAME
@@ -8,6 +9,7 @@ from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.device_registry import DeviceEntry
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.helpers.schedule import Schedule, ScheduleDay
+from pyplumio.parameters import Parameter
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -33,6 +35,8 @@ from custom_components.plum_ecomax.services import (
     DeviceId,
     ProductId,
     async_extract_target_device,
+    async_suggest_device_parameter_name,
+    async_validate_device_parameter,
 )
 
 
@@ -83,6 +87,51 @@ async def test_extract_target_missing_mixer_device(
         device = async_extract_target_device("test-mixer-1", hass, mock_connection)
 
     assert device == mock_connection.device
+
+
+@pytest.mark.parametrize(
+    ("name", "expected_suggestion"),
+    [
+        ("heating_traget_temp", "heating_target_temp"),
+        ("grat_heating_temp", "grate_heating_temp"),
+        ("nonexistent", None),
+    ],
+)
+def test_suggest_device_parameter_name(
+    hass: HomeAssistant, ecomax_p: EcoMAX, name: str, expected_suggestion: str | None
+) -> None:
+    """Test getting parameter name suggestion."""
+    suggestion = async_suggest_device_parameter_name(ecomax_p, name)
+    assert suggestion == expected_suggestion
+
+
+RAISES: Final = "raises"
+
+
+@pytest.mark.parametrize(
+    ("name", "expected_result", "exception", "exception_pattern"),
+    [
+        ("heating_target_temp", "heating_target_temp", None, None),
+        ("product", RAISES, ServiceValidationError, "property_not_writable"),
+        ("nonexistent", RAISES, HomeAssistantError, "parameter_not_found"),
+    ],
+)
+def test_async_validate_device_parameter(
+    ecomax_p: EcoMAX,
+    name: str,
+    expected_result: str | Literal["raises"],
+    exception: Exception | None,
+    exception_pattern: str | None,
+) -> None:
+    """Test validating device parameter."""
+    if expected_result != RAISES:
+        parameter = async_validate_device_parameter(ecomax_p, name)
+        assert isinstance(parameter, Parameter)
+        assert parameter.description.name == expected_result
+    else:
+        assert exception is not None
+        with pytest.raises(exception, match=exception_pattern):
+            async_validate_device_parameter(ecomax_p, name)
 
 
 @pytest.mark.usefixtures("ecomax_p", "mixers")
@@ -204,7 +253,10 @@ async def test_get_parameter_service(
         )
 
     assert exc_info.value.translation_key == "parameter_not_found"
-    assert exc_info.value.translation_placeholders == {"parameter": "nonexistent"}
+    assert exc_info.value.translation_placeholders == {
+        "parameter": "nonexistent",
+        "suggestion": None,
+    }
 
     # Test getting an invalid parameter.
     with (
@@ -396,7 +448,10 @@ async def test_set_parameter_service(
         )
 
     assert exc2_info.value.translation_key == "parameter_not_found"
-    assert exc2_info.value.translation_placeholders == {"parameter": "nonexistent"}
+    assert exc2_info.value.translation_placeholders == {
+        "parameter": "nonexistent",
+        "suggestion": None,
+    }
 
 
 @pytest.mark.usefixtures("ecomax_p")

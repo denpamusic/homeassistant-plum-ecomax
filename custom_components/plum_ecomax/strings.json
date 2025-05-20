@@ -376,22 +376,25 @@
       "message": "Device not ready ({device})"
     },
     "property_not_writable": {
-      "message": "Cannot change read-only property ({property})"
+      "message": "Cannot change read-only \"{property}\" property"
     },
     "invalid_parameter_value": {
-      "message": "Invalid value {value} for the {parameter} parameter"
+      "message": "Invalid value \"{value}\" for the \"{parameter}\" parameter"
     },
     "invalid_schedule_interval": {
-      "message": "Invalid interval for {schedule}. Got {start} to {end}."
+      "message": "Invalid interval for \"{schedule}\". Got {start} to {end}."
     },
     "parameter_not_found": {
-      "message": "Requested parameter not found ({parameter})"
+      "message": "Requested \"{parameter}\" parameter not found"
+    },
+    "parameter_not_found_with_suggestion": {
+      "message": "Requested parameter \"{parameter}\" not found, did you mean \"{suggestion}\"?"
     },
     "schedule_not_found": {
-      "message": "Requested schedule not found ({schedule})"
+      "message": "Requested schedule \"{schedule}\" not found"
     },
     "set_parameter_timeout": {
-      "message": "Request to set a parameter timed out ({parameter})"
+      "message": "Request to set a \"{parameter}\" parameter timed out"
     }
   },
   "selector": {

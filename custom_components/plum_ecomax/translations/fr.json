@@ -376,22 +376,22 @@
       "message": "L'appareil n'est pas prêt ({device})"
     },
     "property_not_writable": {
-      "message": "Impossible de modifier la propriété en lecture seule ({property})"
+      "message": "Impossible de modifier la propriété \"{property}\" en lecture seule"
     },
     "invalid_parameter_value": {
-      "message": "Valeur {value} invalide  pour le paramètre {parameter}"
+      "message": "Valeur {value} invalide pour le paramètre \"{parameter}\""
     },
     "invalid_schedule_interval": {
-      "message": "Interval sélectionné invalide pour {schedule}. De {start} à {end}."
+      "message": "Interval sélectionné invalide pour \"{schedule}\". De {start} à {end}."
     },
     "parameter_not_found": {
-      "message": "Le paramètre demandé n'a pas été trouvé ({parameter})"
+      "message": "Le paramètre \"{parameter}\" demandé n'a pas été trouvé"
     },
     "schedule_not_found": {
-      "message": "La programmation demandée n'a pas été trouvée ({schedule})"
+      "message": "La programmation \"{schedule}\" demandée n'a pas été trouvée"
     },
     "set_parameter_timeout": {
-      "message": "La définition d'un paramètre a expiré ({parameter})"
+      "message": "La définition d'un paramètre \"{parameter}\" a expiré"
     }
   },
   "selector": {

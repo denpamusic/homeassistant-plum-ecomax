@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import difflib
 import logging
 from typing import Final, NotRequired, TypedDict, cast
 
@@ -201,15 +202,35 @@ def async_make_parameter_response(
     return response
 
 
+SUGGESTION_SCORE: Final = 0.6
+
+
 @callback
-def async_get_device_parameter(device: Device, name: str) -> ParameterResponse:
-    """Get device parameter."""
+def async_suggest_device_parameter_name(device: Device, name: str) -> str | None:
+    """Get the parameter name suggestion."""
+    parameter_names = [
+        name for name, value in device.data.items() if isinstance(value, Parameter)
+    ]
+    matches = difflib.get_close_matches(
+        name, parameter_names, n=1, cutoff=SUGGESTION_SCORE
+    )
+    return matches[0] if matches else None
+
+
+@callback
+def async_validate_device_parameter(device: Device, name: str) -> Parameter:
+    """Validate the device parameter."""
     parameter = device.get_nowait(name, None)
     if not parameter:
+        suggestion = async_suggest_device_parameter_name(device, name)
         raise HomeAssistantError(
             translation_domain=DOMAIN,
-            translation_key="parameter_not_found",
-            translation_placeholders={"parameter": name},
+            translation_key=(
+                "parameter_not_found_with_suggestion"
+                if suggestion
+                else "parameter_not_found"
+            ),
+            translation_placeholders={"parameter": name, "suggestion": suggestion},
         )
 
     if not isinstance(parameter, Parameter):
@@ -219,6 +240,13 @@ def async_get_device_parameter(device: Device, name: str) -> ParameterResponse:
             translation_placeholders={"property": name},
         )
 
+    return parameter
+
+
+@callback
+def async_get_device_parameter(device: Device, name: str) -> ParameterResponse:
+    """Get device parameter."""
+    parameter = async_validate_device_parameter(device, name)
     return async_make_parameter_response(device, parameter)
 
 
@@ -256,21 +284,7 @@ def async_set_device_parameter(
     device: Device, name: str, value: float
 ) -> ParameterResponse:
     """Set device parameter."""
-    parameter = device.get_nowait(name, None)
-    if not parameter:
-        raise HomeAssistantError(
-            translation_domain=DOMAIN,
-            translation_key="parameter_not_found",
-            translation_placeholders={"parameter": name},
-        )
-
-    if not isinstance(parameter, Parameter):
-        raise ServiceValidationError(
-            translation_domain=DOMAIN,
-            translation_key="property_not_writable",
-            translation_placeholders={"property": name},
-        )
-
+    parameter = async_validate_device_parameter(device, name)
     try:
         parameter.set_nowait(value, timeout=DEFAULT_TIMEOUT)
     except ValueError as e:
