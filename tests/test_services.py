@@ -114,6 +114,7 @@ RAISES: Final = "raises"
         ("heating_target_temp", "heating_target_temp", None, None),
         ("product", RAISES, ServiceValidationError, "property_not_writable"),
         ("nonexistent", RAISES, HomeAssistantError, "parameter_not_found"),
+        ("grat_heating_temp", RAISES, HomeAssistantError, "parameter_not_found"),
     ],
 )
 def test_async_validate_device_parameter(
