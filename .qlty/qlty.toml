@@ -41,6 +41,11 @@ file_patterns = ["tests/**"]
 rules = ["bandit:B105"]
 file_patterns = ["tests/**"]
 
+# Ignore due to hass inheritance requirements.
+[[ignore]]
+rules = ["radarlint-python:python:S1172"]
+file_patterns = ["custom_components/plum_ecomax/**"]
+
 # Ignore duplicated literals, as they make tests more readable.
 [[ignore]]
 rules = ["radarlint-python:python.S1192"]
