@@ -333,7 +333,7 @@ async def test_set_parameter_service(
         )
         await hass.async_block_till_done()
 
-    mock_set_nowait.assert_called_once_with(0.0, 5, 15)
+    mock_set_nowait.assert_called_once_with(0.0, retries=0, timeout=15)
 
     assert response == {
         "parameters": [
@@ -366,7 +366,7 @@ async def test_set_parameter_service(
         )
         await hass.async_block_till_done()
 
-    mock_set_nowait.assert_called_once_with(5.0, 5, 15)
+    mock_set_nowait.assert_called_once_with(5.0, retries=0, timeout=15)
 
     # Test setting parameter for a mixer.
     mixer_temperature_entity_id = "sensor.ecomax_mixer_1_mixer_temperature"
@@ -383,7 +383,7 @@ async def test_set_parameter_service(
         )
         await hass.async_block_till_done()
 
-    mock_set_nowait.assert_called_once_with(0.0, 5, 15)
+    mock_set_nowait.assert_called_once_with(0.0, retries=0, timeout=15)
 
     # Test setting a parameter to an invalid value.
     with (
@@ -403,7 +403,7 @@ async def test_set_parameter_service(
             blocking=True,
         )
 
-    mock_set_nowait.assert_called_once_with(100.0, 5, 15)
+    mock_set_nowait.assert_called_once_with(100.0, retries=0, timeout=15)
     assert exc_info.value.translation_key == "invalid_parameter_value"
     assert exc_info.value.translation_placeholders == {
         "parameter": "heating_target_temp",
