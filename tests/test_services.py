@@ -8,8 +8,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.device_registry import DeviceEntry
 from pyplumio.devices.ecomax import EcoMAX
-from pyplumio.helpers.schedule import Schedule, ScheduleDay
 from pyplumio.parameters import Parameter
+from pyplumio.structures.schedules import Schedule, ScheduleDay
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 

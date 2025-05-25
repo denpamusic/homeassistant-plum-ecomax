@@ -25,9 +25,9 @@ from homeassistant.helpers.service import (
 )
 from pyplumio.const import State, UnitOfMeasurement
 from pyplumio.devices import Device, VirtualDevice
-from pyplumio.helpers.schedule import Schedule, ScheduleDay
 from pyplumio.parameters import Number, NumericType, Parameter
 from pyplumio.structures.product_info import ProductInfo
+from pyplumio.structures.schedules import Schedule, ScheduleDay
 import voluptuous as vol
 
 from .connection import DEFAULT_TIMEOUT, EcomaxConnection
