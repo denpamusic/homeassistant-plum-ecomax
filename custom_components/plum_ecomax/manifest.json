@@ -10,5 +10,5 @@
   "issue_tracker": "https://github.com/denpamusic/homeassistant-plum-ecomax/issues",
   "loggers": ["pyplumio"],
   "requirements": ["pyplumio==0.5.51.post1"],
-  "version": "0.4.17"
+  "version": "0.4.17.post1"
 }
