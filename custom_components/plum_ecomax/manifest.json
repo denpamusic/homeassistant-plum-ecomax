@@ -9,6 +9,6 @@
   "iot_class": "local_push",
   "issue_tracker": "https://github.com/denpamusic/homeassistant-plum-ecomax/issues",
   "loggers": ["pyplumio"],
-  "requirements": ["pyplumio==0.5.51"],
+  "requirements": ["pyplumio==0.5.51.post1"],
   "version": "0.4.17"
 }
