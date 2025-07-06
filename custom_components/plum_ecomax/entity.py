@@ -1,18 +1,21 @@
 """Contains base entity classes."""
 
-from collections.abc import Callable, Generator, Iterable
+from collections.abc import Awaitable, Callable, Generator, Iterable
 from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, Literal, TypeVar, cast, final, override
 
+from homeassistant.const import CONF_UNIT_OF_MEASUREMENT, Platform
 from homeassistant.core import callback
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
 from pyplumio.const import ProductType
 from pyplumio.devices import Device
 from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
-from pyplumio.filters import Filter, on_change
+from pyplumio.filters import Filter, on_change, throttle
 from pyplumio.structures.modules import ConnectedModules
+
+from custom_components.plum_ecomax import PlumEcomaxConfigEntry
 
 from .connection import EcomaxConnection
 from .const import (
@@ -21,6 +24,8 @@ from .const import (
     ATTR_THERMOSTATS,
     CONF_CONNECTION_TYPE,
     CONF_HOST,
+    CONF_SOURCE_DEVICE,
+    CONF_UPDATE_INTERVAL,
     CONNECTION_TYPE_TCP,
     DOMAIN,
     MANUFACTURER,
@@ -62,6 +67,49 @@ def async_get_by_modules[DescriptorT: EcomaxEntityDescription](
     for description in descriptions:
         if getattr(connected_modules, description.module, None) is not None:
             yield description
+
+
+@callback
+def async_make_description_for_custom_entity[DescriptorT: EcomaxEntityDescription](
+    description: DescriptorT, entity: dict[str, Any]
+) -> DescriptorT:
+    """Make description from partial and entity data."""
+
+    @callback
+    def filter_wrapper(update_interval: int) -> Callable[..., Awaitable[Any]]:
+        def filter_fn(x):
+            return throttle(x, seconds=update_interval) if update_interval else x
+
+        return filter_fn
+
+    data = {**entity}
+
+    if update_interval := data.get(CONF_UPDATE_INTERVAL, None):
+        data["filter_fn"] = filter_wrapper(update_interval)
+        del data[CONF_UPDATE_INTERVAL]
+
+    if unit_of_measurement := data.get(CONF_UNIT_OF_MEASUREMENT, None):
+        data["native_unit_of_measurement"] = unit_of_measurement
+
+    del data[CONF_SOURCE_DEVICE]
+    return description(**data)
+
+
+@callback
+def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
+    platform: Platform,
+    config_entry: PlumEcomaxConfigEntry,
+    source_device: DeviceType | Literal["regdata"],
+    description: DescriptorT,
+) -> Generator[DescriptorT]:
+    """Return list of custom sensors."""
+    entities: dict[str, Any] = config_entry.options.get("entities", {})
+    if not entities:
+        return []
+
+    for entity in entities[str(platform)].values():
+        if entity[CONF_SOURCE_DEVICE] == source_device:
+            yield async_make_description_for_custom_entity(description, entity)
 
 
 class EcomaxEntity(Entity):

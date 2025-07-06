@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Generator, Iterable
 from dataclasses import asdict, astuple, dataclass
+from functools import partial
 import logging
 from typing import Any, Final, cast, override
 
@@ -20,6 +21,7 @@ from homeassistant.const import (
     STATE_OFF,
     STATE_PAUSED,
     STATE_STANDBY,
+    Platform,
     UnitOfMass,
     UnitOfPower,
     UnitOfTemperature,
@@ -45,6 +47,7 @@ from .const import (
     ATTR_REGDATA,
     ATTR_VALUE,
     DEVICE_CLASS_METER,
+    DeviceType,
     ModuleType,
     ProductModel,
 )
@@ -54,6 +57,7 @@ from .entity import (
     MixerEntity,
     async_get_by_modules,
     async_get_by_product_type,
+    async_get_custom_entities,
 )
 
 SERVICE_RESET_METER: Final = "reset_meter"
@@ -645,6 +649,23 @@ def async_setup_ecomax_sensors(connection: EcomaxConnection) -> list[EcomaxSenso
 
 
 @callback
+def async_setup_custom_ecomax_sensors(
+    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
+) -> list[EcomaxSensor]:
+    """Set up the custom ecoMAX sensors."""
+    description_partial = partial(EcomaxSensorEntityDescription, value_fn=lambda x: x)
+    return [
+        EcomaxSensor(connection, description)
+        for description in async_get_custom_entities(
+            platform=Platform.SENSOR,
+            source_device=DeviceType.ECOMAX,
+            config_entry=config_entry,
+            description=description_partial,
+        )
+    ]
+
+
+@callback
 def async_setup_ecomax_meters(connection: EcomaxConnection) -> list[EcomaxMeter]:
     """Set up the ecoMAX meters."""
     return [
@@ -694,6 +715,10 @@ async def async_setup_entry(
 
     connection = entry.runtime_data.connection
     entities = async_setup_ecomax_sensors(connection)
+
+    # Add custom ecoMAX sensors.
+    if custom_entities := async_setup_custom_ecomax_sensors(connection, entry):
+        entities += custom_entities
 
     # Add regulator data (device-specific) sensors.
     if (

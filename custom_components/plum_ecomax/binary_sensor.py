@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from functools import partial
 import logging
 from typing import Any
 
@@ -12,6 +13,7 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
     BinarySensorEntityDescription,
 )
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -19,12 +21,14 @@ from pyplumio.const import ProductType
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
+from .const import DeviceType
 from .entity import (
     EcomaxEntity,
     EcomaxEntityDescription,
     MixerEntity,
     async_get_by_modules,
     async_get_by_product_type,
+    async_get_custom_entities,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -183,6 +187,25 @@ def async_setup_ecomax_binary_sensors(
 
 
 @callback
+def async_setup_custom_ecomax_binary_sensors(
+    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
+) -> list[EcomaxBinarySensor]:
+    """Set up the custom ecoMAX binary sensors."""
+    description_partial = partial(
+        EcomaxBinarySensorEntityDescription, value_fn=lambda x: x
+    )
+    return [
+        EcomaxBinarySensor(connection, description)
+        for description in async_get_custom_entities(
+            platform=Platform.BINARY_SENSOR,
+            source_device=DeviceType.ECOMAX,
+            config_entry=config_entry,
+            description=description_partial,
+        )
+    ]
+
+
+@callback
 def async_setup_mixer_binary_sensors(
     connection: EcomaxConnection,
 ) -> list[MixerBinarySensor]:
@@ -209,6 +232,10 @@ async def async_setup_entry(
 
     connection = entry.runtime_data.connection
     entities = async_setup_ecomax_binary_sensors(connection)
+
+    # Add custom ecoMAX binary sensors.
+    if custom_entities := async_setup_custom_ecomax_binary_sensors(connection, entry):
+        entities += custom_entities
 
     # Add mixer/circuit binary sensors.
     if connection.has_mixers and await connection.async_setup_mixers():

@@ -32,7 +32,6 @@ from homeassistant.const import (
     CONF_DEVICE_CLASS,
     CONF_MODE,
     CONF_NAME,
-    CONF_SOURCE,
     CONF_UNIT_OF_MEASUREMENT,
     Platform,
     UnitOfTime,
@@ -74,6 +73,7 @@ from .const import (
     CONF_PRODUCT_TYPE,
     CONF_REMOVE_ENTITY,
     CONF_SOFTWARE,
+    CONF_SOURCE_DEVICE,
     CONF_SUB_DEVICES,
     CONF_UID,
     CONF_UPDATE_INTERVAL,
@@ -531,14 +531,14 @@ class OptionsFlowHandler(OptionsFlow):
     ) -> ConfigFlowResult:
         """Handle adding a new entity."""
         if user_input is not None:
-            self.source_device: str = user_input[CONF_SOURCE]
+            self.source_device: str = user_input[CONF_SOURCE_DEVICE]
             return await self.async_step_entity_type()
 
         return self.async_show_form(
             step_id="add_entity",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_SOURCE): selector.SelectSelector(
+                    vol.Required(CONF_SOURCE_DEVICE): selector.SelectSelector(
                         selector.SelectSelectorConfig(
                             options=self._async_get_source_device_options()
                         )
@@ -591,13 +591,18 @@ class OptionsFlowHandler(OptionsFlow):
     ) -> ConfigFlowResult:
         """Handle new entity details."""
         entity = self.entity if hasattr(self, "entity") else {}
+
         if user_input is not None:
-            user_input["source_device"] = self.source_device
+            user_input[CONF_SOURCE_DEVICE] = self.source_device
             return self._async_step_create_entry(
                 key=entity.get(CONF_KEY, user_input[CONF_KEY]), data=user_input
             )
 
-        if not (source_options := self._async_get_source_options()):
+        if not (
+            source_options := self._async_get_source_options(
+                selected=entity.get(CONF_KEY, "")
+            )
+        ):
             raise vol.Invalid(
                 f"Can not add any more {str(self.platform).replace('_', ' ')}s for "
                 f"the selected source. Please select a different source and try again."
@@ -618,17 +623,24 @@ class OptionsFlowHandler(OptionsFlow):
     ) -> ConfigFlowResult:
         """Save the options."""
         entities = self.entities.setdefault(self.platform.value, {})
-        removing_entity = data.get("remove_entity", False)
+        removing_entity = data.get(CONF_REMOVE_ENTITY, False)
         renaming_entity = True if key != data[CONF_KEY] else False
 
+        if CONF_REMOVE_ENTITY in data:
+            del data[CONF_REMOVE_ENTITY]
+
         if removing_entity or renaming_entity:
+            self._async_remove_entity(key=key)
             entities.pop(key, None)
 
         if not removing_entity:
             key = data[CONF_KEY]
             entities[key] = data
 
-        return self.async_create_entry(title="", data=self.options)
+        try:
+            return self.async_create_entry(title="", data=self.options)
+        finally:
+            self.hass.config_entries.async_schedule_reload(self.config_entry.entry_id)
 
     async def async_step_reload(
         self, user_input: dict[str, Any] | None = None
@@ -637,18 +649,18 @@ class OptionsFlowHandler(OptionsFlow):
         self.hass.async_create_task(
             async_reload_config(self.hass, self.config_entry, self.connection)
         )
-        return self.async_create_entry(title="Reload complete", data={})
+        return self.async_create_entry(title="Reload complete", data=self.options)
 
     async def async_step_edit_entity(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle editing an entity."""
         if user_input is not None:
-            entity: str = user_input["entity"]
-            platform, key = entity.split("-", 2)
+            entity_id: str = user_input["entity_id"]
+            platform, key = entity_id.split("-", 2)
             self.entity = self.entities[platform][key]
             self.platform = Platform(platform)
-            self.source_device = self.entity["source_device"]
+            self.source_device = self.entity[CONF_SOURCE_DEVICE]
             return await self.async_step_entity_details()
 
         if not (options := self._async_get_entity_options()):
@@ -658,7 +670,7 @@ class OptionsFlowHandler(OptionsFlow):
             step_id="edit_entity",
             data_schema=vol.Schema(
                 {
-                    vol.Required("entity"): selector.SelectSelector(
+                    vol.Required("entity_id"): selector.SelectSelector(
                         selector.SelectSelectorConfig(options=options)
                     )
                 }
@@ -673,7 +685,7 @@ class OptionsFlowHandler(OptionsFlow):
         return self.async_abort(reason="no_entities_found")
 
     @callback
-    def _async_get_sources(self) -> dict[str, Any]:
+    def _async_get_sources(self, selected: str = "") -> dict[str, Any]:
         """Get the entity sources."""
         device = self.connection.device
         entity_registry = er.async_get(self.hass)
@@ -685,7 +697,9 @@ class OptionsFlowHandler(OptionsFlow):
         if self.source_device == DeviceType.ECOMAX:
             data = device.data
             existing_entities = [
-                key for key in entity_keys if not key.startswith(VIRTUAL_DEVICES)
+                key
+                for key in entity_keys
+                if key.split("_", 1)[0] not in VIRTUAL_DEVICES
             ]
 
         elif self.source_device == REGDATA:
@@ -703,7 +717,9 @@ class OptionsFlowHandler(OptionsFlow):
         else:
             raise HomeAssistantError
 
-        return {k: v for k, v in data.items() if k not in existing_entities}
+        return {
+            k: v for k, v in data.items() if k not in existing_entities or k == selected
+        }
 
     @callback
     def _async_get_source_device_options(self) -> list[selector.SelectOptionDict]:
@@ -729,9 +745,11 @@ class OptionsFlowHandler(OptionsFlow):
         return [selector.SelectOptionDict(value=k, label=v) for k, v in sources.items()]
 
     @callback
-    def _async_get_source_options(self) -> list[selector.SelectOptionDict]:
+    def _async_get_source_options(
+        self, selected: str = ""
+    ) -> list[selector.SelectOptionDict]:
         """Return source options."""
-        sources = self._async_get_sources()
+        sources = self._async_get_sources(selected)
         data = dict(sorted(sources.items()))
 
         return [
@@ -795,3 +813,14 @@ class OptionsFlowHandler(OptionsFlow):
         return [
             selector.SelectOptionDict(value=k, label=v) for k, v in entities.items()
         ]
+
+    @callback
+    def _async_remove_entity(self, key: str) -> None:
+        """Remove the entity from registry."""
+        entity_registry = er.async_get(self.hass)
+        entities = er.async_entries_for_config_entry(
+            entity_registry, self.config_entry.entry_id
+        )
+        for entity in entities:
+            if entity.unique_id.split("-")[-1] == key:
+                entity_registry.async_remove(entity_id=entity.entity_id)
