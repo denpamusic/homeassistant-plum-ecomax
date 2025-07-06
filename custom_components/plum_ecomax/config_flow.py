@@ -51,7 +51,7 @@ from pyplumio.connection import Connection
 from pyplumio.const import ProductType
 from pyplumio.devices import PhysicalDevice, VirtualDevice
 from pyplumio.exceptions import ConnectionFailedError
-from pyplumio.helpers.parameter import (
+from pyplumio.parameters import (
     Number,
     NumericType,
     State,
