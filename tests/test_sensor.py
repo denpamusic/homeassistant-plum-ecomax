@@ -189,14 +189,24 @@ async def test_heating_temperature_sensor(
     assert isinstance(state, State)
     assert state.state == "65"
 
-    # Check that entity is disabled if unavailable on setup.
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_heating_temperature_sensor_disabled(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test that heating sensor is disabled if unavailable."""
     del connection.device.data[ATTR_HEATING_TEMP]
-    await hass.config_entries.async_remove(config_entry.entry_id)
     await setup_integration(hass, config_entry)
+    heating_temperature_entity_id = "sensor.ecomax_heating_temperature"
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(heating_temperature_entity_id)
     assert isinstance(entry, RegistryEntry)
     assert entry.disabled_by == er.RegistryEntryDisabler.INTEGRATION
+    state = hass.states.get(heating_temperature_entity_id)
+    assert state is None
 
 
 @pytest.mark.usefixtures("ecomax_p", "water_heater")
@@ -236,10 +246,21 @@ async def test_water_heater_temperature_sensor(
     assert isinstance(state, State)
     assert state.state == "51"
 
-    # Test without water heater.
-    del connection.device.data[ATTR_WATER_HEATER_TEMP]
-    await hass.config_entries.async_remove(config_entry.entry_id)
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_water_heater_temperature_sensor_disabled(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test that water heater sensor is disabled if unavailable."""
     await setup_integration(hass, config_entry)
+    water_heater_temperature_entity_id = "sensor.ecomax_water_heater_temperature"
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(water_heater_temperature_entity_id)
+    assert isinstance(entry, RegistryEntry)
+    assert entry.disabled_by == er.RegistryEntryDisabler.INTEGRATION
     state = hass.states.get(water_heater_temperature_entity_id)
     assert state is None
 
