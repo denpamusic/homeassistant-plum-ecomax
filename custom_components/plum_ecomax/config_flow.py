@@ -3,29 +3,23 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import asdict
+import logging
 from typing import Any, Final, TypeVar, cast, overload
 
-import homeassistant.helpers.config_validation as cv
-import voluptuous as vol
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.number.const import (
     DEVICE_CLASS_UNITS as NUMBER_DEVICE_CLASS_UNITS,
-)
-from homeassistant.components.number.const import (
     NumberDeviceClass,
     NumberMode,
 )
 from homeassistant.components.sensor.const import (
     CONF_STATE_CLASS,
+    DEVICE_CLASS_UNITS as SENSOR_DEVICE_CLASS_UNITS,
     SensorDeviceClass,
     SensorStateClass,
-)
-from homeassistant.components.sensor.const import (
-    DEVICE_CLASS_UNITS as SENSOR_DEVICE_CLASS_UNITS,
 )
 from homeassistant.config_entries import (
     ConfigEntry,
@@ -45,25 +39,21 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers import selector
+from homeassistant.helpers import entity_registry as er, selector
+import homeassistant.helpers.config_validation as cv
 from pyplumio.connection import Connection
 from pyplumio.const import ProductType
 from pyplumio.devices import PhysicalDevice, VirtualDevice
 from pyplumio.exceptions import ConnectionFailedError
-from pyplumio.parameters import (
-    Number,
-    NumericType,
-    State,
-    Switch,
-    UnitOfMeasurement,
-)
+from pyplumio.parameters import Number, NumericType, State, Switch, UnitOfMeasurement
 from pyplumio.structures.modules import ConnectedModules
 from pyplumio.structures.product_info import ProductInfo
+import voluptuous as vol
 
 from . import async_reload_config
 from .connection import (
     DEFAULT_TIMEOUT,
+    EcomaxConnection,
     async_get_connection_handler,
     async_get_sub_devices,
 )
