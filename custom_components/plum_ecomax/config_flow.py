@@ -325,7 +325,6 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
 
     async def _async_discover_modules(self) -> None:
         """Task to discover modules."""
-        # Tell mypy that once we here, device is not None
         device = cast(PhysicalDevice, self.device)
         modules: ConnectedModules = await device.get(
             ATTR_MODULES, timeout=DEFAULT_TIMEOUT
@@ -518,14 +517,13 @@ class OptionsFlowHandler(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Manage the options."""
-        self.connection = self.config_entry.runtime_data.connection
-        self.options = deepcopy(dict(self.config_entry.options))
-        self.entities: dict[str, dict[str, dict[str, Any]]] = self.options.setdefault(
-            "entities", {}
+        self.connection = cast(
+            EcomaxConnection, self.config_entry.runtime_data.connection
         )
+        self.options = deepcopy(dict(self.config_entry.options))
+        self.entities = cast(dict[str, Any], self.options.setdefault("entities", {}))
         return self.async_show_menu(
-            step_id="init",
-            menu_options=["add_entity", "edit_entity", "reload"],
+            step_id="init", menu_options=["add_entity", "edit_entity", "reload"]
         )
 
     async def async_step_add_entity(
@@ -710,11 +708,12 @@ class OptionsFlowHandler(OptionsFlow):
     @callback
     def _async_get_source_device_options(self) -> list[selector.SelectOptionDict]:
         """Return the source devices."""
+        model = self.connection.model
         device = self.connection.device
-        sources = {DeviceType.ECOMAX.value: f"Common ({self.connection.model})"}
+        sources = {DeviceType.ECOMAX.value: f"Common ({model})"}
 
         if device.get_nowait(REGDATA, None):
-            sources[REGDATA] = f"Extended ({self.connection.model})"
+            sources[REGDATA] = f"Extended ({model})"
 
         if mixers := device.get_nowait(ATTR_MIXERS, None):
             sources |= {
