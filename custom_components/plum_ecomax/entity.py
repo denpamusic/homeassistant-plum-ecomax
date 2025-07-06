@@ -44,7 +44,7 @@ DescriptorT = TypeVar("DescriptorT", bound=EcomaxEntityDescription)
 
 
 @callback
-def async_get_by_product_type(
+def async_get_by_product_type[DescriptorT: EcomaxEntityDescription](
     product_type: ProductType, descriptions: Iterable[DescriptorT]
 ) -> Generator[DescriptorT]:
     """Filter descriptions by the product type."""
@@ -55,7 +55,7 @@ def async_get_by_product_type(
 
 
 @callback
-def async_get_by_modules(
+def async_get_by_modules[DescriptorT: EcomaxEntityDescription](
     connected_modules: ConnectedModules, descriptions: Iterable[DescriptorT]
 ) -> Generator[DescriptorT]:
     """Filter descriptions by connected modules."""
@@ -170,7 +170,7 @@ SubDescriptorT = TypeVar("SubDescriptorT", bound=SubdeviceEntityDescription)
 
 
 @callback
-def async_get_by_index(
+def async_get_by_index[SubDescriptorT: SubdeviceEntityDescription](
     index: int, descriptions: Iterable[SubDescriptorT]
 ) -> Generator[SubDescriptorT]:
     """Filter mixer/circuit descriptions by the index."""

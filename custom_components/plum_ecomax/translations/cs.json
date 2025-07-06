@@ -371,22 +371,22 @@
       "message": "Zařízení není připraveno ({device})"
     },
     "property_not_writable": {
-      "message": "Nelze změnit vlastnost pouze pro čtení ({parameter})"
+      "message": "Nelze změnit \"{property}\" vlastnost pouze pro čtení"
     },
     "invalid_parameter_value": {
-      "message": "Neplatná hodnota {value} parametru {parameter}"
+      "message": "Neplatná hodnota \"{value\"} parametru \"{parameter}\""
     },
     "invalid_schedule_interval": {
-      "message": "Byl vybrán neplatný interval pro {schedule}. Od {start} do {end}."
+      "message": "Byl vybrán neplatný interval pro \"{schedule}\". Od {start} do {end}."
     },
     "parameter_not_found": {
-      "message": "Požadovaný parametr nebyl nalezen ({parameter})"
+      "message": "Požadovaný \"{parameter}\" parametr nebyl nalezen"
     },
     "schedule_not_found": {
-      "message": "Požadovaný rozvrh nebyl nalezen ({schedule})"
+      "message": "Požadovaný \"{schedule}\"rozvrh nebyl nalezen"
     },
     "set_parameter_timeout": {
-      "message": "Časový limit požadavku na nastavení parametru vypršel ({parameter})"
+      "message": "Časový limit požadavku na nastavení \"{parameter}\" parametru vypršel"
     }
   },
   "options": {

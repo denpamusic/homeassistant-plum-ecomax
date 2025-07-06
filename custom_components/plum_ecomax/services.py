@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import difflib
 import logging
 from typing import Final, NotRequired, TypedDict, cast
 
@@ -22,11 +23,11 @@ from homeassistant.helpers.service import (
     SelectedEntities,
     async_extract_referenced_entity_ids,
 )
-from pyplumio.const import UnitOfMeasurement
+from pyplumio.const import State, UnitOfMeasurement
 from pyplumio.devices import Device, VirtualDevice
-from pyplumio.helpers.parameter import Number, NumericType, Parameter, State
-from pyplumio.helpers.schedule import Schedule, ScheduleDay
+from pyplumio.parameters import Number, NumericType, Parameter
 from pyplumio.structures.product_info import ProductInfo
+from pyplumio.structures.schedules import Schedule, ScheduleDay
 import voluptuous as vol
 
 from .connection import DEFAULT_TIMEOUT, EcomaxConnection
@@ -201,16 +202,39 @@ def async_make_parameter_response(
     return response
 
 
+SUGGESTION_SCORE: Final = 0.6
+
+
 @callback
-def async_get_device_parameter(device: Device, name: str) -> ParameterResponse:
-    """Get device parameter."""
+def async_suggest_device_parameter_name(device: Device, name: str) -> str | None:
+    """Get the parameter name suggestion."""
+    parameter_names = [
+        name for name, value in device.data.items() if isinstance(value, Parameter)
+    ]
+    matches = difflib.get_close_matches(
+        name, parameter_names, n=1, cutoff=SUGGESTION_SCORE
+    )
+    return matches[0] if matches else None
+
+
+@callback
+def async_validate_device_parameter(device: Device, name: str) -> Parameter:
+    """Validate the device parameter."""
     parameter = device.get_nowait(name, None)
     if not parameter:
-        raise HomeAssistantError(
-            translation_domain=DOMAIN,
-            translation_key="parameter_not_found",
-            translation_placeholders={"parameter": name},
-        )
+        suggestion = async_suggest_device_parameter_name(device, name)
+        if suggestion:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="parameter_not_found_with_suggestion",
+                translation_placeholders={"parameter": name, "suggestion": suggestion},
+            )
+        else:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="parameter_not_found",
+                translation_placeholders={"parameter": name},
+            )
 
     if not isinstance(parameter, Parameter):
         raise ServiceValidationError(
@@ -219,6 +243,13 @@ def async_get_device_parameter(device: Device, name: str) -> ParameterResponse:
             translation_placeholders={"property": name},
         )
 
+    return parameter
+
+
+@callback
+def async_get_device_parameter(device: Device, name: str) -> ParameterResponse:
+    """Get device parameter."""
+    parameter = async_validate_device_parameter(device, name)
     return async_make_parameter_response(device, parameter)
 
 
@@ -256,21 +287,7 @@ def async_set_device_parameter(
     device: Device, name: str, value: float
 ) -> ParameterResponse:
     """Set device parameter."""
-    parameter = device.get_nowait(name, None)
-    if not parameter:
-        raise HomeAssistantError(
-            translation_domain=DOMAIN,
-            translation_key="parameter_not_found",
-            translation_placeholders={"parameter": name},
-        )
-
-    if not isinstance(parameter, Parameter):
-        raise ServiceValidationError(
-            translation_domain=DOMAIN,
-            translation_key="property_not_writable",
-            translation_placeholders={"property": name},
-        )
-
+    parameter = async_validate_device_parameter(device, name)
     try:
         parameter.set_nowait(value, timeout=DEFAULT_TIMEOUT)
     except ValueError as e:
@@ -366,8 +383,9 @@ def async_setup_set_schedule_service(
         preset = service_call.data[ATTR_PRESET]
         start_time = service_call.data[ATTR_START]
         end_time = service_call.data[ATTR_END]
-
-        schedules = connection.device.get_nowait(ATTR_SCHEDULES, {})
+        schedules = cast(
+            dict[str, Schedule], connection.device.get_nowait(ATTR_SCHEDULES, {})
+        )
         if schedule_type not in schedules:
             raise ServiceValidationError(
                 translation_domain=DOMAIN,
@@ -375,15 +393,12 @@ def async_setup_set_schedule_service(
                 translation_placeholders={"schedule": schedule_type},
             )
 
-        schedule: Schedule = schedules[schedule_type]
+        schedule = schedules[schedule_type]
+        state = bool(preset == "day")
         for weekday in weekdays:
             schedule_day: ScheduleDay = getattr(schedule, weekday)
             try:
-                schedule_day.set_state(
-                    STATE_ON if preset == "day" else STATE_OFF,
-                    start_time[:-3],
-                    end_time[:-3],
-                )
+                schedule_day.set_state(state, start_time[:-3], end_time[:-3])
             except ValueError as e:
                 raise ServiceValidationError(
                     str(e),

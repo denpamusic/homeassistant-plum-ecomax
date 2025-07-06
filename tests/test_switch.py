@@ -10,20 +10,20 @@ from homeassistant.components.switch import (
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_FRIENDLY_NAME, STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
-from pyplumio.helpers.parameter import ParameterValues
-from pyplumio.structures.ecomax_parameters import (
-    ATTR_ECOMAX_CONTROL,
+from pyplumio.parameters import ParameterValues
+from pyplumio.parameters.ecomax import (
     EcomaxNumber,
     EcomaxNumberDescription,
     EcomaxSwitch,
     EcomaxSwitchDescription,
 )
-from pyplumio.structures.mixer_parameters import (
+from pyplumio.parameters.mixer import (
     MixerNumber,
     MixerNumberDescription,
     MixerSwitch,
     MixerSwitchDescription,
 )
+from pyplumio.structures.ecomax_parameters import ATTR_ECOMAX_CONTROL
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 

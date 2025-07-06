@@ -189,14 +189,24 @@ async def test_heating_temperature_sensor(
     assert isinstance(state, State)
     assert state.state == "65"
 
-    # Check that entity is disabled if unavailable on setup.
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_heating_temperature_sensor_disabled(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test that heating sensor is disabled if unavailable."""
     del connection.device.data[ATTR_HEATING_TEMP]
-    await hass.config_entries.async_remove(config_entry.entry_id)
     await setup_integration(hass, config_entry)
+    heating_temperature_entity_id = "sensor.ecomax_heating_temperature"
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(heating_temperature_entity_id)
     assert isinstance(entry, RegistryEntry)
     assert entry.disabled_by == er.RegistryEntryDisabler.INTEGRATION
+    state = hass.states.get(heating_temperature_entity_id)
+    assert state is None
 
 
 @pytest.mark.usefixtures("ecomax_p", "water_heater")
@@ -236,10 +246,21 @@ async def test_water_heater_temperature_sensor(
     assert isinstance(state, State)
     assert state.state == "51"
 
-    # Test without water heater.
-    del connection.device.data[ATTR_WATER_HEATER_TEMP]
-    await hass.config_entries.async_remove(config_entry.entry_id)
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_water_heater_temperature_sensor_disabled(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test that water heater sensor is disabled if unavailable."""
     await setup_integration(hass, config_entry)
+    water_heater_temperature_entity_id = "sensor.ecomax_water_heater_temperature"
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(water_heater_temperature_entity_id)
+    assert isinstance(entry, RegistryEntry)
+    assert entry.disabled_by == er.RegistryEntryDisabler.INTEGRATION
     state = hass.states.get(water_heater_temperature_entity_id)
     assert state is None
 
@@ -602,6 +623,7 @@ async def test_fuel_consumption_sensor(
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
     # Dispatch new value.
+    frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_FUEL_CONSUMPTION, 2.5)
     state = hass.states.get(fuel_consumption_entity_id)
     assert isinstance(state, State)
@@ -614,6 +636,7 @@ async def test_boiler_load_sensor(
     connection: EcomaxConnection,
     config_entry: MockConfigEntry,
     setup_integration,
+    frozen_time,
 ) -> None:
     """Test boiler load sensor."""
     await setup_integration(hass, config_entry)
@@ -634,6 +657,7 @@ async def test_boiler_load_sensor(
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
     # Dispatch new value.
+    frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_BOILER_LOAD, 50)
     state = hass.states.get(boiler_load_entity_id)
     assert isinstance(state, State)
@@ -646,6 +670,7 @@ async def test_fan_power_sensor(
     connection: EcomaxConnection,
     config_entry: MockConfigEntry,
     setup_integration,
+    frozen_time,
 ) -> None:
     """Test fan power sensor."""
     await setup_integration(hass, config_entry)
@@ -668,6 +693,7 @@ async def test_fan_power_sensor(
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
     # Dispatch new value.
+    frozen_time.move_to("12:00:10")
     await connection.device.dispatch(ATTR_FAN_POWER, 100)
     state = hass.states.get(fan_power_entity_id)
     assert isinstance(state, State)

@@ -16,19 +16,28 @@ from .const import ATTR_PASSWORD, CONF_HOST, CONF_UID
 
 
 @callback
+def _async_value_as_dict(value: Any) -> Any:
+    """Return value as a dictionary."""
+    if isinstance(value, EventManager):
+        return {**value.data}
+
+    if is_dataclass(value):
+        return {field.name: getattr(value, field.name) for field in fields(value)}
+
+    return value
+
+
+@callback
 def _async_data_as_dict(data: dict[str, Any]) -> dict[str, Any]:
     """Return data as a dictionary."""
     items = {**data}
 
     for key, value in items.items():
-        if isinstance(value, EventManager):
-            value = value.data
-        if isinstance(value, dict):
-            items[key] = _async_data_as_dict(value)
-        elif is_dataclass(value):
-            items[key] = {
-                field.name: getattr(value, field.name) for field in fields(value)
-            }
+        items[key] = (
+            _async_data_as_dict(value)
+            if isinstance(value, dict)
+            else _async_value_as_dict(value)
+        )
 
     return items
 

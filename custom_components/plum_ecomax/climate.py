@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import Any, Final, overload
+from typing import Any, Final, cast, overload
 
 from homeassistant.components.climate import (
     PRESET_AWAY,
@@ -25,7 +25,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.filters import Filter, on_change, throttle
-from pyplumio.structures.thermostat_parameters import ThermostatNumber
+from pyplumio.parameters.thermostat import ThermostatNumber
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
@@ -112,11 +112,9 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
-        # Tell mypy that once we here, temperature name is already set
-        assert isinstance(self.target_temperature_name, str)
-
         temperature = round(kwargs[ATTR_TEMPERATURE], 1)
-        self.device.set_nowait(self.target_temperature_name, temperature)
+        target_temperature_name = cast(str, self.target_temperature_name)
+        self.device.set_nowait(target_temperature_name, temperature)
         self._attr_target_temperature = temperature
         self.async_write_ha_state()
 

@@ -1,5 +1,6 @@
 """Test the climate platform."""
 
+from math import isclose
 from unittest.mock import patch
 
 from freezegun import freeze_time
@@ -25,11 +26,8 @@ from homeassistant.components.climate import (
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_FRIENDLY_NAME
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
-from pyplumio.helpers.parameter import ParameterValues
-from pyplumio.structures.thermostat_parameters import (
-    ThermostatNumber,
-    ThermostatNumberDescription,
-)
+from pyplumio.parameters import ParameterValues
+from pyplumio.parameters.thermostat import ThermostatNumber, ThermostatNumberDescription
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -44,6 +42,7 @@ from custom_components.plum_ecomax.climate import (
     PRESET_SCHEDULE,
 )
 from custom_components.plum_ecomax.connection import EcomaxConnection
+from tests import FLOAT_TOLERANCE
 
 
 @pytest.fixture(autouse=True)
@@ -145,7 +144,9 @@ async def test_thermostat(
     assert state.attributes[ATTR_HVAC_MODES] == [HVACMode.HEAT]
     assert state.attributes[ATTR_MIN_TEMP] == 10
     assert state.attributes[ATTR_MAX_TEMP] == 35
-    assert state.attributes[ATTR_TARGET_TEMP_STEP] == 0.1
+    assert isclose(
+        state.attributes[ATTR_TARGET_TEMP_STEP], 0.1, rel_tol=FLOAT_TOLERANCE
+    )
     assert state.attributes[ATTR_PRESET_MODES] == [
         PRESET_SCHEDULE,
         PRESET_ECO,

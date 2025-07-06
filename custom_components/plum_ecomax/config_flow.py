@@ -3,23 +3,29 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import asdict
-import logging
 from typing import Any, Final, TypeVar, cast, overload
 
+import homeassistant.helpers.config_validation as cv
+import voluptuous as vol
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.number.const import (
     DEVICE_CLASS_UNITS as NUMBER_DEVICE_CLASS_UNITS,
+)
+from homeassistant.components.number.const import (
     NumberDeviceClass,
     NumberMode,
 )
 from homeassistant.components.sensor.const import (
     CONF_STATE_CLASS,
-    DEVICE_CLASS_UNITS as SENSOR_DEVICE_CLASS_UNITS,
     SensorDeviceClass,
     SensorStateClass,
+)
+from homeassistant.components.sensor.const import (
+    DEVICE_CLASS_UNITS as SENSOR_DEVICE_CLASS_UNITS,
 )
 from homeassistant.config_entries import (
     ConfigEntry,
@@ -39,8 +45,8 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers import entity_registry as er, selector
-import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import selector
 from pyplumio.connection import Connection
 from pyplumio.const import ProductType
 from pyplumio.devices import PhysicalDevice, VirtualDevice
@@ -54,7 +60,6 @@ from pyplumio.helpers.parameter import (
 )
 from pyplumio.structures.modules import ConnectedModules
 from pyplumio.structures.product_info import ProductInfo
-import voluptuous as vol
 
 from . import async_reload_config
 from .connection import (
@@ -305,10 +310,10 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
     async def _async_identify_device(self) -> None:
         """Task to identify the device."""
         # Tell mypy that once we here, connection is not None
-        assert self.connection
+        connection = cast(Connection, self.connection)
         self.device = cast(
             PhysicalDevice,
-            await self.connection.get(DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT),
+            await connection.get(DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT),
         )
         product: ProductInfo = await self.device.get(
             ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT
@@ -331,12 +336,11 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
     async def _async_discover_modules(self) -> None:
         """Task to discover modules."""
         # Tell mypy that once we here, device is not None
-        assert isinstance(self.device, PhysicalDevice)
-
-        modules: ConnectedModules = await self.device.get(
+        device = cast(PhysicalDevice, self.device)
+        modules: ConnectedModules = await device.get(
             ATTR_MODULES, timeout=DEFAULT_TIMEOUT
         )
-        sub_devices = await async_get_sub_devices(self.device)
+        sub_devices = await async_get_sub_devices(device)
 
         self.init_info.update(
             {

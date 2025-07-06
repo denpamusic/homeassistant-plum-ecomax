@@ -1,5 +1,6 @@
 """Test Plum ecoMAX services."""
 
+from typing import Final, Literal
 from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_NAME
@@ -7,7 +8,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.device_registry import DeviceEntry
 from pyplumio.devices.ecomax import EcoMAX
-from pyplumio.helpers.schedule import Schedule, ScheduleDay
+from pyplumio.parameters import Parameter
+from pyplumio.structures.schedules import Schedule, ScheduleDay
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -33,6 +35,8 @@ from custom_components.plum_ecomax.services import (
     DeviceId,
     ProductId,
     async_extract_target_device,
+    async_suggest_device_parameter_name,
+    async_validate_device_parameter,
 )
 
 
@@ -83,6 +87,52 @@ async def test_extract_target_missing_mixer_device(
         device = async_extract_target_device("test-mixer-1", hass, mock_connection)
 
     assert device == mock_connection.device
+
+
+@pytest.mark.parametrize(
+    ("name", "expected_suggestion"),
+    [
+        ("heating_traget_temp", "heating_target_temp"),
+        ("grat_heating_temp", "grate_heating_temp"),
+        ("nonexistent", None),
+    ],
+)
+def test_suggest_device_parameter_name(
+    hass: HomeAssistant, ecomax_p: EcoMAX, name: str, expected_suggestion: str | None
+) -> None:
+    """Test getting parameter name suggestion."""
+    suggestion = async_suggest_device_parameter_name(ecomax_p, name)
+    assert suggestion == expected_suggestion
+
+
+RAISES: Final = "raises"
+
+
+@pytest.mark.parametrize(
+    ("name", "expected_result", "exception", "exception_pattern"),
+    [
+        ("heating_target_temp", "heating_target_temp", None, None),
+        ("product", RAISES, ServiceValidationError, "property_not_writable"),
+        ("nonexistent", RAISES, HomeAssistantError, "parameter_not_found"),
+        ("grat_heating_temp", RAISES, HomeAssistantError, "parameter_not_found"),
+    ],
+)
+def test_async_validate_device_parameter(
+    ecomax_p: EcoMAX,
+    name: str,
+    expected_result: str | Literal["raises"],
+    exception: type[Exception] | None,
+    exception_pattern: str | None,
+) -> None:
+    """Test validating device parameter."""
+    if expected_result != RAISES:
+        parameter = async_validate_device_parameter(ecomax_p, name)
+        assert isinstance(parameter, Parameter)
+        assert parameter.description.name == expected_result
+    else:
+        assert exception is not None
+        with pytest.raises(exception, match=exception_pattern):
+            async_validate_device_parameter(ecomax_p, name)
 
 
 @pytest.mark.usefixtures("ecomax_p", "mixers")
@@ -269,7 +319,7 @@ async def test_set_parameter_service(
     heating_temperature_entity_id = "sensor.ecomax_heating_temperature"
 
     # Test setting parameter for EM device.
-    with patch("pyplumio.helpers.parameter.Parameter.set_nowait") as mock_set_nowait:
+    with patch("pyplumio.parameters.Parameter.set_nowait") as mock_set_nowait:
         response = await hass.services.async_call(
             DOMAIN,
             SERVICE_SET_PARAMETER,
@@ -283,7 +333,7 @@ async def test_set_parameter_service(
         )
         await hass.async_block_till_done()
 
-    mock_set_nowait.assert_called_once_with(0.0, 5, 15)
+    mock_set_nowait.assert_called_once_with(0.0, retries=0, timeout=15)
 
     assert response == {
         "parameters": [
@@ -303,7 +353,7 @@ async def test_set_parameter_service(
     }
 
     # Test setting parameter without response.
-    with patch("pyplumio.helpers.parameter.Parameter.set_nowait") as mock_set_nowait:
+    with patch("pyplumio.parameters.Parameter.set_nowait") as mock_set_nowait:
         assert not await hass.services.async_call(
             DOMAIN,
             SERVICE_SET_PARAMETER,
@@ -316,11 +366,11 @@ async def test_set_parameter_service(
         )
         await hass.async_block_till_done()
 
-    mock_set_nowait.assert_called_once_with(5.0, 5, 15)
+    mock_set_nowait.assert_called_once_with(5.0, retries=0, timeout=15)
 
     # Test setting parameter for a mixer.
     mixer_temperature_entity_id = "sensor.ecomax_mixer_1_mixer_temperature"
-    with patch("pyplumio.helpers.parameter.Parameter.set_nowait") as mock_set_nowait:
+    with patch("pyplumio.parameters.Parameter.set_nowait") as mock_set_nowait:
         await hass.services.async_call(
             DOMAIN,
             SERVICE_SET_PARAMETER,
@@ -333,13 +383,13 @@ async def test_set_parameter_service(
         )
         await hass.async_block_till_done()
 
-    mock_set_nowait.assert_called_once_with(0.0, 5, 15)
+    mock_set_nowait.assert_called_once_with(0.0, retries=0, timeout=15)
 
     # Test setting a parameter to an invalid value.
     with (
         pytest.raises(ServiceValidationError) as exc_info,
         patch(
-            "pyplumio.helpers.parameter.Parameter.set_nowait", side_effect=ValueError
+            "pyplumio.parameters.Parameter.set_nowait", side_effect=ValueError
         ) as mock_set_nowait,
     ):
         await hass.services.async_call(
@@ -353,7 +403,7 @@ async def test_set_parameter_service(
             blocking=True,
         )
 
-    mock_set_nowait.assert_called_once_with(100.0, 5, 15)
+    mock_set_nowait.assert_called_once_with(100.0, retries=0, timeout=15)
     assert exc_info.value.translation_key == "invalid_parameter_value"
     assert exc_info.value.translation_placeholders == {
         "parameter": "heating_target_temp",
@@ -496,8 +546,8 @@ async def test_set_schedule_service(
         )
         await hass.async_block_till_done()
 
-    mock_schedule.monday.set_state.assert_called_once_with("on", "00:00", "10:00")
-    mock_schedule.tuesday.set_state.assert_called_once_with("on", "00:00", "10:00")
+    mock_schedule.monday.set_state.assert_called_once_with(True, "00:00", "10:00")
+    mock_schedule.tuesday.set_state.assert_called_once_with(True, "00:00", "10:00")
     mock_schedule.commit.assert_called_once()
 
     # Test setting a schedule with an invalid time interval.

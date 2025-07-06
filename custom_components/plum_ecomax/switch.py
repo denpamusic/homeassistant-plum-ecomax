@@ -10,8 +10,8 @@ from homeassistant.components.switch import SwitchEntity, SwitchEntityDescriptio
 from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyplumio.const import ProductType
-from pyplumio.helpers.parameter import NumericType, Parameter, State
+from pyplumio.const import ProductType, State
+from pyplumio.parameters import NumericType, Parameter
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
