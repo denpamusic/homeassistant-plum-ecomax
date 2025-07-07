@@ -74,6 +74,7 @@ from .const import (
     CONF_REMOVE_ENTITY,
     CONF_SOFTWARE,
     CONF_SOURCE_DEVICE,
+    CONF_STEP,
     CONF_SUB_DEVICES,
     CONF_UID,
     CONF_UPDATE_INTERVAL,
@@ -629,6 +630,11 @@ class OptionsFlowHandler(OptionsFlow):
         if CONF_REMOVE_ENTITY in data:
             del data[CONF_REMOVE_ENTITY]
 
+        if self.platform == Platform.NUMBER and not (
+            removing_entity or renaming_entity
+        ):
+            data[CONF_STEP] = self._async_get_native_step(data[CONF_KEY])
+
         if removing_entity or renaming_entity:
             self._async_remove_entity(key=key)
             entities.pop(key, None)
@@ -685,6 +691,18 @@ class OptionsFlowHandler(OptionsFlow):
         return self.async_abort(reason="no_entities_found")
 
     @callback
+    def _async_get_virtual_device(self, device_type: str, index: int) -> VirtualDevice:
+        """Get the virtual device."""
+        virtual_devices = cast(
+            dict[int, VirtualDevice],
+            self.connection.device.get_nowait(f"{device_type}s", {}),
+        )
+        if index in virtual_devices:
+            return virtual_devices[index]
+
+        raise HomeAssistantError
+
+    @callback
     def _async_get_sources(self, selected: str = "") -> dict[str, Any]:
         """Get the entity sources."""
         device = self.connection.device
@@ -708,8 +726,8 @@ class OptionsFlowHandler(OptionsFlow):
 
         elif self.source_device.startswith(VIRTUAL_DEVICES):
             device_type, index = self.source_device.split("_", 1)
-            devices: dict[int, VirtualDevice] = device.get_nowait(f"{device_type}s", {})
-            data = devices[int(index)].data
+            virtual_device = self._async_get_virtual_device(device_type, int(index))
+            data = virtual_device.data
             existing_entities = [
                 key for key in entity_keys if f"{device_type}-{index}" in key
             ]
@@ -824,3 +842,23 @@ class OptionsFlowHandler(OptionsFlow):
         for entity in entities:
             if entity.unique_id.split("-")[-1] == key:
                 entity_registry.async_remove(entity_id=entity.entity_id)
+
+    @callback
+    def _async_get_native_step(self, key: str) -> float:
+        """Get the native step for the number entity."""
+        device = self.connection.device
+
+        number: Number | None = None
+        if self.source_device == DeviceType.ECOMAX:
+            number = device.get_nowait(key, None)
+
+        elif self.source_device.startswith(VIRTUAL_DEVICES):
+            device_type, index = self.source_device.split("_", 1)
+            virtual_device = self._async_get_virtual_device(device_type, int(index))
+            number = virtual_device.get_nowait(key, None)
+
+        number = cast(Number | None, number)
+        if not number:
+            raise HomeAssistantError
+
+        return number.description.step
