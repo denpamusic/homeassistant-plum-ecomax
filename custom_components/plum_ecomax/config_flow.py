@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from copy import deepcopy
 from dataclasses import asdict
 import logging
@@ -703,9 +703,38 @@ class OptionsFlowHandler(OptionsFlow):
         raise HomeAssistantError
 
     @callback
+    def _async_get_ecomax_sources(
+        self, entity_keys: Iterable[str]
+    ) -> tuple[dict[str, Any], list[str]]:
+        """Get the entity sources for ecoMAX device."""
+        return self.connection.device.data, [
+            key for key in entity_keys if key.split("_", 1)[0] not in VIRTUAL_DEVICES
+        ]
+
+    @callback
+    def _async_get_regdata_sources(
+        self, entity_keys: Iterable[str]
+    ) -> tuple[dict[str, Any], list[str]]:
+        """Get the entity sources for regdata."""
+        return (
+            self.connection.device.get_nowait(REGDATA, {}),
+            [key for key in entity_keys if key.isnumeric()],
+        )
+
+    @callback
+    def _async_get_virtual_device_sources(
+        self, entity_keys: Iterable[str]
+    ) -> tuple[dict[str, Any], list[str]]:
+        """Get the entity sources for virtual devices."""
+        device_type, index = self.source_device.split("_", 1)
+        virtual_device = self._async_get_virtual_device(device_type, int(index))
+        return virtual_device.data, [
+            key for key in entity_keys if f"{device_type}-{index}" in key
+        ]
+
+    @callback
     def _async_get_sources(self, selected: str = "") -> dict[str, Any]:
         """Get the entity sources."""
-        device = self.connection.device
         entity_registry = er.async_get(self.hass)
         entities = er.async_entries_for_config_entry(
             entity_registry, self.config_entry.entry_id
@@ -713,30 +742,18 @@ class OptionsFlowHandler(OptionsFlow):
         entity_keys = [entity.unique_id.split("-")[-1] for entity in entities]
 
         if self.source_device == DeviceType.ECOMAX:
-            data = device.data
-            existing_entities = [
-                key
-                for key in entity_keys
-                if key.split("_", 1)[0] not in VIRTUAL_DEVICES
-            ]
+            data, existing_keys = self._async_get_ecomax_sources(entity_keys)
 
         elif self.source_device == REGDATA:
-            data = device.get_nowait(REGDATA, {})
-            existing_entities = [key for key in entity_keys if key.isnumeric()]
+            data, existing_keys = self._async_get_regdata_sources(entity_keys)
 
         elif self.source_device.startswith(VIRTUAL_DEVICES):
-            device_type, index = self.source_device.split("_", 1)
-            virtual_device = self._async_get_virtual_device(device_type, int(index))
-            data = virtual_device.data
-            existing_entities = [
-                key for key in entity_keys if f"{device_type}-{index}" in key
-            ]
+            data, existing_keys = self._async_get_virtual_device_sources(entity_keys)
 
         else:
             raise HomeAssistantError
-
         return {
-            k: v for k, v in data.items() if k not in existing_entities or k == selected
+            k: v for k, v in data.items() if k not in existing_keys or k == selected
         }
 
     @callback
