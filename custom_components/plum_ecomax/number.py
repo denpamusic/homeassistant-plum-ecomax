@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from functools import partial
 import logging
 from typing import Any, cast
 
@@ -229,14 +228,13 @@ def async_setup_custom_ecomax_numbers(
     connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
 ) -> list[EcomaxNumber]:
     """Set up the custom ecoMAX sensors."""
-    description_partial = partial(EcomaxNumberEntityDescription)
     return [
         EcomaxNumber(connection, description)
         for description in async_get_custom_entities(
             platform=Platform.NUMBER,
             source_device=DeviceType.ECOMAX,
             config_entry=config_entry,
-            description=description_partial,
+            description_factory=EcomaxNumberEntityDescription,
         )
     ]
 

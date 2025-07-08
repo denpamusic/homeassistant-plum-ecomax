@@ -200,7 +200,7 @@ def async_setup_custom_ecomax_binary_sensors(
             platform=Platform.BINARY_SENSOR,
             source_device=DeviceType.ECOMAX,
             config_entry=config_entry,
-            description=description_partial,
+            description_factory=description_partial,
         )
     ]
 

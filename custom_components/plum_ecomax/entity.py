@@ -108,7 +108,7 @@ def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
     platform: Platform,
     config_entry: PlumEcomaxConfigEntry,
     source_device: DeviceType | Literal["regdata"],
-    description: Callable[..., DescriptorT],
+    description_factory: Callable[..., DescriptorT],
 ) -> Generator[DescriptorT]:
     """Return list of custom sensors."""
     entities: dict[str, Any] = config_entry.options.get("entities", {})
@@ -117,7 +117,7 @@ def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
 
     for entity in entities[str(platform)].values():
         if entity[CONF_SOURCE_DEVICE] == source_device:
-            yield async_make_description_for_custom_entity(description, entity)
+            yield async_make_description_for_custom_entity(description_factory, entity)
 
 
 class EcomaxEntity(Entity):

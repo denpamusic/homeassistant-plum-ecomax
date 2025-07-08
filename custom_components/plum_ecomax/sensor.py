@@ -660,7 +660,7 @@ def async_setup_custom_ecomax_sensors(
             platform=Platform.SENSOR,
             source_device=DeviceType.ECOMAX,
             config_entry=config_entry,
-            description=description_partial,
+            description_factory=description_partial,
         )
     ]
 
