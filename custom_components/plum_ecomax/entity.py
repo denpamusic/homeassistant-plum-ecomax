@@ -25,6 +25,7 @@ from .const import (
     CONF_CONNECTION_TYPE,
     CONF_HOST,
     CONF_SOURCE_DEVICE,
+    CONF_STEP,
     CONF_UPDATE_INTERVAL,
     CONNECTION_TYPE_TCP,
     DOMAIN,
@@ -76,20 +77,30 @@ def async_make_description_for_custom_entity[DescriptorT: EcomaxEntityDescriptio
     """Make description from partial and entity data."""
 
     @callback
-    def filter_wrapper(update_interval: int) -> Callable[..., Awaitable[Any]]:
-        def filter_fn(x):
+    def filter_wrapper[CallableT: Callable[..., Awaitable[Any]]](
+        update_interval: int,
+    ) -> CallableT:
+        """Return a filter function based on the update interval."""
+
+        def filter_fn(x) -> CallableT:
+            """Return a filter function."""
             return throttle(x, seconds=update_interval) if update_interval else x
 
         return filter_fn
 
     data = {**entity}
 
-    if update_interval := data.get(CONF_UPDATE_INTERVAL, None):
-        data["filter_fn"] = filter_wrapper(update_interval)
-        del data[CONF_UPDATE_INTERVAL]
+    if step := data.get(CONF_STEP, None):
+        data["native_step"] = step
+        del data[CONF_STEP]
 
     if unit_of_measurement := data.get(CONF_UNIT_OF_MEASUREMENT, None):
         data["native_unit_of_measurement"] = unit_of_measurement
+        del data[CONF_UNIT_OF_MEASUREMENT]
+
+    if update_interval := data.get(CONF_UPDATE_INTERVAL, None):
+        data["filter_fn"] = filter_wrapper(update_interval)
+        del data[CONF_UPDATE_INTERVAL]
 
     del data[CONF_SOURCE_DEVICE]
     return description(**data)

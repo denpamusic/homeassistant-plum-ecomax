@@ -234,8 +234,7 @@ async def async_setup_entry(
     entities = async_setup_ecomax_binary_sensors(connection)
 
     # Add custom ecoMAX binary sensors.
-    if custom_entities := async_setup_custom_ecomax_binary_sensors(connection, entry):
-        entities += custom_entities
+    entities += async_setup_custom_ecomax_binary_sensors(connection, entry)
 
     # Add mixer/circuit binary sensors.
     if connection.has_mixers and await connection.async_setup_mixers():

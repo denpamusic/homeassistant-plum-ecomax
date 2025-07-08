@@ -717,8 +717,7 @@ async def async_setup_entry(
     entities = async_setup_ecomax_sensors(connection)
 
     # Add custom ecoMAX sensors.
-    if custom_entities := async_setup_custom_ecomax_sensors(connection, entry):
-        entities += custom_entities
+    entities += async_setup_custom_ecomax_sensors(connection, entry)
 
     # Add regulator data (device-specific) sensors.
     if (

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import partial
 import logging
 from typing import Any, cast
 
@@ -12,7 +13,7 @@ from homeassistant.components.number import (
     NumberEntityDescription,
     NumberMode,
 )
-from homeassistant.const import PERCENTAGE, UnitOfTemperature
+from homeassistant.const import PERCENTAGE, Platform, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.const import ProductType
@@ -20,6 +21,7 @@ from pyplumio.parameters import Parameter
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
+from .const import DeviceType
 from .entity import (
     EcomaxEntity,
     EcomaxEntityDescription,
@@ -28,6 +30,7 @@ from .entity import (
     async_get_by_index,
     async_get_by_modules,
     async_get_by_product_type,
+    async_get_custom_entities,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -222,6 +225,23 @@ def async_setup_ecomax_numbers(connection: EcomaxConnection) -> list[EcomaxNumbe
 
 
 @callback
+def async_setup_custom_ecomax_numbers(
+    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
+) -> list[EcomaxNumber]:
+    """Set up the custom ecoMAX sensors."""
+    description_partial = partial(EcomaxNumberEntityDescription)
+    return [
+        EcomaxNumber(connection, description)
+        for description in async_get_custom_entities(
+            platform=Platform.NUMBER,
+            source_device=DeviceType.ECOMAX,
+            config_entry=config_entry,
+            description=description_partial,
+        )
+    ]
+
+
+@callback
 def async_setup_mixer_numbers(connection: EcomaxConnection) -> list[MixerNumber]:
     """Set up the mixer numbers."""
     return [
@@ -247,6 +267,9 @@ async def async_setup_entry(
 
     connection = entry.runtime_data.connection
     entities = async_setup_ecomax_numbers(connection)
+
+    # Add custom ecoMAX numbers.
+    entities += async_setup_custom_ecomax_numbers(connection, entry)
 
     # Add mixer/circuit numbers.
     if connection.has_mixers and await connection.async_setup_mixers():
