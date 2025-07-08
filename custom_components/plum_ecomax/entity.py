@@ -112,10 +112,11 @@ def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
 ) -> Generator[DescriptorT]:
     """Return list of custom sensors."""
     entities: dict[str, Any] = config_entry.options.get("entities", {})
-    if not entities:
+    target_platform = str(platform)
+    if not entities or target_platform not in entities:
         return
 
-    for entity in entities[str(platform)].values():
+    for entity in entities[target_platform].values():
         if entity[CONF_SOURCE_DEVICE] == source_device:
             yield async_make_description_for_custom_entity(description_factory, entity)
 
