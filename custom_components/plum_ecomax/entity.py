@@ -1,6 +1,6 @@
 """Contains base entity classes."""
 
-from collections.abc import Awaitable, Callable, Generator, Iterable
+from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, Literal, cast, final, override
@@ -69,17 +69,17 @@ def async_get_by_modules[DescriptorT: EcomaxEntityDescription](
 
 @callback
 def async_make_description_for_custom_entity[DescriptorT: EcomaxEntityDescription](
-    description: DescriptorT, entity: dict[str, Any]
+    description_factory: Callable[..., DescriptorT], entity: dict[str, Any]
 ) -> DescriptorT:
     """Make description from partial and entity data."""
 
     @callback
-    def filter_wrapper[CallableT: Callable[..., Awaitable[Any]]](
-        update_interval: int,
-    ) -> CallableT:
+    def filter_wrapper(update_interval: int) -> Callable[..., Any]:
         """Return a filter function based on the update interval."""
 
-        def filter_fn(x) -> CallableT:
+        def filter_fn[CallableT: Callable[..., Any]](
+            x: CallableT,
+        ) -> Filter | CallableT:
             """Return a filter function."""
             return throttle(x, seconds=update_interval) if update_interval else x
 
@@ -100,7 +100,7 @@ def async_make_description_for_custom_entity[DescriptorT: EcomaxEntityDescriptio
         del data[CONF_UPDATE_INTERVAL]
 
     del data[CONF_SOURCE_DEVICE]
-    return description(**data)
+    return description_factory(**data)
 
 
 @callback
@@ -108,12 +108,12 @@ def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
     platform: Platform,
     config_entry: PlumEcomaxConfigEntry,
     source_device: DeviceType | Literal["regdata"],
-    description: DescriptorT,
+    description: Callable[..., DescriptorT],
 ) -> Generator[DescriptorT]:
     """Return list of custom sensors."""
     entities: dict[str, Any] = config_entry.options.get("entities", {})
     if not entities:
-        return []
+        return
 
     for entity in entities[str(platform)].values():
         if entity[CONF_SOURCE_DEVICE] == source_device:

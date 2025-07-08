@@ -865,7 +865,6 @@ class OptionsFlowHandler(OptionsFlow):
         """Get the native step for the number entity."""
         device = self.connection.device
 
-        number: Number | None = None
         if self.source_device == DeviceType.ECOMAX:
             number = device.get_nowait(key, None)
 
