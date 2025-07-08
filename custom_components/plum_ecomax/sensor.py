@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Generator, Iterable
+from collections.abc import Callable
 from dataclasses import asdict, astuple, dataclass
 from functools import partial
 import logging
-from typing import Any, Final, Literal, cast, override
+from typing import Any, Final, cast, override
 
 from homeassistant.components.sensor import (
     RestoreSensor,
@@ -42,7 +42,6 @@ import voluptuous as vol
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
 from .const import (
-    ALL,
     ATTR_BURNED_SINCE_LAST_UPDATE,
     ATTR_NUMERIC_STATE,
     ATTR_REGDATA,
@@ -51,7 +50,6 @@ from .const import (
     REGDATA,
     DeviceType,
     ModuleType,
-    ProductModel,
 )
 from .entity import (
     EcomaxEntity,
@@ -519,65 +517,6 @@ class EcomaxMeter(EcomaxSensor, RestoreSensor):
 class RegdataSensorEntityDescription(EcomaxSensorEntityDescription):
     """Describes a regulator data sensor."""
 
-    product_models: set[ProductModel] | Literal["all"] = ALL
-
-
-STATE_CLOSING: Final = "closing"
-STATE_OPENING: Final = "opening"
-
-EM_TO_HA_MIXER_VALVE_STATE: dict[int, str] = {
-    0: STATE_OFF,
-    1: STATE_CLOSING,
-    2: STATE_OPENING,
-}
-
-REGDATA_SENSOR_TYPES: tuple[RegdataSensorEntityDescription, ...] = (
-    RegdataSensorEntityDescription(
-        key="227",
-        native_unit_of_measurement=PERCENTAGE,
-        product_models={ProductModel.ECOMAX_860P3_O},
-        state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=0,
-        translation_key="ash_pan_full",
-        value_fn=lambda x: x,
-    ),
-    RegdataSensorEntityDescription(
-        key="215",
-        native_unit_of_measurement=PERCENTAGE,
-        product_models={ProductModel.ECOMAX_860P3_S_LITE},
-        state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=0,
-        translation_key="ash_pan_full",
-        value_fn=lambda x: x,
-    ),
-    RegdataSensorEntityDescription(
-        key="223",
-        native_unit_of_measurement=PERCENTAGE,
-        product_models={ProductModel.ECOMAX_860P6_O},
-        state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=0,
-        translation_key="ash_pan_full",
-        value_fn=lambda x: x,
-    ),
-    RegdataSensorEntityDescription(
-        key="134",
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
-        native_unit_of_measurement=PERCENTAGE,
-        product_models={ProductModel.ECOMAX_860P6_O},
-        state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=0,
-        translation_key="mixer_valve_opening_percentage",
-        value_fn=lambda x: x,
-    ),
-    RegdataSensorEntityDescription(
-        key="139",
-        device_class=SensorDeviceClass.ENUM,
-        product_models={ProductModel.ECOMAX_860P6_O},
-        translation_key="mixer_valve_state",
-        value_fn=lambda x: EM_TO_HA_MIXER_VALVE_STATE.get(x, STATE_UNKNOWN),
-    ),
-)
-
 
 class RegdataSensor(EcomaxSensor):
     """Represents a regulator data sensor."""
@@ -629,16 +568,6 @@ class RegdataSensor(EcomaxSensor):
 
 
 @callback
-def async_get_by_product_model(
-    product_model: str, descriptions: Iterable[RegdataSensorEntityDescription]
-) -> Generator[RegdataSensorEntityDescription]:
-    """Get descriptions by the product model."""
-    for description in descriptions:
-        if product_model in description.product_models:
-            yield description
-
-
-@callback
 def async_setup_ecomax_sensors(connection: EcomaxConnection) -> list[EcomaxSensor]:
     """Set up the ecoMAX sensors."""
     return [
@@ -680,28 +609,11 @@ def async_setup_ecomax_meters(connection: EcomaxConnection) -> list[EcomaxMeter]
 
 
 @callback
-def async_setup_regdata_sensors(connection: EcomaxConnection) -> list[RegdataSensor]:
-    """Set up the regulator data sensors."""
-    return [
-        RegdataSensor(connection, description)
-        for description in async_get_by_modules(
-            connection.device.modules,
-            async_get_by_product_type(
-                connection.product_type,
-                async_get_by_product_model(connection.model, REGDATA_SENSOR_TYPES),
-            ),
-        )
-    ]
-
-
-@callback
 def async_setup_custom_regdata_sensors(
     connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
 ) -> list[RegdataSensor]:
     """Set up the custom regulator data sensors."""
-    description_partial = partial(
-        RegdataSensorEntityDescription, value_fn=lambda x: x, product_models=ALL
-    )
+    description_partial = partial(RegdataSensorEntityDescription, value_fn=lambda x: x)
     return [
         RegdataSensor(connection, description)
         for description in async_get_custom_entities(
@@ -739,13 +651,6 @@ async def async_setup_entry(
 
     # Add custom ecoMAX sensors.
     entities += async_setup_custom_ecomax_sensors(connection, entry)
-
-    # Add regulator data (device-specific) sensors.
-    if (
-        regdata := async_setup_regdata_sensors(connection)
-    ) and await connection.async_setup_regdata():
-        # Set up the regulator data sensors, if there are any.
-        entities += regdata
 
     # Add custom regulator data (device-specific) sensors.
     entities += async_setup_custom_regdata_sensors(connection, entry)

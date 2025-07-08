@@ -142,6 +142,7 @@ class EcomaxConnection:
             DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT
         )
         await device.wait_for(ATTR_SETUP, timeout=DEFAULT_TIMEOUT)
+        await self.async_setup_regdata(device)
         self._device = device
 
     async def async_setup_thermostats(self) -> bool:

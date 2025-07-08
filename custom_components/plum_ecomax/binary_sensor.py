@@ -6,7 +6,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
 import logging
-from typing import Any, Literal
+from typing import Any
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -21,7 +21,7 @@ from pyplumio.const import ProductType
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import ALL, ATTR_REGDATA, REGDATA, DeviceType, ProductModel
+from .const import ATTR_REGDATA, REGDATA, DeviceType
 from .entity import (
     EcomaxEntity,
     EcomaxEntityDescription,
@@ -176,8 +176,6 @@ class MixerBinarySensor(MixerEntity, EcomaxBinarySensor):
 class RegdataBinarySensorEntityDescription(EcomaxBinarySensorEntityDescription):
     """Describes a regulator data binary sensor."""
 
-    product_models: set[ProductModel] | Literal["all"] = ALL
-
 
 class RegdataBinarySensor(EcomaxBinarySensor):
     """Represents a regulator data binary sensor."""
@@ -267,7 +265,7 @@ def async_setup_custom_regdata_sensors(
 ) -> list[RegdataBinarySensor]:
     """Set up the custom regulator data sensors."""
     description_partial = partial(
-        RegdataBinarySensorEntityDescription, value_fn=lambda x: x, product_models=ALL
+        RegdataBinarySensorEntityDescription, value_fn=lambda x: x
     )
     return [
         RegdataBinarySensor(connection, description)
