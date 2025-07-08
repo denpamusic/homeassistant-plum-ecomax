@@ -392,15 +392,21 @@
   "options": {
     "step": {
       "add_entity": {
-        "title": "Select source",
+        "title": "Select a source device",
         "data": {
-          "source": "Source"
+          "source_device": "Source device"
         }
       },
       "edit_entity": {
-        "title": "Select entity",
+        "title": "Select an entity to edit",
         "data": {
-          "entity": "Entity"
+          "entity_id": "Entity"
+        }
+      },
+      "remove_entity": {
+        "title": "Select an entity to remove",
+        "data": {
+          "entity_id": "Entity"
         }
       },
       "entity_details": {
@@ -413,7 +419,7 @@
           "unit_of_measurement": "Unit of measurement",
           "update_interval": "Update interval"
         },
-        "title": "Add a new {platform}"
+        "title": "Edit {platform} details"
       },
       "entity_type": {
         "menu_options": {
@@ -422,15 +428,19 @@
           "add_sensor": "Sensor",
           "add_switch": "Switch"
         },
-        "title": "Select an entity type"
+        "title": "Select entity type"
       },
       "init": {
         "menu_options": {
           "add_entity": "Add a new entity",
-          "edit_entity": "Edit/delete an entity",
+          "edit_entity": "Edit an entity",
+          "remove_entity": "Remove an entity",
           "reload": "Reload configuration"
         }
       }
+    },
+    "abort": {
+      "no_entities_found": "No entities found, you'll need to add some first."
     }
   },
   "selector": {

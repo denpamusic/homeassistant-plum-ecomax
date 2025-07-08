@@ -395,21 +395,26 @@
   "options": {
     "step": {
       "add_entity": {
-        "title": "Select source",
+        "title": "Select a source device",
         "data": {
-          "source": "Source"
+          "source_device": "Source device"
         }
       },
       "edit_entity": {
-        "title": "Select entity",
+        "title": "Select an entity to edit",
         "data": {
-          "entity": "Entity"
+          "entity_id": "Entity"
+        }
+      },
+      "remove_entity": {
+        "title": "Select an entity to remove",
+        "data": {
+          "entity_id": "Entity"
         }
       },
       "entity_details": {
         "data": {
           "device_class": "Device class",
-          "remove_entity": "Remove entity?",
           "key": "Key",
           "mode": "Mode",
           "name": "[%key:common::config_flow::data::name%]",
@@ -431,10 +436,14 @@
       "init": {
         "menu_options": {
           "add_entity": "Add a new entity",
-          "edit_entity": "Edit/delete an entity",
+          "edit_entity": "Edit an entity",
+          "remove_entity": "Remove an entity",
           "reload": "Reload configuration"
         }
       }
+    },
+    "abort": {
+      "no_entities_found": "No entities found, you'll need to add some first."
     }
   },
   "selector": {

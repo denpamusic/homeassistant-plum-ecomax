@@ -71,7 +71,6 @@ from .const import (
     CONF_PORT,
     CONF_PRODUCT_ID,
     CONF_PRODUCT_TYPE,
-    CONF_REMOVE_ENTITY,
     CONF_SOFTWARE,
     CONF_SOURCE_DEVICE,
     CONF_STEP,
@@ -368,12 +367,42 @@ PLATFORM_TYPES: dict[Platform, tuple[type, ...]] = {
 
 SensorValueT = TypeVar("SensorValueT", str, int, float)
 
-_REMOVE_ENTITY: dict[vol.Marker, Any] = {
-    vol.Optional(CONF_REMOVE_ENTITY, default=False): selector.BooleanSelector()
-}
+
+@callback
+def _async_get_custom_entity_options(
+    entities: dict[str, Any],
+) -> list[selector.SelectOptionDict]:
+    """Get the custom entities as selector options."""
+    platforms = list(PLATFORM_TYPES)
+    entities = {
+        f"{platform}-{key}": entity[CONF_NAME]
+        for platform, entities in entities.items()
+        if platform in platforms
+        for key, entity in entities.items()
+    }
+    entities = dict(sorted(entities.items(), key=lambda item: item[1]))
+
+    return [selector.SelectOptionDict(value=k, label=v) for k, v in entities.items()]
 
 
-def generate_schema(
+@callback
+def generate_select_schema(entities: dict[str, Any]) -> vol.Schema | None:
+    """Generate schema for editing or deleting an entity."""
+
+    if not (options := _async_get_custom_entity_options(entities)):
+        return None
+
+    return vol.Schema(
+        {
+            vol.Required("entity_id"): selector.SelectSelector(
+                selector.SelectSelectorConfig(options=options)
+            )
+        }
+    )
+
+
+@callback
+def generate_edit_schema(
     platform: Platform,
     source_options: list[selector.SelectOptionDict],
     entity: dict[str, Any],
@@ -508,7 +537,7 @@ def generate_schema(
             ),
         }
 
-    return vol.Schema(schema | _REMOVE_ENTITY if entity else schema)
+    return vol.Schema(schema)
 
 
 class OptionsFlowHandler(OptionsFlow):
@@ -524,7 +553,8 @@ class OptionsFlowHandler(OptionsFlow):
         self.options = deepcopy(dict(self.config_entry.options))
         self.entities = cast(dict[str, Any], self.options.setdefault("entities", {}))
         return self.async_show_menu(
-            step_id="init", menu_options=["add_entity", "edit_entity", "reload"]
+            step_id="init",
+            menu_options=["add_entity", "edit_entity", "remove_entity", "reload"],
         )
 
     async def async_step_add_entity(
@@ -611,7 +641,7 @@ class OptionsFlowHandler(OptionsFlow):
 
         return self.async_show_form(
             step_id="entity_details",
-            data_schema=generate_schema(self.platform, source_options, entity),
+            data_schema=generate_edit_schema(self.platform, source_options, entity),
             description_placeholders={
                 "platform": self.platform.value.replace("_", " ")
             },
@@ -624,24 +654,17 @@ class OptionsFlowHandler(OptionsFlow):
     ) -> ConfigFlowResult:
         """Save the options."""
         entities = self.entities.setdefault(self.platform.value, {})
-        removing_entity = data.get(CONF_REMOVE_ENTITY, False)
         renaming_entity = True if key != data[CONF_KEY] else False
 
-        if CONF_REMOVE_ENTITY in data:
-            del data[CONF_REMOVE_ENTITY]
-
-        if self.platform == Platform.NUMBER and not (
-            removing_entity or renaming_entity
-        ):
-            data[CONF_STEP] = self._async_get_native_step(data[CONF_KEY])
-
-        if removing_entity or renaming_entity:
-            self._async_remove_entity(key=key)
+        if renaming_entity:
+            self._async_remove_entry(key)
             entities.pop(key, None)
 
-        if not removing_entity:
-            key = data[CONF_KEY]
-            entities[key] = data
+        if self.platform == Platform.NUMBER and not renaming_entity:
+            data[CONF_STEP] = self._async_get_native_step(data[CONF_KEY])
+
+        key = data[CONF_KEY]
+        entities[key] = data
 
         try:
             return self.async_create_entry(title="", data=self.options)
@@ -669,20 +692,39 @@ class OptionsFlowHandler(OptionsFlow):
             self.source_device = self.entity[CONF_SOURCE_DEVICE]
             return await self.async_step_entity_details()
 
-        if not (options := self._async_get_entity_options()):
+        if not (schema := generate_select_schema(self.entities)):
             return await self.async_step_entities_not_found()
 
         return self.async_show_form(
-            step_id="edit_entity",
-            data_schema=vol.Schema(
-                {
-                    vol.Required("entity_id"): selector.SelectSelector(
-                        selector.SelectSelectorConfig(options=options)
-                    )
-                }
-            ),
-            last_step=False,
+            step_id="edit_entity", data_schema=schema, last_step=False
         )
+
+    async def async_step_remove_entity(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle deleting an entity."""
+        if user_input is not None:
+            return self._async_step_remove_entity(user_input["entity_id"])
+
+        if not (schema := generate_select_schema(self.entities)):
+            return await self.async_step_entities_not_found()
+
+        return self.async_show_form(
+            step_id="remove_entity", data_schema=schema, last_step=False
+        )
+
+    @callback
+    def _async_step_remove_entity(self, entity_id: str) -> ConfigFlowResult:
+        """Remove the entity."""
+        platform, key = entity_id.split("-", 2)
+        entities = self.entities.setdefault(platform, {})
+        entities.pop(key, None)
+        self._async_remove_entry(key)
+
+        try:
+            return self.async_create_entry(title="Entity removed", data=self.options)
+        finally:
+            self.hass.config_entries.async_schedule_reload(self.config_entry.entry_id)
 
     async def async_step_entities_not_found(
         self, user_input: dict[str, Any] | None = None
@@ -834,24 +876,8 @@ class OptionsFlowHandler(OptionsFlow):
         return value
 
     @callback
-    def _async_get_entity_options(self) -> list[selector.SelectOptionDict]:
-        """Get user-added entities."""
-        platforms = list(PLATFORM_TYPES)
-        entities = {
-            f"{platform}-{key}": entity[CONF_NAME]
-            for platform, entities in self.entities.items()
-            if platform in platforms
-            for key, entity in entities.items()
-        }
-        entities = dict(sorted(entities.items(), key=lambda item: item[1]))
-
-        return [
-            selector.SelectOptionDict(value=k, label=v) for k, v in entities.items()
-        ]
-
-    @callback
-    def _async_remove_entity(self, key: str) -> None:
-        """Remove the entity from registry."""
+    def _async_remove_entry(self, key: str) -> None:
+        """Remove the entity entry from entity registry."""
         entity_registry = er.async_get(self.hass)
         entities = er.async_entries_for_config_entry(
             entity_registry, self.config_entry.entry_id
