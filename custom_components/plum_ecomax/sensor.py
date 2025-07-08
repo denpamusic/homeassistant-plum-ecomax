@@ -6,7 +6,7 @@ from collections.abc import Callable, Generator, Iterable
 from dataclasses import asdict, astuple, dataclass
 from functools import partial
 import logging
-from typing import Any, Final, cast, override
+from typing import Any, Final, Literal, cast, override
 
 from homeassistant.components.sensor import (
     RestoreSensor,
@@ -42,11 +42,13 @@ import voluptuous as vol
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
 from .const import (
+    ALL,
     ATTR_BURNED_SINCE_LAST_UPDATE,
     ATTR_NUMERIC_STATE,
     ATTR_REGDATA,
     ATTR_VALUE,
     DEVICE_CLASS_METER,
+    REGDATA,
     DeviceType,
     ModuleType,
     ProductModel,
@@ -517,7 +519,7 @@ class EcomaxMeter(EcomaxSensor, RestoreSensor):
 class RegdataSensorEntityDescription(EcomaxSensorEntityDescription):
     """Describes a regulator data sensor."""
 
-    product_models: set[ProductModel]
+    product_models: set[ProductModel] | Literal["all"] = ALL
 
 
 STATE_CLOSING: Final = "closing"
@@ -621,7 +623,7 @@ class RegdataSensor(EcomaxSensor):
     def entity_registry_enabled_default(self) -> bool:
         """Return if the entity should be enabled when first added.
 
-        This only applies when fist added to the entity registry.
+        This only applies when first added to the entity registry.
         """
         return self._regdata_key in self.device.data.get(ATTR_REGDATA, {})
 
@@ -693,6 +695,25 @@ def async_setup_regdata_sensors(connection: EcomaxConnection) -> list[RegdataSen
 
 
 @callback
+def async_setup_custom_regdata_sensors(
+    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
+) -> list[RegdataSensor]:
+    """Set up the custom regulator data sensors."""
+    description_partial = partial(
+        RegdataSensorEntityDescription, value_fn=lambda x: x, product_models=ALL
+    )
+    return [
+        RegdataSensor(connection, description)
+        for description in async_get_custom_entities(
+            platform=Platform.SENSOR,
+            source_device=REGDATA,
+            config_entry=config_entry,
+            description_factory=description_partial,
+        )
+    ]
+
+
+@callback
 def async_setup_mixer_sensors(connection: EcomaxConnection) -> list[MixerSensor]:
     """Set up the mixer sensors."""
     return [
@@ -725,6 +746,9 @@ async def async_setup_entry(
     ) and await connection.async_setup_regdata():
         # Set up the regulator data sensors, if there are any.
         entities += regdata
+
+    # Add custom regulator data (device-specific) sensors.
+    entities += async_setup_custom_regdata_sensors(connection, entry)
 
     # Add mixer/circuit sensors.
     if connection.has_mixers and await connection.async_setup_mixers():

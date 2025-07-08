@@ -6,7 +6,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
 import logging
-from typing import Any
+from typing import Any, Literal
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -21,7 +21,7 @@ from pyplumio.const import ProductType
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import DeviceType
+from .const import ALL, ATTR_REGDATA, REGDATA, DeviceType, ProductModel
 from .entity import (
     EcomaxEntity,
     EcomaxEntityDescription,
@@ -172,6 +172,62 @@ class MixerBinarySensor(MixerEntity, EcomaxBinarySensor):
         super().__init__(connection, description)
 
 
+@dataclass(frozen=True, kw_only=True)
+class RegdataBinarySensorEntityDescription(EcomaxBinarySensorEntityDescription):
+    """Describes a regulator data binary sensor."""
+
+    product_models: set[ProductModel] | Literal["all"] = ALL
+
+
+class RegdataBinarySensor(EcomaxBinarySensor):
+    """Represents a regulator data binary sensor."""
+
+    _regdata_key: int
+
+    def __init__(
+        self, connection: EcomaxConnection, description: EcomaxEntityDescription
+    ) -> None:
+        """Initialize a new regdata entity."""
+        self._regdata_key = int(description.key)
+        super().__init__(connection, description)
+
+    async def async_update(self, regdata: dict[int, Any]) -> None:
+        """Update entity state."""
+        self._attr_is_on = self.entity_description.value_fn(
+            regdata.get(self._regdata_key, None)
+        )
+        self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        """Subscribe to regdata event."""
+        description = self.entity_description
+        handler = description.filter_fn(self.async_update)
+
+        async def async_set_available(regdata: dict[int, Any]) -> None:
+            """Mark entity as available."""
+            if self._regdata_key in regdata:
+                self._attr_available = True
+
+        if ATTR_REGDATA in self.device.data:
+            await async_set_available(self.device.data[ATTR_REGDATA])
+            await handler(self.device.data[ATTR_REGDATA])
+
+        self.device.subscribe_once(ATTR_REGDATA, async_set_available)
+        self.device.subscribe(ATTR_REGDATA, handler)
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Unsubscribe from regdata event."""
+        self.device.unsubscribe(ATTR_REGDATA, self.async_update)
+
+    @property
+    def entity_registry_enabled_default(self) -> bool:
+        """Return if the entity should be enabled when first added.
+
+        This only applies when first added to the entity registry.
+        """
+        return self._regdata_key in self.device.data.get(ATTR_REGDATA, {})
+
+
 @callback
 def async_setup_ecomax_binary_sensors(
     connection: EcomaxConnection,
@@ -199,6 +255,25 @@ def async_setup_custom_ecomax_binary_sensors(
         for description in async_get_custom_entities(
             platform=Platform.BINARY_SENSOR,
             source_device=DeviceType.ECOMAX,
+            config_entry=config_entry,
+            description_factory=description_partial,
+        )
+    ]
+
+
+@callback
+def async_setup_custom_regdata_sensors(
+    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
+) -> list[RegdataBinarySensor]:
+    """Set up the custom regulator data sensors."""
+    description_partial = partial(
+        RegdataBinarySensorEntityDescription, value_fn=lambda x: x, product_models=ALL
+    )
+    return [
+        RegdataBinarySensor(connection, description)
+        for description in async_get_custom_entities(
+            platform=Platform.BINARY_SENSOR,
+            source_device=REGDATA,
             config_entry=config_entry,
             description_factory=description_partial,
         )
@@ -235,6 +310,9 @@ async def async_setup_entry(
 
     # Add custom ecoMAX binary sensors.
     entities += async_setup_custom_ecomax_binary_sensors(connection, entry)
+
+    # Add custom regulator data binary sensors.
+    entities += async_setup_custom_regdata_sensors(connection, entry)
 
     # Add mixer/circuit binary sensors.
     if connection.has_mixers and await connection.async_setup_mixers():
