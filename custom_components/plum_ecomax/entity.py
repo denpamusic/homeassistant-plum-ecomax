@@ -81,7 +81,7 @@ def async_make_description_for_custom_entity[DescriptorT: EcomaxEntityDescriptio
             x: CallableT,
         ) -> Filter | CallableT:
             """Return a filter function."""
-            return throttle(x, seconds=update_interval) if update_interval else x
+            return throttle(x, seconds=update_interval) if update_interval > 0 else x
 
         return filter_fn
 
