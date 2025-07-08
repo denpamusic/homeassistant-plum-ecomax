@@ -3,7 +3,7 @@
 from collections.abc import Awaitable, Callable, Generator, Iterable
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Literal, TypeVar, cast, final, override
+from typing import Any, Literal, cast, final, override
 
 from homeassistant.const import CONF_UNIT_OF_MEASUREMENT, Platform
 from homeassistant.core import callback
@@ -44,9 +44,6 @@ class EcomaxEntityDescription(EntityDescription):
     filter_fn: Callable[[Any], Filter] = on_change
     module: ModuleType = ModuleType.A
     product_types: set[ProductType] | Literal["all"] = ALL
-
-
-DescriptorT = TypeVar("DescriptorT", bound=EcomaxEntityDescription)
 
 
 @callback
@@ -223,9 +220,6 @@ class SubdeviceEntityDescription(EcomaxEntityDescription):
     """Describes an ecoMAX entity."""
 
     indexes: set[int] | Literal["all"] = ALL
-
-
-SubDescriptorT = TypeVar("SubDescriptorT", bound=SubdeviceEntityDescription)
 
 
 @callback
