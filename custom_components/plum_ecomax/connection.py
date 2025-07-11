@@ -146,6 +146,10 @@ class EcomaxConnection:
 
     async def async_setup_thermostats(self) -> bool:
         """Set up thermostats."""
+        if self.device.get_nowait(ATTR_THERMOSTAT_PARAMETERS, False):
+            # Thermostats are already set up.
+            return True
+
         try:
             await self.device.request(
                 ATTR_THERMOSTAT_PARAMETERS,
@@ -160,6 +164,10 @@ class EcomaxConnection:
 
     async def async_setup_mixers(self) -> bool:
         """Set up mixers."""
+        if self.device.get_nowait(ATTR_MIXER_PARAMETERS, False):
+            # Mixers are already set up.
+            return True
+
         try:
             await self.device.request(
                 ATTR_MIXER_PARAMETERS,
@@ -174,6 +182,10 @@ class EcomaxConnection:
 
     async def async_setup_regdata(self) -> bool:
         """Set up regulator data."""
+        if self.device.get_nowait(ATTR_REGDATA, False):
+            # Regulator data is already set up.
+            return True
+
         try:
             await self.device.request(
                 ATTR_REGDATA,
