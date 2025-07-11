@@ -21,6 +21,7 @@ from .connection import EcomaxConnection
 from .const import (
     ALL,
     ATTR_MIXERS,
+    ATTR_REGDATA,
     ATTR_THERMOSTATS,
     CONF_CONNECTION_TYPE,
     CONF_HOST,
@@ -317,3 +318,45 @@ class MixerEntity(EcomaxEntity):
         """Return the mixer handler."""
         device = self.connection.device
         return cast(Mixer, device.data[ATTR_MIXERS][self.index])
+
+
+class RegdataEntity(EcomaxEntity):
+    """Represents a regulator data entity."""
+
+    _regdata_key: int
+
+    def __init__(
+        self, connection: EcomaxConnection, description: EcomaxEntityDescription
+    ) -> None:
+        """Initialize a new regdata entity."""
+        self._regdata_key = int(description.key)
+        super().__init__(connection, description)
+
+    async def async_added_to_hass(self) -> None:
+        """Subscribe to regdata event."""
+        description = self.entity_description
+        handler = description.filter_fn(self.async_update)
+
+        async def async_set_available(regdata: dict[int, Any]) -> None:
+            """Mark entity as available."""
+            if self._regdata_key in regdata:
+                self._attr_available = True
+
+        if ATTR_REGDATA in self.device.data:
+            await async_set_available(self.device.data[ATTR_REGDATA])
+            await handler(self.device.data[ATTR_REGDATA])
+
+        self.device.subscribe_once(ATTR_REGDATA, async_set_available)
+        self.device.subscribe(ATTR_REGDATA, handler)
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Unsubscribe from regdata event."""
+        self.device.unsubscribe(ATTR_REGDATA, self.async_update)
+
+    @property
+    def entity_registry_enabled_default(self) -> bool:
+        """Return if the entity should be enabled when first added.
+
+        This only applies when first added to the entity registry.
+        """
+        return self._regdata_key in self.device.data.get(ATTR_REGDATA, {})

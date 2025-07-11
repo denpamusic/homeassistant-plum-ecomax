@@ -21,11 +21,12 @@ from pyplumio.const import ProductType
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import ATTR_REGDATA, DeviceType
+from .const import DeviceType
 from .entity import (
     EcomaxEntity,
     EcomaxEntityDescription,
     MixerEntity,
+    RegdataEntity,
     async_get_by_modules,
     async_get_by_product_type,
     async_get_custom_entities,
@@ -177,17 +178,8 @@ class RegdataBinarySensorEntityDescription(EcomaxBinarySensorEntityDescription):
     """Describes a regulator data binary sensor."""
 
 
-class RegdataBinarySensor(EcomaxBinarySensor):
+class RegdataBinarySensor(RegdataEntity, EcomaxBinarySensor):
     """Represents a regulator data binary sensor."""
-
-    _regdata_key: int
-
-    def __init__(
-        self, connection: EcomaxConnection, description: EcomaxEntityDescription
-    ) -> None:
-        """Initialize a new regdata entity."""
-        self._regdata_key = int(description.key)
-        super().__init__(connection, description)
 
     async def async_update(self, regdata: dict[int, Any]) -> None:
         """Update entity state."""
@@ -195,35 +187,6 @@ class RegdataBinarySensor(EcomaxBinarySensor):
             regdata.get(self._regdata_key, None)
         )
         self.async_write_ha_state()
-
-    async def async_added_to_hass(self) -> None:
-        """Subscribe to regdata event."""
-        description = self.entity_description
-        handler = description.filter_fn(self.async_update)
-
-        async def async_set_available(regdata: dict[int, Any]) -> None:
-            """Mark entity as available."""
-            if self._regdata_key in regdata:
-                self._attr_available = True
-
-        if ATTR_REGDATA in self.device.data:
-            await async_set_available(self.device.data[ATTR_REGDATA])
-            await handler(self.device.data[ATTR_REGDATA])
-
-        self.device.subscribe_once(ATTR_REGDATA, async_set_available)
-        self.device.subscribe(ATTR_REGDATA, handler)
-
-    async def async_will_remove_from_hass(self) -> None:
-        """Unsubscribe from regdata event."""
-        self.device.unsubscribe(ATTR_REGDATA, self.async_update)
-
-    @property
-    def entity_registry_enabled_default(self) -> bool:
-        """Return if the entity should be enabled when first added.
-
-        This only applies when first added to the entity registry.
-        """
-        return self._regdata_key in self.device.data.get(ATTR_REGDATA, {})
 
 
 @callback
@@ -260,10 +223,10 @@ def async_setup_custom_ecomax_binary_sensors(
 
 
 @callback
-def async_setup_custom_regdata_sensors(
+def async_setup_custom_regdata_binary_sensors(
     connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
 ) -> list[RegdataBinarySensor]:
-    """Set up the custom regulator data sensors."""
+    """Set up the custom regulator data binary sensors."""
     description_partial = partial(
         RegdataBinarySensorEntityDescription, value_fn=lambda x: x
     )
@@ -310,7 +273,10 @@ async def async_setup_entry(
     entities += async_setup_custom_ecomax_binary_sensors(connection, entry)
 
     # Add custom regulator data binary sensors.
-    entities += async_setup_custom_regdata_sensors(connection, entry)
+    if (
+        regdata_entities := async_setup_custom_regdata_binary_sensors(connection, entry)
+    ) and await connection.async_setup_regdata():
+        entities += regdata_entities
 
     # Add mixer/circuit binary sensors.
     if connection.has_mixers and await connection.async_setup_mixers():
