@@ -3,7 +3,7 @@
 from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Literal, cast, final, override
+from typing import Any, Literal, cast, final, overload, override
 
 from homeassistant.const import CONF_UNIT_OF_MEASUREMENT, Platform
 from homeassistant.core import callback
@@ -31,6 +31,7 @@ from .const import (
     CONNECTION_TYPE_TCP,
     DOMAIN,
     MANUFACTURER,
+    VIRTUAL_DEVICES,
     DeviceType,
     ModuleType,
 )
@@ -104,22 +105,48 @@ def async_make_description_for_custom_entity[DescriptorT: EcomaxEntityDescriptio
     return description_factory(**data)
 
 
+@overload
+def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
+    platform: Platform,
+    config_entry: PlumEcomaxConfigEntry,
+    source_device: Literal[DeviceType.MIXER, DeviceType.THERMOSTAT],
+    description_factory: Callable[..., DescriptorT],
+) -> Generator[tuple[DescriptorT, int]]: ...
+
+
+@overload
+def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
+    platform: Platform,
+    config_entry: PlumEcomaxConfigEntry,
+    source_device: Literal[DeviceType.ECOMAX, "regdata"],
+    description_factory: Callable[..., DescriptorT],
+) -> Generator[DescriptorT]: ...
+
+
 @callback
 def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
     platform: Platform,
     config_entry: PlumEcomaxConfigEntry,
     source_device: DeviceType | Literal["regdata"],
     description_factory: Callable[..., DescriptorT],
-) -> Generator[DescriptorT]:
-    """Return list of custom sensors."""
+) -> Generator[tuple[DescriptorT, int] | DescriptorT]:
+    """Return list of custom entities."""
     entities: dict[str, Any] = config_entry.options.get("entities", {})
     target_platform = str(platform)
     if not entities or target_platform not in entities:
         return
 
+    index = 0
     for entity in entities[target_platform].values():
-        if entity[CONF_SOURCE_DEVICE] == source_device:
-            yield async_make_description_for_custom_entity(description_factory, entity)
+        entity_source = entity[CONF_SOURCE_DEVICE]
+        if entity_source.startswith(VIRTUAL_DEVICES):
+            entity_source, index = entity[CONF_SOURCE_DEVICE].split("_", 1)
+
+        if entity_source == source_device:
+            description = async_make_description_for_custom_entity(
+                description_factory, entity
+            )
+            yield description if index == 0 else (description, int(index))
 
 
 class EcomaxEntity(Entity):

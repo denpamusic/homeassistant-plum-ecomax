@@ -205,6 +205,22 @@ def async_setup_mixer_switches(connection: EcomaxConnection) -> list[MixerSwitch
     ]
 
 
+@callback
+def async_setup_custom_mixer_switches(
+    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
+) -> list[MixerSwitch]:
+    """Set up the custom mixer switches."""
+    return [
+        MixerSwitch(connection, description, index)
+        for description, index in async_get_custom_entities(
+            platform=Platform.SWITCH,
+            source_device=DeviceType.MIXER,
+            config_entry=config_entry,
+            description_factory=MixerSwitchEntityDescription,
+        )
+    ]
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: PlumEcomaxConfigEntry,
@@ -222,6 +238,7 @@ async def async_setup_entry(
     # Add mixer/circuit switches.
     if connection.has_mixers and await connection.async_setup_mixers():
         entities += async_setup_mixer_switches(connection)
+        entities += async_setup_custom_mixer_switches(connection, entry)
 
     async_add_entities(entities)
     return True

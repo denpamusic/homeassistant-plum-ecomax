@@ -7,7 +7,7 @@ from collections.abc import Iterable, Mapping
 from copy import deepcopy
 from dataclasses import asdict
 import logging
-from typing import Any, Final, TypeVar, cast, overload
+from typing import Any, TypeVar, cast, overload
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.number.const import (
@@ -84,6 +84,7 @@ from .const import (
     DEFAULT_PORT,
     DOMAIN,
     REGDATA,
+    VIRTUAL_DEVICES,
     DeviceType,
 )
 
@@ -355,8 +356,6 @@ class TimeoutConnect(HomeAssistantError):
 class UnsupportedProduct(HomeAssistantError):
     """Error to indicate that product is not supported."""
 
-
-VIRTUAL_DEVICES: Final = (DeviceType.MIXER, DeviceType.THERMOSTAT)
 
 PLATFORM_TYPES: dict[Platform, tuple[type, ...]] = {
     Platform.BINARY_SENSOR: (bool,),

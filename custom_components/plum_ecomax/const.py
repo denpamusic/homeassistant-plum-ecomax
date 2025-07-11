@@ -103,6 +103,9 @@ class DeviceType(StrEnum):
     THERMOSTAT = "thermostat"
 
 
+VIRTUAL_DEVICES: Final = (DeviceType.MIXER, DeviceType.THERMOSTAT)
+
+
 @unique
 class ModuleType(StrEnum):
     """Known ecoMAX modules."""

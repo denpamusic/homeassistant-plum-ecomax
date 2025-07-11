@@ -258,6 +258,25 @@ def async_setup_mixer_binary_sensors(
     ]
 
 
+@callback
+def async_setup_custom_mixer_binary_sensors(
+    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
+) -> list[MixerBinarySensor]:
+    """Set up the custom mixer binary sensors."""
+    description_partial = partial(
+        MixerBinarySensorEntityDescription, value_fn=lambda x: x
+    )
+    return [
+        MixerBinarySensor(connection, description, index)
+        for description, index in async_get_custom_entities(
+            platform=Platform.BINARY_SENSOR,
+            source_device=DeviceType.MIXER,
+            config_entry=config_entry,
+            description_factory=description_partial,
+        )
+    ]
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: PlumEcomaxConfigEntry,
@@ -281,6 +300,7 @@ async def async_setup_entry(
     # Add mixer/circuit binary sensors.
     if connection.has_mixers and await connection.async_setup_mixers():
         entities += async_setup_mixer_binary_sensors(connection)
+        entities += async_setup_custom_mixer_binary_sensors(connection, entry)
 
     async_add_entities(entities)
     return True
