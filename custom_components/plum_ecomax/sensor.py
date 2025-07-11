@@ -47,7 +47,6 @@ from .const import (
     ATTR_REGDATA,
     ATTR_VALUE,
     DEVICE_CLASS_METER,
-    REGDATA,
     DeviceType,
     ModuleType,
 )
@@ -618,7 +617,7 @@ def async_setup_custom_regdata_sensors(
         RegdataSensor(connection, description)
         for description in async_get_custom_entities(
             platform=Platform.SENSOR,
-            source_device=REGDATA,
+            source_device="regdata",
             config_entry=config_entry,
             description_factory=description_partial,
         )

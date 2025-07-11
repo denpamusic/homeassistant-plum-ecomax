@@ -16,7 +16,6 @@ from homeassistant.const import (
     ATTR_UNIT_OF_MEASUREMENT,
     EVENT_HOMEASSISTANT_START,
     PERCENTAGE,
-    STATE_OFF,
     UnitOfMass,
     UnitOfPower,
     UnitOfTemperature,
@@ -69,7 +68,6 @@ from custom_components.plum_ecomax.const import (
 from custom_components.plum_ecomax.sensor import (
     SERVICE_CALIBRATE_METER,
     SERVICE_RESET_METER,
-    STATE_CLOSING,
 )
 
 

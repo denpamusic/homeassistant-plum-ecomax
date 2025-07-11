@@ -21,7 +21,7 @@ from pyplumio.const import ProductType
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import ATTR_REGDATA, REGDATA, DeviceType
+from .const import ATTR_REGDATA, DeviceType
 from .entity import (
     EcomaxEntity,
     EcomaxEntityDescription,
@@ -271,7 +271,7 @@ def async_setup_custom_regdata_sensors(
         RegdataBinarySensor(connection, description)
         for description in async_get_custom_entities(
             platform=Platform.BINARY_SENSOR,
-            source_device=REGDATA,
+            source_device="regdata",
             config_entry=config_entry,
             description_factory=description_partial,
         )
