@@ -58,6 +58,7 @@ WEEKDAYS: Final[tuple[str, ...]] = (
 CONF_BAUDRATE: Final = "baudrate"
 CONF_CAPABILITIES: Final = "capabilities"
 CONF_CONNECTION_TYPE: Final = "connection_type"
+CONF_KEY: Final = "key"
 CONF_DEVICE: Final = "device"
 CONF_HOST: Final = "host"
 CONF_MODEL: Final = "model"
@@ -65,9 +66,12 @@ CONF_PORT: Final = "port"
 CONF_PRODUCT_ID: Final = "product_id"
 CONF_PRODUCT_TYPE: Final = "product_type"
 CONF_SOFTWARE: Final = "software"
+CONF_SOURCE_DEVICE: Final = "source_device"
+CONF_STEP: Final = "step"
 CONF_SUB_DEVICES: Final = "sub_devices"
 CONF_TITLE: Final = "title"
 CONF_UID: Final = "uid"
+CONF_UPDATE_INTERVAL: Final = "update_interval"
 
 # Connection types.
 CONNECTION_TYPE_SERIAL: Final = "Serial"
@@ -86,6 +90,9 @@ EVENT_PLUM_ECOMAX_ALERT: Final = "plum_ecomax_alert"
 # Device classes.
 DEVICE_CLASS_METER: Final = "plum_ecomax__meter"
 
+# Data registry.
+REGDATA = "regdata"
+
 
 @unique
 class DeviceType(StrEnum):
@@ -94,6 +101,9 @@ class DeviceType(StrEnum):
     ECOMAX = "ecomax"
     MIXER = "mixer"
     THERMOSTAT = "thermostat"
+
+
+VIRTUAL_DEVICES: Final = (DeviceType.MIXER, DeviceType.THERMOSTAT)
 
 
 @unique

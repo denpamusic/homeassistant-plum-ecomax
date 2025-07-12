@@ -51,6 +51,7 @@ async def async_get_config_entry_diagnostics(
         "entry": {
             "title": entry.title,
             "data": async_redact_data(entry.data, to_redact={CONF_UID, CONF_HOST}),
+            "options": dict(entry.options),
         },
         "pyplumio": {
             "version": pyplumio_version,

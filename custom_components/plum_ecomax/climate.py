@@ -143,7 +143,7 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
     @overload
     async def async_update_preset_mode(self, mode: ThermostatNumber) -> None: ...
 
-    async def async_update_preset_mode(self, mode: ThermostatNumber | int) -> None:
+    async def async_update_preset_mode(self, mode: Any) -> None:
         """Update preset mode."""
         if isinstance(mode, ThermostatNumber):
             mode = int(mode.value)

@@ -61,6 +61,11 @@ file_patterns = ["README.md"]
 rules = ["radarlint-python:python.S1172"]
 file_patterns = ["custom_components/plum_ecomax/**"]
 
+# Ignore due to expected project structure.
+[[ignore]]
+rules = ["qlty:file-complexity"]
+file_patterns = ["custom_components/plum_ecomax/config_flow.py"]
+
 [[source]]
 name = "default"
 default = true
