@@ -26,6 +26,7 @@ from .entity import (
     EcomaxEntityDescription,
     MixerEntity,
     SubdeviceEntityDescription,
+    ThermostatEntity,
     async_get_by_index,
     async_get_by_modules,
     async_get_by_product_type,
@@ -114,6 +115,34 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
         self._attr_native_min_value = cast(float, value.min_value)
         self._attr_native_max_value = cast(float, value.max_value)
         self.async_write_ha_state()
+
+
+@callback
+def async_setup_ecomax_numbers(connection: EcomaxConnection) -> list[EcomaxNumber]:
+    """Set up the ecoMAX numbers."""
+    return [
+        EcomaxNumber(connection, description)
+        for description in async_get_by_modules(
+            connection.device.modules,
+            async_get_by_product_type(connection.product_type, NUMBER_TYPES),
+        )
+    ]
+
+
+@callback
+def async_setup_custom_ecomax_numbers(
+    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
+) -> list[EcomaxNumber]:
+    """Set up the custom ecoMAX sensors."""
+    return [
+        EcomaxNumber(connection, description)
+        for description in async_get_custom_entities(
+            platform=Platform.NUMBER,
+            source_device=DeviceType.ECOMAX,
+            config_entry=config_entry,
+            description_factory=EcomaxNumberEntityDescription,
+        )
+    ]
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -212,34 +241,6 @@ class MixerNumber(MixerEntity, EcomaxNumber):
 
 
 @callback
-def async_setup_ecomax_numbers(connection: EcomaxConnection) -> list[EcomaxNumber]:
-    """Set up the ecoMAX numbers."""
-    return [
-        EcomaxNumber(connection, description)
-        for description in async_get_by_modules(
-            connection.device.modules,
-            async_get_by_product_type(connection.product_type, NUMBER_TYPES),
-        )
-    ]
-
-
-@callback
-def async_setup_custom_ecomax_numbers(
-    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
-) -> list[EcomaxNumber]:
-    """Set up the custom ecoMAX sensors."""
-    return [
-        EcomaxNumber(connection, description)
-        for description in async_get_custom_entities(
-            platform=Platform.NUMBER,
-            source_device=DeviceType.ECOMAX,
-            config_entry=config_entry,
-            description_factory=EcomaxNumberEntityDescription,
-        )
-    ]
-
-
-@callback
 def async_setup_mixer_numbers(connection: EcomaxConnection) -> list[MixerNumber]:
     """Set up the mixer numbers."""
     return [
@@ -271,6 +272,45 @@ def async_setup_custom_mixer_numbers(
     ]
 
 
+@dataclass(frozen=True, kw_only=True)
+class ThermostatNumberEntityDescription(
+    EcomaxNumberEntityDescription, SubdeviceEntityDescription
+):
+    """Describes a thermostat number."""
+
+
+class ThermostatNumber(ThermostatEntity, EcomaxNumber):
+    """Represents a thermostat number."""
+
+    entity_description: ThermostatNumberEntityDescription
+
+    def __init__(
+        self,
+        connection: EcomaxConnection,
+        description: ThermostatNumberEntityDescription,
+        index: int,
+    ):
+        """Initialize a new thermostat number."""
+        self.index = index
+        super().__init__(connection, description)
+
+
+@callback
+def async_setup_custom_thermostat_numbers(
+    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
+) -> list[ThermostatNumber]:
+    """Set up the custom thermostat numbers."""
+    return [
+        ThermostatNumber(connection, description, index)
+        for description, index in async_get_custom_entities(
+            platform=Platform.NUMBER,
+            source_device=DeviceType.THERMOSTAT,
+            config_entry=config_entry,
+            description_factory=ThermostatNumberEntityDescription,
+        )
+    ]
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: PlumEcomaxConfigEntry,
@@ -289,6 +329,10 @@ async def async_setup_entry(
     if connection.has_mixers and await connection.async_setup_mixers():
         entities += async_setup_mixer_numbers(connection)
         entities += async_setup_custom_mixer_numbers(connection, entry)
+
+    # Add thermostat numbers.
+    if connection.has_thermostats and await connection.async_setup_thermostats():
+        entities += async_setup_custom_thermostat_numbers(connection, entry)
 
     async_add_entities(entities)
     return True

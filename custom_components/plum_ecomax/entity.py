@@ -130,7 +130,7 @@ def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
     source_device: DeviceType | Literal["regdata"],
     description_factory: Callable[..., DescriptorT],
 ) -> Generator[tuple[DescriptorT, int] | DescriptorT]:
-    """Return list of custom entities."""
+    """Return a list of custom entities."""
     entities: dict[str, Any] = config_entry.options.get("entities", {})
     target_platform = str(platform)
     if not entities or target_platform not in entities:

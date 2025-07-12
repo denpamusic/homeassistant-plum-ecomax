@@ -54,6 +54,7 @@ from .entity import (
     EcomaxEntityDescription,
     MixerEntity,
     RegdataEntity,
+    ThermostatEntity,
     async_get_by_modules,
     async_get_by_product_type,
     async_get_custom_entities,
@@ -375,6 +376,35 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
         self.async_write_ha_state()
 
 
+@callback
+def async_setup_ecomax_sensors(connection: EcomaxConnection) -> list[EcomaxSensor]:
+    """Set up the ecoMAX sensors."""
+    return [
+        EcomaxSensor(connection, description)
+        for description in async_get_by_modules(
+            connection.device.modules,
+            async_get_by_product_type(connection.product_type, SENSOR_TYPES),
+        )
+    ]
+
+
+@callback
+def async_setup_custom_ecomax_sensors(
+    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
+) -> list[EcomaxSensor]:
+    """Set up the custom ecoMAX sensors."""
+    description_partial = partial(EcomaxSensorEntityDescription, value_fn=lambda x: x)
+    return [
+        EcomaxSensor(connection, description)
+        for description in async_get_custom_entities(
+            platform=Platform.SENSOR,
+            source_device=DeviceType.ECOMAX,
+            config_entry=config_entry,
+            description_factory=description_partial,
+        )
+    ]
+
+
 @dataclass(frozen=True, kw_only=True)
 class MixerSensorEntityDescription(EcomaxSensorEntityDescription):
     """Describes a mixer sensor."""
@@ -468,6 +498,36 @@ METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
 )
 
 
+@callback
+def async_setup_mixer_sensors(connection: EcomaxConnection) -> list[MixerSensor]:
+    """Set up the mixer sensors."""
+    return [
+        MixerSensor(connection, description, index)
+        for index in connection.device.mixers
+        for description in async_get_by_modules(
+            connection.device.modules,
+            async_get_by_product_type(connection.product_type, MIXER_SENSOR_TYPES),
+        )
+    ]
+
+
+@callback
+def async_setup_custom_mixer_sensors(
+    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
+) -> list[MixerSensor]:
+    """Set up the custom mixer sensors."""
+    description_partial = partial(MixerSensorEntityDescription, value_fn=lambda x: x)
+    return [
+        MixerSensor(connection, description, index)
+        for description, index in async_get_custom_entities(
+            platform=Platform.SENSOR,
+            source_device=DeviceType.MIXER,
+            config_entry=config_entry,
+            description_factory=description_partial,
+        )
+    ]
+
+
 class EcomaxMeter(EcomaxSensor, RestoreSensor):
     """Represents an ecoMAX sensor that restores previous value."""
 
@@ -512,6 +572,18 @@ class EcomaxMeter(EcomaxSensor, RestoreSensor):
         return cast(float, self.entity_description.value_fn(self._attr_native_value))
 
 
+@callback
+def async_setup_ecomax_meters(connection: EcomaxConnection) -> list[EcomaxMeter]:
+    """Set up the ecoMAX meters."""
+    return [
+        EcomaxMeter(connection, description)
+        for description in async_get_by_modules(
+            connection.device.modules,
+            async_get_by_product_type(connection.product_type, METER_TYPES),
+        )
+    ]
+
+
 @dataclass(frozen=True, kw_only=True)
 class RegdataSensorEntityDescription(EcomaxSensorEntityDescription):
     """Describes a regulator data sensor."""
@@ -526,47 +598,6 @@ class RegdataSensor(RegdataEntity, EcomaxSensor):
             regdata.get(self._regdata_key, None)
         )
         self.async_write_ha_state()
-
-
-@callback
-def async_setup_ecomax_sensors(connection: EcomaxConnection) -> list[EcomaxSensor]:
-    """Set up the ecoMAX sensors."""
-    return [
-        EcomaxSensor(connection, description)
-        for description in async_get_by_modules(
-            connection.device.modules,
-            async_get_by_product_type(connection.product_type, SENSOR_TYPES),
-        )
-    ]
-
-
-@callback
-def async_setup_custom_ecomax_sensors(
-    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
-) -> list[EcomaxSensor]:
-    """Set up the custom ecoMAX sensors."""
-    description_partial = partial(EcomaxSensorEntityDescription, value_fn=lambda x: x)
-    return [
-        EcomaxSensor(connection, description)
-        for description in async_get_custom_entities(
-            platform=Platform.SENSOR,
-            source_device=DeviceType.ECOMAX,
-            config_entry=config_entry,
-            description_factory=description_partial,
-        )
-    ]
-
-
-@callback
-def async_setup_ecomax_meters(connection: EcomaxConnection) -> list[EcomaxMeter]:
-    """Set up the ecoMAX meters."""
-    return [
-        EcomaxMeter(connection, description)
-        for description in async_get_by_modules(
-            connection.device.modules,
-            async_get_by_product_type(connection.product_type, METER_TYPES),
-        )
-    ]
 
 
 @callback
@@ -586,30 +617,40 @@ def async_setup_custom_regdata_sensors(
     ]
 
 
-@callback
-def async_setup_mixer_sensors(connection: EcomaxConnection) -> list[MixerSensor]:
-    """Set up the mixer sensors."""
-    return [
-        MixerSensor(connection, description, index)
-        for index in connection.device.mixers
-        for description in async_get_by_modules(
-            connection.device.modules,
-            async_get_by_product_type(connection.product_type, MIXER_SENSOR_TYPES),
-        )
-    ]
+@dataclass(frozen=True, kw_only=True)
+class ThermostatSensorEntityDescription(EcomaxSensorEntityDescription):
+    """Describes a thermostat sensor."""
+
+
+class ThermostatSensor(ThermostatEntity, EcomaxSensor):
+    """Represents a thermostat sensor."""
+
+    entity_description: ThermostatSensorEntityDescription
+
+    def __init__(
+        self,
+        connection: EcomaxConnection,
+        description: MixerSensorEntityDescription,
+        index: int,
+    ):
+        """Initialize a new mixer sensor."""
+        self.index = index
+        super().__init__(connection, description)
 
 
 @callback
-def async_setup_custom_mixer_sensors(
+def async_setup_custom_thermostat_sensors(
     connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
-) -> list[MixerSensor]:
-    """Set up the custom mixer sensors."""
-    description_partial = partial(MixerSensorEntityDescription, value_fn=lambda x: x)
+) -> list[ThermostatSensor]:
+    """Set up the custom thermostat sensors."""
+    description_partial = partial(
+        ThermostatSensorEntityDescription, value_fn=lambda x: x
+    )
     return [
-        MixerSensor(connection, description, index)
+        ThermostatSensor(connection, description, index)
         for description, index in async_get_custom_entities(
             platform=Platform.SENSOR,
-            source_device=DeviceType.MIXER,
+            source_device=DeviceType.THERMOSTAT,
             config_entry=config_entry,
             description_factory=description_partial,
         )
@@ -640,6 +681,10 @@ async def async_setup_entry(
     if connection.has_mixers and await connection.async_setup_mixers():
         entities += async_setup_mixer_sensors(connection)
         entities += async_setup_custom_mixer_sensors(connection, entry)
+
+    # Add thermostat sensors.
+    if connection.has_thermostats and await connection.async_setup_thermostats():
+        entities += async_setup_custom_thermostat_sensors(connection, entry)
 
     # Add ecoMAX meters.
     if meters := async_setup_ecomax_meters(connection):
