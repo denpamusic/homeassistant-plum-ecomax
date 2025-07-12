@@ -630,7 +630,7 @@ class ThermostatSensor(ThermostatEntity, EcomaxSensor):
     def __init__(
         self,
         connection: EcomaxConnection,
-        description: MixerSensorEntityDescription,
+        description: ThermostatSensorEntityDescription,
         index: int,
     ):
         """Initialize a new mixer sensor."""
