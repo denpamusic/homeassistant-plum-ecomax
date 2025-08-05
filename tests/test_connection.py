@@ -8,6 +8,7 @@ from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
+from pyplumio import RequestError
 from pyplumio.connection import Connection, SerialConnection, TcpConnection
 from pyplumio.const import FrameType
 from pyplumio.devices.ecomax import EcoMAX
@@ -139,7 +140,12 @@ async def test_async_setup_thermostats(
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.device"
     ) as mock_device:
-        mock_device.request = AsyncMock(side_effect=(True, ValueError))
+        mock_device.request = AsyncMock(
+            side_effect=(
+                True,
+                RequestError("test", FrameType.REQUEST_THERMOSTAT_PARAMETERS),
+            )
+        )
         mock_device.get_nowait = Mock(return_value=False)
         assert await connection.async_setup_thermostats()
         assert not await connection.async_setup_thermostats()
@@ -182,7 +188,9 @@ async def test_async_setup_mixers(
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.device"
     ) as mock_device:
-        mock_device.request = AsyncMock(side_effect=(True, ValueError))
+        mock_device.request = AsyncMock(
+            side_effect=(True, RequestError("test", FrameType.REQUEST_MIXER_PARAMETERS))
+        )
         mock_device.get_nowait = Mock(return_value=False)
         assert await connection.async_setup_mixers()
         assert not await connection.async_setup_mixers()
@@ -225,7 +233,12 @@ async def test_async_setup_regdata(
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.device"
     ) as mock_device:
-        mock_device.request = AsyncMock(side_effect=(True, ValueError))
+        mock_device.request = AsyncMock(
+            side_effect=(
+                True,
+                RequestError("test", FrameType.REQUEST_REGULATOR_DATA_SCHEMA),
+            )
+        )
         mock_device.get_nowait = Mock(return_value=False)
         assert await connection.async_setup_regdata()
         assert not await connection.async_setup_regdata()
