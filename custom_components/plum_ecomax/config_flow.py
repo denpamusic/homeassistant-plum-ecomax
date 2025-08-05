@@ -7,7 +7,7 @@ from collections.abc import Iterable, Mapping
 from copy import deepcopy
 from dataclasses import asdict
 import logging
-from typing import Any, TypeVar, cast, overload
+from typing import Any, cast, overload
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.number.const import (
@@ -363,8 +363,6 @@ PLATFORM_TYPES: dict[Platform, tuple[type, ...]] = {
     Platform.NUMBER: (Number,),
     Platform.SWITCH: (Switch,),
 }
-
-SensorValueT = TypeVar("SensorValueT", str, int, float)
 
 
 @callback
@@ -855,7 +853,9 @@ class OptionsFlowHandler(OptionsFlow):
 
     @overload
     @staticmethod
-    def _async_format_source_value(value: SensorValueT) -> SensorValueT: ...
+    def _async_format_source_value[SensorValueT: str | int | float](
+        value: SensorValueT,
+    ) -> SensorValueT: ...
 
     @callback
     @staticmethod
