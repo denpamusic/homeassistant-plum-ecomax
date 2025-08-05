@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Mapping
 from functools import cached_property
 import logging
@@ -121,12 +122,18 @@ class EcomaxConnection:
     _hass: HomeAssistant
     entry: ConfigEntry
 
+    _request_cache: dict[str, bool]
+    _request_locks: dict[str, asyncio.Lock]
+
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, connection: Connection):
         """Initialize a new ecoMAX connection."""
         self._connection = connection
         self._device = None
         self._hass = hass
         self.entry = entry
+
+        self._request_cache = {}
+        self._request_locks = {}
 
     def __getattr__(self, name: str) -> Any:
         """Proxy calls to the underlying connection handler class."""
@@ -144,59 +151,42 @@ class EcomaxConnection:
         await device.wait_for(ATTR_SETUP, timeout=DEFAULT_TIMEOUT)
         self._device = device
 
+    async def _request_with_cache(self, name: str, frame_type: FrameType) -> bool:
+        """Make request and cache the result."""
+        lock = self._request_locks.setdefault(name, asyncio.Lock())
+        async with lock:
+            if name not in self._request_cache:
+                try:
+                    await self.device.request(
+                        name,
+                        frame_type,
+                        retries=DEFAULT_RETRIES,
+                        timeout=DEFAULT_TIMEOUT,
+                    )
+                    self._request_cache[name] = True
+                except pyplumio.RequestError:
+                    _LOGGER.exception("Request failed")
+                    self._request_cache[name] = False
+
+        return self._request_cache[name]
+
     async def async_setup_thermostats(self) -> bool:
         """Set up thermostats."""
-        if self.device.get_nowait(ATTR_THERMOSTAT_PARAMETERS, False):
-            # Thermostats are already set up.
-            return True
-
-        try:
-            await self.device.request(
-                ATTR_THERMOSTAT_PARAMETERS,
-                FrameType.REQUEST_THERMOSTAT_PARAMETERS,
-                retries=DEFAULT_RETRIES,
-                timeout=DEFAULT_TIMEOUT,
-            )
-            return True
-        except pyplumio.RequestError:
-            _LOGGER.error("Timed out while trying to setup thermostats.")
-            return False
+        return await self._request_with_cache(
+            ATTR_THERMOSTAT_PARAMETERS, FrameType.REQUEST_THERMOSTAT_PARAMETERS
+        )
 
     async def async_setup_mixers(self) -> bool:
         """Set up mixers."""
-        if self.device.get_nowait(ATTR_MIXER_PARAMETERS, False):
-            # Mixers are already set up.
-            return True
-
-        try:
-            await self.device.request(
-                ATTR_MIXER_PARAMETERS,
-                FrameType.REQUEST_MIXER_PARAMETERS,
-                retries=DEFAULT_RETRIES,
-                timeout=DEFAULT_TIMEOUT,
-            )
-            return True
-        except pyplumio.RequestError:
-            _LOGGER.error("Timed out while trying to setup mixers.")
-            return False
+        return await self._request_with_cache(
+            ATTR_MIXER_PARAMETERS, FrameType.REQUEST_MIXER_PARAMETERS
+        )
 
     async def async_setup_regdata(self) -> bool:
         """Set up regulator data."""
-        if self.device.get_nowait(ATTR_REGDATA, False):
-            # Regulator data is already set up.
-            return True
-
-        try:
-            await self.device.request(
-                ATTR_REGDATA,
-                FrameType.REQUEST_REGULATOR_DATA_SCHEMA,
-                retries=DEFAULT_RETRIES,
-                timeout=DEFAULT_TIMEOUT,
-            )
-            return True
-        except pyplumio.RequestError:
-            _LOGGER.error("Timed out while trying to setup regulator data.")
-            return False
+        return await self._request_with_cache(
+            ATTR_REGDATA, FrameType.REQUEST_REGULATOR_DATA_SCHEMA
+        )
 
     async def async_update_sub_devices(self) -> None:
         """Update sub-devices."""
