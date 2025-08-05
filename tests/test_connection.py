@@ -160,8 +160,8 @@ async def test_async_setup_thermostats(
     assert await connection.async_setup_thermostats() is expected_result
     assert await connection.async_setup_thermostats() is expected_result
     mock_device.request.assert_awaited_once_with(
-        ATTR_THERMOSTAT_PARAMETERS,
-        FrameType.REQUEST_THERMOSTAT_PARAMETERS,
+        name=ATTR_THERMOSTAT_PARAMETERS,
+        frame_type=FrameType.REQUEST_THERMOSTAT_PARAMETERS,
         retries=DEFAULT_RETRIES,
         timeout=DEFAULT_TIMEOUT,
     )
@@ -196,8 +196,8 @@ async def test_async_setup_mixers(
     assert await connection.async_setup_mixers() is expected_result
     assert await connection.async_setup_mixers() is expected_result
     mock_device.request.assert_awaited_once_with(
-        ATTR_MIXER_PARAMETERS,
-        FrameType.REQUEST_MIXER_PARAMETERS,
+        name=ATTR_MIXER_PARAMETERS,
+        frame_type=FrameType.REQUEST_MIXER_PARAMETERS,
         retries=DEFAULT_RETRIES,
         timeout=DEFAULT_TIMEOUT,
     )
@@ -232,8 +232,8 @@ async def test_async_setup_regdata(
     assert await connection.async_setup_regdata() is expected_result
     assert await connection.async_setup_regdata() is expected_result
     mock_device.request.assert_awaited_once_with(
-        ATTR_REGDATA,
-        FrameType.REQUEST_REGULATOR_DATA_SCHEMA,
+        name=ATTR_REGDATA,
+        frame_type=FrameType.REQUEST_REGULATOR_DATA_SCHEMA,
         retries=DEFAULT_RETRIES,
         timeout=DEFAULT_TIMEOUT,
     )

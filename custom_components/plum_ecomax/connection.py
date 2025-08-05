@@ -158,8 +158,8 @@ class EcomaxConnection:
             if name not in self._request_cache:
                 try:
                     await self.device.request(
-                        name,
-                        frame_type,
+                        name=name,
+                        frame_type=frame_type,
                         retries=DEFAULT_RETRIES,
                         timeout=DEFAULT_TIMEOUT,
                     )
