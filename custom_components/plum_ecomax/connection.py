@@ -158,7 +158,7 @@ class EcomaxConnection:
                 timeout=DEFAULT_TIMEOUT,
             )
             return True
-        except ValueError:
+        except pyplumio.RequestError:
             _LOGGER.error("Timed out while trying to setup thermostats.")
             return False
 
@@ -176,7 +176,7 @@ class EcomaxConnection:
                 timeout=DEFAULT_TIMEOUT,
             )
             return True
-        except ValueError:
+        except pyplumio.RequestError:
             _LOGGER.error("Timed out while trying to setup mixers.")
             return False
 
@@ -194,7 +194,7 @@ class EcomaxConnection:
                 timeout=DEFAULT_TIMEOUT,
             )
             return True
-        except ValueError:
+        except pyplumio.RequestError:
             _LOGGER.error("Timed out while trying to setup regulator data.")
             return False
 
