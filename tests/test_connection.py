@@ -8,6 +8,7 @@ from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
+from pyplumio import RequestError
 from pyplumio.connection import Connection, SerialConnection, TcpConnection
 from pyplumio.const import FrameType
 from pyplumio.devices.ecomax import EcoMAX
@@ -16,6 +17,7 @@ from pyplumio.structures.thermostat_parameters import ATTR_THERMOSTAT_PARAMETERS
 import pytest
 
 from custom_components.plum_ecomax.connection import (
+    DEFAULT_RETRIES,
     DEFAULT_TIMEOUT,
     EcomaxConnection,
     async_get_connection_handler,
@@ -130,130 +132,109 @@ async def test_async_setup(
         await connection.async_setup()
 
 
+@patch("custom_components.plum_ecomax.connection.EcomaxConnection.device")
+@pytest.mark.parametrize(
+    ("request_result", "expected_result", "error_message"),
+    (
+        (True, True, None),
+        (
+            RequestError("error message", FrameType.REQUEST_THERMOSTAT_PARAMETERS),
+            False,
+            "Request failed",
+        ),
+    ),
+)
 async def test_async_setup_thermostats(
-    hass: HomeAssistant, config_entry: ConfigEntry, caplog
+    mock_device,
+    request_result: bool | RequestError,
+    expected_result: bool,
+    error_message: str | None,
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    caplog,
 ) -> None:
-    """Test setup thermostats."""
+    """Test setup thermostats with cache."""
     connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=TcpConnection))
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.device"
-    ) as mock_device:
-        mock_device.request = AsyncMock(side_effect=(True, ValueError))
-        mock_device.get_nowait = Mock(return_value=False)
-        assert await connection.async_setup_thermostats()
-        assert not await connection.async_setup_thermostats()
-
-    assert "Timed out while trying to setup thermostats" in caplog.text
-    mock_device.request.assert_any_await(
-        ATTR_THERMOSTAT_PARAMETERS,
-        FrameType.REQUEST_THERMOSTAT_PARAMETERS,
-        retries=5,
-        timeout=DEFAULT_TIMEOUT,
-    )
-
-
-async def test_async_setup_thermostats_already_loaded(
-    hass: HomeAssistant, config_entry: ConfigEntry
-) -> None:
-    """Test setup thermostats when they're already loaded."""
-    connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=TcpConnection))
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.device"
-    ) as mock_device:
-        mock_device.request = AsyncMock()
-        mock_device.get_nowait = Mock(side_effect=(False, True))
-        assert await connection.async_setup_thermostats()
-        assert await connection.async_setup_thermostats()
-
+    mock_device.request = AsyncMock(side_effect=(request_result,))
+    assert await connection.async_setup_thermostats() is expected_result
+    assert await connection.async_setup_thermostats() is expected_result
     mock_device.request.assert_awaited_once_with(
-        ATTR_THERMOSTAT_PARAMETERS,
-        FrameType.REQUEST_THERMOSTAT_PARAMETERS,
-        retries=5,
+        name=ATTR_THERMOSTAT_PARAMETERS,
+        frame_type=FrameType.REQUEST_THERMOSTAT_PARAMETERS,
+        retries=DEFAULT_RETRIES,
         timeout=DEFAULT_TIMEOUT,
     )
+    if error_message:
+        assert error_message in caplog.text
 
 
+@patch("custom_components.plum_ecomax.connection.EcomaxConnection.device")
+@pytest.mark.parametrize(
+    ("request_result", "expected_result", "error_message"),
+    (
+        (True, True, None),
+        (
+            RequestError("error message", FrameType.REQUEST_MIXER_PARAMETERS),
+            False,
+            "Request failed",
+        ),
+    ),
+)
 async def test_async_setup_mixers(
-    hass: HomeAssistant, config_entry: ConfigEntry, caplog
+    mock_device,
+    request_result: bool | RequestError,
+    expected_result: bool,
+    error_message: str | None,
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    caplog,
 ) -> None:
-    """Test setup mixers."""
+    """Test setup mixers with cache."""
     connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=TcpConnection))
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.device"
-    ) as mock_device:
-        mock_device.request = AsyncMock(side_effect=(True, ValueError))
-        mock_device.get_nowait = Mock(return_value=False)
-        assert await connection.async_setup_mixers()
-        assert not await connection.async_setup_mixers()
-
-    assert "Timed out while trying to setup mixers" in caplog.text
-    mock_device.request.assert_any_await(
-        ATTR_MIXER_PARAMETERS,
-        FrameType.REQUEST_MIXER_PARAMETERS,
-        retries=5,
-        timeout=DEFAULT_TIMEOUT,
-    )
-
-
-async def test_async_setup_mixers_already_loaded(
-    hass: HomeAssistant, config_entry: ConfigEntry
-) -> None:
-    """Test setup mixers when they are already loaded."""
-    connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=TcpConnection))
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.device"
-    ) as mock_device:
-        mock_device.request = AsyncMock()
-        mock_device.get_nowait = Mock(side_effect=(False, True))
-        assert await connection.async_setup_mixers()
-        assert await connection.async_setup_mixers()
-
+    mock_device.request = AsyncMock(side_effect=(request_result,))
+    assert await connection.async_setup_mixers() is expected_result
+    assert await connection.async_setup_mixers() is expected_result
     mock_device.request.assert_awaited_once_with(
-        ATTR_MIXER_PARAMETERS,
-        FrameType.REQUEST_MIXER_PARAMETERS,
-        retries=5,
+        name=ATTR_MIXER_PARAMETERS,
+        frame_type=FrameType.REQUEST_MIXER_PARAMETERS,
+        retries=DEFAULT_RETRIES,
         timeout=DEFAULT_TIMEOUT,
     )
+    if error_message:
+        assert error_message in caplog.text
 
 
+@patch("custom_components.plum_ecomax.connection.EcomaxConnection.device")
+@pytest.mark.parametrize(
+    ("request_result", "expected_result", "error_message"),
+    (
+        (True, True, None),
+        (
+            RequestError("error message", FrameType.REQUEST_REGULATOR_DATA_SCHEMA),
+            False,
+            "Request failed",
+        ),
+    ),
+)
 async def test_async_setup_regdata(
-    hass: HomeAssistant, config_entry: ConfigEntry, caplog
+    mock_device,
+    request_result: bool | RequestError,
+    expected_result: bool,
+    error_message: str | None,
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    caplog,
 ) -> None:
-    """Test setup regulator data."""
+    """Test setup regdata with cache."""
     connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=TcpConnection))
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.device"
-    ) as mock_device:
-        mock_device.request = AsyncMock(side_effect=(True, ValueError))
-        mock_device.get_nowait = Mock(return_value=False)
-        assert await connection.async_setup_regdata()
-        assert not await connection.async_setup_regdata()
-
-    assert "Timed out while trying to setup regulator data" in caplog.text
-    mock_device.request.assert_any_await(
-        ATTR_REGDATA,
-        FrameType.REQUEST_REGULATOR_DATA_SCHEMA,
-        retries=5,
-        timeout=DEFAULT_TIMEOUT,
-    )
-
-
-async def test_async_setup_regdata_already_loaded(
-    hass: HomeAssistant, config_entry: ConfigEntry
-) -> None:
-    """Test setup regulator data when it's already loaded."""
-    connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=TcpConnection))
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.device"
-    ) as mock_device:
-        mock_device.request = AsyncMock()
-        mock_device.get_nowait = Mock(side_effect=(False, True))
-        assert await connection.async_setup_regdata()
-        assert await connection.async_setup_regdata()
-
+    mock_device.request = AsyncMock(side_effect=(request_result,))
+    assert await connection.async_setup_regdata() is expected_result
+    assert await connection.async_setup_regdata() is expected_result
     mock_device.request.assert_awaited_once_with(
-        ATTR_REGDATA,
-        FrameType.REQUEST_REGULATOR_DATA_SCHEMA,
-        retries=5,
+        name=ATTR_REGDATA,
+        frame_type=FrameType.REQUEST_REGULATOR_DATA_SCHEMA,
+        retries=DEFAULT_RETRIES,
         timeout=DEFAULT_TIMEOUT,
     )
+    if error_message:
+        assert error_message in caplog.text
