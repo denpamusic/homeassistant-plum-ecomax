@@ -153,8 +153,8 @@ class EcomaxConnection:
 
     async def _request_with_cache(self, name: str, frame_type: FrameType) -> bool:
         """Make request and cache the result."""
-        lock = self._request_locks.setdefault(name, asyncio.Lock())
-        async with lock:
+        request_lock = self._request_locks.setdefault(name, asyncio.Lock())
+        async with request_lock:
             if name not in self._request_cache:
                 try:
                     await self.device.request(
