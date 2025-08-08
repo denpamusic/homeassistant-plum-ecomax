@@ -382,7 +382,7 @@ def _get_custom_entity_options(
     return [selector.SelectOptionDict(value=k, label=v) for k, v in entities.items()]
 
 
-PLATFORM_UNITS: dict[Platform, dict[str, Any]] = {
+PLATFORM_UNITS: dict[Platform, dict] = {
     Platform.SENSOR: SENSOR_DEVICE_CLASS_UNITS,
     Platform.NUMBER: NUMBER_DEVICE_CLASS_UNITS,
 }
