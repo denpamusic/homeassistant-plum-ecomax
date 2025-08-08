@@ -441,20 +441,20 @@ def _validate_state_class(data: dict[str, Any]) -> None:
 
 
 def _validate_entity_details(
-    data: dict[str, Any], platform: Platform
+    entity: dict[str, Any], platform: Platform
 ) -> dict[str, str]:
     """Validate entity details."""
     errors = {}
 
     if platform in (Platform.SENSOR, Platform.NUMBER):
         try:
-            _validate_unit(data, platform=platform)
+            _validate_unit(entity, platform=platform)
         except vol.Invalid as e:
             errors[CONF_UNIT_OF_MEASUREMENT] = str(e.msg)
 
     if platform == Platform.SENSOR:
         try:
-            _validate_state_class(data)
+            _validate_state_class(entity)
         except vol.Invalid as e:
             errors[CONF_STATE_CLASS] = str(e.msg)
 
@@ -833,7 +833,7 @@ class OptionsFlowHandler(OptionsFlow):
     def _async_get_regdata_sources(
         self, entity_keys: Iterable[str]
     ) -> tuple[dict[str, Any], list[str]]:
-        """Get the entity sources for regdata."""
+        """Get entity sources for regdata."""
         return (
             self.connection.device.get_nowait(REGDATA, {}),
             [key for key in entity_keys if key.isnumeric()],
@@ -843,7 +843,7 @@ class OptionsFlowHandler(OptionsFlow):
     def _async_get_virtual_device_sources(
         self, entity_keys: Iterable[str]
     ) -> tuple[dict[str, Any], list[str]]:
-        """Get the entity sources for virtual devices."""
+        """Get entity sources for virtual devices."""
         device_type, index = self.source_device.split("_", 1)
         virtual_device = self._async_get_virtual_device(device_type, int(index))
         return virtual_device.data, [
@@ -852,7 +852,7 @@ class OptionsFlowHandler(OptionsFlow):
 
     @callback
     def _async_get_sources(self, selected: str = "") -> dict[str, Any]:
-        """Get the entity sources."""
+        """Get entity sources."""
         entity_registry = er.async_get(self.hass)
         entities = er.async_entries_for_config_entry(
             entity_registry, self.config_entry.entry_id
@@ -876,7 +876,7 @@ class OptionsFlowHandler(OptionsFlow):
 
     @callback
     def _async_get_source_device_options(self) -> list[selector.SelectOptionDict]:
-        """Return the source devices."""
+        """Return source device options."""
         model = self.connection.model
         device = self.connection.device
         sources = {DeviceType.ECOMAX.value: f"Common ({model})"}
@@ -915,7 +915,7 @@ class OptionsFlowHandler(OptionsFlow):
 
     @callback
     def _async_is_valid_source(self, source: Any, platform: Platform) -> bool:
-        """Check if the value is a valid source for platform type."""
+        """Check if value is valid source for specific platform type."""
         platform_types = PLATFORM_TYPES[platform]
         if isinstance(source, bool):
             return True if bool in platform_types else False
