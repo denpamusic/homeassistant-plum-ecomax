@@ -90,9 +90,6 @@ EVENT_PLUM_ECOMAX_ALERT: Final = "plum_ecomax_alert"
 # Device classes.
 DEVICE_CLASS_METER: Final = "plum_ecomax__meter"
 
-# Data registry.
-REGDATA = "regdata"
-
 
 @unique
 class DeviceType(StrEnum):
@@ -104,6 +101,9 @@ class DeviceType(StrEnum):
 
 
 VIRTUAL_DEVICES: Final = (DeviceType.MIXER, DeviceType.THERMOSTAT)
+
+# Data registry.
+REGDATA: Final = "regdata"
 
 
 @unique

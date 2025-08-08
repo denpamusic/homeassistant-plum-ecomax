@@ -17,6 +17,7 @@ from homeassistant.components.number.const import (
 )
 from homeassistant.components.sensor.const import (
     CONF_STATE_CLASS,
+    DEVICE_CLASS_STATE_CLASSES,
     DEVICE_CLASS_UNITS as SENSOR_DEVICE_CLASS_UNITS,
     SensorDeviceClass,
     SensorStateClass,
@@ -365,8 +366,7 @@ PLATFORM_TYPES: dict[Platform, tuple[type, ...]] = {
 }
 
 
-@callback
-def _async_get_custom_entity_options(
+def _get_custom_entity_options(
     entities: dict[str, Any],
 ) -> list[selector.SelectOptionDict]:
     """Get the custom entities as selector options."""
@@ -382,11 +382,90 @@ def _async_get_custom_entity_options(
     return [selector.SelectOptionDict(value=k, label=v) for k, v in entities.items()]
 
 
+PLATFORM_UNITS: dict[Platform, dict[str, Any]] = {
+    Platform.SENSOR: SENSOR_DEVICE_CLASS_UNITS,
+    Platform.NUMBER: NUMBER_DEVICE_CLASS_UNITS,
+}
+
+
+def _validate_unit(data: dict[str, Any], platform: Platform) -> None:
+    """Validate unit of measurement."""
+    if platform not in PLATFORM_UNITS:
+        return
+
+    if (
+        (device_class := data.get(CONF_DEVICE_CLASS))
+        and (units := PLATFORM_UNITS[platform].get(device_class)) is not None
+        and (unit := data.get(CONF_UNIT_OF_MEASUREMENT)) not in units
+    ):
+        # Sort twice to make sure strings with same case-insensitive order of
+        # letters are sorted consistently still.
+        sorted_units = sorted(
+            sorted(
+                [f"'{unit!s}'" if unit else "no unit of measurement" for unit in units],
+            ),
+            key=str.casefold,
+        )
+        if len(sorted_units) == 1:
+            units_string = sorted_units[0]
+        else:
+            units_string = f"one of {', '.join(sorted_units)}"
+
+        raise vol.Invalid(
+            f"'{unit}' is not a valid unit for device class '{device_class}'; "
+            f"expected {units_string}"
+        )
+
+
+def _validate_state_class(data: dict[str, Any]) -> None:
+    """Validate state class."""
+    if (
+        (state_class := data.get(CONF_STATE_CLASS))
+        and (device_class := data.get(CONF_DEVICE_CLASS))
+        and (state_classes := DEVICE_CLASS_STATE_CLASSES.get(device_class)) is not None
+        and state_class not in state_classes
+    ):
+        sorted_state_classes = sorted(
+            [f"'{state_class!s}'" for state_class in state_classes],
+            key=str.casefold,
+        )
+        if len(sorted_state_classes) == 1:
+            state_classes_string = sorted_state_classes[0]
+        else:
+            state_classes_string = f"one of {', '.join(sorted_state_classes)}"
+
+        raise vol.Invalid(
+            f"'{state_class}' is not a valid state class for device class "
+            f"'{device_class}'; expected {state_classes_string}"
+        )
+
+
+def _validate_entity_details(
+    data: dict[str, Any], platform: Platform
+) -> dict[str, str]:
+    """Validate entity details."""
+    errors = {}
+
+    if platform in (Platform.SENSOR, Platform.NUMBER):
+        try:
+            _validate_unit(data, platform=platform)
+        except vol.Invalid as e:
+            errors[CONF_UNIT_OF_MEASUREMENT] = str(e.msg)
+
+    if platform == Platform.SENSOR:
+        try:
+            _validate_state_class(data)
+        except vol.Invalid as e:
+            errors[CONF_STATE_CLASS] = str(e.msg)
+
+    return errors
+
+
 @callback
 def generate_select_schema(entities: dict[str, Any]) -> vol.Schema | None:
     """Generate schema for editing or deleting an entity."""
 
-    if not (options := _async_get_custom_entity_options(entities)):
+    if not (options := _get_custom_entity_options(entities)):
         return None
 
     return vol.Schema(
@@ -620,25 +699,25 @@ class OptionsFlowHandler(OptionsFlow):
         """Handle new entity details."""
         entity = self.entity if hasattr(self, "entity") else {}
 
-        if user_input is not None:
+        if user_input is None:
+            errors = {}
+        elif (entity := user_input) and not (
+            errors := _validate_entity_details(entity, platform=self.platform)
+        ):
             user_input[CONF_SOURCE_DEVICE] = self.source_device
-            return self._async_step_create_entry(
-                key=entity.get(CONF_KEY, user_input[CONF_KEY]), data=user_input
-            )
+            return self._async_step_create_entry(key=entity[CONF_KEY], data=user_input)
 
         if not (
             source_options := self._async_get_source_options(
                 selected=entity.get(CONF_KEY, "")
             )
         ):
-            raise vol.Invalid(
-                f"Can not add any more {str(self.platform).replace('_', ' ')}s for "
-                f"the selected source. Please select a different source and try again."
-            )
+            return await self.async_step_entities_not_found()
 
         return self.async_show_form(
             step_id="entity_details",
             data_schema=generate_edit_schema(self.platform, source_options, entity),
+            errors=errors,
             description_placeholders={
                 "platform": self.platform.value.replace("_", " ")
             },
