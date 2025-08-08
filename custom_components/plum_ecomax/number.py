@@ -12,7 +12,7 @@ from homeassistant.components.number import (
     NumberEntityDescription,
     NumberMode,
 )
-from homeassistant.const import PERCENTAGE, UnitOfTemperature
+from homeassistant.const import PERCENTAGE, Platform, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.const import ProductType
@@ -20,14 +20,17 @@ from pyplumio.parameters import Parameter
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
+from .const import DeviceType
 from .entity import (
     EcomaxEntity,
     EcomaxEntityDescription,
     MixerEntity,
     SubdeviceEntityDescription,
+    ThermostatEntity,
     async_get_by_index,
     async_get_by_modules,
     async_get_by_product_type,
+    async_get_custom_entities,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -114,15 +117,43 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
         self.async_write_ha_state()
 
 
+@callback
+def async_setup_ecomax_numbers(connection: EcomaxConnection) -> list[EcomaxNumber]:
+    """Set up the ecoMAX numbers."""
+    return [
+        EcomaxNumber(connection, description)
+        for description in async_get_by_modules(
+            connection.device.modules,
+            async_get_by_product_type(connection.product_type, NUMBER_TYPES),
+        )
+    ]
+
+
+@callback
+def async_setup_custom_ecomax_numbers(
+    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
+) -> list[EcomaxNumber]:
+    """Set up the custom ecoMAX sensors."""
+    return [
+        EcomaxNumber(connection, description)
+        for description in async_get_custom_entities(
+            platform=Platform.NUMBER,
+            source_device=DeviceType.ECOMAX,
+            config_entry=config_entry,
+            description_factory=EcomaxNumberEntityDescription,
+        )
+    ]
+
+
 @dataclass(frozen=True, kw_only=True)
-class EcomaxMixerNumberEntityDescription(
+class MixerNumberEntityDescription(
     EcomaxNumberEntityDescription, SubdeviceEntityDescription
 ):
     """Describes a mixer number."""
 
 
-MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
-    EcomaxMixerNumberEntityDescription(
+MIXER_NUMBER_TYPES: tuple[MixerNumberEntityDescription, ...] = (
+    MixerNumberEntityDescription(
         key="mixer_target_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
@@ -130,7 +161,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         product_types={ProductType.ECOMAX_P},
         translation_key="target_mixer_temp",
     ),
-    EcomaxMixerNumberEntityDescription(
+    MixerNumberEntityDescription(
         key="min_target_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
@@ -138,7 +169,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         product_types={ProductType.ECOMAX_P},
         translation_key="min_mixer_temp",
     ),
-    EcomaxMixerNumberEntityDescription(
+    MixerNumberEntityDescription(
         key="max_target_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
@@ -146,7 +177,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         product_types={ProductType.ECOMAX_P},
         translation_key="max_mixer_temp",
     ),
-    EcomaxMixerNumberEntityDescription(
+    MixerNumberEntityDescription(
         key="circuit_target_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
         native_step=1,
@@ -154,7 +185,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         product_types={ProductType.ECOMAX_I},
         translation_key="target_circuit_temp",
     ),
-    EcomaxMixerNumberEntityDescription(
+    MixerNumberEntityDescription(
         key="min_target_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
         indexes={2, 3},
@@ -163,7 +194,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         product_types={ProductType.ECOMAX_I},
         translation_key="min_circuit_temp",
     ),
-    EcomaxMixerNumberEntityDescription(
+    MixerNumberEntityDescription(
         key="max_target_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
         indexes={2, 3},
@@ -172,7 +203,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         product_types={ProductType.ECOMAX_I},
         translation_key="max_circuit_temp",
     ),
-    EcomaxMixerNumberEntityDescription(
+    MixerNumberEntityDescription(
         key="day_target_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
         indexes={2, 3},
@@ -181,7 +212,7 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
         product_types={ProductType.ECOMAX_I},
         translation_key="day_target_circuit_temp",
     ),
-    EcomaxMixerNumberEntityDescription(
+    MixerNumberEntityDescription(
         key="night_target_temp",
         device_class=NumberDeviceClass.TEMPERATURE,
         indexes={2, 3},
@@ -196,29 +227,17 @@ MIXER_NUMBER_TYPES: tuple[EcomaxMixerNumberEntityDescription, ...] = (
 class MixerNumber(MixerEntity, EcomaxNumber):
     """Represents a mixer number."""
 
-    entity_description: EcomaxMixerNumberEntityDescription
+    entity_description: MixerNumberEntityDescription
 
     def __init__(
         self,
         connection: EcomaxConnection,
-        description: EcomaxMixerNumberEntityDescription,
+        description: MixerNumberEntityDescription,
         index: int,
     ):
         """Initialize a new mixer number."""
         self.index = index
         super().__init__(connection, description)
-
-
-@callback
-def async_setup_ecomax_numbers(connection: EcomaxConnection) -> list[EcomaxNumber]:
-    """Set up the ecoMAX numbers."""
-    return [
-        EcomaxNumber(connection, description)
-        for description in async_get_by_modules(
-            connection.device.modules,
-            async_get_by_product_type(connection.product_type, NUMBER_TYPES),
-        )
-    ]
 
 
 @callback
@@ -237,6 +256,61 @@ def async_setup_mixer_numbers(connection: EcomaxConnection) -> list[MixerNumber]
     ]
 
 
+@callback
+def async_setup_custom_mixer_numbers(
+    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
+) -> list[MixerNumber]:
+    """Set up the custom mixer numbers."""
+    return [
+        MixerNumber(connection, description, index)
+        for description, index in async_get_custom_entities(
+            platform=Platform.NUMBER,
+            source_device=DeviceType.MIXER,
+            config_entry=config_entry,
+            description_factory=MixerNumberEntityDescription,
+        )
+    ]
+
+
+@dataclass(frozen=True, kw_only=True)
+class ThermostatNumberEntityDescription(
+    EcomaxNumberEntityDescription, SubdeviceEntityDescription
+):
+    """Describes a thermostat number."""
+
+
+class ThermostatNumber(ThermostatEntity, EcomaxNumber):
+    """Represents a thermostat number."""
+
+    entity_description: ThermostatNumberEntityDescription
+
+    def __init__(
+        self,
+        connection: EcomaxConnection,
+        description: ThermostatNumberEntityDescription,
+        index: int,
+    ):
+        """Initialize a new thermostat number."""
+        self.index = index
+        super().__init__(connection, description)
+
+
+@callback
+def async_setup_custom_thermostat_numbers(
+    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
+) -> list[ThermostatNumber]:
+    """Set up the custom thermostat numbers."""
+    return [
+        ThermostatNumber(connection, description, index)
+        for description, index in async_get_custom_entities(
+            platform=Platform.NUMBER,
+            source_device=DeviceType.THERMOSTAT,
+            config_entry=config_entry,
+            description_factory=ThermostatNumberEntityDescription,
+        )
+    ]
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: PlumEcomaxConfigEntry,
@@ -248,9 +322,17 @@ async def async_setup_entry(
     connection = entry.runtime_data.connection
     entities = async_setup_ecomax_numbers(connection)
 
+    # Add custom ecoMAX numbers.
+    entities += async_setup_custom_ecomax_numbers(connection, entry)
+
     # Add mixer/circuit numbers.
     if connection.has_mixers and await connection.async_setup_mixers():
         entities += async_setup_mixer_numbers(connection)
+        entities += async_setup_custom_mixer_numbers(connection, entry)
+
+    # Add thermostat numbers.
+    if connection.has_thermostats and await connection.async_setup_thermostats():
+        entities += async_setup_custom_thermostat_numbers(connection, entry)
 
     async_add_entities(entities)
     return True
