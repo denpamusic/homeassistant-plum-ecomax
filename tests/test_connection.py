@@ -140,7 +140,8 @@ async def test_async_setup(
         (
             RequestError("error message", FrameType.REQUEST_THERMOSTAT_PARAMETERS),
             False,
-            "Request failed",
+            f"Request for '{ATTR_THERMOSTAT_PARAMETERS}' "
+            f"with {repr(FrameType.REQUEST_THERMOSTAT_PARAMETERS)} failed",
         ),
     ),
 )
@@ -176,7 +177,8 @@ async def test_async_setup_thermostats(
         (
             RequestError("error message", FrameType.REQUEST_MIXER_PARAMETERS),
             False,
-            "Request failed",
+            f"Request for '{ATTR_MIXER_PARAMETERS}' "
+            f"with {repr(FrameType.REQUEST_MIXER_PARAMETERS)} failed",
         ),
     ),
 )
@@ -212,7 +214,8 @@ async def test_async_setup_mixers(
         (
             RequestError("error message", FrameType.REQUEST_REGULATOR_DATA_SCHEMA),
             False,
-            "Request failed",
+            f"Request for '{ATTR_REGDATA}' "
+            f"with {repr(FrameType.REQUEST_REGULATOR_DATA_SCHEMA)} failed",
         ),
     ),
 )
