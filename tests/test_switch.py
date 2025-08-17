@@ -7,7 +7,13 @@ from homeassistant.components.switch import (
     SERVICE_TURN_OFF,
     SERVICE_TURN_ON,
 )
-from homeassistant.const import ATTR_ENTITY_ID, ATTR_FRIENDLY_NAME, STATE_OFF, STATE_ON
+from homeassistant.const import (
+    ATTR_ENTITY_ID,
+    ATTR_FRIENDLY_NAME,
+    STATE_OFF,
+    STATE_ON,
+    Platform,
+)
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
 from pyplumio.parameters import ParameterValues
@@ -28,6 +34,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
+from tests.conftest import dispatch_value
 
 
 @pytest.fixture(autouse=True)
@@ -794,3 +801,99 @@ async def test_circuit_enable_circuit_switch_is_unavailable_for_second_circuit(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(enable_circuit_entity_id)
     assert not entry
+
+
+@pytest.mark.parametrize(
+    ("source_device", "entity_id", "friendly_name"),
+    (
+        (
+            "ecomax",
+            "switch.ecomax_test_custom_switch",
+            "ecoMAX Test custom switch",
+        ),
+        (
+            "mixer_0",
+            "switch.ecomax_mixer_1_test_custom_switch",
+            "ecoMAX Mixer 1 Test custom switch",
+        ),
+        (
+            "mixer_1",
+            "switch.ecomax_mixer_2_test_custom_switch",
+            "ecoMAX Mixer 2 Test custom switch",
+        ),
+        (
+            "thermostat_0",
+            "switch.ecomax_thermostat_1_test_custom_switch",
+            "ecoMAX Thermostat 1 Test custom switch",
+        ),
+    ),
+)
+@pytest.mark.usefixtures("ecomax_p", "mixers", "thermostats", "custom_fields")
+async def test_custom_switches(
+    source_device: str,
+    entity_id: str,
+    friendly_name: str,
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    async_turn_off,
+    async_turn_on,
+) -> None:
+    """Test custom switches."""
+    custom_switch_key = "custom_switch"
+    await setup_integration(
+        hass,
+        config_entry,
+        options={
+            "entities": {
+                Platform.SWITCH: {
+                    custom_switch_key: {
+                        "name": "Test custom switch",
+                        "key": custom_switch_key,
+                        "source_device": source_device,
+                    }
+                }
+            }
+        },
+    )
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(entity_id)
+    assert entry
+
+    # Get initial state.
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == friendly_name
+
+    # Dispatch new state.
+    new_state = EcomaxSwitch(
+        device=connection.device,
+        values=ParameterValues(value=1, min_value=0, max_value=1),
+        description=EcomaxSwitchDescription(custom_switch_key),
+    )
+    await dispatch_value(
+        connection.device, custom_switch_key, new_state, source_device=source_device
+    )
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert state.state == STATE_ON
+
+    # Turn off.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_off(hass, entity_id)
+
+    mock_set_nowait.assert_called_once_with(custom_switch_key, STATE_OFF)
+    assert isinstance(state, State)
+    assert state.state == STATE_OFF
+
+    # Turn on.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_on(hass, entity_id)
+
+    mock_set_nowait.assert_called_once_with(custom_switch_key, STATE_ON)
+    assert isinstance(state, State)
+    assert state.state == STATE_ON

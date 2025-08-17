@@ -16,6 +16,7 @@ from homeassistant.const import (
     ATTR_UNIT_OF_MEASUREMENT,
     EVENT_HOMEASSISTANT_START,
     PERCENTAGE,
+    Platform,
     UnitOfMass,
     UnitOfPower,
     UnitOfTemperature,
@@ -63,12 +64,14 @@ from custom_components.plum_ecomax.const import (
     ATTR_VALUE,
     DEVICE_CLASS_METER,
     DOMAIN,
+    REGDATA,
     ModuleType,
 )
 from custom_components.plum_ecomax.sensor import (
     SERVICE_CALIBRATE_METER,
     SERVICE_RESET_METER,
 )
+from tests.conftest import dispatch_value
 
 
 @pytest.fixture(autouse=True)
@@ -1235,3 +1238,131 @@ async def test_total_fuel_burned_sensor(
     state = await reset_meter(hass, fuel_burned_entity_id)
     assert isinstance(state, State)
     assert state.state == "0.0"
+
+
+@pytest.mark.parametrize(
+    ("source_device", "entity_id", "friendly_name"),
+    (
+        (
+            "ecomax",
+            "sensor.ecomax_test_custom_sensor",
+            "ecoMAX Test custom sensor",
+        ),
+        (
+            "mixer_0",
+            "sensor.ecomax_mixer_1_test_custom_sensor",
+            "ecoMAX Mixer 1 Test custom sensor",
+        ),
+        (
+            "mixer_1",
+            "sensor.ecomax_mixer_2_test_custom_sensor",
+            "ecoMAX Mixer 2 Test custom sensor",
+        ),
+        (
+            "thermostat_0",
+            "sensor.ecomax_thermostat_1_test_custom_sensor",
+            "ecoMAX Thermostat 1 Test custom sensor",
+        ),
+    ),
+)
+@pytest.mark.usefixtures("ecomax_p", "mixers", "thermostats", "custom_fields")
+async def test_custom_sensors(
+    source_device: str,
+    entity_id: str,
+    friendly_name: str,
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test custom sensors."""
+    await setup_integration(
+        hass,
+        config_entry,
+        options={
+            "entities": {
+                Platform.SENSOR: {
+                    "custom_sensor": {
+                        "name": "Test custom sensor",
+                        "key": "custom_sensor",
+                        "source_device": source_device,
+                        "unit_of_measurement": UnitOfTemperature.CELSIUS,
+                        "device_class": SensorDeviceClass.TEMPERATURE,
+                        "state_class": SensorStateClass.MEASUREMENT,
+                    }
+                }
+            }
+        },
+    )
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(entity_id)
+    assert entry
+
+    # Get initial value.
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert state.state == "50.0"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == friendly_name
+    assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
+    assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.TEMPERATURE
+    assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
+
+    # Dispatch new value.
+    await dispatch_value(
+        connection.device, "custom_sensor", 45.0, source_device=source_device
+    )
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert state.state == "45.0"
+
+
+@pytest.mark.usefixtures("ecomax_p", "ecomax_860p3_o", "custom_fields")
+async def test_custom_regdata_sensors(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+):
+    """Test custom regdata sensors."""
+    await setup_integration(
+        hass,
+        config_entry,
+        options={
+            "entities": {
+                Platform.SENSOR: {
+                    "9001": {
+                        "name": "Test custom regdata sensor",
+                        "key": "9001",
+                        "source_device": REGDATA,
+                        "unit_of_measurement": UnitOfTemperature.CELSIUS,
+                        "device_class": SensorDeviceClass.TEMPERATURE,
+                        "state_class": SensorStateClass.MEASUREMENT,
+                    }
+                }
+            }
+        },
+    )
+
+    entity_id = "sensor.ecomax_test_custom_regdata_sensor"
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(entity_id)
+    assert entry
+
+    # Get initial value.
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert state.state == "50.0"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Test custom regdata sensor"
+    assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
+    assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.TEMPERATURE
+    assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
+
+    # Dispatch new value.
+    await dispatch_value(connection.device, REGDATA, {9001: 45.0})
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert state.state == "45.0"

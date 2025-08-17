@@ -8,6 +8,7 @@ from homeassistant.const import (
     ATTR_FRIENDLY_NAME,
     STATE_OFF,
     STATE_ON,
+    Platform,
 )
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
@@ -30,6 +31,8 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
+from custom_components.plum_ecomax.const import REGDATA
+from tests.conftest import dispatch_value
 
 
 @pytest.fixture(autouse=True)
@@ -451,5 +454,125 @@ async def test_circuit_pump_binary_sensor(
     # Dispatch new value.
     await connection.device.mixers[0].dispatch(ATTR_PUMP, True)
     state = hass.states.get(circuit_pump_entity_id)
+    assert isinstance(state, State)
+    assert state.state == STATE_ON
+
+
+@pytest.mark.parametrize(
+    ("source_device", "entity_id", "friendly_name"),
+    (
+        (
+            "ecomax",
+            "binary_sensor.ecomax_test_custom_binary",
+            "ecoMAX Test custom binary",
+        ),
+        (
+            "mixer_0",
+            "binary_sensor.ecomax_mixer_1_test_custom_binary",
+            "ecoMAX Mixer 1 Test custom binary",
+        ),
+        (
+            "mixer_1",
+            "binary_sensor.ecomax_mixer_2_test_custom_binary",
+            "ecoMAX Mixer 2 Test custom binary",
+        ),
+        (
+            "thermostat_0",
+            "binary_sensor.ecomax_thermostat_1_test_custom_binary",
+            "ecoMAX Thermostat 1 Test custom binary",
+        ),
+    ),
+)
+@pytest.mark.usefixtures("ecomax_p", "mixers", "thermostats", "custom_fields")
+async def test_custom_binary_sensors(
+    source_device: str,
+    entity_id: str,
+    friendly_name: str,
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test custom binary sensors."""
+    await setup_integration(
+        hass,
+        config_entry,
+        options={
+            "entities": {
+                Platform.BINARY_SENSOR: {
+                    "custom_binary": {
+                        "name": "Test custom binary",
+                        "key": "custom_binary",
+                        "source_device": source_device,
+                        "device_class": BinarySensorDeviceClass.RUNNING,
+                    }
+                }
+            }
+        },
+    )
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(entity_id)
+    assert entry
+
+    # Get initial value.
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == friendly_name
+    assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+
+    # Dispatch new value.
+    await dispatch_value(
+        connection.device, "custom_binary", True, source_device=source_device
+    )
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert state.state == STATE_ON
+
+
+@pytest.mark.usefixtures("ecomax_p", "ecomax_860p3_o", "custom_fields")
+async def test_custom_regdata_binary_sensors(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+):
+    """Test custom regdata binary sensors."""
+    await setup_integration(
+        hass,
+        config_entry,
+        options={
+            "entities": {
+                Platform.BINARY_SENSOR: {
+                    "9000": {
+                        "name": "Test custom regdata binary",
+                        "key": "9000",
+                        "source_device": REGDATA,
+                        "device_class": BinarySensorDeviceClass.RUNNING,
+                    }
+                }
+            }
+        },
+    )
+
+    entity_id = "binary_sensor.ecomax_test_custom_regdata_binary"
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(entity_id)
+    assert entry
+
+    # Get initial value.
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert state.state == STATE_OFF
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Test custom regdata binary"
+    assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
+
+    # Dispatch new value.
+    await dispatch_value(connection.device, REGDATA, {9000: True})
+    state = hass.states.get(entity_id)
     assert isinstance(state, State)
     assert state.state == STATE_ON
