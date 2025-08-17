@@ -165,7 +165,7 @@ class EcomaxConnection:
                     )
                     self._request_cache[name] = True
                 except pyplumio.RequestError:
-                    _LOGGER.exception("Request failed")
+                    _LOGGER.warning("Request for '%s' with %r failed", name, frame_type)
                     self._request_cache[name] = False
 
         return self._request_cache[name]
