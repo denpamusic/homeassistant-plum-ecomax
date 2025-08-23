@@ -1243,27 +1243,46 @@ async def test_total_fuel_burned_sensor(
 
 
 @pytest.mark.parametrize(
-    ("source_device", "entity_id", "friendly_name"),
+    (
+        "source_device",
+        "entity_id",
+        "friendly_name",
+        "unit_of_measurement",
+        "device_class",
+        "state_class",
+    ),
     (
         (
             "ecomax",
             "sensor.ecomax_test_custom_sensor",
             "ecoMAX Test custom sensor",
+            UnitOfMass.KILOGRAMS,
+            SensorDeviceClass.WEIGHT,
+            SensorStateClass.TOTAL,
         ),
         (
             "mixer_0",
             "sensor.ecomax_mixer_1_test_custom_sensor",
             "ecoMAX Mixer 1 Test custom sensor",
+            UnitOfPower.KILO_WATT,
+            SensorDeviceClass.POWER,
+            SensorStateClass.MEASUREMENT,
         ),
         (
             "mixer_1",
             "sensor.ecomax_mixer_2_test_custom_sensor",
             "ecoMAX Mixer 2 Test custom sensor",
+            PERCENTAGE,
+            None,
+            SensorStateClass.TOTAL_INCREASING,
         ),
         (
             "thermostat_0",
             "sensor.ecomax_thermostat_1_test_custom_sensor",
             "ecoMAX Thermostat 1 Test custom sensor",
+            None,
+            None,
+            None,
         ),
     ),
 )
@@ -1272,6 +1291,9 @@ async def test_custom_sensors(
     source_device: str,
     entity_id: str,
     friendly_name: str,
+    unit_of_measurement: str | None,
+    device_class: SensorDeviceClass | None,
+    state_class: SensorStateClass | None,
     hass: HomeAssistant,
     connection: EcomaxConnection,
     config_entry: MockConfigEntry,
@@ -1288,9 +1310,9 @@ async def test_custom_sensors(
                         "name": "Test custom sensor",
                         "key": "custom_sensor",
                         "source_device": source_device,
-                        "unit_of_measurement": UnitOfTemperature.CELSIUS,
-                        "device_class": SensorDeviceClass.TEMPERATURE,
-                        "state_class": SensorStateClass.MEASUREMENT,
+                        "unit_of_measurement": unit_of_measurement,
+                        "device_class": device_class,
+                        "state_class": state_class,
                     }
                 }
             }
@@ -1307,14 +1329,79 @@ async def test_custom_sensors(
     assert isinstance(state, State)
     assert state.state == "50.0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == friendly_name
-    assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
-    assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.TEMPERATURE
-    assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
+
+    if unit_of_measurement:
+        assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == unit_of_measurement
+    else:
+        assert ATTR_UNIT_OF_MEASUREMENT not in state.attributes
+
+    if device_class:
+        assert state.attributes[ATTR_DEVICE_CLASS] == device_class
+    else:
+        assert ATTR_DEVICE_CLASS not in state.attributes
+
+    if state_class:
+        assert state.attributes[ATTR_STATE_CLASS] == state_class
+    else:
+        assert ATTR_STATE_CLASS not in state.attributes
 
     # Dispatch new value.
     await dispatch_value(
         connection.device, "custom_sensor", 45.0, source_device=source_device
     )
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert state.state == "45.0"
+
+
+@pytest.mark.usefixtures("ecomax_p", "custom_fields")
+async def test_custom_sensors_update_interval(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    frozen_time,
+) -> None:
+    """Test custom sensors with update interval."""
+    await setup_integration(
+        hass,
+        config_entry,
+        options={
+            "entities": {
+                Platform.SENSOR: {
+                    "custom_sensor": {
+                        "name": "Test custom sensor",
+                        "key": "custom_sensor",
+                        "source_device": "ecomax",
+                        "update_interval": 10,
+                    }
+                }
+            }
+        },
+    )
+
+    entity_id = "sensor.ecomax_test_custom_sensor"
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(entity_id)
+    assert entry
+
+    # Get initial value.
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert state.state == "50.0"
+
+    # Advance time 5 seconds and dispatch a new value.
+    frozen_time.tick(5)
+    await dispatch_value(connection.device, "custom_sensor", 45.0)
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert state.state == "50.0"
+
+    # Advance time 10 seconds and dispatch a new value.
+    frozen_time.tick(10)
+    await dispatch_value(connection.device, "custom_sensor", 45.0)
     state = hass.states.get(entity_id)
     assert isinstance(state, State)
     assert state.state == "45.0"

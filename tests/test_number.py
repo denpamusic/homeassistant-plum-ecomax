@@ -21,6 +21,7 @@ from homeassistant.const import (
     ATTR_UNIT_OF_MEASUREMENT,
     PERCENTAGE,
     Platform,
+    UnitOfMass,
     UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant, State
@@ -944,27 +945,46 @@ async def test_circuit_night_target_circuit_temperature_number(
 
 
 @pytest.mark.parametrize(
-    ("source_device", "entity_id", "friendly_name"),
+    (
+        "source_device",
+        "entity_id",
+        "friendly_name",
+        "step",
+        "unit_of_measurement",
+        "device_class",
+    ),
     (
         (
             "ecomax",
             "number.ecomax_test_custom_number",
             "ecoMAX Test custom number",
+            1,
+            UnitOfMass.KILOGRAMS,
+            NumberDeviceClass.WEIGHT,
         ),
         (
             "mixer_0",
             "number.ecomax_mixer_1_test_custom_number",
             "ecoMAX Mixer 1 Test custom number",
+            0.1,
+            UnitOfTemperature.CELSIUS,
+            NumberDeviceClass.TEMPERATURE,
         ),
         (
             "mixer_1",
             "number.ecomax_mixer_2_test_custom_number",
             "ecoMAX Mixer 2 Test custom number",
+            2,
+            UnitOfTemperature.CELSIUS,
+            NumberDeviceClass.TEMPERATURE,
         ),
         (
             "thermostat_0",
             "number.ecomax_thermostat_1_test_custom_number",
             "ecoMAX Thermostat 1 Test custom number",
+            10,
+            None,
+            None,
         ),
     ),
 )
@@ -973,6 +993,9 @@ async def test_custom_numbers(
     source_device: str,
     entity_id: str,
     friendly_name: str,
+    step: int | float | None,
+    unit_of_measurement: str | None,
+    device_class: NumberDeviceClass | None,
     hass: HomeAssistant,
     connection: EcomaxConnection,
     config_entry: MockConfigEntry,
@@ -991,8 +1014,9 @@ async def test_custom_numbers(
                         "name": "Test custom number",
                         "key": custom_number_key,
                         "source_device": source_device,
-                        "unit_of_measurement": UnitOfTemperature.CELSIUS,
-                        "device_class": NumberDeviceClass.TEMPERATURE,
+                        "unit_of_measurement": unit_of_measurement,
+                        "device_class": device_class,
+                        "step": step,
                     }
                 }
             }
@@ -1009,12 +1033,20 @@ async def test_custom_numbers(
     assert isinstance(state, State)
     assert state.state == "0.0"
     assert state.attributes[ATTR_FRIENDLY_NAME] == friendly_name
-    assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
     assert state.attributes[ATTR_MIN] == 30
     assert state.attributes[ATTR_MAX] == 50
-    assert state.attributes[ATTR_STEP] == 1
+    assert state.attributes[ATTR_STEP] == step
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
-    assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
+
+    if device_class:
+        assert state.attributes[ATTR_DEVICE_CLASS] == device_class
+    else:
+        assert ATTR_DEVICE_CLASS not in state.attributes
+
+    if unit_of_measurement:
+        assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == unit_of_measurement
+    else:
+        assert ATTR_UNIT_OF_MEASUREMENT not in state.attributes
 
     # Dispatch new state.
     new_state = EcomaxNumber(
