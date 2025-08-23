@@ -102,7 +102,8 @@ async def test_target_heating_temperature_number(
     assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         target_heating_temperature_key,
         EcomaxNumber(
             device=connection.device,
@@ -157,7 +158,8 @@ async def test_minimum_heating_temperature_number(
     assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         minimum_heating_temperature_key,
         EcomaxNumber(
             device=connection.device,
@@ -212,7 +214,8 @@ async def test_maximum_heating_temperature_number(
     assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         maximum_heating_temperature_key,
         EcomaxNumber(
             device=connection.device,
@@ -267,7 +270,8 @@ async def test_grate_mode_temperature_number(
     assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         grate_mode_temperature_key,
         EcomaxNumber(
             device=connection.device,
@@ -321,7 +325,8 @@ async def test_fuzzy_logic_minimum_power_number(
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
 
     # Dispatch new state.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         fuzzy_logic_minimum_power_key,
         EcomaxNumber(
             device=connection.device,
@@ -375,7 +380,8 @@ async def test_fuzzy_logic_maximum_power_number(
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
 
     # Dispatch new state.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         fuzzy_logic_maximum_power_key,
         EcomaxNumber(
             device=connection.device,
@@ -429,7 +435,8 @@ async def test_fuel_calorific_value_number(
     assert state.attributes[ATTR_MODE] == NumberMode.BOX
 
     # Dispatch new state.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         fuel_calorific_value_key,
         EcomaxNumber(
             device=connection.device,

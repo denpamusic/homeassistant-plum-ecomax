@@ -26,6 +26,7 @@ from custom_components.plum_ecomax.select import (
     STATE_SUMMER,
     STATE_WINTER,
 )
+from tests.conftest import dispatch_value
 
 
 @pytest.fixture(autouse=True)
@@ -91,7 +92,8 @@ async def test_summer_mode_select(
     options = state.attributes[ATTR_OPTIONS]
 
     # Dispatch new value.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         summer_mode_select_key,
         EcomaxNumber(
             device=connection.device,

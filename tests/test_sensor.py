@@ -184,7 +184,7 @@ async def test_heating_temperature_sensor(
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
-    await connection.device.dispatch(ATTR_HEATING_TEMP, 65)
+    await dispatch_value(connection.device, ATTR_HEATING_TEMP, 65)
     state = hass.states.get(heating_temperature_entity_id)
     assert isinstance(state, State)
     assert state.state == "65"
@@ -241,7 +241,7 @@ async def test_water_heater_temperature_sensor(
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
-    await connection.device.dispatch(ATTR_WATER_HEATER_TEMP, 51)
+    await dispatch_value(connection.device, ATTR_WATER_HEATER_TEMP, 51)
     state = hass.states.get(water_heater_temperature_entity_id)
     assert isinstance(state, State)
     assert state.state == "51"
@@ -296,7 +296,7 @@ async def test_outside_temperature_sensor(
     assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.TEMPERATURE
 
     # Dispatch new value.
-    await connection.device.dispatch(ATTR_OUTSIDE_TEMP, 1)
+    await dispatch_value(connection.device, ATTR_OUTSIDE_TEMP, 1)
     state = hass.states.get(outside_temperature_entity_id)
     assert isinstance(state, State)
     assert state.state == "1"
@@ -331,7 +331,7 @@ async def test_heating_target_temperature_sensor(
     assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.TEMPERATURE
 
     # Dispatch new value.
-    await connection.device.dispatch(ATTR_HEATING_TARGET, 65)
+    await dispatch_value(connection.device, ATTR_HEATING_TARGET, 65)
     state = hass.states.get(heating_target_temperature_entity_id)
     assert isinstance(state, State)
     assert state.state == "65"
@@ -370,7 +370,7 @@ async def test_water_heater_target_temperature_sensor(
     assert state.attributes[ATTR_DEVICE_CLASS] == SensorDeviceClass.TEMPERATURE
 
     # Dispatch new value.
-    await connection.device.dispatch(ATTR_WATER_HEATER_TARGET, 50)
+    await dispatch_value(connection.device, ATTR_WATER_HEATER_TARGET, 50)
     state = hass.states.get(water_heater_target_temperature_entity_id)
     assert isinstance(state, State)
     assert state.state == "50"
@@ -401,13 +401,13 @@ async def test_state_sensor(
     assert state.attributes[ATTR_NUMERIC_STATE] == 0
 
     # Dispatch new value.
-    await connection.device.dispatch(ATTR_STATE, DeviceState.ALERT)
+    await dispatch_value(connection.device, ATTR_STATE, DeviceState.ALERT)
     state = hass.states.get(state_entity_id)
     assert isinstance(state, State)
     assert state.state == "alert"
 
     # Dispatch unknown state.
-    await connection.device.dispatch(ATTR_STATE, 99)
+    await dispatch_value(connection.device, ATTR_STATE, 99)
     state = hass.states.get(state_entity_id)
     assert isinstance(state, State)
     assert state.state == "unknown"
@@ -438,7 +438,7 @@ async def test_service_password_sensor(
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Service password"
 
     # Dispatch new value.
-    await connection.device.dispatch(ATTR_PASSWORD, "1234")
+    await dispatch_value(connection.device, ATTR_PASSWORD, "1234")
     state = hass.states.get(service_password_entity_id)
     assert isinstance(state, State)
     assert state.state == "1234"
@@ -471,8 +471,8 @@ async def test_connected_modules_sensor(
     assert state.attributes[ModuleType.PANEL] == "6.30.36"
 
     # Dispatch new value.
-    await connection.device.dispatch(
-        ATTR_MODULES, ConnectedModules(module_a="1.0.0.T0")
+    await dispatch_value(
+        connection.device, ATTR_MODULES, ConnectedModules(module_a="1.0.0.T0")
     )
     state = hass.states.get(connected_modules_entity_id)
     assert isinstance(state, State)
@@ -510,13 +510,15 @@ async def test_oxygen_level_sensor(
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
-    await connection.device.dispatch(ATTR_LAMBDA_LEVEL, 15)
+    await dispatch_value(connection.device, ATTR_LAMBDA_LEVEL, 15)
     state = hass.states.get(oxygen_level_entity_id)
     assert isinstance(state, State)
     assert state.state == "15"
 
     # Test without ecoLAMBDA.
-    await connection.device.dispatch(ATTR_MODULES, ConnectedModules(ecolambda=None))
+    await dispatch_value(
+        connection.device, ATTR_MODULES, ConnectedModules(ecolambda=None)
+    )
     await hass.config_entries.async_remove(config_entry.entry_id)
     await setup_integration(hass, config_entry)
     assert hass.states.get(oxygen_level_entity_id) is None
@@ -552,7 +554,7 @@ async def test_boiler_power_sensor(
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
-    await connection.device.dispatch(ATTR_BOILER_POWER, 16)
+    await dispatch_value(connection.device, ATTR_BOILER_POWER, 16)
     state = hass.states.get(boiler_power_entity_id)
     assert isinstance(state, State)
     assert state.state == "16"
@@ -588,7 +590,7 @@ async def test_fuel_level_sensor(
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
-    await connection.device.dispatch(ATTR_FUEL_LEVEL, 20)
+    await dispatch_value(connection.device, ATTR_FUEL_LEVEL, 20)
     state = hass.states.get(fuel_level_entity_id)
     assert isinstance(state, State)
     assert state.state == "20"
@@ -624,7 +626,7 @@ async def test_fuel_consumption_sensor(
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
-    await connection.device.dispatch(ATTR_FUEL_CONSUMPTION, 2.5)
+    await dispatch_value(connection.device, ATTR_FUEL_CONSUMPTION, 2.5)
     state = hass.states.get(fuel_consumption_entity_id)
     assert isinstance(state, State)
     assert state.state == "2.5"
@@ -658,7 +660,7 @@ async def test_boiler_load_sensor(
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
-    await connection.device.dispatch(ATTR_BOILER_LOAD, 50)
+    await dispatch_value(connection.device, ATTR_BOILER_LOAD, 50)
     state = hass.states.get(boiler_load_entity_id)
     assert isinstance(state, State)
     assert state.state == "50"
@@ -694,7 +696,7 @@ async def test_fan_power_sensor(
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
-    await connection.device.dispatch(ATTR_FAN_POWER, 100)
+    await dispatch_value(connection.device, ATTR_FAN_POWER, 100)
     state = hass.states.get(fan_power_entity_id)
     assert isinstance(state, State)
     assert state.state == "100"
@@ -730,7 +732,7 @@ async def test_flame_intensity_sensor(
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
-    await connection.device.dispatch(ATTR_OPTICAL_TEMP, 100)
+    await dispatch_value(connection.device, ATTR_OPTICAL_TEMP, 100)
     state = hass.states.get(flame_intensity_entity_id)
     assert isinstance(state, State)
     assert state.state == "100"
@@ -766,7 +768,7 @@ async def test_feeder_temperature_sensor(
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
-    await connection.device.dispatch(ATTR_FEEDER_TEMP, 35)
+    await dispatch_value(connection.device, ATTR_FEEDER_TEMP, 35)
     state = hass.states.get(feeder_temperature_entity_id)
     assert isinstance(state, State)
     assert state.state == "35"
@@ -802,7 +804,7 @@ async def test_exhaust_temperature_sensor(
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
-    await connection.device.dispatch(ATTR_EXHAUST_TEMP, 120)
+    await dispatch_value(connection.device, ATTR_EXHAUST_TEMP, 120)
     state = hass.states.get(exhaust_temperature_entity_id)
     assert isinstance(state, State)
     assert state.state == "120"
@@ -838,7 +840,7 @@ async def test_return_temperature_sensor(
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
-    await connection.device.dispatch(ATTR_RETURN_TEMP, 45)
+    await dispatch_value(connection.device, ATTR_RETURN_TEMP, 45)
     state = hass.states.get(return_temperature_entity_id)
     assert isinstance(state, State)
     assert state.state == "45"
@@ -874,7 +876,7 @@ async def test_lower_buffer_temperature_sensor(
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
-    await connection.device.dispatch(ATTR_LOWER_BUFFER_TEMP, 45)
+    await dispatch_value(connection.device, ATTR_LOWER_BUFFER_TEMP, 45)
     state = hass.states.get(lower_buffer_temperature_entity_id)
     assert isinstance(state, State)
     assert state.state == "45"
@@ -910,7 +912,7 @@ async def test_upper_buffer_temperature_sensor(
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
-    await connection.device.dispatch(ATTR_UPPER_BUFFER_TEMP, 45)
+    await dispatch_value(connection.device, ATTR_UPPER_BUFFER_TEMP, 45)
     state = hass.states.get(upper_buffer_temperature_entity_id)
     assert isinstance(state, State)
     assert state.state == "45"
@@ -946,7 +948,7 @@ async def test_lower_solar_temperature_sensor(
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
-    await connection.device.dispatch(ATTR_LOWER_SOLAR_TEMP, 45)
+    await dispatch_value(connection.device, ATTR_LOWER_SOLAR_TEMP, 45)
     state = hass.states.get(lower_solar_temperature_entity_id)
     assert isinstance(state, State)
     assert state.state == "45"
@@ -982,7 +984,7 @@ async def test_upper_solar_temperature_sensor(
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
-    await connection.device.dispatch(ATTR_UPPER_SOLAR_TEMP, 45)
+    await dispatch_value(connection.device, ATTR_UPPER_SOLAR_TEMP, 45)
     state = hass.states.get(upper_solar_temperature_entity_id)
     assert isinstance(state, State)
     assert state.state == "45"
@@ -1018,7 +1020,7 @@ async def test_fireplace_temperature_sensor(
 
     # Dispatch new value.
     frozen_time.move_to("12:00:10")
-    await connection.device.dispatch(ATTR_FIREPLACE_TEMP, 45)
+    await dispatch_value(connection.device, ATTR_FIREPLACE_TEMP, 45)
     state = hass.states.get(fireplace_temperature_entity_id)
     assert isinstance(state, State)
     assert state.state == "45"
@@ -1212,9 +1214,9 @@ async def test_total_fuel_burned_sensor(
     assert state.attributes[ATTR_DEVICE_CLASS] == DEVICE_CLASS_METER
 
     # Move time 30 seconds in future and dispatch new value.
-    await connection.device.dispatch(ATTR_FUEL_BURNED, 0.1)
+    await dispatch_value(connection.device, ATTR_FUEL_BURNED, 0.1)
     frozen_time.move_to("12:00:30")
-    await connection.device.dispatch(ATTR_FUEL_BURNED, 0.2)
+    await dispatch_value(connection.device, ATTR_FUEL_BURNED, 0.2)
     state = hass.states.get(fuel_burned_entity_id)
     assert isinstance(state, State)
     assert state.state == "0.3"

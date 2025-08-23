@@ -114,7 +114,8 @@ async def test_ecomax_control_switch(
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Controller switch"
 
     # Dispatch new value.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         ATTR_ECOMAX_CONTROL,
         EcomaxSwitch(
             device=connection.device,
@@ -175,7 +176,8 @@ async def test_water_heater_disinfection_switch(
     )
 
     # Dispatch new value.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         water_heater_disinfection_switch_key,
         EcomaxSwitch(
             device=connection.device,
@@ -235,7 +237,8 @@ async def test_water_heater_pump_switch(
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Water heater pump switch"
 
     # Dispatch new value.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         water_heater_pump_switch_key,
         EcomaxNumber(
             device=connection.device,
@@ -291,7 +294,8 @@ async def test_weather_control_switch(
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Weather control switch"
 
     # Dispatch new value.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         weather_control_switch_key,
         EcomaxSwitch(
             device=connection.device,
@@ -347,7 +351,8 @@ async def test_fuzzy_logic_switch(
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Fuzzy logic switch"
 
     # Dispatch new value.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         fuzzy_logic_switch_key,
         EcomaxSwitch(
             device=connection.device,
@@ -403,7 +408,8 @@ async def test_heating_schedule_switch(
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Heating schedule switch"
 
     # Dispatch new value.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         heating_schedule_switch_key,
         EcomaxSwitch(
             device=connection.device,
@@ -461,7 +467,8 @@ async def test_water_heater_schedule_switch(
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Water heater schedule switch"
 
     # Dispatch new value.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         water_heater_schedule_switch_key,
         EcomaxSwitch(
             device=connection.device,
