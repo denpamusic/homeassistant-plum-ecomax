@@ -2,12 +2,13 @@
 
 import asyncio
 from collections.abc import Generator
-from typing import Any, Final
+from typing import Any, Final, cast
 from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.core import HomeAssistant
 from pyplumio.connection import Connection
 from pyplumio.const import DeviceState, ProductType, UnitOfMeasurement
+from pyplumio.devices import PhysicalDevice, VirtualDevice
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
@@ -757,12 +758,17 @@ def custom_fields(ecomax_common: EcoMAX):
 
 
 async def dispatch_value(
-    ecomax: EcoMAX, name: str, value: Any, source_device: str = "ecomax"
+    physical_device: PhysicalDevice,
+    name: str,
+    value: Any,
+    source_device: str = "ecomax",
 ) -> None:
     """Dispatch the value."""
     if source_device == "ecomax":
-        await ecomax.dispatch(name, value)
+        await physical_device.dispatch(name, value)
     else:
         device_type, index = source_device.rsplit("_", 1)
-        devices = ecomax.get_nowait(f"{device_type}s")
-        await devices[int(index)].dispatch(name, value)
+        vitual_devices = cast(
+            dict[int, VirtualDevice], physical_device.get_nowait(f"{device_type}s")
+        )
+        await vitual_devices[int(index)].dispatch(name, value)
