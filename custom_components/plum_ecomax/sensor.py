@@ -538,7 +538,7 @@ class EcomaxMeter(EcomaxSensor, RestoreSensor):
     @override
     async def async_added_to_hass(self) -> None:
         """Restore native value."""
-        await EcomaxEntity.async_added_to_hass(self)
+        await super().async_added_to_hass()
         if (last_sensor_data := await self.async_get_last_sensor_data()) is not None:
             self._attr_native_value = last_sensor_data.native_value
             self._attr_native_unit_of_measurement = (
@@ -559,11 +559,11 @@ class EcomaxMeter(EcomaxSensor, RestoreSensor):
 
     async def async_update(self, value: float | None = None) -> None:
         """Update meter state."""
-        if value is not None and isinstance(self._attr_native_value, float):
+        if value is not None:
             self._attr_extra_state_attributes = {
                 ATTR_BURNED_SINCE_LAST_UPDATE: value * 1000
             }
-            self._attr_native_value += value
+            self._attr_native_value = float(self._attr_native_value + value)
             self.async_write_ha_state()
 
     @property
