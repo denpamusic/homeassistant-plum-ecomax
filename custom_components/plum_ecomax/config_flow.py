@@ -727,13 +727,13 @@ class OptionsFlowHandler(OptionsFlow):
     ) -> ConfigFlowResult:
         """Save the options."""
         entities = self.entities.setdefault(self.platform.value, {})
-        renaming_entity = True if key != data[CONF_KEY] else False
+        key_changed = True if key != data[CONF_KEY] else False
 
-        if renaming_entity:
+        if key_changed:
             self._async_remove_entry(key)
             entities.pop(key, None)
 
-        if self.platform is Platform.NUMBER and not renaming_entity:
+        if self.platform is Platform.NUMBER and not key_changed:
             data[CONF_STEP] = self._async_get_native_step(data[CONF_KEY])
 
         key = data[CONF_KEY]
