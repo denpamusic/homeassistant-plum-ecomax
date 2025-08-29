@@ -625,7 +625,7 @@
     "sensor_state_class": {
       "options": {
         "measurement": "Measurement",
-        "mesurement_angle": "Measurement angle",
+        "measurement_angle": "Measurement angle",
         "total": "Total",
         "total_increasing": "Total increasing"
       }
