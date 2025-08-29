@@ -387,6 +387,15 @@
     },
     "set_parameter_timeout": {
       "message": "La définition d'un paramètre \"{parameter}\" a expiré"
+    },
+    "device_disconnected": {
+      "message": "The selected device was disconnected ({device})"
+    },
+    "unsupported_device": {
+      "message": "The selected device is invalid or not supported ({device})"
+    },
+    "entity_not_found": {
+      "message": "The selected entity \"{entity}\" was not found on the device ({device})"
     }
   },
   "options": {
@@ -440,7 +449,8 @@
       }
     },
     "abort": {
-      "no_entities_found": "No entities found, you'll need to add some first."
+      "no_entities_to_edit_or_remove": "No entities to edit or remove, you'll need to add some first.",
+      "no_entities_to_add": "No entities to add, all available entities have been added already."
     }
   },
   "selector": {

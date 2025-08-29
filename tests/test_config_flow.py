@@ -866,10 +866,13 @@ async def test_add_entity_with_disconnected_mixer(
     del connection.device.data["mixers"][1]
 
     # Expect error on getting the entity details form.
-    with pytest.raises(HomeAssistantError):
+    with pytest.raises(HomeAssistantError) as exc_info:
         await hass.config_entries.options.async_configure(
             result3["flow_id"], user_input={"next_step_id": "add_binary_sensor"}
         )
+
+    assert exc_info.value.translation_key == "device_disconnected"
+    assert exc_info.value.translation_placeholders == {"device": "mixer 1"}
 
 
 @pytest.mark.usefixtures("ecomax_860p3_o", "custom_fields")
@@ -905,7 +908,7 @@ async def test_add_entity_with_missing_number(
     del connection.device.data["custom_number"]
 
     # Expect error on adding the entity if selected number is missing.
-    with pytest.raises(HomeAssistantError):
+    with pytest.raises(HomeAssistantError) as exc_info:
         await hass.config_entries.options.async_configure(
             result4["flow_id"],
             {
@@ -916,6 +919,12 @@ async def test_add_entity_with_missing_number(
                 CONF_DEVICE_CLASS: NumberDeviceClass.TEMPERATURE,
             },
         )
+
+    assert exc_info.value.translation_key == "entity_not_found"
+    assert exc_info.value.translation_placeholders == {
+        "entity": "custom_number",
+        "device": "ecomax",
+    }
 
 
 @pytest.mark.usefixtures("connection", "ecomax_base")
@@ -948,7 +957,7 @@ async def test_abort_no_entities_to_add(
         result3["flow_id"], user_input={"next_step_id": "add_binary_sensor"}
     )
     assert result4["type"] is FlowResultType.ABORT
-    assert result4["reason"] == "no_entities_found"
+    assert result4["reason"] == "no_entities_to_add"
 
 
 @pytest.mark.parametrize(
@@ -1124,7 +1133,7 @@ async def test_edit_entity_with_invalid_source_device(
                     "custom_binary_sensor": {
                         CONF_NAME: "Custom binary sensor",
                         CONF_KEY: "custom_binary_sensor",
-                        CONF_SOURCE_DEVICE: "non_existing_device",
+                        CONF_SOURCE_DEVICE: "unsupported_device",
                         CONF_DEVICE_CLASS: BinarySensorDeviceClass.RUNNING,
                     }
                 }
@@ -1141,11 +1150,14 @@ async def test_edit_entity_with_invalid_source_device(
     assert result2["errors"] is None
 
     # Expect error on getting the entity details form.
-    with pytest.raises(HomeAssistantError):
+    with pytest.raises(HomeAssistantError) as exc_info:
         await hass.config_entries.options.async_configure(
             result["flow_id"],
             user_input={"entity_id": "binary_sensor.custom_binary_sensor"},
         )
+
+    assert exc_info.value.translation_key == "unsupported_device"
+    assert exc_info.value.translation_placeholders == {"device": "unsupported_device"}
 
 
 @pytest.mark.usefixtures("connection", "bypass_async_setup_entry")
@@ -1163,7 +1175,7 @@ async def test_abort_no_entities_to_edit(
         result["flow_id"], user_input={"next_step_id": "edit_entity"}
     )
     assert result2["type"] is FlowResultType.ABORT
-    assert result2["reason"] == "no_entities_found"
+    assert result2["reason"] == "no_entities_to_edit_or_remove"
 
 
 @pytest.mark.usefixtures("connection", "ecomax_860p3_o")
@@ -1243,7 +1255,7 @@ async def test_abort_no_entities_to_remove(
         result["flow_id"], user_input={"next_step_id": "remove_entity"}
     )
     assert result2["type"] is FlowResultType.ABORT
-    assert result2["reason"] == "no_entities_found"
+    assert result2["reason"] == "no_entities_to_edit_or_remove"
 
 
 @patch(

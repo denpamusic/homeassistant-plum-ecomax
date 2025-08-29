@@ -709,7 +709,7 @@ class OptionsFlowHandler(OptionsFlow):
                 selected=entity.get(CONF_KEY, "")
             )
         ):
-            return await self.async_step_entities_not_found()
+            return await self.async_step_no_entities_to_add()
 
         return self.async_show_form(
             step_id="entity_details",
@@ -766,7 +766,7 @@ class OptionsFlowHandler(OptionsFlow):
             return await self.async_step_entity_details()
 
         if not (schema := generate_select_schema(self.entities)):
-            return await self.async_step_entities_not_found()
+            return await self.async_step_no_entities_to_edit_or_remove()
 
         return self.async_show_form(
             step_id="edit_entity", data_schema=schema, last_step=False
@@ -780,7 +780,7 @@ class OptionsFlowHandler(OptionsFlow):
             return self._async_step_remove_entity(user_input["entity_id"])
 
         if not (schema := generate_select_schema(self.entities)):
-            return await self.async_step_entities_not_found()
+            return await self.async_step_no_entities_to_edit_or_remove()
 
         return self.async_show_form(
             step_id="remove_entity", data_schema=schema, last_step=False
@@ -799,11 +799,17 @@ class OptionsFlowHandler(OptionsFlow):
         finally:
             self.hass.config_entries.async_schedule_reload(self.config_entry.entry_id)
 
-    async def async_step_entities_not_found(
+    async def async_step_no_entities_to_add(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle issues that need transition await from progress step."""
-        return self.async_abort(reason="no_entities_found")
+        """Handle the case when no valid entities available to add."""
+        return self.async_abort(reason="no_entities_to_add")
+
+    async def async_step_no_entities_to_edit_or_remove(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle the case when no entities were added to edit."""
+        return self.async_abort(reason="no_entities_to_edit_or_remove")
 
     @callback
     def _async_get_virtual_device(self, device_type: str, index: int) -> VirtualDevice:
@@ -815,7 +821,10 @@ class OptionsFlowHandler(OptionsFlow):
         if index in virtual_devices:
             return virtual_devices[index]
 
-        raise HomeAssistantError
+        raise HomeAssistantError(
+            translation_key="device_disconnected",
+            translation_placeholders={"device": f"{device_type} {index}"},
+        )
 
     @callback
     def _async_get_ecomax_sources(
@@ -866,7 +875,10 @@ class OptionsFlowHandler(OptionsFlow):
             data, existing_keys = self._async_get_virtual_device_sources(entity_keys)
 
         else:
-            raise HomeAssistantError
+            raise HomeAssistantError(
+                translation_key="unsupported_device",
+                translation_placeholders={"device": self.source_device},
+            )
         return {
             k: v for k, v in data.items() if k not in existing_keys or k == selected
         }
@@ -976,6 +988,9 @@ class OptionsFlowHandler(OptionsFlow):
 
         number = cast(Number | None, number)
         if not number:
-            raise HomeAssistantError
+            raise HomeAssistantError(
+                translation_key="entity_not_found",
+                translation_placeholders={"entity": key, "device": self.source_device},
+            )
 
         return number.description.step
