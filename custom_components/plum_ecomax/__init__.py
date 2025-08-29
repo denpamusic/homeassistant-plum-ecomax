@@ -101,7 +101,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: PlumEcomaxConfigEntry) -
     return True
 
 
-async def async_reload_config(
+async def async_rediscover_devices(
     hass: HomeAssistant, entry: ConfigEntry, connection: EcomaxConnection
 ) -> None:
     """Reload config on update."""

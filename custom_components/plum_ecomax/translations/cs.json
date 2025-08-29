@@ -444,7 +444,7 @@
           "add_entity": "Add a new entity",
           "edit_entity": "Edit an entity",
           "remove_entity": "Remove an entity",
-          "reload": "Reload configuration"
+          "rediscover_devices": "Rediscover connected devices"
         }
       }
     },

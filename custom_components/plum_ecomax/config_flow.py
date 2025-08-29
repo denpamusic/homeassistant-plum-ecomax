@@ -50,7 +50,7 @@ from pyplumio.structures.modules import ConnectedModules
 from pyplumio.structures.product_info import ProductInfo
 import voluptuous as vol
 
-from . import async_reload_config
+from . import async_rediscover_devices
 from .connection import (
     DEFAULT_TIMEOUT,
     EcomaxConnection,
@@ -627,7 +627,12 @@ class OptionsFlowHandler(OptionsFlow):
         self.entities = cast(dict[str, Any], self.options.setdefault("entities", {}))
         return self.async_show_menu(
             step_id="init",
-            menu_options=["add_entity", "edit_entity", "remove_entity", "reload"],
+            menu_options=[
+                "add_entity",
+                "edit_entity",
+                "remove_entity",
+                "rediscover_devices",
+            ],
         )
 
     async def async_step_add_entity(
@@ -744,14 +749,14 @@ class OptionsFlowHandler(OptionsFlow):
         finally:
             self.hass.config_entries.async_schedule_reload(self.config_entry.entry_id)
 
-    async def async_step_reload(
+    async def async_step_rediscover_devices(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle reloading config."""
+        """Handle rediscovering connected devices."""
         self.hass.async_create_task(
-            async_reload_config(self.hass, self.config_entry, self.connection)
+            async_rediscover_devices(self.hass, self.config_entry, self.connection)
         )
-        return self.async_create_entry(title="Reload complete", data=self.options)
+        return self.async_create_entry(data=self.options)
 
     async def async_step_edit_entity(
         self, user_input: dict[str, Any] | None = None
@@ -795,7 +800,7 @@ class OptionsFlowHandler(OptionsFlow):
         self._async_remove_entry(key)
 
         try:
-            return self.async_create_entry(title="Entity removed", data=self.options)
+            return self.async_create_entry(title="", data=self.options)
         finally:
             self.hass.config_entries.async_schedule_reload(self.config_entry.entry_id)
 

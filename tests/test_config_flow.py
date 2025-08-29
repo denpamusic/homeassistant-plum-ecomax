@@ -1296,28 +1296,31 @@ async def test_abort_no_entities_to_remove(
 
 
 @patch(
-    "custom_components.plum_ecomax.config_flow.async_reload_config", new_callable=Mock
+    "custom_components.plum_ecomax.config_flow.async_rediscover_devices",
+    new_callable=Mock,
 )
 @patch("homeassistant.core.HomeAssistant.async_create_task")
 @pytest.mark.usefixtures("ecomax_860p3_o", "bypass_async_setup_entry")
-async def test_reload_config(
+async def test_rediscover_devices(
     mock_async_create_task,
-    mock_async_reload_config,
+    mock_async_rediscover_devices,
     hass: HomeAssistant,
     config_entry: MockConfigEntry,
     setup_integration,
     connection,
 ) -> None:
-    """Test reloading the config entry."""
+    """Test rediscovering devices for the config entry."""
     await setup_integration(hass, config_entry)
     result = await setup_options_flow(hass, config_entry)
 
     # Reload the config.
     result2 = await hass.config_entries.options.async_configure(
-        result["flow_id"], user_input={"next_step_id": "reload"}
+        result["flow_id"], user_input={"next_step_id": "rediscover_devices"}
     )
     assert result2["type"] is FlowResultType.CREATE_ENTRY
-    mock_async_reload_config.assert_called_once_with(hass, config_entry, connection)
+    mock_async_rediscover_devices.assert_called_once_with(
+        hass, config_entry, connection
+    )
     mock_async_create_task.assert_called_once_with(
-        mock_async_reload_config.return_value
+        mock_async_rediscover_devices.return_value
     )

@@ -21,7 +21,7 @@ import pytest
 from custom_components.plum_ecomax import (
     PlumEcomaxData,
     async_migrate_entry,
-    async_reload_config,
+    async_rediscover_devices,
     async_setup_entry,
     async_setup_events,
     async_unload_entry,
@@ -276,7 +276,7 @@ async def test_reload_config(hass: HomeAssistant, config_entry: ConfigEntry) -> 
             "homeassistant.config_entries.ConfigEntries.async_reload"
         ) as mock_async_reload,
     ):
-        await async_reload_config(hass, config_entry, connection)
+        await async_rediscover_devices(hass, config_entry, connection)
 
     mock_async_get_sub_devices.assert_awaited_once_with(connection.device)
     expected_data = dict(config_entry.data)
