@@ -463,23 +463,23 @@ async def test_circuit_pump_binary_sensor(
     (
         (
             "ecomax",
-            "binary_sensor.ecomax_test_custom_binary",
-            "ecoMAX Test custom binary",
+            "binary_sensor.ecomax_test_custom_binary_sensor",
+            "ecoMAX Test custom binary sensor",
         ),
         (
             "mixer_0",
-            "binary_sensor.ecomax_mixer_1_test_custom_binary",
-            "ecoMAX Mixer 1 Test custom binary",
+            "binary_sensor.ecomax_mixer_1_test_custom_binary_sensor",
+            "ecoMAX Mixer 1 Test custom binary sensor",
         ),
         (
             "mixer_1",
-            "binary_sensor.ecomax_mixer_2_test_custom_binary",
-            "ecoMAX Mixer 2 Test custom binary",
+            "binary_sensor.ecomax_mixer_2_test_custom_binary_sensor",
+            "ecoMAX Mixer 2 Test custom binary sensor",
         ),
         (
             "thermostat_0",
-            "binary_sensor.ecomax_thermostat_1_test_custom_binary",
-            "ecoMAX Thermostat 1 Test custom binary",
+            "binary_sensor.ecomax_thermostat_1_test_custom_binary_sensor",
+            "ecoMAX Thermostat 1 Test custom binary sensor",
         ),
     ),
 )
@@ -500,9 +500,9 @@ async def test_custom_binary_sensors(
         options={
             "entities": {
                 Platform.BINARY_SENSOR: {
-                    "custom_binary": {
-                        "name": "Test custom binary",
-                        "key": "custom_binary",
+                    "custom_binary_sensor": {
+                        "name": "Test custom binary sensor",
+                        "key": "custom_binary_sensor",
                         "source_device": source_device,
                         "device_class": BinarySensorDeviceClass.RUNNING,
                     }
@@ -525,7 +525,7 @@ async def test_custom_binary_sensors(
 
     # Dispatch new value.
     await dispatch_value(
-        connection.device, "custom_binary", True, source_device=source_device
+        connection.device, "custom_binary_sensor", True, source_device=source_device
     )
     state = hass.states.get(entity_id)
     assert isinstance(state, State)

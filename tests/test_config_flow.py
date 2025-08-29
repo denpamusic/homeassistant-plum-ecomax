@@ -500,14 +500,14 @@ async def setup_options_flow(
             COMMON_TYPE_MENU_OPTIONS,
             Platform.BINARY_SENSOR,
             {
-                CONF_NAME: "Custom binary",
-                CONF_KEY: "custom_binary",
+                CONF_NAME: "Custom binary sensor",
+                CONF_KEY: "custom_binary_sensor",
                 CONF_DEVICE_CLASS: BinarySensorDeviceClass.RUNNING,
             },
             {
-                "custom_binary": {
-                    CONF_NAME: "Custom binary",
-                    CONF_KEY: "custom_binary",
+                "custom_binary_sensor": {
+                    CONF_NAME: "Custom binary sensor",
+                    CONF_KEY: "custom_binary_sensor",
                     CONF_DEVICE_CLASS: BinarySensorDeviceClass.RUNNING,
                     CONF_SOURCE_DEVICE: "ecomax",
                 }
@@ -957,22 +957,22 @@ async def test_abort_no_entities_to_add(
         (
             Platform.BINARY_SENSOR,
             {
-                "custom_binary": {
-                    CONF_NAME: "Custom binary",
-                    CONF_KEY: "custom_binary",
+                "custom_binary_sensor": {
+                    CONF_NAME: "Custom binary sensor",
+                    CONF_KEY: "custom_binary_sensor",
                     CONF_SOURCE_DEVICE: "ecomax",
                     CONF_DEVICE_CLASS: BinarySensorDeviceClass.RUNNING,
                 }
             },
             {
-                CONF_NAME: "Custom binary 2",
-                CONF_KEY: "custom_binary2",
+                CONF_NAME: "Custom binary sensor 2",
+                CONF_KEY: "custom_binary_sensor2",
                 CONF_DEVICE_CLASS: BinarySensorDeviceClass.PROBLEM,
             },
             {
-                "custom_binary2": {
-                    CONF_NAME: "Custom binary 2",
-                    CONF_KEY: "custom_binary2",
+                "custom_binary_sensor2": {
+                    CONF_NAME: "Custom binary sensor 2",
+                    CONF_KEY: "custom_binary_sensor2",
                     CONF_SOURCE_DEVICE: "ecomax",
                     CONF_DEVICE_CLASS: BinarySensorDeviceClass.PROBLEM,
                 }
@@ -1121,10 +1121,10 @@ async def test_edit_entity_with_invalid_source_device(
         options={
             "entities": {
                 Platform.BINARY_SENSOR: {
-                    "custom_binary": {
-                        CONF_NAME: "Custom binary",
-                        CONF_KEY: "custom_binary",
-                        CONF_SOURCE_DEVICE: "ecomax2",
+                    "custom_binary_sensor": {
+                        CONF_NAME: "Custom binary sensor",
+                        CONF_KEY: "custom_binary_sensor",
+                        CONF_SOURCE_DEVICE: "non_existing_device",
                         CONF_DEVICE_CLASS: BinarySensorDeviceClass.RUNNING,
                     }
                 }
@@ -1143,7 +1143,8 @@ async def test_edit_entity_with_invalid_source_device(
     # Expect error on getting the entity details form.
     with pytest.raises(HomeAssistantError):
         await hass.config_entries.options.async_configure(
-            result["flow_id"], user_input={"entity_id": "binary_sensor.custom_binary"}
+            result["flow_id"],
+            user_input={"entity_id": "binary_sensor.custom_binary_sensor"},
         )
 
 
@@ -1190,9 +1191,9 @@ async def test_remove_entity(
         options={
             "entities": {
                 Platform.BINARY_SENSOR: {
-                    "custom_binary": {
-                        CONF_NAME: "Custom binary",
-                        CONF_KEY: "custom_binary",
+                    "custom_binary_sensor": {
+                        CONF_NAME: "Custom binary sensor",
+                        CONF_KEY: "custom_binary_sensor",
                         CONF_SOURCE_DEVICE: "ecomax",
                         CONF_DEVICE_CLASS: BinarySensorDeviceClass.RUNNING,
                     }
@@ -1205,7 +1206,7 @@ async def test_remove_entity(
     result = await setup_options_flow(hass, config_entry)
 
     entity_registry = er.async_get(hass)
-    assert entity_registry.async_get("binary_sensor.ecomax_custom_binary")
+    assert entity_registry.async_get("binary_sensor.ecomax_custom_binary_sensor")
 
     # Get the entity select form.
     result2 = await hass.config_entries.options.async_configure(
@@ -1217,14 +1218,14 @@ async def test_remove_entity(
     # Remove the entity.
     result3 = await hass.config_entries.options.async_configure(
         result["flow_id"],
-        user_input={"entity_id": "binary_sensor.custom_binary"},
+        user_input={"entity_id": "binary_sensor.custom_binary_sensor"},
     )
     assert result3["type"] is FlowResultType.CREATE_ENTRY
     assert result3["data"] == {
         "entities": {Platform.BINARY_SENSOR: {}, Platform.SENSOR: custom_sensor}
     }
 
-    assert not entity_registry.async_get("binary_sensor.ecomax_custom_binary")
+    assert not entity_registry.async_get("binary_sensor.ecomax_custom_binary_sensor")
 
 
 @pytest.mark.usefixtures("connection", "bypass_async_setup_entry")
