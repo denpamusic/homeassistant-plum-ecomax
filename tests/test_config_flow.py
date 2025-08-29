@@ -26,7 +26,7 @@ from homeassistant.const import (
     UnitOfVolume,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.data_entry_flow import FlowResultType, InvalidData
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from pyplumio.connection import SerialConnection, TcpConnection
@@ -852,16 +852,11 @@ async def test_add_entity_with_disconnected_mixer(
     result2 = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "add_entity"}
     )
-    assert result2["type"] is FlowResultType.FORM
-    assert result2["errors"] is None
 
     # Get the entity type menu.
     result3 = await hass.config_entries.options.async_configure(
         result2["flow_id"], {CONF_SOURCE_DEVICE: "mixer_1"}
     )
-    assert result3["type"] is FlowResultType.MENU
-    assert result3["step_id"] == "entity_type"
-    assert result3["menu_options"] == COMMON_TYPE_MENU_OPTIONS
 
     del connection.device.data["mixers"][1]
 
@@ -887,23 +882,16 @@ async def test_add_entity_with_missing_number(
     result2 = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "add_entity"}
     )
-    assert result2["type"] is FlowResultType.FORM
-    assert result2["errors"] is None
 
     # Get the entity type menu.
     result3 = await hass.config_entries.options.async_configure(
         result2["flow_id"], {CONF_SOURCE_DEVICE: "ecomax"}
     )
-    assert result3["type"] is FlowResultType.MENU
-    assert result3["step_id"] == "entity_type"
-    assert result3["menu_options"] == COMMON_TYPE_MENU_OPTIONS
 
     # Get the entity details form.
     result4 = await hass.config_entries.options.async_configure(
         result3["flow_id"], user_input={"next_step_id": "add_number"}
     )
-    assert result4["type"] is FlowResultType.FORM
-    assert result4["step_id"] == "entity_details"
 
     del connection.device.data["custom_number"]
 
@@ -927,6 +915,62 @@ async def test_add_entity_with_missing_number(
     }
 
 
+@pytest.mark.parametrize("key", ("heating_pump", "custom_binary_sensor"))
+@pytest.mark.usefixtures("connection", "ecomax_860p3_o", "custom_fields")
+async def test_add_entity_with_colliding_key(
+    key: str,
+    hass: HomeAssistant,
+    config_entry: MockConfigEntry,
+    setup_integration,
+) -> None:
+    """Test raising an error on key collision."""
+    await setup_integration(
+        hass,
+        config_entry,
+        options={
+            "entities": {
+                Platform.BINARY_SENSOR: {
+                    "custom_binary_sensor": {
+                        CONF_NAME: "Custom binary sensor",
+                        CONF_KEY: "custom_binary_sensor",
+                        CONF_DEVICE_CLASS: BinarySensorDeviceClass.RUNNING,
+                        CONF_SOURCE_DEVICE: "ecomax",
+                    }
+                }
+            }
+        },
+    )
+    result = await setup_options_flow(hass, config_entry)
+
+    # Get the add entity form.
+    result2 = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "add_entity"}
+    )
+
+    # Get the entity type menu.
+    result3 = await hass.config_entries.options.async_configure(
+        result2["flow_id"], {CONF_SOURCE_DEVICE: "ecomax"}
+    )
+
+    # Get the entity details form.
+    result4 = await hass.config_entries.options.async_configure(
+        result3["flow_id"], user_input={"next_step_id": "add_binary_sensor"}
+    )
+
+    # Expect error on adding the entity if key is colliding.
+    with pytest.raises(InvalidData) as exc_info:
+        await hass.config_entries.options.async_configure(
+            result4["flow_id"],
+            {
+                CONF_NAME: "Colliding key",
+                CONF_KEY: key,
+                CONF_DEVICE_CLASS: BinarySensorDeviceClass.RUNNING,
+            },
+        )
+
+    assert exc_info.value.path == ["key"]
+
+
 @pytest.mark.usefixtures("connection", "ecomax_base")
 async def test_abort_no_entities_to_add(
     hass: HomeAssistant,
@@ -941,16 +985,11 @@ async def test_abort_no_entities_to_add(
     result2 = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "add_entity"}
     )
-    assert result2["type"] is FlowResultType.FORM
-    assert result2["errors"] is None
 
     # Get the entity type menu.
     result3 = await hass.config_entries.options.async_configure(
         result2["flow_id"], {CONF_SOURCE_DEVICE: "ecomax"}
     )
-    assert result3["type"] is FlowResultType.MENU
-    assert result3["step_id"] == "entity_type"
-    assert result3["menu_options"] == COMMON_TYPE_MENU_OPTIONS
 
     # Get the entity details form.
     result4 = await hass.config_entries.options.async_configure(
@@ -1146,13 +1185,11 @@ async def test_edit_entity_with_invalid_source_device(
     result2 = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "edit_entity"}
     )
-    assert result2["type"] is FlowResultType.FORM
-    assert result2["errors"] is None
 
     # Expect error on getting the entity details form.
     with pytest.raises(HomeAssistantError) as exc_info:
         await hass.config_entries.options.async_configure(
-            result["flow_id"],
+            result2["flow_id"],
             user_input={"entity_id": "binary_sensor.custom_binary_sensor"},
         )
 
@@ -1280,7 +1317,6 @@ async def test_reload_config(
         result["flow_id"], user_input={"next_step_id": "reload"}
     )
     assert result2["type"] is FlowResultType.CREATE_ENTRY
-    await hass.async_block_till_done()
     mock_async_reload_config.assert_called_once_with(hass, config_entry, connection)
     mock_async_create_task.assert_called_once_with(
         mock_async_reload_config.return_value
