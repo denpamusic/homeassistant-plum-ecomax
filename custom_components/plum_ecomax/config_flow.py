@@ -372,7 +372,7 @@ def _get_custom_entity_options(
     """Get the custom entities as selector options."""
     platforms = list(PLATFORM_TYPES)
     entities = {
-        f"{platform}-{key}": entity[CONF_NAME]
+        f"{platform}.{key}": entity[CONF_NAME]
         for platform, entities in entities.items()
         if platform in platforms
         for key, entity in entities.items()
@@ -390,9 +390,6 @@ PLATFORM_UNITS: dict[Platform, dict] = {
 
 def _validate_unit(data: dict[str, Any], platform: Platform) -> None:
     """Validate unit of measurement."""
-    if platform not in PLATFORM_UNITS:
-        return
-
     if (
         (device_class := data.get(CONF_DEVICE_CLASS))
         and (units := PLATFORM_UNITS[platform].get(device_class)) is not None
@@ -446,7 +443,7 @@ def _validate_entity_details(
     """Validate entity details."""
     errors = {}
 
-    if platform in (Platform.SENSOR, Platform.NUMBER):
+    if platform in PLATFORM_UNITS:
         try:
             _validate_unit(entity, platform=platform)
         except vol.Invalid as e:
@@ -698,14 +695,14 @@ class OptionsFlowHandler(OptionsFlow):
     ) -> ConfigFlowResult:
         """Handle new entity details."""
         entity = self.entity if hasattr(self, "entity") else {}
-
         if user_input is None:
             errors = {}
-        elif (entity := user_input) and not (
-            errors := _validate_entity_details(entity, platform=self.platform)
+        elif not (
+            errors := _validate_entity_details(user_input, platform=self.platform)
         ):
             user_input[CONF_SOURCE_DEVICE] = self.source_device
-            return self._async_step_create_entry(key=entity[CONF_KEY], data=user_input)
+            key = entity.get(CONF_KEY, user_input[CONF_KEY])
+            return self._async_step_create_entry(key, data=user_input)
 
         if not (
             source_options := self._async_get_source_options(
@@ -762,7 +759,7 @@ class OptionsFlowHandler(OptionsFlow):
         """Handle editing an entity."""
         if user_input is not None:
             entity_id: str = user_input["entity_id"]
-            platform, key = entity_id.split("-", 2)
+            platform, key = entity_id.split(".", 2)
             self.entity = self.entities[platform][key]
             self.platform = Platform(platform)
             self.source_device = self.entity[CONF_SOURCE_DEVICE]
@@ -792,7 +789,7 @@ class OptionsFlowHandler(OptionsFlow):
     @callback
     def _async_step_remove_entity(self, entity_id: str) -> ConfigFlowResult:
         """Remove the entity."""
-        platform, key = entity_id.split("-", 2)
+        platform, key = entity_id.split(".", 2)
         entities = self.entities.setdefault(platform, {})
         entities.pop(key, None)
         self._async_remove_entry(key)
