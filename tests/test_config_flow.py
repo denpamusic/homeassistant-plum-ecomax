@@ -95,13 +95,13 @@ async def test_form_tcp(
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
-    assert result["type"] == FlowResultType.MENU
+    assert result["type"] is FlowResultType.MENU
 
     # Get the TCP connection form.
     result2 = await hass.config_entries.flow.async_configure(
         result["flow_id"], user_input={"next_step_id": "tcp"}
     )
-    assert result2["type"] == FlowResultType.FORM
+    assert result2["type"] is FlowResultType.FORM
     assert result2["errors"] is None
 
     # Catch connection error.
@@ -114,7 +114,7 @@ async def test_form_tcp(
         )
         await hass.async_block_till_done()
 
-    assert result3["type"] == FlowResultType.FORM
+    assert result3["type"] is FlowResultType.FORM
     assert result3["errors"] == {CONF_BASE: "cannot_connect"}
 
     # Catch connection timeout.
@@ -127,7 +127,7 @@ async def test_form_tcp(
         )
         await hass.async_block_till_done()
 
-    assert result3["type"] == FlowResultType.FORM
+    assert result3["type"] is FlowResultType.FORM
     assert result3["errors"] == {CONF_BASE: "timeout_connect"}
 
     # Catch unknown exception.
@@ -140,7 +140,7 @@ async def test_form_tcp(
         )
         await hass.async_block_till_done()
 
-    assert result3["type"] == FlowResultType.FORM
+    assert result3["type"] is FlowResultType.FORM
     assert result3["errors"] == {CONF_BASE: "unknown"}
 
     # Create the PyPlumIO connection mock.
@@ -157,18 +157,18 @@ async def test_form_tcp(
         )
         await hass.async_block_till_done()
 
-    assert result3["type"] == FlowResultType.SHOW_PROGRESS
+    assert result3["type"] is FlowResultType.SHOW_PROGRESS
     assert result3["step_id"] == "identify"
 
     # Discover connected modules.
     result4 = await hass.config_entries.flow.async_configure(result3["flow_id"])
     await hass.async_block_till_done()
-    assert result4["type"] == FlowResultType.SHOW_PROGRESS
+    assert result4["type"] is FlowResultType.SHOW_PROGRESS
     assert result4["step_id"] == "discover"
 
     # Finish the config flow.
     result5 = await hass.config_entries.flow.async_configure(result4["flow_id"])
-    assert result5["type"] == FlowResultType.CREATE_ENTRY
+    assert result5["type"] is FlowResultType.CREATE_ENTRY
     assert result5["title"] == "ecoMAX 850P2-C"
     assert result5["data"] == {
         CONF_HOST: "localhost",
@@ -198,13 +198,13 @@ async def test_form_serial(
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
-    assert result["type"] == FlowResultType.MENU
+    assert result["type"] is FlowResultType.MENU
 
     # Get the serial connection form.
     result2 = await hass.config_entries.flow.async_configure(
         result["flow_id"], user_input={"next_step_id": "serial"}
     )
-    assert result2["type"] == FlowResultType.FORM
+    assert result2["type"] is FlowResultType.FORM
     assert result2["errors"] is None
 
     # Catch connection error.
@@ -217,7 +217,7 @@ async def test_form_serial(
         )
         await hass.async_block_till_done()
 
-    assert result3["type"] == FlowResultType.FORM
+    assert result3["type"] is FlowResultType.FORM
     assert result3["errors"] == {CONF_BASE: "cannot_connect"}
 
     # Catch connection timeout.
@@ -230,7 +230,7 @@ async def test_form_serial(
         )
         await hass.async_block_till_done()
 
-    assert result3["type"] == FlowResultType.FORM
+    assert result3["type"] is FlowResultType.FORM
     assert result3["errors"] == {CONF_BASE: "timeout_connect"}
 
     # Catch unknown exception.
@@ -257,18 +257,18 @@ async def test_form_serial(
         )
         await hass.async_block_till_done()
 
-    assert result3["type"] == FlowResultType.SHOW_PROGRESS
+    assert result3["type"] is FlowResultType.SHOW_PROGRESS
     assert result3["step_id"] == "identify"
 
     # Discover connected modules.
     result4 = await hass.config_entries.flow.async_configure(result3["flow_id"])
     await hass.async_block_till_done()
-    assert result4["type"] == FlowResultType.SHOW_PROGRESS
+    assert result4["type"] is FlowResultType.SHOW_PROGRESS
     assert result4["step_id"] == "discover"
 
     # Finish the config flow.
     result5 = await hass.config_entries.flow.async_configure(result4["flow_id"])
-    assert result5["type"] == FlowResultType.CREATE_ENTRY
+    assert result5["type"] is FlowResultType.CREATE_ENTRY
     assert result5["title"] == "ecoMAX 850P2-C"
     assert result5["data"] == {
         CONF_DEVICE: DEFAULT_DEVICE,
@@ -297,13 +297,13 @@ async def test_abort_device_not_found(
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
-    assert result["type"] == FlowResultType.MENU
+    assert result["type"] is FlowResultType.MENU
 
     # Get the TCP connection form.
     result2 = await hass.config_entries.flow.async_configure(
         result["flow_id"], user_input={"next_step_id": "tcp"}
     )
-    assert result2["type"] == FlowResultType.FORM
+    assert result2["type"] is FlowResultType.FORM
     assert result2["errors"] is None
 
     # Create the PyPlumIO connection mock.
@@ -320,12 +320,12 @@ async def test_abort_device_not_found(
         )
         await hass.async_block_till_done()
 
-    assert result3["type"] == FlowResultType.SHOW_PROGRESS
+    assert result3["type"] is FlowResultType.SHOW_PROGRESS
     assert result3["step_id"] == "identify"
 
     # Fail with device not found.
     result4 = await hass.config_entries.flow.async_configure(result3["flow_id"])
-    assert result4["type"] == FlowResultType.ABORT
+    assert result4["type"] is FlowResultType.ABORT
     assert result4["reason"] == "no_devices_found"
 
 
@@ -336,13 +336,13 @@ async def test_abort_unsupported_device(
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
-    assert result["type"] == FlowResultType.MENU
+    assert result["type"] is FlowResultType.MENU
 
     # Get the TCP connection form.
     result2 = await hass.config_entries.flow.async_configure(
         result["flow_id"], user_input={"next_step_id": "tcp"}
     )
-    assert result2["type"] == FlowResultType.FORM
+    assert result2["type"] is FlowResultType.FORM
     assert result2["errors"] is None
 
     # Create the PyPlumIO connection mock.
@@ -363,12 +363,12 @@ async def test_abort_unsupported_device(
         )
         await hass.async_block_till_done()
 
-    assert result3["type"] == FlowResultType.SHOW_PROGRESS
+    assert result3["type"] is FlowResultType.SHOW_PROGRESS
     assert result3["step_id"] == "identify"
 
     # Fail with unsupported device.
     result4 = await hass.config_entries.flow.async_configure(result3["flow_id"])
-    assert result4["type"] == FlowResultType.ABORT
+    assert result4["type"] is FlowResultType.ABORT
     assert result4["reason"] == "unsupported_device"
 
 
@@ -379,13 +379,13 @@ async def test_abort_discovery_failed(
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
-    assert result["type"] == FlowResultType.MENU
+    assert result["type"] is FlowResultType.MENU
 
     # Get the TCP connection form.
     result2 = await hass.config_entries.flow.async_configure(
         result["flow_id"], user_input={"next_step_id": "tcp"}
     )
-    assert result2["type"] == FlowResultType.FORM
+    assert result2["type"] is FlowResultType.FORM
     assert result2["errors"] is None
 
     # Create the PyPlumIO connection mock.
@@ -402,7 +402,7 @@ async def test_abort_discovery_failed(
         )
         await hass.async_block_till_done()
 
-    assert result3["type"] == FlowResultType.SHOW_PROGRESS
+    assert result3["type"] is FlowResultType.SHOW_PROGRESS
     assert result3["step_id"] == "identify"
 
     # Discover connected modules.
@@ -410,12 +410,12 @@ async def test_abort_discovery_failed(
         result4 = await hass.config_entries.flow.async_configure(result3["flow_id"])
         await hass.async_block_till_done()
 
-    assert result4["type"] == FlowResultType.SHOW_PROGRESS
+    assert result4["type"] is FlowResultType.SHOW_PROGRESS
     assert result4["step_id"] == "discover"
 
     # Fail with module discovery failure.
     result5 = await hass.config_entries.flow.async_configure(result4["flow_id"])
-    assert result5["type"] == FlowResultType.ABORT
+    assert result5["type"] is FlowResultType.ABORT
     assert result5["reason"] == "discovery_failed"
 
 
@@ -426,13 +426,13 @@ async def test_abort_already_configured(
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
-    assert result["type"] == FlowResultType.MENU
+    assert result["type"] is FlowResultType.MENU
 
     # Get the TCP connection form.
     result2 = await hass.config_entries.flow.async_configure(
         result["flow_id"], user_input={"next_step_id": "tcp"}
     )
-    assert result2["type"] == FlowResultType.FORM
+    assert result2["type"] is FlowResultType.FORM
     assert result2["errors"] is None
 
     # Create the PyPlumIO connection mock.
@@ -449,7 +449,7 @@ async def test_abort_already_configured(
         )
         await hass.async_block_till_done()
 
-    assert result3["type"] == FlowResultType.SHOW_PROGRESS
+    assert result3["type"] is FlowResultType.SHOW_PROGRESS
     assert result3["step_id"] == "identify"
 
     # Fail with device already configured.
@@ -463,7 +463,7 @@ async def test_abort_already_configured(
     ):
         result4 = await hass.config_entries.flow.async_configure(result3["flow_id"])
 
-    assert result4["type"] == FlowResultType.ABORT
+    assert result4["type"] is FlowResultType.ABORT
     assert result4["reason"] == "already_configured"
 
 

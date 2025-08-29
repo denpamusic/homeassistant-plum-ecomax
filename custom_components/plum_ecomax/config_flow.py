@@ -449,7 +449,7 @@ def _validate_entity_details(
         except vol.Invalid as e:
             errors[CONF_UNIT_OF_MEASUREMENT] = str(e.msg)
 
-    if platform == Platform.SENSOR:
+    if platform is Platform.SENSOR:
         try:
             _validate_state_class(entity)
         except vol.Invalid as e:
@@ -493,7 +493,7 @@ def generate_edit_schema(
         ),
     }
 
-    if platform == Platform.SENSOR:
+    if platform is Platform.SENSOR:
         schema |= {
             vol.Optional(
                 CONF_UNIT_OF_MEASUREMENT,
@@ -553,7 +553,7 @@ def generate_edit_schema(
             ),
         }
 
-    elif platform == Platform.BINARY_SENSOR:
+    elif platform is Platform.BINARY_SENSOR:
         schema |= {
             vol.Optional(
                 CONF_DEVICE_CLASS,
@@ -568,7 +568,7 @@ def generate_edit_schema(
             ),
         }
 
-    elif platform == Platform.NUMBER:
+    elif platform is Platform.NUMBER:
         schema |= {
             vol.Required(
                 CONF_MODE, default=entity.get(CONF_MODE, vol.UNDEFINED)
@@ -733,7 +733,7 @@ class OptionsFlowHandler(OptionsFlow):
             self._async_remove_entry(key)
             entities.pop(key, None)
 
-        if self.platform == Platform.NUMBER and not renaming_entity:
+        if self.platform is Platform.NUMBER and not renaming_entity:
             data[CONF_STEP] = self._async_get_native_step(data[CONF_KEY])
 
         key = data[CONF_KEY]
