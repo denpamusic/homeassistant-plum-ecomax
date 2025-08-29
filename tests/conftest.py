@@ -727,6 +727,7 @@ def custom_fields(ecomax_common: EcoMAX):
 
     custom_fields = {
         "custom_binary": False,
+        "custom_binary2": False,
         "custom_sensor": 50.0,
         "custom_number": EcomaxNumber(
             device=ecomax_common,
