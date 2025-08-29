@@ -2,12 +2,13 @@
 
 import asyncio
 from collections.abc import Generator
-from typing import Final
+from typing import Any, Final, cast
 from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.core import HomeAssistant
 from pyplumio.connection import Connection
 from pyplumio.const import DeviceState, ProductType, UnitOfMeasurement
+from pyplumio.devices import PhysicalDevice, VirtualDevice
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
@@ -37,6 +38,7 @@ from custom_components.plum_ecomax.const import (
     ATTR_MIXERS,
     ATTR_PRODUCT,
     ATTR_REGDATA,
+    ATTR_THERMOSTATS,
     CONF_BAUDRATE,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
@@ -138,7 +140,14 @@ def fixture_serial_config_data(serial_user_input, config_data):
 async def setup_integration():
     """Set up the integration."""
 
-    async def setup_entry(hass: HomeAssistant, config_entry: MockConfigEntry):
+    async def setup_entry(
+        hass: HomeAssistant,
+        config_entry: MockConfigEntry,
+        options: dict[str, Any] | None = None,
+    ):
+        if options:
+            hass.config_entries.async_update_entry(config_entry, options=options)
+
         config_entry.add_to_hass(hass)
         assert await hass.config_entries.async_setup(config_entry.entry_id)
         await hass.async_block_till_done()
@@ -408,7 +417,7 @@ def fixture_ecomax_i(ecomax_common: EcoMAX):
         yield ecomax_common
 
 
-@pytest.fixture()
+@pytest.fixture
 def ecomax_860p3_o(ecomax_p: EcoMAX):
     """Inject data for ecoMAX 860P3-O.
 
@@ -428,66 +437,6 @@ def ecomax_860p3_o(ecomax_p: EcoMAX):
                 model=product_model,
             ),
             ATTR_REGDATA: load_regdata_fixture("regdata__ecomax_860p3_o.json"),
-        }
-    )
-
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.model",
-        product_model,
-    ):
-        yield ecomax_p
-
-
-@pytest.fixture()
-def ecomax_860p6_o(ecomax_p: EcoMAX):
-    """Inject data for ecoMAX 860P6-O.
-
-    (product_type: 0, product_id: 51)
-    """
-    product_type = ProductType.ECOMAX_P
-    product_model = ProductModel.ECOMAX_860P6_O
-
-    ecomax_p.data.update(
-        {
-            ATTR_PRODUCT: ProductInfo(
-                type=product_type,
-                id=51,
-                uid="TEST",
-                logo=2,
-                image=51,
-                model=product_model,
-            ),
-            ATTR_REGDATA: load_regdata_fixture("regdata__ecomax_860p6_o.json"),
-        }
-    )
-
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.model",
-        product_model,
-    ):
-        yield ecomax_p
-
-
-@pytest.fixture()
-def ecomax_860p3_s_lite(ecomax_p: EcoMAX):
-    """Inject data for ecoMAX 860P3-S Lite.
-
-    (product_type: 0, product_id: 51)
-    """
-    product_type = ProductType.ECOMAX_P
-    product_model = ProductModel.ECOMAX_860P3_S_LITE
-
-    ecomax_p.data.update(
-        {
-            ATTR_PRODUCT: ProductInfo(
-                type=product_type,
-                id=51,
-                uid="TEST",
-                logo=13056,
-                image=2816,
-                model=product_model,
-            ),
-            ATTR_REGDATA: load_regdata_fixture("regdata__ecomax_860p3_s_lite.json"),
         }
     )
 
@@ -770,3 +719,57 @@ def thermostats(ecomax_common: EcoMAX):
         ),
     ):
         yield ecomax_common
+
+
+@pytest.fixture
+def custom_fields(ecomax_common: EcoMAX):
+    """Inject custom fields."""
+
+    custom_fields = {
+        "custom_binary": False,
+        "custom_binary2": False,
+        "custom_sensor": 50.0,
+        "custom_number": EcomaxNumber(
+            device=ecomax_common,
+            values=ParameterValues(value=0, min_value=30, max_value=50),
+            description=EcomaxNumberDescription("custom_number"),
+        ),
+        "custom_switch": EcomaxSwitch(
+            device=ecomax_common,
+            values=ParameterValues(value=0, min_value=0, max_value=1),
+            description=EcomaxSwitchDescription("custom_switch"),
+        ),
+    }
+
+    ecomax_common.data.update(custom_fields)
+
+    mixers: dict[int, Mixer] = ecomax_common.data.get(ATTR_MIXERS, {})
+    for mixer in mixers.values():
+        mixer.data.update(custom_fields)
+
+    thermostats: dict[int, Thermostat] = ecomax_common.data.get(ATTR_THERMOSTATS, {})
+    for thermostat in thermostats.values():
+        thermostat.data.update(custom_fields)
+
+    regdata: dict[int, Any] = ecomax_common.data.get(ATTR_REGDATA, {})
+    if regdata:
+        regdata.update({9000: False, 9001: 50.0})
+
+    yield ecomax_common
+
+
+async def dispatch_value(
+    physical_device: PhysicalDevice,
+    name: str,
+    value: Any,
+    source_device: str = "ecomax",
+) -> None:
+    """Dispatch the value."""
+    if source_device == "ecomax":
+        await physical_device.dispatch(name, value)
+    else:
+        device_type, index = source_device.rsplit("_", 1)
+        vitual_devices = cast(
+            dict[int, VirtualDevice], physical_device.get_nowait(f"{device_type}s")
+        )
+        await vitual_devices[int(index)].dispatch(name, value)

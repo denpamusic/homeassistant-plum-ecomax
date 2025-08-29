@@ -33,7 +33,6 @@ from custom_components.plum_ecomax.const import (
     CONF_PRODUCT_ID,
     CONF_PRODUCT_TYPE,
     CONF_SOFTWARE,
-    CONF_SUB_DEVICES,
     CONF_UID,
     CONNECTION_TYPE_SERIAL,
     CONNECTION_TYPE_TCP,
@@ -242,28 +241,3 @@ async def test_async_setup_regdata(
     )
     if error_message:
         assert error_message in caplog.text
-
-
-async def test_async_update_sub_device(
-    hass: HomeAssistant, config_entry: ConfigEntry, ecomax_p: EcoMAX
-) -> None:
-    """Test function to update connected sub-devices."""
-    connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=TcpConnection))
-    with (
-        patch(
-            "homeassistant.config_entries.ConfigEntries.async_reload"
-        ) as mock_async_reload,
-        patch(
-            "custom_components.plum_ecomax.connection.EcomaxConnection.device",
-            return_value=ecomax_p,
-        ) as mock_device,
-        patch(
-            "custom_components.plum_ecomax.connection.async_get_sub_devices",
-            return_value=[ATTR_MIXERS],
-        ) as mock_async_get_sub_devices,
-    ):
-        await connection.async_update_sub_devices()
-
-    mock_async_get_sub_devices.assert_awaited_once_with(mock_device)
-    mock_async_reload.assert_awaited_once_with(config_entry.entry_id)
-    assert config_entry.data[CONF_SUB_DEVICES] == [ATTR_MIXERS]

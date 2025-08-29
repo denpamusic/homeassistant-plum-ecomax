@@ -92,11 +92,6 @@
         "name": "Pompa CWU"
       }
     },
-    "button": {
-      "detect_sub_devices": {
-        "name": "Wykryj urządzenia podrzędne"
-      }
-    },
     "climate": {
       "thermostat": {
         "name": "Termostat",
@@ -397,7 +392,163 @@
       "message": "Request to set a \"{parameter}\" parameter timed out"
     }
   },
+  "options": {
+    "step": {
+      "add_entity": {
+        "title": "Select a source device",
+        "data": {
+          "source_device": "Source device"
+        }
+      },
+      "edit_entity": {
+        "title": "Select an entity to edit",
+        "data": {
+          "entity_id": "Entity"
+        }
+      },
+      "remove_entity": {
+        "title": "Select an entity to remove",
+        "data": {
+          "entity_id": "Entity"
+        }
+      },
+      "entity_details": {
+        "data": {
+          "device_class": "Device class",
+          "key": "Key",
+          "mode": "Mode",
+          "name": "Name",
+          "state_class": "State class",
+          "unit_of_measurement": "Unit of measurement",
+          "update_interval": "Update interval"
+        },
+        "title": "Edit {platform} details"
+      },
+      "entity_type": {
+        "menu_options": {
+          "add_binary_sensor": "Binary sensor",
+          "add_number": "Number",
+          "add_sensor": "Sensor",
+          "add_switch": "Switch"
+        },
+        "title": "Select entity type"
+      },
+      "init": {
+        "menu_options": {
+          "add_entity": "Add a new entity",
+          "edit_entity": "Edit an entity",
+          "remove_entity": "Remove an entity",
+          "reload": "Reload configuration"
+        }
+      }
+    },
+    "abort": {
+      "no_entities_found": "No entities found, you'll need to add some first."
+    }
+  },
   "selector": {
+    "binary_sensor_device_class": {
+      "options": {
+        "battery": "Battery",
+        "battery_charging": "Charging",
+        "carbon_monoxide": "Carbon monoxide",
+        "cold": "Cold",
+        "connectivity": "Connectivity",
+        "door": "Door",
+        "garage_door": "Garage door",
+        "gas": "Gas",
+        "heat": "Heat",
+        "light": "Light",
+        "lock": "Lock",
+        "moisture": "Moisture",
+        "motion": "Motion",
+        "moving": "Moving",
+        "occupancy": "Occupancy",
+        "opening": "Opening",
+        "plug": "Plug",
+        "power": "Power",
+        "presence": "Presence",
+        "problem": "Problem",
+        "running": "Running",
+        "safety": "Safety",
+        "smoke": "Smoke",
+        "sound": "Sound",
+        "update": "Update",
+        "vibration": "Vibration",
+        "window": "Window"
+      }
+    },
+    "number_device_class": {
+      "options": {
+        "absolute_humidity": "Absolute humidity",
+        "apparent_power": "Apparent power",
+        "area": "Area",
+        "aqi": "Air quality index",
+        "atmospheric_pressure": "Atmospheric pressure",
+        "battery": "Battery",
+        "blood_glucose_concentration": "Blood glucose concentration",
+        "carbon_dioxide": "Carbon dioxide",
+        "carbon_monoxide": "Carbon monoxide",
+        "conductivity": "Conductivity",
+        "current": "Current",
+        "data_rate": "Data rate",
+        "data_size": "Data size",
+        "distance": "Distance",
+        "duration": "Duration",
+        "energy": "Energy",
+        "energy_distance": "Energy distance",
+        "energy_storage": "Stored energy",
+        "frequency": "Frequency",
+        "gas": "Gas",
+        "humidity": "Humidity",
+        "illuminance": "Illuminance",
+        "irradiance": "Irradiance",
+        "moisture": "Moisture",
+        "monetary": "Balance",
+        "nitrogen_dioxide": "Nitrogen dioxide",
+        "nitrogen_monoxide": "Nitrogen monoxide",
+        "nitrous_oxide": "Nitrous oxide",
+        "ozone": "Ozone",
+        "ph": "pH",
+        "pm1": "PM1",
+        "pm10": "PM10",
+        "pm25": "PM2.5",
+        "power": "Power",
+        "power_factor": "Power factor",
+        "precipitation": "Precipitation",
+        "precipitation_intensity": "Precipitation intensity",
+        "pressure": "Pressure",
+        "reactive_power": "Reactive power",
+        "reactive_energy": "Reactive energy",
+        "signal_strength": "Signal strength",
+        "sound_pressure": "Sound pressure",
+        "speed": "Speed",
+        "sulphur_dioxide": "Sulphur dioxide",
+        "temperature": "Temperature",
+        "volatile_organic_compounds": "VOCs",
+        "volatile_organic_compounds_parts": "VOCs (parts)",
+        "voltage": "Voltage",
+        "volume": "Volume",
+        "volume_flow_rate": "Volume flow rate",
+        "volume_storage": "Stored volume",
+        "water": "Water",
+        "weight": "Weight",
+        "wind_speed": "Wind speed",
+        "wind_direction": "Wind direction"
+      }
+    },
+    "number_mode": {
+      "options": {
+        "auto": "Auto",
+        "box": "Box",
+        "slider": "Slider"
+      }
+    },
+    "number_unit_of_measurement": {
+      "options": {
+        "none": "No unit of measurement"
+      }
+    },
     "preset": {
       "options": {
         "day": "Dzień",
@@ -408,6 +559,80 @@
       "options": {
         "heating": "Grzanie CO",
         "water_heater": "Grzanie CWU"
+      }
+    },
+    "sensor_device_class": {
+      "options": {
+        "absolute_humidity": "Absolute humidity",
+        "apparent_power": "Apparent power",
+        "area": "Area",
+        "aqi": "Air quality index",
+        "atmospheric_pressure": "Atmospheric pressure",
+        "battery": "Battery",
+        "blood_glucose_concentration": "Blood glucose concentration",
+        "carbon_dioxide": "Carbon dioxide",
+        "carbon_monoxide": "Carbon monoxide",
+        "conductivity": "Conductivity",
+        "current": "Current",
+        "data_rate": "Data rate",
+        "data_size": "Data size",
+        "date": "Date",
+        "distance": "Distance",
+        "duration": "Duration",
+        "energy": "Energy",
+        "energy_distance": "Energy distance",
+        "energy_storage": "Stored energy",
+        "frequency": "Frequency",
+        "gas": "Gas",
+        "humidity": "Humidity",
+        "illuminance": "Illuminance",
+        "irradiance": "Irradiance",
+        "moisture": "Moisture",
+        "monetary": "Balance",
+        "nitrogen_dioxide": "Nitrogen dioxide",
+        "nitrogen_monoxide": "Nitrogen monoxide",
+        "nitrous_oxide": "Nitrous oxide",
+        "ozone": "Ozone",
+        "ph": "pH",
+        "pm1": "PM1",
+        "pm10": "PM10",
+        "pm25": "PM2.5",
+        "power": "Power",
+        "power_factor": "Power factor",
+        "precipitation": "Precipitation",
+        "precipitation_intensity": "Precipitation intensity",
+        "pressure": "Pressure",
+        "reactive_power": "Reactive power",
+        "reactive_energy": "Reactive energy",
+        "signal_strength": "Signal strength",
+        "sound_pressure": "Sound pressure",
+        "speed": "Speed",
+        "sulphur_dioxide": "Sulphur dioxide",
+        "temperature": "Temperature",
+        "timestamp": "Timestamp",
+        "volatile_organic_compounds": "VOCs",
+        "volatile_organic_compounds_parts": "VOCs (parts)",
+        "voltage": "Voltage",
+        "volume": "Volume",
+        "volume_flow_rate": "Volume flow rate",
+        "volume_storage": "Stored volume",
+        "water": "Water",
+        "weight": "Weight",
+        "wind_speed": "Wind speed",
+        "wind_direction": "Wind direction"
+      }
+    },
+    "sensor_state_class": {
+      "options": {
+        "measurement": "Measurement",
+        "measurement_angle": "Measurement angle",
+        "total": "Total",
+        "total_increasing": "Total increasing"
+      }
+    },
+    "sensor_unit_of_measurement": {
+      "options": {
+        "none": "No unit of measurement"
       }
     },
     "weekdays": {

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from functools import partial
 import logging
 from typing import Any
 
@@ -12,6 +13,7 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
     BinarySensorEntityDescription,
 )
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -19,12 +21,16 @@ from pyplumio.const import ProductType
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
+from .const import DeviceType
 from .entity import (
     EcomaxEntity,
     EcomaxEntityDescription,
     MixerEntity,
+    RegdataEntity,
+    ThermostatEntity,
     async_get_by_modules,
     async_get_by_product_type,
+    async_get_custom_entities,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -129,6 +135,39 @@ class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
         self.async_write_ha_state()
 
 
+@callback
+def async_setup_ecomax_binary_sensors(
+    connection: EcomaxConnection,
+) -> list[EcomaxBinarySensor]:
+    """Set up the ecoMAX binary sensors."""
+    return [
+        EcomaxBinarySensor(connection, description)
+        for description in async_get_by_modules(
+            connection.device.modules,
+            async_get_by_product_type(connection.product_type, BINARY_SENSOR_TYPES),
+        )
+    ]
+
+
+@callback
+def async_setup_custom_ecomax_binary_sensors(
+    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
+) -> list[EcomaxBinarySensor]:
+    """Set up the custom ecoMAX binary sensors."""
+    description_partial = partial(
+        EcomaxBinarySensorEntityDescription, value_fn=lambda x: x
+    )
+    return [
+        EcomaxBinarySensor(connection, description)
+        for description in async_get_custom_entities(
+            platform=Platform.BINARY_SENSOR,
+            source_device=DeviceType.ECOMAX,
+            config_entry=config_entry,
+            description_factory=description_partial,
+        )
+    ]
+
+
 @dataclass(frozen=True, kw_only=True)
 class MixerBinarySensorEntityDescription(EcomaxBinarySensorEntityDescription):
     """Describes a mixer binary sensor."""
@@ -169,20 +208,6 @@ class MixerBinarySensor(MixerEntity, EcomaxBinarySensor):
 
 
 @callback
-def async_setup_ecomax_binary_sensors(
-    connection: EcomaxConnection,
-) -> list[EcomaxBinarySensor]:
-    """Set up the ecoMAX binary sensors."""
-    return [
-        EcomaxBinarySensor(connection, description)
-        for description in async_get_by_modules(
-            connection.device.modules,
-            async_get_by_product_type(connection.product_type, BINARY_SENSOR_TYPES),
-        )
-    ]
-
-
-@callback
 def async_setup_mixer_binary_sensors(
     connection: EcomaxConnection,
 ) -> list[MixerBinarySensor]:
@@ -199,6 +224,100 @@ def async_setup_mixer_binary_sensors(
     ]
 
 
+@callback
+def async_setup_custom_mixer_binary_sensors(
+    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
+) -> list[MixerBinarySensor]:
+    """Set up the custom mixer binary sensors."""
+    description_partial = partial(
+        MixerBinarySensorEntityDescription, value_fn=lambda x: x
+    )
+    return [
+        MixerBinarySensor(connection, description, index)
+        for description, index in async_get_custom_entities(
+            platform=Platform.BINARY_SENSOR,
+            source_device=DeviceType.MIXER,
+            config_entry=config_entry,
+            description_factory=description_partial,
+        )
+    ]
+
+
+@dataclass(frozen=True, kw_only=True)
+class RegdataBinarySensorEntityDescription(EcomaxBinarySensorEntityDescription):
+    """Describes a regulator data binary sensor."""
+
+
+class RegdataBinarySensor(RegdataEntity, EcomaxBinarySensor):
+    """Represents a regulator data binary sensor."""
+
+    async def async_update(self, regdata: dict[int, Any]) -> None:
+        """Update entity state."""
+        self._attr_is_on = self.entity_description.value_fn(
+            regdata.get(self._regdata_key, None)
+        )
+        self.async_write_ha_state()
+
+
+@callback
+def async_setup_custom_regdata_binary_sensors(
+    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
+) -> list[RegdataBinarySensor]:
+    """Set up the custom regulator data binary sensors."""
+    description_partial = partial(
+        RegdataBinarySensorEntityDescription, value_fn=lambda x: x
+    )
+    return [
+        RegdataBinarySensor(connection, description)
+        for description in async_get_custom_entities(
+            platform=Platform.BINARY_SENSOR,
+            source_device="regdata",
+            config_entry=config_entry,
+            description_factory=description_partial,
+        )
+    ]
+
+
+@dataclass(frozen=True, kw_only=True)
+class ThermostatBinarySensorEntityDescription(EcomaxBinarySensorEntityDescription):
+    """Describes a thermostat binary sensor."""
+
+
+class ThermostatBinarySensor(ThermostatEntity, EcomaxBinarySensor):
+    """Represents a thermostat binary sensor."""
+
+    entity_description: ThermostatBinarySensorEntityDescription
+
+    def __init__(
+        self,
+        connection: EcomaxConnection,
+        description: ThermostatBinarySensorEntityDescription,
+        index: int,
+    ):
+        """Initialize a new thermostat binary sensor."""
+        self.index = index
+        super().__init__(connection, description)
+
+
+@callback
+def async_setup_custom_thermostat_binary_sensors(
+    connection: EcomaxConnection, config_entry: PlumEcomaxConfigEntry
+) -> list[ThermostatBinarySensor]:
+    """Set up the custom thermostat binary sensors."""
+    description_partial = partial(
+        ThermostatBinarySensorEntityDescription, value_fn=lambda x: x
+    )
+    return [
+        ThermostatBinarySensor(connection, description, index)
+        for description, index in async_get_custom_entities(
+            platform=Platform.BINARY_SENSOR,
+            source_device=DeviceType.THERMOSTAT,
+            config_entry=config_entry,
+            description_factory=description_partial,
+        )
+    ]
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: PlumEcomaxConfigEntry,
@@ -210,9 +329,23 @@ async def async_setup_entry(
     connection = entry.runtime_data.connection
     entities = async_setup_ecomax_binary_sensors(connection)
 
+    # Add custom ecoMAX binary sensors.
+    entities += async_setup_custom_ecomax_binary_sensors(connection, entry)
+
+    # Add custom regulator data binary sensors.
+    if (
+        regdata_entities := async_setup_custom_regdata_binary_sensors(connection, entry)
+    ) and await connection.async_setup_regdata():
+        entities += regdata_entities
+
     # Add mixer/circuit binary sensors.
     if connection.has_mixers and await connection.async_setup_mixers():
         entities += async_setup_mixer_binary_sensors(connection)
+        entities += async_setup_custom_mixer_binary_sensors(connection, entry)
+
+    # Add thermostat binary sensors.
+    if connection.has_thermostats and await connection.async_setup_thermostats():
+        entities += async_setup_custom_thermostat_binary_sensors(connection, entry)
 
     async_add_entities(entities)
     return True

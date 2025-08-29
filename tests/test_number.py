@@ -20,6 +20,8 @@ from homeassistant.const import (
     ATTR_FRIENDLY_NAME,
     ATTR_UNIT_OF_MEASUREMENT,
     PERCENTAGE,
+    Platform,
+    UnitOfMass,
     UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant, State
@@ -31,6 +33,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from tests import FLOAT_TOLERANCE
+from tests.conftest import dispatch_value
 
 
 @pytest.fixture(autouse=True)
@@ -100,7 +103,8 @@ async def test_target_heating_temperature_number(
     assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         target_heating_temperature_key,
         EcomaxNumber(
             device=connection.device,
@@ -155,7 +159,8 @@ async def test_minimum_heating_temperature_number(
     assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         minimum_heating_temperature_key,
         EcomaxNumber(
             device=connection.device,
@@ -210,7 +215,8 @@ async def test_maximum_heating_temperature_number(
     assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         maximum_heating_temperature_key,
         EcomaxNumber(
             device=connection.device,
@@ -265,7 +271,8 @@ async def test_grate_mode_temperature_number(
     assert state.attributes[ATTR_DEVICE_CLASS] == NumberDeviceClass.TEMPERATURE
 
     # Dispatch new state.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         grate_mode_temperature_key,
         EcomaxNumber(
             device=connection.device,
@@ -319,7 +326,8 @@ async def test_fuzzy_logic_minimum_power_number(
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
 
     # Dispatch new state.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         fuzzy_logic_minimum_power_key,
         EcomaxNumber(
             device=connection.device,
@@ -373,7 +381,8 @@ async def test_fuzzy_logic_maximum_power_number(
     assert state.attributes[ATTR_MODE] == NumberMode.AUTO
 
     # Dispatch new state.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         fuzzy_logic_maximum_power_key,
         EcomaxNumber(
             device=connection.device,
@@ -427,7 +436,8 @@ async def test_fuel_calorific_value_number(
     assert state.attributes[ATTR_MODE] == NumberMode.BOX
 
     # Dispatch new state.
-    await connection.device.dispatch(
+    await dispatch_value(
+        connection.device,
         fuel_calorific_value_key,
         EcomaxNumber(
             device=connection.device,
@@ -932,3 +942,131 @@ async def test_circuit_night_target_circuit_temperature_number(
     mock_set_nowait.assert_called_once_with(night_target_circuit_temperature_key, 70)
     assert isinstance(state, State)
     assert state.state == "70.0"
+
+
+@pytest.mark.parametrize(
+    (
+        "source_device",
+        "entity_id",
+        "friendly_name",
+        "step",
+        "unit_of_measurement",
+        "device_class",
+    ),
+    (
+        (
+            "ecomax",
+            "number.ecomax_test_custom_number",
+            "ecoMAX Test custom number",
+            1,
+            UnitOfMass.KILOGRAMS,
+            NumberDeviceClass.WEIGHT,
+        ),
+        (
+            "mixer_0",
+            "number.ecomax_mixer_1_test_custom_number",
+            "ecoMAX Mixer 1 Test custom number",
+            0.1,
+            UnitOfTemperature.CELSIUS,
+            NumberDeviceClass.TEMPERATURE,
+        ),
+        (
+            "mixer_1",
+            "number.ecomax_mixer_2_test_custom_number",
+            "ecoMAX Mixer 2 Test custom number",
+            2,
+            UnitOfTemperature.CELSIUS,
+            NumberDeviceClass.TEMPERATURE,
+        ),
+        (
+            "thermostat_0",
+            "number.ecomax_thermostat_1_test_custom_number",
+            "ecoMAX Thermostat 1 Test custom number",
+            10,
+            None,
+            None,
+        ),
+    ),
+)
+@pytest.mark.usefixtures("ecomax_p", "mixers", "thermostats", "custom_fields")
+async def test_custom_numbers(
+    source_device: str,
+    entity_id: str,
+    friendly_name: str,
+    step: int | float | None,
+    unit_of_measurement: str | None,
+    device_class: NumberDeviceClass | None,
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_integration,
+    async_set_value,
+) -> None:
+    """Test custom numbers."""
+    custom_number_key = "custom_number"
+    await setup_integration(
+        hass,
+        config_entry,
+        options={
+            "entities": {
+                Platform.NUMBER: {
+                    custom_number_key: {
+                        "name": "Test custom number",
+                        "key": custom_number_key,
+                        "source_device": source_device,
+                        "unit_of_measurement": unit_of_measurement,
+                        "device_class": device_class,
+                        "step": step,
+                    }
+                }
+            }
+        },
+    )
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(entity_id)
+    assert entry
+
+    # Get initial state.
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert state.state == "0.0"
+    assert state.attributes[ATTR_FRIENDLY_NAME] == friendly_name
+    assert state.attributes[ATTR_MIN] == 30
+    assert state.attributes[ATTR_MAX] == 50
+    assert state.attributes[ATTR_STEP] == step
+    assert state.attributes[ATTR_MODE] == NumberMode.AUTO
+
+    if device_class:
+        assert state.attributes[ATTR_DEVICE_CLASS] == device_class
+    else:
+        assert ATTR_DEVICE_CLASS not in state.attributes
+
+    if unit_of_measurement:
+        assert state.attributes[ATTR_UNIT_OF_MEASUREMENT] == unit_of_measurement
+    else:
+        assert ATTR_UNIT_OF_MEASUREMENT not in state.attributes
+
+    # Dispatch new state.
+    new_state = EcomaxNumber(
+        device=connection.device,
+        values=ParameterValues(value=45, min_value=30, max_value=80),
+        description=EcomaxNumberDescription(custom_number_key),
+    )
+    await dispatch_value(
+        connection.device, custom_number_key, new_state, source_device=source_device
+    )
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert state.state == "45.0"
+    assert state.attributes[ATTR_MIN] == 30
+    assert state.attributes[ATTR_MAX] == 80
+
+    # Set new state.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_set_value(hass, entity_id, 40)
+
+    mock_set_nowait.assert_called_once_with(custom_number_key, 40)
+    assert isinstance(state, State)
+    assert state.state == "40.0"

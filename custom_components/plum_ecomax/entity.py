@@ -3,27 +3,35 @@
 from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Literal, TypeVar, cast, final, override
+from typing import Any, Literal, cast, final, overload, override
 
+from homeassistant.const import CONF_UNIT_OF_MEASUREMENT, Platform
 from homeassistant.core import callback
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
 from pyplumio.const import ProductType
 from pyplumio.devices import Device
 from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
-from pyplumio.filters import Filter, on_change
+from pyplumio.filters import Filter, on_change, throttle
 from pyplumio.structures.modules import ConnectedModules
+
+from custom_components.plum_ecomax import PlumEcomaxConfigEntry
 
 from .connection import EcomaxConnection
 from .const import (
     ALL,
     ATTR_MIXERS,
+    ATTR_REGDATA,
     ATTR_THERMOSTATS,
     CONF_CONNECTION_TYPE,
     CONF_HOST,
+    CONF_SOURCE_DEVICE,
+    CONF_STEP,
+    CONF_UPDATE_INTERVAL,
     CONNECTION_TYPE_TCP,
     DOMAIN,
     MANUFACTURER,
+    VIRTUAL_DEVICES,
     DeviceType,
     ModuleType,
 )
@@ -38,9 +46,6 @@ class EcomaxEntityDescription(EntityDescription):
     filter_fn: Callable[[Any], Filter] = on_change
     module: ModuleType = ModuleType.A
     product_types: set[ProductType] | Literal["all"] = ALL
-
-
-DescriptorT = TypeVar("DescriptorT", bound=EcomaxEntityDescription)
 
 
 @callback
@@ -62,6 +67,86 @@ def async_get_by_modules[DescriptorT: EcomaxEntityDescription](
     for description in descriptions:
         if getattr(connected_modules, description.module, None) is not None:
             yield description
+
+
+@callback
+def async_make_description_for_custom_entity[DescriptorT: EcomaxEntityDescription](
+    description_factory: Callable[..., DescriptorT], entity: dict[str, Any]
+) -> DescriptorT:
+    """Make description from partial and entity data."""
+
+    @callback
+    def filter_wrapper(update_interval: int) -> Callable[..., Any]:
+        """Return a filter function based on the update interval."""
+
+        def filter_fn[CallableT: Callable[..., Any]](
+            x: CallableT,
+        ) -> Filter | CallableT:
+            """Return a filter function."""
+            return throttle(x, seconds=update_interval) if update_interval > 0 else x
+
+        return filter_fn
+
+    data = {**entity}
+
+    if step := data.get(CONF_STEP, None):
+        data["native_step"] = step
+        del data[CONF_STEP]
+
+    if unit_of_measurement := data.get(CONF_UNIT_OF_MEASUREMENT, None):
+        data["native_unit_of_measurement"] = unit_of_measurement
+        del data[CONF_UNIT_OF_MEASUREMENT]
+
+    if update_interval := data.get(CONF_UPDATE_INTERVAL, None):
+        data["filter_fn"] = filter_wrapper(update_interval)
+        del data[CONF_UPDATE_INTERVAL]
+
+    del data[CONF_SOURCE_DEVICE]
+    return description_factory(**data)
+
+
+@overload
+def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
+    platform: Platform,
+    config_entry: PlumEcomaxConfigEntry,
+    source_device: Literal[DeviceType.MIXER, DeviceType.THERMOSTAT],
+    description_factory: Callable[..., DescriptorT],
+) -> Generator[tuple[DescriptorT, int]]: ...
+
+
+@overload
+def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
+    platform: Platform,
+    config_entry: PlumEcomaxConfigEntry,
+    source_device: Literal[DeviceType.ECOMAX, "regdata"],
+    description_factory: Callable[..., DescriptorT],
+) -> Generator[DescriptorT]: ...
+
+
+@callback
+def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
+    platform: Platform,
+    config_entry: PlumEcomaxConfigEntry,
+    source_device: DeviceType | Literal["regdata"],
+    description_factory: Callable[..., DescriptorT],
+) -> Generator[tuple[DescriptorT, int] | DescriptorT]:
+    """Return a list of custom entities."""
+    entities: dict[str, Any] = config_entry.options.get("entities", {})
+    target_platform = str(platform)
+    if not entities or target_platform not in entities:
+        return
+
+    index = 0
+    for entity in entities[target_platform].values():
+        entity_source = entity[CONF_SOURCE_DEVICE]
+        if entity_source.startswith(VIRTUAL_DEVICES):
+            entity_source, index = entity[CONF_SOURCE_DEVICE].split("_", 1)
+
+        if entity_source == source_device:
+            description = async_make_description_for_custom_entity(
+                description_factory, entity
+            )
+            yield description if index == 0 else (description, int(index))
 
 
 class EcomaxEntity(Entity):
@@ -166,9 +251,6 @@ class SubdeviceEntityDescription(EcomaxEntityDescription):
     indexes: set[int] | Literal["all"] = ALL
 
 
-SubDescriptorT = TypeVar("SubDescriptorT", bound=SubdeviceEntityDescription)
-
-
 @callback
 def async_get_by_index[SubDescriptorT: SubdeviceEntityDescription](
     index: int, descriptions: Iterable[SubDescriptorT]
@@ -263,3 +345,45 @@ class MixerEntity(EcomaxEntity):
         """Return the mixer handler."""
         device = self.connection.device
         return cast(Mixer, device.data[ATTR_MIXERS][self.index])
+
+
+class RegdataEntity(EcomaxEntity):
+    """Represents a regulator data entity."""
+
+    _regdata_key: int
+
+    def __init__(
+        self, connection: EcomaxConnection, description: EcomaxEntityDescription
+    ) -> None:
+        """Initialize a new regdata entity."""
+        self._regdata_key = int(description.key)
+        super().__init__(connection, description)
+
+    async def async_added_to_hass(self) -> None:
+        """Subscribe to regdata event."""
+        description = self.entity_description
+        handler = description.filter_fn(self.async_update)
+
+        async def async_set_available(regdata: dict[int, Any]) -> None:
+            """Mark entity as available."""
+            if self._regdata_key in regdata:
+                self._attr_available = True
+
+        if ATTR_REGDATA in self.device.data:
+            await async_set_available(self.device.data[ATTR_REGDATA])
+            await handler(self.device.data[ATTR_REGDATA])
+
+        self.device.subscribe_once(ATTR_REGDATA, async_set_available)
+        self.device.subscribe(ATTR_REGDATA, handler)
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Unsubscribe from regdata event."""
+        self.device.unsubscribe(ATTR_REGDATA, self.async_update)
+
+    @property
+    def entity_registry_enabled_default(self) -> bool:
+        """Return if the entity should be enabled when first added.
+
+        This only applies when first added to the entity registry.
+        """
+        return self._regdata_key in self.device.data.get(ATTR_REGDATA, {})
