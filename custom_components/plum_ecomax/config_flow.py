@@ -714,7 +714,7 @@ class OptionsFlowHandler(OptionsFlow):
                 selected=entity.get(CONF_KEY, "")
             )
         ):
-            return await self.async_step_no_entities_to_add()
+            return self.async_abort(reason="no_entities_to_add")
 
         return self.async_show_form(
             step_id="entity_details",
@@ -771,7 +771,7 @@ class OptionsFlowHandler(OptionsFlow):
             return await self.async_step_entity_details()
 
         if not (schema := generate_select_schema(self.entities)):
-            return await self.async_step_no_entities_to_edit_or_remove()
+            return self.async_abort(reason="no_entities_to_edit_or_remove")
 
         return self.async_show_form(
             step_id="edit_entity", data_schema=schema, last_step=False
@@ -785,7 +785,7 @@ class OptionsFlowHandler(OptionsFlow):
             return self._async_step_remove_entity(user_input["entity_id"])
 
         if not (schema := generate_select_schema(self.entities)):
-            return await self.async_step_no_entities_to_edit_or_remove()
+            return self.async_abort(reason="no_entities_to_edit_or_remove")
 
         return self.async_show_form(
             step_id="remove_entity", data_schema=schema, last_step=False
@@ -803,18 +803,6 @@ class OptionsFlowHandler(OptionsFlow):
             return self.async_create_entry(title="", data=self.options)
         finally:
             self.hass.config_entries.async_schedule_reload(self.config_entry.entry_id)
-
-    async def async_step_no_entities_to_add(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        """Handle the case when no valid entities available to add."""
-        return self.async_abort(reason="no_entities_to_add")
-
-    async def async_step_no_entities_to_edit_or_remove(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        """Handle the case when no entities were added to edit."""
-        return self.async_abort(reason="no_entities_to_edit_or_remove")
 
     @callback
     def _async_get_virtual_device(self, device_type: str, index: int) -> VirtualDevice:
