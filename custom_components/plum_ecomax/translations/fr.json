@@ -450,7 +450,8 @@
     },
     "abort": {
       "no_entities_to_edit_or_remove": "No entities to edit or remove, you'll need to add some first.",
-      "no_entities_to_add": "No entities to add, all available entities have been added already."
+      "no_entities_to_add": "No entities to add, all available entities have been added already.",
+      "entry_not_ready": "Config entry not ready, please wait and try again."
     }
   },
   "selector": {
