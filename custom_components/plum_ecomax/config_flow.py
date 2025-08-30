@@ -235,7 +235,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
             _LOGGER.exception(device_not_found)
             return self.async_show_progress_done(next_step_id="device_not_found")
         except UnsupportedProduct:
-            return self.async_show_progress_done(next_step_id="unsupported_device")
+            return self.async_show_progress_done(next_step_id="unsupported_product")
         finally:
             self.identify_task = None
 
@@ -287,11 +287,11 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
         """Handle issues that need transition await from progress step."""
         return self.async_abort(reason="no_devices_found")
 
-    async def async_step_unsupported_device(
+    async def async_step_unsupported_product(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle issues that need transition await from progress step."""
-        return self.async_abort(reason="unsupported_device")
+        return self.async_abort(reason="unsupported_product")
 
     async def async_step_discovery_failed(
         self, user_input: dict[str, Any] | None = None

@@ -329,10 +329,10 @@ async def test_abort_device_not_found(
     assert result4["reason"] == "no_devices_found"
 
 
-async def test_abort_unsupported_device(
+async def test_abort_unsupported_product(
     hass: HomeAssistant, ecomax_p: EcoMAX, tcp_user_input: dict[str, Any]
 ) -> None:
-    """Test that we get the unsupported device message."""
+    """Test that we get the unsupported product message."""
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
@@ -369,7 +369,7 @@ async def test_abort_unsupported_device(
     # Fail with unsupported device.
     result4 = await hass.config_entries.flow.async_configure(result3["flow_id"])
     assert result4["type"] is FlowResultType.ABORT
-    assert result4["reason"] == "unsupported_device"
+    assert result4["reason"] == "unsupported_product"
 
 
 async def test_abort_discovery_failed(
