@@ -389,7 +389,25 @@ PLATFORM_UNITS: dict[Platform, dict] = {
 
 
 def _validate_unit(data: dict[str, Any], platform: Platform) -> None:
-    """Validate unit of measurement."""
+    """Validate unit of measurement.
+
+    The following function is derived from Home Assistant Core,
+    Copyright (c) 2016-present Nabu Casa, Inc.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    Note: This function has been modified from its original version
+    """
     if (
         (device_class := data.get(CONF_DEVICE_CLASS))
         and (units := PLATFORM_UNITS[platform].get(device_class)) is not None
@@ -415,7 +433,25 @@ def _validate_unit(data: dict[str, Any], platform: Platform) -> None:
 
 
 def _validate_state_class(data: dict[str, Any]) -> None:
-    """Validate state class."""
+    """Validate state class.
+
+    The following function is derived from Home Assistant Core,
+    Copyright (c) 2016-present Nabu Casa, Inc.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    Note: This function has been modified from its original version
+    """
     if (
         (state_class := data.get(CONF_STATE_CLASS))
         and (device_class := data.get(CONF_DEVICE_CLASS))
