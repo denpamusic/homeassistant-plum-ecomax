@@ -6,7 +6,7 @@ from collections.abc import Callable
 from dataclasses import asdict, astuple, dataclass
 from functools import partial
 import logging
-from typing import Any, Final, cast, override
+from typing import Any, Final, cast
 
 from homeassistant.components.sensor import (
     RestoreSensor,
@@ -478,26 +478,6 @@ class MixerSensor(MixerEntity, EcomaxSensor):
         super().__init__(connection, description)
 
 
-@dataclass(frozen=True, kw_only=True)
-class EcomaxMeterEntityDescription(EcomaxSensorEntityDescription):
-    """Describes an ecoMAX meter entity."""
-
-
-METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
-    EcomaxMeterEntityDescription(
-        key="fuel_burned",
-        always_available=True,
-        filter_fn=lambda x: aggregate(x, seconds=30, sample_size=50),
-        native_unit_of_measurement=UnitOfMass.KILOGRAMS,
-        product_types={ProductType.ECOMAX_P},
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        suggested_display_precision=3,
-        translation_key="total_fuel_burned",
-        value_fn=lambda x: x,
-    ),
-)
-
-
 @callback
 def async_setup_mixer_sensors(connection: EcomaxConnection) -> list[MixerSensor]:
     """Set up the mixer sensors."""
@@ -528,6 +508,26 @@ def async_setup_custom_mixer_sensors(
     ]
 
 
+@dataclass(frozen=True, kw_only=True)
+class EcomaxMeterEntityDescription(EcomaxSensorEntityDescription):
+    """Describes an ecoMAX meter entity."""
+
+
+METER_TYPES: tuple[EcomaxMeterEntityDescription, ...] = (
+    EcomaxMeterEntityDescription(
+        key="fuel_burned",
+        always_available=True,
+        filter_fn=lambda x: aggregate(x, seconds=30, sample_size=50),
+        native_unit_of_measurement=UnitOfMass.KILOGRAMS,
+        product_types={ProductType.ECOMAX_P},
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        suggested_display_precision=3,
+        translation_key="total_fuel_burned",
+        value_fn=lambda x: x,
+    ),
+)
+
+
 class EcomaxMeter(EcomaxSensor, RestoreSensor):
     """Represents an ecoMAX sensor that restores previous value."""
 
@@ -535,17 +535,21 @@ class EcomaxMeter(EcomaxSensor, RestoreSensor):
     _unrecorded_attributes = frozenset({ATTR_BURNED_SINCE_LAST_UPDATE})
     entity_description: EcomaxMeterEntityDescription
 
-    @override
+    def __init__(
+        self, connection: EcomaxConnection, description: EcomaxMeterEntityDescription
+    ) -> None:
+        """Initialize a new meter."""
+        super().__init__(connection, description)
+        self._attr_native_value = 0.0
+
     async def async_added_to_hass(self) -> None:
         """Restore native value."""
         await super().async_added_to_hass()
         if (last_sensor_data := await self.async_get_last_sensor_data()) is not None:
-            self._attr_native_value = last_sensor_data.native_value
+            self._attr_native_value = cast(float, last_sensor_data.native_value)
             self._attr_native_unit_of_measurement = (
                 last_sensor_data.native_unit_of_measurement
             )
-        else:
-            self._attr_native_value = 0.0
 
     async def async_calibrate_meter(self, value: float) -> None:
         """Calibrate meter state."""
@@ -563,8 +567,9 @@ class EcomaxMeter(EcomaxSensor, RestoreSensor):
             self._attr_extra_state_attributes = {
                 ATTR_BURNED_SINCE_LAST_UPDATE: value * 1000
             }
-            self._attr_native_value = float(self._attr_native_value + value)
-            self.async_write_ha_state()
+            self._attr_native_value += value  # type: ignore[operator]
+
+        self.async_write_ha_state()
 
     @property
     def native_value(self) -> StateType:
