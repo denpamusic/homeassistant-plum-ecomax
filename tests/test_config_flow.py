@@ -485,6 +485,15 @@ async def setup_options_flow(
     return result
 
 
+async def test_abort_config_entry_not_ready(
+    hass: HomeAssistant, config_entry: MockConfigEntry
+) -> None:
+    """Test abort when config ready is not ready."""
+    result = await hass.config_entries.options.async_init(config_entry.entry_id)
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "entry_not_ready"
+
+
 @pytest.mark.parametrize(
     (
         "source_device",

@@ -656,6 +656,9 @@ class OptionsFlowHandler(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Manage the options."""
+        if not hasattr(self.config_entry, "runtime_data"):
+            return self.async_abort(reason="entry_not_ready")
+
         self.connection = cast(
             EcomaxConnection, self.config_entry.runtime_data.connection
         )
