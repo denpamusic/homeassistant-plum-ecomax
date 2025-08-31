@@ -42,7 +42,7 @@ from custom_components.plum_ecomax.climate import (
     PRESET_SCHEDULE,
 )
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from tests import FLOAT_TOLERANCE
+from tests.conftest import FLOAT_TOLERANCE
 
 
 @pytest.fixture(autouse=True)

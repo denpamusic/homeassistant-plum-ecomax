@@ -32,8 +32,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from tests import FLOAT_TOLERANCE
-from tests.conftest import dispatch_value
+from tests.conftest import FLOAT_TOLERANCE, dispatch_value
 
 
 @pytest.fixture(autouse=True)

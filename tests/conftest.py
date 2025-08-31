@@ -2,6 +2,7 @@
 
 import asyncio
 from collections.abc import Generator
+import json
 from typing import Any, Final, cast
 from unittest.mock import AsyncMock, Mock, patch
 
@@ -31,7 +32,7 @@ from pyplumio.structures.modules import ConnectedModules
 from pyplumio.structures.network_info import NetworkInfo
 from pyplumio.structures.product_info import ProductInfo
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant_custom_component.common import MockConfigEntry, load_fixture
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
@@ -58,10 +59,21 @@ from custom_components.plum_ecomax.const import (
     DOMAIN,
     ProductModel,
 )
-from tests.common import load_regdata_fixture
 
 TITLE: Final = "ecoMAX"
 HOST: Final = "localhost"
+
+FLOAT_TOLERANCE: Final = 1e-6
+
+
+def keys_to_int(data: dict[str, Any]) -> dict[int, Any]:
+    """Cast dict keys to int."""
+    return {int(k): v for k, v in data.items()}
+
+
+def load_regdata_fixture(filename: str):
+    """Load regdata fixture."""
+    return json.loads(load_fixture(filename), object_hook=keys_to_int)
 
 
 @pytest.fixture(autouse=True)
