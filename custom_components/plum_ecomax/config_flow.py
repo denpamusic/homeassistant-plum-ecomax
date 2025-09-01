@@ -987,10 +987,10 @@ class OptionsFlowHandler(OptionsFlow):
             unit2 = unit.value if isinstance(unit, UnitOfMeasurement) else unit
             return f"{value.value} {unit2}" if unit2 else value.value
 
-        if isinstance(value, Switch):
+        elif isinstance(value, Switch):
             return value.value
 
-        if isinstance(value, float):
+        elif isinstance(value, float):
             value = round(value, 2)
 
         return value
