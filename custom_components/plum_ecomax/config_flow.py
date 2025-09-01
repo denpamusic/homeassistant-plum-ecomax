@@ -931,7 +931,7 @@ class OptionsFlowHandler(OptionsFlow):
 
     @cache
     def _get_virtual_device(self, device_type: DeviceType, index: int) -> VirtualDevice:
-        """Get the virtual device by device type and id."""
+        """Get the virtual device by device type and index."""
         device = self.connection.device
         virtual_devices = cast(
             dict[int, VirtualDevice], device.get_nowait(f"{device_type}s", {})
@@ -982,7 +982,6 @@ class OptionsFlowHandler(OptionsFlow):
 
         return [selector.SelectOptionDict(value=k, label=v) for k, v in sources.items()]
 
-    @cache
     def _number_native_step(self, key: str) -> float:
         """Return native step for the number entity."""
         device = self.connection.device
