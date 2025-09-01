@@ -39,6 +39,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.const import (
     ATTR_ENTITIES,
+    ATTR_REGDATA,
     CONF_BAUDRATE,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
@@ -60,7 +61,6 @@ from custom_components.plum_ecomax.const import (
     DEFAULT_DEVICE,
     DEFAULT_PORT,
     DOMAIN,
-    REGDATA,
 )
 
 
@@ -739,7 +739,7 @@ async def test_abort_config_entry_not_ready(
             None,
         ),
         (
-            REGDATA,
+            ATTR_REGDATA,
             ["add_sensor", "add_binary_sensor"],
             Platform.BINARY_SENSOR,
             {
@@ -752,13 +752,13 @@ async def test_abort_config_entry_not_ready(
                     CONF_NAME: "Custom regdata binary",
                     CONF_KEY: "1538",
                     CONF_DEVICE_CLASS: BinarySensorDeviceClass.RUNNING,
-                    CONF_SOURCE_DEVICE: REGDATA,
+                    CONF_SOURCE_DEVICE: ATTR_REGDATA,
                 }
             },
             None,
         ),
         (
-            REGDATA,
+            ATTR_REGDATA,
             ["add_sensor", "add_binary_sensor"],
             Platform.SENSOR,
             {
@@ -776,7 +776,7 @@ async def test_abort_config_entry_not_ready(
                     CONF_DEVICE_CLASS: SensorDeviceClass.TEMPERATURE,
                     CONF_STATE_CLASS: SensorStateClass.MEASUREMENT,
                     CONF_UPDATE_INTERVAL: 10,
-                    CONF_SOURCE_DEVICE: REGDATA,
+                    CONF_SOURCE_DEVICE: ATTR_REGDATA,
                 }
             },
             None,
@@ -1042,7 +1042,7 @@ async def test_abort_no_entities_to_add(
                 "1792": {
                     CONF_NAME: "Custom regdata sensor",
                     CONF_KEY: "1792",
-                    CONF_SOURCE_DEVICE: REGDATA,
+                    CONF_SOURCE_DEVICE: ATTR_REGDATA,
                     CONF_UNIT_OF_MEASUREMENT: UnitOfTemperature.CELSIUS,
                     CONF_DEVICE_CLASS: SensorDeviceClass.TEMPERATURE,
                     CONF_STATE_CLASS: SensorStateClass.MEASUREMENT,
@@ -1061,7 +1061,7 @@ async def test_abort_no_entities_to_add(
                 "1792": {
                     CONF_NAME: "Custom regdata sensor 2",
                     CONF_KEY: "1792",
-                    CONF_SOURCE_DEVICE: REGDATA,
+                    CONF_SOURCE_DEVICE: ATTR_REGDATA,
                     CONF_UNIT_OF_MEASUREMENT: UnitOfVolume.LITERS,
                     CONF_DEVICE_CLASS: SensorDeviceClass.VOLUME,
                     CONF_STATE_CLASS: SensorStateClass.TOTAL,

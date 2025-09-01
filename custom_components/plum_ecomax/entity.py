@@ -3,7 +3,7 @@
 from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Literal, cast, final, overload, override
+from typing import Any, Final, Literal, cast, final, overload, override
 
 from homeassistant.const import CONF_UNIT_OF_MEASUREMENT, Platform
 from homeassistant.core import callback
@@ -19,7 +19,6 @@ from custom_components.plum_ecomax import PlumEcomaxConfigEntry
 
 from .connection import EcomaxConnection
 from .const import (
-    ALL,
     ATTR_ENTITIES,
     ATTR_MIXERS,
     ATTR_REGDATA,
@@ -31,11 +30,14 @@ from .const import (
     CONF_UPDATE_INTERVAL,
     CONNECTION_TYPE_TCP,
     DOMAIN,
-    MANUFACTURER,
     VIRTUAL_DEVICES,
     DeviceType,
     ModuleType,
 )
+
+MANUFACTURER: Final = "Plum Sp. z o.o."
+
+ALL: Final = "all"
 
 
 @dataclass(frozen=True, kw_only=True)

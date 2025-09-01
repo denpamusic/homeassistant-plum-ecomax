@@ -27,8 +27,6 @@ from pyplumio.structures.thermostat_sensors import ATTR_THERMOSTATS_CONNECTED
 from .const import (
     ATTR_MIXERS,
     ATTR_REGDATA,
-    ATTR_SENSORS,
-    ATTR_SETUP,
     ATTR_THERMOSTATS,
     ATTR_WATER_HEATER,
     CONF_BAUDRATE,
@@ -48,6 +46,9 @@ from .const import (
     DOMAIN,
     DeviceType,
 )
+
+ATTR_SETUP: Final = "setup"
+ATTR_SENSORS: Final = "sensors"
 
 DEFAULT_TIMEOUT: Final = 15
 DEFAULT_RETRIES: Final = 5

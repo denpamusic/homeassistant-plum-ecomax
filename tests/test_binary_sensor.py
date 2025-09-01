@@ -31,7 +31,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import ATTR_ENTITIES, REGDATA
+from custom_components.plum_ecomax.const import ATTR_ENTITIES, ATTR_REGDATA
 from tests.conftest import dispatch_value
 
 
@@ -549,7 +549,7 @@ async def test_custom_regdata_binary_sensors(
                     "9000": {
                         "name": "Test custom regdata binary",
                         "key": "9000",
-                        "source_device": REGDATA,
+                        "source_device": ATTR_REGDATA,
                         "device_class": BinarySensorDeviceClass.RUNNING,
                     }
                 }
@@ -572,7 +572,7 @@ async def test_custom_regdata_binary_sensors(
     assert state.attributes[ATTR_DEVICE_CLASS] == BinarySensorDeviceClass.RUNNING
 
     # Dispatch new value.
-    await dispatch_value(connection.device, REGDATA, {9000: True})
+    await dispatch_value(connection.device, ATTR_REGDATA, {9000: True})
     state = hass.states.get(entity_id)
     assert isinstance(state, State)
     assert state.state == STATE_ON

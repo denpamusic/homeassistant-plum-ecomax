@@ -59,16 +59,16 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
-    ATTR_BURNED_SINCE_LAST_UPDATE,
     ATTR_ENTITIES,
-    ATTR_NUMERIC_STATE,
+    ATTR_REGDATA,
     ATTR_VALUE,
-    DEVICE_CLASS_METER,
     DOMAIN,
-    REGDATA,
     ModuleType,
 )
 from custom_components.plum_ecomax.sensor import (
+    ATTR_BURNED_SINCE_LAST_UPDATE,
+    ATTR_NUMERIC_STATE,
+    DEVICE_CLASS_METER,
     SERVICE_CALIBRATE_METER,
     SERVICE_RESET_METER,
 )
@@ -1425,7 +1425,7 @@ async def test_custom_regdata_sensors(
                     "9001": {
                         "name": "Test custom regdata sensor",
                         "key": "9001",
-                        "source_device": REGDATA,
+                        "source_device": ATTR_REGDATA,
                         "unit_of_measurement": UnitOfTemperature.CELSIUS,
                         "device_class": SensorDeviceClass.TEMPERATURE,
                         "state_class": SensorStateClass.MEASUREMENT,
@@ -1452,7 +1452,7 @@ async def test_custom_regdata_sensors(
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
     # Dispatch new value.
-    await dispatch_value(connection.device, REGDATA, {9001: 45.0})
+    await dispatch_value(connection.device, ATTR_REGDATA, {9001: 45.0})
     state = hass.states.get(entity_id)
     assert isinstance(state, State)
     assert state.state == "45.0"

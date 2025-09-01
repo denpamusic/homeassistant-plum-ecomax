@@ -31,19 +31,14 @@ from pyplumio.structures.schedules import Schedule, ScheduleDay
 import voluptuous as vol
 
 from .connection import DEFAULT_TIMEOUT, EcomaxConnection
-from .const import (
-    ATTR_END,
-    ATTR_PRESET,
-    ATTR_PRODUCT,
-    ATTR_SCHEDULES,
-    ATTR_START,
-    ATTR_TYPE,
-    ATTR_VALUE,
-    ATTR_WEEKDAYS,
-    DOMAIN,
-    WEEKDAYS,
-    DeviceType,
-)
+from .const import ATTR_PRODUCT, ATTR_VALUE, DOMAIN, VIRTUAL_DEVICES, WEEKDAYS
+
+ATTR_START: Final = "start"
+ATTR_END: Final = "end"
+ATTR_PRESET: Final = "preset"
+ATTR_SCHEDULES: Final = "schedules"
+ATTR_TYPE: Final = "type"
+ATTR_WEEKDAYS: Final = "weekdays"
 
 PRESET_DAY: Final = "day"
 PRESET_NIGHT: Final = "night"
@@ -104,7 +99,7 @@ def async_extract_target_device(
 
     ecomax = connection.device
     identifier = list(device.identifiers)[0][1]
-    for device_type in (DeviceType.MIXER, DeviceType.THERMOSTAT):
+    for device_type in VIRTUAL_DEVICES:
         if f"-{device_type}-" in identifier:
             index = int(identifier.split("-", 3).pop())
             devices = cast(

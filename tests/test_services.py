@@ -14,17 +14,13 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import (
+from custom_components.plum_ecomax.const import ATTR_VALUE, DOMAIN, WEEKDAYS
+from custom_components.plum_ecomax.services import (
     ATTR_END,
     ATTR_PRESET,
     ATTR_START,
     ATTR_TYPE,
-    ATTR_VALUE,
     ATTR_WEEKDAYS,
-    DOMAIN,
-    WEEKDAYS,
-)
-from custom_components.plum_ecomax.services import (
     PRESET_DAY,
     PRESET_NIGHT,
     SCHEDULES,

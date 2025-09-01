@@ -57,7 +57,6 @@ from custom_components.plum_ecomax.const import (
     DEFAULT_DEVICE,
     DEFAULT_PORT,
     DOMAIN,
-    ProductModel,
 )
 
 TITLE: Final = "ecoMAX"
@@ -436,7 +435,7 @@ def ecomax_860p3_o(ecomax_p: EcoMAX):
     (product_type: 0, product_id: 51)
     """
     product_type = ProductType.ECOMAX_P
-    product_model = ProductModel.ECOMAX_860P3_O
+    product_model = "ecoMAX 860P3-O"
 
     ecomax_p.data.update(
         {

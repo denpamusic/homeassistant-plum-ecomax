@@ -62,6 +62,7 @@ from .const import (
     ATTR_MIXERS,
     ATTR_MODULES,
     ATTR_PRODUCT,
+    ATTR_REGDATA,
     ATTR_THERMOSTATS,
     BAUDRATES,
     CONF_BAUDRATE,
@@ -85,7 +86,6 @@ from .const import (
     DEFAULT_DEVICE,
     DEFAULT_PORT,
     DOMAIN,
-    REGDATA,
     VIRTUAL_DEVICES,
     DeviceType,
 )
@@ -702,7 +702,7 @@ class OptionsFlowHandler(OptionsFlow):
         """Handle selecting entity type."""
         menu_options = ["add_sensor", "add_binary_sensor"]
 
-        if self.source_device != REGDATA:
+        if self.source_device != ATTR_REGDATA:
             menu_options.extend(["add_number", "add_switch"])
 
         return self.async_show_menu(step_id="entity_type", menu_options=menu_options)
@@ -874,7 +874,7 @@ class OptionsFlowHandler(OptionsFlow):
     ) -> tuple[dict[str, Any], list[str]]:
         """Get entity sources for regdata."""
         return (
-            self.connection.device.get_nowait(REGDATA, {}),
+            self.connection.device.get_nowait(ATTR_REGDATA, {}),
             [key for key in entity_keys if key.isnumeric()],
         )
 
@@ -901,7 +901,7 @@ class OptionsFlowHandler(OptionsFlow):
         if self.source_device == DeviceType.ECOMAX:
             data, existing_keys = self._async_get_ecomax_sources(entity_keys)
 
-        elif self.source_device == REGDATA:
+        elif self.source_device == ATTR_REGDATA:
             data, existing_keys = self._async_get_regdata_sources(entity_keys)
 
         elif self.source_device.startswith(VIRTUAL_DEVICES):
@@ -923,8 +923,8 @@ class OptionsFlowHandler(OptionsFlow):
         device = self.connection.device
         sources = {DeviceType.ECOMAX.value: f"Common ({model})"}
 
-        if device.get_nowait(REGDATA, None):
-            sources[REGDATA] = f"Extended ({model})"
+        if device.get_nowait(ATTR_REGDATA, None):
+            sources[ATTR_REGDATA] = f"Extended ({model})"
 
         if mixers := device.get_nowait(ATTR_MIXERS, None):
             sources |= {
