@@ -367,23 +367,6 @@ PLATFORM_TYPES: dict[Platform, tuple[type, ...]] = {
     Platform.SWITCH: (Switch,),
 }
 
-
-def _get_custom_entity_options(
-    entities: dict[str, Any],
-) -> list[selector.SelectOptionDict]:
-    """Get the custom entities as selector options."""
-    platforms = list(PLATFORM_TYPES)
-    entities = {
-        f"{platform}.{key}": entity[CONF_NAME]
-        for platform, entities in entities.items()
-        if platform in platforms
-        for key, entity in entities.items()
-    }
-    entities = dict(sorted(entities.items(), key=lambda item: item[1]))
-
-    return [selector.SelectOptionDict(value=k, label=v) for k, v in entities.items()]
-
-
 PLATFORM_UNITS: dict[Platform, dict] = {
     Platform.SENSOR: SENSOR_DEVICE_CLASS_UNITS,
     Platform.NUMBER: NUMBER_DEVICE_CLASS_UNITS,
@@ -505,8 +488,24 @@ def _entity_keys_for_config_entry(
     return [entity.unique_id.split("-")[-1] for entity in entities]
 
 
-def _is_valid_for_platform(value: Any, platform: Platform) -> bool:
-    """Check if value is valid source for specific platform type."""
+def _custom_entity_options(
+    entities: dict[str, Any],
+) -> list[selector.SelectOptionDict]:
+    """Return custom entity options."""
+    platforms = list(PLATFORM_TYPES)
+    entities = {
+        f"{platform}.{key}": entity[CONF_NAME]
+        for platform, entities in entities.items()
+        if platform in platforms
+        for key, entity in entities.items()
+    }
+    entities = dict(sorted(entities.items(), key=lambda item: item[1]))
+
+    return [selector.SelectOptionDict(value=k, label=v) for k, v in entities.items()]
+
+
+def _is_valid_source(platform: Platform, value: Any) -> bool:
+    """Check if value is valid source for the specific platform type."""
     platform_types = PLATFORM_TYPES[platform]
     if isinstance(value, bool):
         return True if bool in platform_types else False
@@ -514,10 +513,40 @@ def _is_valid_for_platform(value: Any, platform: Platform) -> bool:
     return isinstance(value, platform_types)
 
 
+@overload
+def _format_source_value(value: Number) -> NumericType | str: ...
+
+
+@overload
+def _format_source_value(value: Switch) -> State: ...
+
+
+@overload
+def _format_source_value[SensorValueT: str | int | float](
+    value: SensorValueT,
+) -> SensorValueT: ...
+
+
+def _format_source_value(value: Any) -> Any:
+    """Format the source value."""
+    if isinstance(value, Number):
+        unit = value.unit_of_measurement
+        unit2 = unit.value if isinstance(unit, UnitOfMeasurement) else unit
+        return f"{value.value} {unit2}" if unit2 else value.value
+
+    elif isinstance(value, Switch):
+        return value.value
+
+    elif isinstance(value, float):
+        value = round(value, 2)
+
+        return value
+
+
 def generate_select_schema(entities: dict[str, Any]) -> vol.Schema | None:
     """Generate schema for editing or deleting an entity."""
 
-    if not (options := _get_custom_entity_options(entities)):
+    if not (options := _custom_entity_options(entities)):
         return None
 
     return vol.Schema(
@@ -954,10 +983,10 @@ class OptionsFlowHandler(OptionsFlow):
 
         return [
             selector.SelectOptionDict(
-                value=str(k), label=f"{k} (value: {self._format_source_value(v)})"
+                value=str(k), label=f"{k} (value: {_format_source_value(v)})"
             )
             for k, v in data.items()
-            if _is_valid_for_platform(v, self.platform)
+            if _is_valid_source(self.platform, v)
         ]
 
     def _source_device_select_options(self) -> list[selector.SelectOptionDict]:
@@ -1004,33 +1033,3 @@ class OptionsFlowHandler(OptionsFlow):
             )
 
         return number.description.step
-
-    @overload
-    @staticmethod
-    def _format_source_value(value: Number) -> NumericType | str: ...
-
-    @overload
-    @staticmethod
-    def _format_source_value(value: Switch) -> State: ...
-
-    @overload
-    @staticmethod
-    def _format_source_value[SensorValueT: str | int | float](
-        value: SensorValueT,
-    ) -> SensorValueT: ...
-
-    @staticmethod
-    def _format_source_value(value: Any) -> Any:
-        """Format the source value."""
-        if isinstance(value, Number):
-            unit = value.unit_of_measurement
-            unit2 = unit.value if isinstance(unit, UnitOfMeasurement) else unit
-            return f"{value.value} {unit2}" if unit2 else value.value
-
-        elif isinstance(value, Switch):
-            return value.value
-
-        elif isinstance(value, float):
-            value = round(value, 2)
-
-        return value
