@@ -427,12 +427,19 @@
         },
         "title": "Select entity type"
       },
+      "electric_water_heater": {
+          "data": {
+            "entity_id": "Entity",
+            "enabled": "Enabled"
+          }
+      },
       "init": {
         "menu_options": {
           "add_entity": "Add a new entity",
           "edit_entity": "Edit an entity",
           "remove_entity": "Remove an entity",
-          "rediscover_devices": "Rediscover connected devices"
+          "rediscover_devices": "Rediscover connected devices",
+          "electric_water_heater": "Configure electric water heater"
         }
       }
     },
