@@ -1025,6 +1025,9 @@ class OptionsFlowHandler(OptionsFlow):
             )
             number = virtual_device.get_nowait(key, None)
 
+        else:
+            number = None
+
         number = cast(Number | None, number)
         if not number:
             raise HomeAssistantError(
