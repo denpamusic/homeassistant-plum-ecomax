@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Iterable, Mapping
+from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import asdict
+from functools import cache
 import logging
 from typing import Any, cast, overload
 
@@ -495,7 +496,24 @@ def _validate_entity_details(
     return errors
 
 
-@callback
+def _entity_keys_for_config_entry(
+    hass: HomeAssistant, config_entry: ConfigEntry
+) -> list[str]:
+    """Get entity keys for config entry."""
+    entity_registry = er.async_get(hass)
+    entities = er.async_entries_for_config_entry(entity_registry, config_entry.entry_id)
+    return [entity.unique_id.split("-")[-1] for entity in entities]
+
+
+def _is_valid_for_platform(value: Any, platform: Platform) -> bool:
+    """Check if value is valid source for specific platform type."""
+    platform_types = PLATFORM_TYPES[platform]
+    if isinstance(value, bool):
+        return True if bool in platform_types else False
+
+    return isinstance(value, platform_types)
+
+
 def generate_select_schema(entities: dict[str, Any]) -> vol.Schema | None:
     """Generate schema for editing or deleting an entity."""
 
@@ -511,7 +529,6 @@ def generate_select_schema(entities: dict[str, Any]) -> vol.Schema | None:
     )
 
 
-@callback
 def generate_edit_schema(
     platform: Platform,
     source_options: list[selector.SelectOptionDict],
@@ -678,7 +695,7 @@ class OptionsFlowHandler(OptionsFlow):
     async def async_step_add_entity(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle adding a new entity."""
+        """Handle adding custom entity."""
         if user_input is not None:
             self.source_device: str = user_input[CONF_SOURCE_DEVICE]
             return await self.async_step_entity_type()
@@ -689,7 +706,7 @@ class OptionsFlowHandler(OptionsFlow):
                 {
                     vol.Required(CONF_SOURCE_DEVICE): selector.SelectSelector(
                         selector.SelectSelectorConfig(
-                            options=self._async_get_source_device_options()
+                            options=self._source_device_select_options()
                         )
                     )
                 }
@@ -699,7 +716,7 @@ class OptionsFlowHandler(OptionsFlow):
     async def async_step_entity_type(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle selecting entity type."""
+        """Handle selecting custom entity type."""
         menu_options = ["add_sensor", "add_binary_sensor"]
 
         if self.source_device != ATTR_REGDATA:
@@ -717,28 +734,28 @@ class OptionsFlowHandler(OptionsFlow):
     async def async_step_add_binary_sensor(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle adding a new binary sensor."""
+        """Handle adding a custom binary sensor entity."""
         self.platform = Platform.BINARY_SENSOR
         return await self.async_step_entity_details()
 
     async def async_step_add_number(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle adding a new number."""
+        """Handle adding a custom number entity."""
         self.platform = Platform.NUMBER
         return await self.async_step_entity_details()
 
     async def async_step_add_switch(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle adding a new switch."""
+        """Handle adding a custom switch entity."""
         self.platform = Platform.SWITCH
         return await self.async_step_entity_details()
 
     async def async_step_entity_details(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle new entity details."""
+        """Handle custom entity details."""
         entity = self.entity if hasattr(self, "entity") else {}
         if user_input is None:
             errors = {}
@@ -750,7 +767,7 @@ class OptionsFlowHandler(OptionsFlow):
             return self._async_step_create_entry(key, data=user_input)
 
         if not (
-            source_options := self._async_get_source_options(
+            source_options := self._entity_source_select_options(
                 selected=entity.get(CONF_KEY, "")
             )
         ):
@@ -770,16 +787,16 @@ class OptionsFlowHandler(OptionsFlow):
     def _async_step_create_entry(
         self, key: str, data: dict[str, Any]
     ) -> ConfigFlowResult:
-        """Save the options."""
+        """Create custom entity."""
         entities = self.entities.setdefault(self.platform.value, {})
         key_changed = True if key != data[CONF_KEY] else False
 
         if key_changed:
-            self._async_remove_entry(key)
+            self._remove_entry_from_registry(key)
             entities.pop(key, None)
 
         if self.platform is Platform.NUMBER and not key_changed:
-            data[CONF_STEP] = self._async_get_native_step(data[CONF_KEY])
+            data[CONF_STEP] = self._number_native_step(data[CONF_KEY])
 
         key = data[CONF_KEY]
         entities[key] = data
@@ -801,7 +818,7 @@ class OptionsFlowHandler(OptionsFlow):
     async def async_step_edit_entity(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle editing an entity."""
+        """Handle editing a custom entity."""
         if user_input is not None:
             entity_id: str = user_input["entity_id"]
             platform, key = entity_id.split(".", 2)
@@ -820,7 +837,7 @@ class OptionsFlowHandler(OptionsFlow):
     async def async_step_remove_entity(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle deleting an entity."""
+        """Handle deleting a custom entity."""
         if user_input is not None:
             return self._async_step_remove_entity(user_input["entity_id"])
 
@@ -837,87 +854,113 @@ class OptionsFlowHandler(OptionsFlow):
         platform, key = entity_id.split(".", 2)
         entities = self.entities.setdefault(platform, {})
         entities.pop(key, None)
-        self._async_remove_entry(key)
+        self._remove_entry_from_registry(key)
 
         try:
             return self.async_create_entry(title="", data=self.options)
         finally:
             self.hass.config_entries.async_schedule_reload(self.config_entry.entry_id)
 
-    @callback
-    def _async_get_virtual_device(self, device_type: str, index: int) -> VirtualDevice:
-        """Get the virtual device."""
-        virtual_devices = cast(
-            dict[int, VirtualDevice],
-            self.connection.device.get_nowait(f"{device_type}s", {}),
-        )
-        if index in virtual_devices:
-            return virtual_devices[index]
-
-        raise HomeAssistantError(
-            translation_key="device_disconnected",
-            translation_placeholders={"device": f"{device_type} {index}"},
-        )
-
-    @callback
-    def _async_get_ecomax_sources(
-        self, entity_keys: Iterable[str]
-    ) -> tuple[dict[str, Any], list[str]]:
-        """Get the entity sources for ecoMAX device."""
-        return self.connection.device.data, [
-            key for key in entity_keys if key.split("_", 1)[0] not in VIRTUAL_DEVICES
-        ]
-
-    @callback
-    def _async_get_regdata_sources(
-        self, entity_keys: Iterable[str]
-    ) -> tuple[dict[str, Any], list[str]]:
-        """Get entity sources for regdata."""
-        return (
-            self.connection.device.get_nowait(ATTR_REGDATA, {}),
-            [key for key in entity_keys if key.isnumeric()],
-        )
-
-    @callback
-    def _async_get_virtual_device_sources(
-        self, entity_keys: Iterable[str]
-    ) -> tuple[dict[str, Any], list[str]]:
-        """Get entity sources for virtual devices."""
-        device_type, index = self.source_device.split("_", 1)
-        virtual_device = self._async_get_virtual_device(device_type, int(index))
-        return virtual_device.data, [
-            key for key in entity_keys if f"{device_type}-{index}" in key
-        ]
-
-    @callback
-    def _async_get_sources(self, selected: str = "") -> dict[str, Any]:
-        """Get entity sources."""
+    def _remove_entry_from_registry(self, key: str) -> None:
+        """Remove entry from the entity registry."""
         entity_registry = er.async_get(self.hass)
         entities = er.async_entries_for_config_entry(
             entity_registry, self.config_entry.entry_id
         )
-        entity_keys = [entity.unique_id.split("-")[-1] for entity in entities]
+        for entity in entities:
+            if entity.unique_id.split("-")[-1] == key:
+                entity_registry.async_remove(entity_id=entity.entity_id)
 
-        if self.source_device == DeviceType.ECOMAX:
-            data, existing_keys = self._async_get_ecomax_sources(entity_keys)
-
-        elif self.source_device == ATTR_REGDATA:
-            data, existing_keys = self._async_get_regdata_sources(entity_keys)
-
-        elif self.source_device.startswith(VIRTUAL_DEVICES):
-            data, existing_keys = self._async_get_virtual_device_sources(entity_keys)
-
-        else:
-            raise HomeAssistantError(
-                translation_key="unsupported_device",
-                translation_placeholders={"device": self.source_device},
-            )
+    def _ecomax_source_candidates(
+        self, entity_keys: list[str], selected: str
+    ) -> dict[str, Any]:
+        """Return source candidates for ecoMAX."""
+        existing_keys = [
+            key for key in entity_keys if key.split("_", 1)[0] not in VIRTUAL_DEVICES
+        ]
         return {
-            k: v for k, v in data.items() if k not in existing_keys or k == selected
+            k: v
+            for k, v in self.connection.device.data.items()
+            if k not in existing_keys or k == selected
         }
 
-    @callback
-    def _async_get_source_device_options(self) -> list[selector.SelectOptionDict]:
+    def _regdata_source_candidates(
+        self, entity_keys: list[str], selected: str
+    ) -> dict[str, Any]:
+        """Return source candidates for regdata."""
+        existing_keys = [key for key in entity_keys if key.isnumeric()]
+        regdata = cast(
+            dict[str, Any], self.connection.device.get_nowait(ATTR_REGDATA, {})
+        )
+        return {
+            k: v for k, v in regdata.items() if k not in existing_keys or k == selected
+        }
+
+    def _virtual_device_source_candidates(
+        self, entity_keys: list[str], selected: str
+    ) -> dict[str, Any]:
+        """Return source candidates for virtual device."""
+        device_type, index = self.source_device.split("_", 1)
+        virtual_device = self._get_virtual_device(DeviceType(device_type), int(index))
+        existing_keys = [
+            key for key in entity_keys if key.startswith(f"{device_type}-{index}")
+        ]
+        return {
+            k: v
+            for k, v in virtual_device.data.items()
+            if k not in existing_keys or k == selected
+        }
+
+    def _entity_source_candidates(self, selected: str) -> dict[str, Any]:
+        """Return custom entity source candidates."""
+        entity_keys = _entity_keys_for_config_entry(self.hass, self.config_entry)
+
+        if self.source_device == DeviceType.ECOMAX:
+            return self._ecomax_source_candidates(entity_keys, selected)
+
+        elif self.source_device == ATTR_REGDATA:
+            return self._regdata_source_candidates(entity_keys, selected)
+
+        elif self.source_device.startswith(VIRTUAL_DEVICES):
+            return self._virtual_device_source_candidates(entity_keys, selected)
+
+        raise HomeAssistantError(
+            translation_key="unsupported_device",
+            translation_placeholders={"device": self.source_device},
+        )
+
+    @cache
+    def _get_virtual_device(self, device_type: DeviceType, index: int) -> VirtualDevice:
+        """Get the virtual device by device type and id."""
+        device = self.connection.device
+        virtual_devices = cast(
+            dict[int, VirtualDevice], device.get_nowait(f"{device_type}s", {})
+        )
+
+        try:
+            return virtual_devices[index]
+        except KeyError as e:
+            raise HomeAssistantError(
+                translation_key="device_disconnected",
+                translation_placeholders={"device": f"{device_type} {index}"},
+            ) from e
+
+    def _entity_source_select_options(
+        self, selected: str = ""
+    ) -> list[selector.SelectOptionDict]:
+        """Return source options."""
+        source_candidates = self._entity_source_candidates(selected)
+        data = dict(sorted(source_candidates.items()))
+
+        return [
+            selector.SelectOptionDict(
+                value=str(k), label=f"{k} (value: {self._format_source_value(v)})"
+            )
+            for k, v in data.items()
+            if _is_valid_for_platform(v, self.platform)
+        ]
+
+    def _source_device_select_options(self) -> list[selector.SelectOptionDict]:
         """Return source device options."""
         model = self.connection.model
         device = self.connection.device
@@ -939,48 +982,46 @@ class OptionsFlowHandler(OptionsFlow):
 
         return [selector.SelectOptionDict(value=k, label=v) for k, v in sources.items()]
 
-    @callback
-    def _async_get_source_options(
-        self, selected: str = ""
-    ) -> list[selector.SelectOptionDict]:
-        """Return source options."""
-        sources = self._async_get_sources(selected)
-        data = dict(sorted(sources.items()))
+    @cache
+    def _number_native_step(self, key: str) -> float:
+        """Return native step for the number entity."""
+        device = self.connection.device
 
-        return [
-            selector.SelectOptionDict(
-                value=str(k), label=f"{k} (value: {self._async_format_source_value(v)})"
+        if self.source_device == DeviceType.ECOMAX:
+            number = device.get_nowait(key, None)
+
+        elif self.source_device.startswith(VIRTUAL_DEVICES):
+            device_type, index = self.source_device.split("_", 1)
+            virtual_device = self._get_virtual_device(
+                DeviceType(device_type), int(index)
             )
-            for k, v in data.items()
-            if self._async_is_valid_source(v, self.platform)
-        ]
+            number = virtual_device.get_nowait(key, None)
 
-    @callback
-    def _async_is_valid_source(self, source: Any, platform: Platform) -> bool:
-        """Check if value is valid source for specific platform type."""
-        platform_types = PLATFORM_TYPES[platform]
-        if isinstance(source, bool):
-            return True if bool in platform_types else False
+        number = cast(Number | None, number)
+        if not number:
+            raise HomeAssistantError(
+                translation_key="entity_not_found",
+                translation_placeholders={"entity": key, "device": self.source_device},
+            )
 
-        return isinstance(source, platform_types)
+        return number.description.step
 
     @overload
     @staticmethod
-    def _async_format_source_value(value: Number) -> NumericType | str: ...
+    def _format_source_value(value: Number) -> NumericType | str: ...
 
     @overload
     @staticmethod
-    def _async_format_source_value(value: Switch) -> State: ...
+    def _format_source_value(value: Switch) -> State: ...
 
     @overload
     @staticmethod
-    def _async_format_source_value[SensorValueT: str | int | float](
+    def _format_source_value[SensorValueT: str | int | float](
         value: SensorValueT,
     ) -> SensorValueT: ...
 
-    @callback
     @staticmethod
-    def _async_format_source_value(value: Any) -> Any:
+    def _format_source_value(value: Any) -> Any:
         """Format the source value."""
         if isinstance(value, Number):
             unit = value.unit_of_measurement
@@ -994,36 +1035,3 @@ class OptionsFlowHandler(OptionsFlow):
             value = round(value, 2)
 
         return value
-
-    @callback
-    def _async_remove_entry(self, key: str) -> None:
-        """Remove the entity entry from entity registry."""
-        entity_registry = er.async_get(self.hass)
-        entities = er.async_entries_for_config_entry(
-            entity_registry, self.config_entry.entry_id
-        )
-        for entity in entities:
-            if entity.unique_id.split("-")[-1] == key:
-                entity_registry.async_remove(entity_id=entity.entity_id)
-
-    @callback
-    def _async_get_native_step(self, key: str) -> float:
-        """Get the native step for the number entity."""
-        device = self.connection.device
-
-        if self.source_device == DeviceType.ECOMAX:
-            number = device.get_nowait(key, None)
-
-        elif self.source_device.startswith(VIRTUAL_DEVICES):
-            device_type, index = self.source_device.split("_", 1)
-            virtual_device = self._async_get_virtual_device(device_type, int(index))
-            number = virtual_device.get_nowait(key, None)
-
-        number = cast(Number | None, number)
-        if not number:
-            raise HomeAssistantError(
-                translation_key="entity_not_found",
-                translation_placeholders={"entity": key, "device": self.source_device},
-            )
-
-        return number.description.step
