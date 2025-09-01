@@ -176,9 +176,6 @@
       }
     },
     "sensor": {
-      "ash_pan_full": {
-        "name": "Ash pan full"
-      },
       "boiler_load": {
         "name": "Boiler load"
       },
@@ -273,18 +270,6 @@
       },
       "mixer_temp": {
         "name": "Mixer temperature"
-      },
-      "mixer_valve_opening_percentage": {
-        "name": "Mixer valve opening percentage"
-      },
-      "mixer_valve_state": {
-        "name": "Mixer valve state",
-        "state": {
-          "closing": "Closing",
-          "off": "[%key:common::state::off%]",
-          "opening": "Opening",
-          "unknown": "Unknown"
-        }
       },
       "outside_temp": {
         "name": "Outside temperature"

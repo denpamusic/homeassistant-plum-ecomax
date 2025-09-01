@@ -100,9 +100,6 @@
       }
     },
     "sensor": {
-      "ash_pan_full": {
-        "default": "mdi:tray-alert"
-      },
       "boiler_load": {
         "default": "mdi:gauge"
       },
@@ -137,14 +134,6 @@
       },
       "fuel_level": {
         "default": "mdi:gas-station"
-      },
-      "mixer_valve_state": {
-        "default": "mdi:valve",
-        "state": {
-          "closing": "mdi:valve-closed",
-          "off": "mdi:valve",
-          "opening": "mdi:valve-open"
-        }
       },
       "oxygen_level": {
         "default": "mdi:weather-windy-variant"

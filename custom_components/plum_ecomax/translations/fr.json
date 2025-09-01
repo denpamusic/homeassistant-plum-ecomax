@@ -176,9 +176,6 @@
       }
     },
     "sensor": {
-      "ash_pan_full": {
-        "name": "Cendrier plein"
-      },
       "boiler_load": {
         "name": "Charge de la chaudière"
       },
@@ -273,18 +270,6 @@
       },
       "mixer_temp": {
         "name": "Température du mélanger"
-      },
-      "mixer_valve_opening_percentage": {
-        "name": "Pourcentage d'ouverture de la vane du mélangeur"
-      },
-      "mixer_valve_state": {
-        "name": "État de la vanne du mélangeur",
-        "state": {
-          "closing": "Fermeture",
-          "off": "Off",
-          "opening": "Ouverture",
-          "unknown": "Inconnu"
-        }
       },
       "outside_temp": {
         "name": "Température extérieure"

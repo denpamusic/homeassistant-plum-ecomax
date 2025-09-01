@@ -176,9 +176,6 @@
       }
     },
     "sensor": {
-      "ash_pan_full": {
-        "name": "Popielnik pełny"
-      },
       "boiler_load": {
         "name": "Poziom obciążenia kotła"
       },
@@ -273,18 +270,6 @@
       },
       "mixer_temp": {
         "name": "Temperatura mieszacza"
-      },
-      "mixer_valve_opening_percentage": {
-        "name": "Otwarcie zaworu mieszacza"
-      },
-      "mixer_valve_state": {
-        "name": "Status zaworu",
-        "state": {
-          "closing": "Zamykanie",
-          "off": "Nie działa",
-          "opening": "Otwieranie",
-          "unknown": "Nieznany"
-        }
       },
       "outside_temp": {
         "name": "Temperatura na zewnątrz"
