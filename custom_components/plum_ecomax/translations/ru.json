@@ -737,5 +737,16 @@
       },
       "name": "Установить расписание"
     }
+  },
+  "system_health": {
+    "info": {
+      "pyplumio_version": "PyPlumIO version",
+      "received_frames": "Received frames",
+      "sent_frames": "Sent frames",
+      "failed_frames": "Failed frames",
+      "connected_since": "Connected since",
+      "connection_losses": "Connection losses",
+      "custom_entities": "Custom entities"
+    }
   }
 }
