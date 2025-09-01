@@ -427,12 +427,19 @@
         },
         "title": "Выберите тип объекта"
       },
+      "electric_water_heater": {
+          "data": {
+            "entity_id": "Entity",
+            "enabled": "Enabled"
+          }
+      },
       "init": {
         "menu_options": {
           "add_entity": "Добавить новый объект",
           "edit_entity": "Редактировать объект",
           "remove_entity": "Удалить объект",
-          "rediscover_devices": "Повторить обнаружение устройств"
+          "rediscover_devices": "Повторить обнаружение устройств",
+          "electric_water_heater": "Configure electric water heater"
         }
       }
     },

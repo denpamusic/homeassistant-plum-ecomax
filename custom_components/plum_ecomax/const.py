@@ -6,7 +6,9 @@ from typing import Final
 DOMAIN = "plum_ecomax"
 
 # Generic attributes.
+ATTR_ENABLED: Final = "enabled"
 ATTR_ENTITIES: Final = "entities"
+ATTR_ELECTRIC_WATER_HEATER: Final = "electric_water_heater"
 ATTR_FROM: Final = "from"
 ATTR_MIXERS: Final = "mixers"
 ATTR_MODULES: Final = "modules"

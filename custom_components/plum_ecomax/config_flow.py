@@ -30,6 +30,7 @@ from homeassistant.config_entries import (
     OptionsFlowWithReload,
 )
 from homeassistant.const import (
+    ATTR_ENTITY_ID,
     CONF_BASE,
     CONF_DEVICE_CLASS,
     CONF_MODE,
@@ -58,6 +59,8 @@ from .connection import (
     async_get_sub_devices,
 )
 from .const import (
+    ATTR_ELECTRIC_WATER_HEATER,
+    ATTR_ENABLED,
     ATTR_ENTITIES,
     ATTR_MIXERS,
     ATTR_MODULES,
@@ -550,7 +553,7 @@ def generate_select_schema(entities: dict[str, Any]) -> vol.Schema | None:
 
     return vol.Schema(
         {
-            vol.Required("entity_id"): selector.SelectSelector(
+            vol.Required(ATTR_ENTITY_ID): selector.SelectSelector(
                 selector.SelectSelectorConfig(options=options)
             )
         }
@@ -695,6 +698,27 @@ def generate_edit_schema(
     return vol.Schema(schema)
 
 
+def generate_electric_water_heater_schema(
+    options: dict[str, Any], exclude_entities: list[str]
+) -> vol.Schema:
+    """Generate schema for editing water heater options."""
+    return vol.Schema(
+        {
+            vol.Required(
+                ATTR_ENTITY_ID,
+                default=options.get(ATTR_ENTITY_ID, ""),
+            ): selector.EntitySelector(
+                selector.EntitySelectorConfig(
+                    domain=Platform.SWITCH, exclude_entities=exclude_entities
+                )
+            ),
+            vol.Required(
+                ATTR_ENABLED, default=options.get(ATTR_ENABLED, False)
+            ): cv.boolean,
+        }
+    )
+
+
 class OptionsFlowHandler(OptionsFlowWithReload):
     """Represents an options flow."""
 
@@ -717,6 +741,7 @@ class OptionsFlowHandler(OptionsFlowWithReload):
                 "edit_entity",
                 "remove_entity",
                 "rediscover_devices",
+                "electric_water_heater",
             ],
         )
 
@@ -844,12 +869,45 @@ class OptionsFlowHandler(OptionsFlowWithReload):
         self.config_entry.async_create_task(self.hass, _async_discover_devices())
         return self.async_create_entry(data=self.options)
 
+    async def async_step_electric_water_heater(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle water heater settings."""
+        electric_water_heater_options = cast(
+            dict[str, Any], self.options.setdefault(ATTR_ELECTRIC_WATER_HEATER, {})
+        )
+
+        if user_input is not None:
+            electric_water_heater_options[ATTR_ENABLED] = user_input[ATTR_ENABLED]
+            electric_water_heater_options[ATTR_ENTITY_ID] = user_input[ATTR_ENTITY_ID]
+            try:
+                return self.async_create_entry(title="", data=self.options)
+            finally:
+                self.hass.config_entries.async_schedule_reload(
+                    self.config_entry.entry_id
+                )
+
+        # Exclude own switches.
+        entity_registry = er.async_get(self.hass)
+        entity_entries = er.async_entries_for_config_entry(
+            entity_registry, self.config_entry.entry_id
+        )
+
+        return self.async_show_form(
+            step_id=ATTR_ELECTRIC_WATER_HEATER,
+            data_schema=generate_electric_water_heater_schema(
+                options=electric_water_heater_options,
+                exclude_entities=[entry.entity_id for entry in entity_entries],
+            ),
+            last_step=True,
+        )
+
     async def async_step_edit_entity(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle editing a custom entity."""
         if user_input is not None:
-            entity_id: str = user_input["entity_id"]
+            entity_id: str = user_input[ATTR_ENTITY_ID]
             platform, key = entity_id.split(".", 2)
             self.entity = self.entities[platform][key]
             self.platform = Platform(platform)
@@ -868,7 +926,7 @@ class OptionsFlowHandler(OptionsFlowWithReload):
     ) -> ConfigFlowResult:
         """Handle deleting a custom entity."""
         if user_input is not None:
-            return self._async_step_remove_entity(user_input["entity_id"])
+            return self._async_step_remove_entity(user_input[ATTR_ENTITY_ID])
 
         if not (schema := generate_select_schema(self.entities)):
             return self.async_abort(reason="no_entities_to_edit_or_remove")
