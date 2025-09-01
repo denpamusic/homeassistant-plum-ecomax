@@ -38,6 +38,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.const import (
+    ATTR_ENTITIES,
     CONF_BAUDRATE,
     CONF_CONNECTION_TYPE,
     CONF_DEVICE,
@@ -846,7 +847,7 @@ async def test_add_entity(
         assert result5["errors"] == expected_errors
     else:
         assert result5["type"] is FlowResultType.CREATE_ENTRY
-        assert result5["data"] == {"entities": {platform: expected_data}}
+        assert result5["data"] == {ATTR_ENTITIES: {platform: expected_data}}
 
 
 @pytest.mark.usefixtures("ecomax_860p3_o", "mixers")
@@ -937,7 +938,7 @@ async def test_add_entity_with_colliding_key(
         hass,
         config_entry,
         options={
-            "entities": {
+            ATTR_ENTITIES: {
                 Platform.BINARY_SENSOR: {
                     "custom_binary_sensor": {
                         CONF_NAME: "Custom binary sensor",
@@ -1140,7 +1141,7 @@ async def test_edit_entity(
     await setup_integration(
         hass,
         config_entry,
-        options={"entities": {platform: entity_details}},
+        options={ATTR_ENTITIES: {platform: entity_details}},
     )
     result = await setup_options_flow(hass, config_entry)
 
@@ -1164,7 +1165,7 @@ async def test_edit_entity(
         result3["flow_id"], user_input=user_input
     )
     assert result5["type"] is FlowResultType.CREATE_ENTRY
-    assert result5["data"] == {"entities": {platform: expected_data}}
+    assert result5["data"] == {ATTR_ENTITIES: {platform: expected_data}}
 
 
 @pytest.mark.usefixtures("connection", "ecomax_860p3_o", "custom_fields")
@@ -1176,7 +1177,7 @@ async def test_edit_entity_with_invalid_source_device(
         hass,
         config_entry,
         options={
-            "entities": {
+            ATTR_ENTITIES: {
                 Platform.BINARY_SENSOR: {
                     "custom_binary_sensor": {
                         CONF_NAME: "Custom binary sensor",
@@ -1247,7 +1248,7 @@ async def test_remove_entity(
         hass,
         config_entry,
         options={
-            "entities": {
+            ATTR_ENTITIES: {
                 Platform.BINARY_SENSOR: {
                     "custom_binary_sensor": {
                         CONF_NAME: "Custom binary sensor",
@@ -1280,7 +1281,7 @@ async def test_remove_entity(
     )
     assert result3["type"] is FlowResultType.CREATE_ENTRY
     assert result3["data"] == {
-        "entities": {Platform.BINARY_SENSOR: {}, Platform.SENSOR: custom_sensor}
+        ATTR_ENTITIES: {Platform.BINARY_SENSOR: {}, Platform.SENSOR: custom_sensor}
     }
 
     assert not entity_registry.async_get("binary_sensor.ecomax_custom_binary_sensor")

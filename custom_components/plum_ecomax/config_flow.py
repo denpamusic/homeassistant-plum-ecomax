@@ -58,6 +58,7 @@ from .connection import (
     async_get_sub_devices,
 )
 from .const import (
+    ATTR_ENTITIES,
     ATTR_MIXERS,
     ATTR_MODULES,
     ATTR_PRODUCT,
@@ -663,7 +664,7 @@ class OptionsFlowHandler(OptionsFlow):
             EcomaxConnection, self.config_entry.runtime_data.connection
         )
         self.options = deepcopy(dict(self.config_entry.options))
-        self.entities = cast(dict[str, Any], self.options.setdefault("entities", {}))
+        self.entities = cast(dict[str, Any], self.options.setdefault(ATTR_ENTITIES, {}))
         return self.async_show_menu(
             step_id="init",
             menu_options=[

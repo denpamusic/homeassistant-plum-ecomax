@@ -20,6 +20,7 @@ from custom_components.plum_ecomax import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
 from .const import (
     ALL,
+    ATTR_ENTITIES,
     ATTR_MIXERS,
     ATTR_REGDATA,
     ATTR_THERMOSTATS,
@@ -131,7 +132,7 @@ def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
     description_factory: Callable[..., DescriptorT],
 ) -> Generator[tuple[DescriptorT, int] | DescriptorT]:
     """Return a list of custom entities."""
-    entities: dict[str, Any] = config_entry.options.get("entities", {})
+    entities: dict[str, Any] = config_entry.options.get(ATTR_ENTITIES, {})
     target_platform = str(platform)
     if not entities or target_platform not in entities:
         return

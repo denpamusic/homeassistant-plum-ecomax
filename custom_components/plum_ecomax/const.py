@@ -12,6 +12,7 @@ MANUFACTURER: Final = "Plum Sp. z o.o."
 # Generic attributes.
 ATTR_BURNED_SINCE_LAST_UPDATE: Final = "burned_since_last_update"
 ATTR_END: Final = "end"
+ATTR_ENTITIES: Final = "entities"
 ATTR_FIRMWARE: Final = "firmware"
 ATTR_FROM: Final = "from"
 ATTR_MIXERS: Final = "mixers"

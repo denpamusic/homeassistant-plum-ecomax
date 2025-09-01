@@ -32,6 +32,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
+from custom_components.plum_ecomax.const import ATTR_ENTITIES
 from tests.conftest import FLOAT_TOLERANCE, dispatch_value
 
 
@@ -1007,7 +1008,7 @@ async def test_custom_numbers(
         hass,
         config_entry,
         options={
-            "entities": {
+            ATTR_ENTITIES: {
                 Platform.NUMBER: {
                     custom_number_key: {
                         "name": "Test custom number",

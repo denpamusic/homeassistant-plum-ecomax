@@ -60,6 +60,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
     ATTR_BURNED_SINCE_LAST_UPDATE,
+    ATTR_ENTITIES,
     ATTR_NUMERIC_STATE,
     ATTR_VALUE,
     DEVICE_CLASS_METER,
@@ -1304,7 +1305,7 @@ async def test_custom_sensors(
         hass,
         config_entry,
         options={
-            "entities": {
+            ATTR_ENTITIES: {
                 Platform.SENSOR: {
                     "custom_sensor": {
                         "name": "Test custom sensor",
@@ -1367,7 +1368,7 @@ async def test_custom_sensors_update_interval(
         hass,
         config_entry,
         options={
-            "entities": {
+            ATTR_ENTITIES: {
                 Platform.SENSOR: {
                     "custom_sensor": {
                         "name": "Test custom sensor",
@@ -1419,7 +1420,7 @@ async def test_custom_regdata_sensors(
         hass,
         config_entry,
         options={
-            "entities": {
+            ATTR_ENTITIES: {
                 Platform.SENSOR: {
                     "9001": {
                         "name": "Test custom regdata sensor",

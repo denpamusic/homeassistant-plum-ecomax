@@ -31,7 +31,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import REGDATA
+from custom_components.plum_ecomax.const import ATTR_ENTITIES, REGDATA
 from tests.conftest import dispatch_value
 
 
@@ -498,7 +498,7 @@ async def test_custom_binary_sensors(
         hass,
         config_entry,
         options={
-            "entities": {
+            ATTR_ENTITIES: {
                 Platform.BINARY_SENSOR: {
                     "custom_binary_sensor": {
                         "name": "Test custom binary sensor",
@@ -544,7 +544,7 @@ async def test_custom_regdata_binary_sensors(
         hass,
         config_entry,
         options={
-            "entities": {
+            ATTR_ENTITIES: {
                 Platform.BINARY_SENSOR: {
                     "9000": {
                         "name": "Test custom regdata binary",

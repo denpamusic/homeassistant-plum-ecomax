@@ -34,6 +34,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
+from custom_components.plum_ecomax.const import ATTR_ENTITIES
 from tests.conftest import dispatch_value
 
 
@@ -853,7 +854,7 @@ async def test_custom_switches(
         hass,
         config_entry,
         options={
-            "entities": {
+            ATTR_ENTITIES: {
                 Platform.SWITCH: {
                     custom_switch_key: {
                         "name": "Test custom switch",
