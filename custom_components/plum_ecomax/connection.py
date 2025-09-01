@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Mapping
+from contextlib import suppress
 from functools import cached_property
 import logging
 import math
@@ -52,6 +53,10 @@ ATTR_SENSORS: Final = "sensors"
 
 DEFAULT_TIMEOUT: Final = 15
 DEFAULT_RETRIES: Final = 5
+
+WAIT_FOR_DEVICE_SECONDS: Final = 30
+WAIT_FOR_SETUP_SECONDS: Final = 15
+FORCE_CLOSE_AFTER_SECONDS: Final = 10
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -147,9 +152,9 @@ class EcomaxConnection:
         """Set up ecoMAX connection."""
         await self._connection.connect()
         device: PhysicalDevice = await self.get(
-            DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT
+            DeviceType.ECOMAX, timeout=WAIT_FOR_DEVICE_SECONDS
         )
-        await device.wait_for(ATTR_SETUP, timeout=DEFAULT_TIMEOUT)
+        await device.wait_for(ATTR_SETUP, timeout=WAIT_FOR_SETUP_SECONDS)
         self._device = device
 
     async def _request_with_cache(self, name: str, frame_type: FrameType) -> bool:
@@ -191,7 +196,10 @@ class EcomaxConnection:
 
     async def async_close(self) -> None:
         """Close ecoMAX connection."""
-        await self._connection.close()
+        with suppress(asyncio.TimeoutError):
+            await asyncio.wait_for(
+                self._connection.close(), timeout=FORCE_CLOSE_AFTER_SECONDS
+            )
 
     @property
     def device(self) -> PhysicalDevice:
