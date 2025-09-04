@@ -17,8 +17,6 @@ async def system_health_info(hass: HomeAssistant) -> dict[str, Any]:
     config_entry: PlumEcomaxConfigEntry = hass.config_entries.async_entries(DOMAIN)[0]
 
     statistics = cast(Statistics, config_entry.runtime_data.connection.statistics)
-    custom_entities: dict[Platform, dict] = config_entry.options.get(ATTR_ENTITIES, {})
-
     total_frames = (
         statistics.sent_frames + statistics.received_frames + statistics.failed_frames
     )
@@ -29,6 +27,8 @@ async def system_health_info(hass: HomeAssistant) -> dict[str, Any]:
         failure_rate_string = "<0.01 %"
     else:
         failure_rate_string = f"{round(failure_rate, 2)} %"
+
+    custom_entities: dict[Platform, dict] = config_entry.options.get(ATTR_ENTITIES, {})
 
     return {
         "pyplumio_version": pyplumio_version,
