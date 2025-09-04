@@ -729,6 +729,7 @@
       "received_frames": "Received frames",
       "sent_frames": "Sent frames",
       "failed_frames": "Failed frames",
+      "failure_rate": "Failure rate",
       "connected_since": "Connected since",
       "connection_losses": "Connection losses",
       "custom_entities": "Custom entities"
