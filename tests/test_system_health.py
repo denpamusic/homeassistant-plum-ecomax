@@ -37,9 +37,23 @@ async def get_system_health_info(hass: HomeAssistant, domain: str) -> dict[str, 
     )
 
 
+@pytest.mark.parametrize(
+    ("received_frames", "sent_frames", "failed_frames", "expected_failure_rate"),
+    (
+        (25, 25, 0, "0 %"),
+        (6000, 5000, 1, "<0.01 %"),
+        (23, 5, 1, "3.45 %"),
+    ),
+)
 @pytest.mark.usefixtures("ecomax_p", "custom_fields")
 async def test_system_health(
-    hass: HomeAssistant, config_entry: MockConfigEntry, setup_integration
+    received_frames: int,
+    sent_frames: int,
+    failed_frames: int,
+    expected_failure_rate: str,
+    hass: HomeAssistant,
+    config_entry: MockConfigEntry,
+    setup_integration,
 ) -> None:
     """Test Plum ecoMAX system health."""
     await setup_integration(
@@ -74,9 +88,9 @@ async def test_system_health(
     await hass.async_block_till_done()
 
     data = {
-        "received_frames": 23,
-        "sent_frames": 5,
-        "failed_frames": 1,
+        "received_frames": received_frames,
+        "sent_frames": sent_frames,
+        "failed_frames": failed_frames,
         "connected_since": datetime.now(),
         "connection_losses": 0,
     }
@@ -91,4 +105,11 @@ async def test_system_health(
     ):
         info = await get_system_health_info(hass, DOMAIN)
 
-    assert info == (data | {"pyplumio_version": pyplumio_version, "custom_entities": 3})
+    assert info == (
+        data
+        | {
+            "pyplumio_version": pyplumio_version,
+            "failure_rate": expected_failure_rate,
+            "custom_entities": 3,
+        }
+    )
