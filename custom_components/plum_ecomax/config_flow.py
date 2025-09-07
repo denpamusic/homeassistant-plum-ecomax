@@ -27,7 +27,7 @@ from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
-    OptionsFlow,
+    OptionsFlowWithReload,
 )
 from homeassistant.const import (
     CONF_BASE,
@@ -134,7 +134,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlowWithReload:
         """Create the options flow."""
         return OptionsFlowHandler()
 
@@ -696,7 +696,7 @@ def generate_edit_schema(
     return vol.Schema(schema)
 
 
-class OptionsFlowHandler(OptionsFlow):
+class OptionsFlowHandler(OptionsFlowWithReload):
     """Represents an options flow."""
 
     async def async_step_init(
@@ -829,11 +829,7 @@ class OptionsFlowHandler(OptionsFlow):
 
         key = data[CONF_KEY]
         entities[key] = data
-
-        try:
-            return self.async_create_entry(title="", data=self.options)
-        finally:
-            self.hass.config_entries.async_schedule_reload(self.config_entry.entry_id)
+        return self.async_create_entry(title="", data=self.options)
 
     async def async_step_rediscover_devices(
         self, user_input: dict[str, Any] | None = None
@@ -884,11 +880,7 @@ class OptionsFlowHandler(OptionsFlow):
         entities = self.entities.setdefault(platform, {})
         entities.pop(key, None)
         self._remove_entry_from_registry(key)
-
-        try:
-            return self.async_create_entry(title="", data=self.options)
-        finally:
-            self.hass.config_entries.async_schedule_reload(self.config_entry.entry_id)
+        return self.async_create_entry(title="", data=self.options)
 
     def _remove_entry_from_registry(self, key: str) -> None:
         """Remove entry from the entity registry."""
