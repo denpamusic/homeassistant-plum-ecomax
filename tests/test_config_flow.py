@@ -146,7 +146,8 @@ async def test_form_tcp(
 
     # Create the PyPlumIO connection mock.
     mock_connection = Mock(spec=TcpConnection)
-    mock_connection.get = AsyncMock(return_value=ecomax_p)
+    mock_connection.device.return_value.__aenter__ = AsyncMock(return_value=ecomax_p)
+    mock_connection.device.return_value.__aexit__ = AsyncMock()
 
     # Identify the device.
     with patch(
@@ -246,7 +247,8 @@ async def test_form_serial(
 
     # Create the PyPlumIO connection mock.
     mock_connection = Mock(spec=SerialConnection)
-    mock_connection.get = AsyncMock(return_value=ecomax_p)
+    mock_connection.device.return_value.__aenter__ = AsyncMock(return_value=ecomax_p)
+    mock_connection.device.return_value.__aexit__ = AsyncMock()
 
     # Identify the device.
     with patch(
@@ -309,7 +311,8 @@ async def test_abort_device_not_found(
 
     # Create the PyPlumIO connection mock.
     mock_connection = Mock(spec=TcpConnection)
-    mock_connection.get = AsyncMock(side_effect=TimeoutError)
+    mock_connection.device.return_value.__aenter__ = AsyncMock(side_effect=TimeoutError)
+    mock_connection.device.return_value.__aexit__ = AsyncMock()
 
     # Identify the device.
     with patch(
@@ -348,7 +351,8 @@ async def test_abort_unsupported_product(
 
     # Create the PyPlumIO connection mock.
     mock_connection = Mock(spec=TcpConnection)
-    mock_connection.get = AsyncMock(return_value=ecomax_p)
+    mock_connection.device.return_value.__aenter__ = AsyncMock(return_value=ecomax_p)
+    mock_connection.device.return_value.__aexit__ = AsyncMock()
 
     # Identify the device.
     unknown_device_type = 2
@@ -391,7 +395,8 @@ async def test_abort_discovery_failed(
 
     # Create the PyPlumIO connection mock.
     mock_connection = Mock(spec=TcpConnection)
-    mock_connection.get = AsyncMock(return_value=ecomax_p)
+    mock_connection.device.return_value.__aenter__ = AsyncMock(return_value=ecomax_p)
+    mock_connection.device.return_value.__aexit__ = AsyncMock()
 
     # Identify the device.
     with patch(
@@ -438,7 +443,8 @@ async def test_abort_already_configured(
 
     # Create the PyPlumIO connection mock.
     mock_connection = Mock(spec=TcpConnection)
-    mock_connection.get = AsyncMock(return_value=ecomax_p)
+    mock_connection.device.return_value.__aenter__ = AsyncMock(return_value=ecomax_p)
+    mock_connection.device.return_value.__aexit__ = AsyncMock()
 
     # Identify the device.
     with patch(

@@ -151,11 +151,11 @@ class EcomaxConnection:
     async def async_setup(self) -> None:
         """Set up ecoMAX connection."""
         await self._connection.connect()
-        device: PhysicalDevice = await self.get(
+        async with self._connection.device(
             DeviceType.ECOMAX, timeout=WAIT_FOR_DEVICE_SECONDS
-        )
-        await device.wait_for(ATTR_SETUP, timeout=WAIT_FOR_SETUP_SECONDS)
-        self._device = device
+        ) as device:
+            await device.wait_for(ATTR_SETUP, timeout=WAIT_FOR_SETUP_SECONDS)
+            self._device = device
 
     async def _request_with_cache(self, name: str, frame_type: FrameType) -> bool:
         """Make request and cache the result."""

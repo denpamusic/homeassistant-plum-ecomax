@@ -304,13 +304,13 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
         """Task to identify the device."""
         # Tell mypy that once we here, connection is not None
         connection = cast(Connection, self.connection)
-        self.device = cast(
-            PhysicalDevice,
-            await connection.get(DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT),
-        )
-        product: ProductInfo = await self.device.get(
-            ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT
-        )
+        async with connection.device(
+            DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT
+        ) as device:
+            product = cast(
+                ProductInfo, await device.get(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
+            )
+            self.device = device
 
         try:
             product_type = ProductType(product.type)

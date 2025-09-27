@@ -98,11 +98,14 @@ async def test_async_setup(
     tcp_config_data: dict[str, Any],
 ) -> None:
     """Test connection setup."""
-    mock_ecomax = Mock(spec=EcoMAX)
+    mock_ecomax = AsyncMock(spec=EcoMAX)
     mock_ecomax.wait_for = AsyncMock(side_effect=(True, True, True, TimeoutError))
     mock_connection = Mock(spec=TcpConnection)
     mock_connection.configure_mock(host=tcp_config_data.get(CONF_HOST))
-    mock_connection.get = AsyncMock(side_effect=(mock_ecomax, TimeoutError))
+    mock_connection.device.return_value.__aenter__ = AsyncMock(
+        side_effect=(mock_ecomax, TimeoutError)
+    )
+    mock_connection.device.return_value.__aexit__ = AsyncMock()
     connection = EcomaxConnection(hass, config_entry, mock_connection)
 
     # Test config not ready when device property is not set.
@@ -113,7 +116,7 @@ async def test_async_setup(
     assert exc_info.value.translation_placeholders == {"device": "ecoMAX 850P2-C"}
     await connection.async_setup()
     mock_connection.connect.assert_awaited_once()
-    mock_connection.get.assert_awaited_once_with(
+    mock_connection.device.assert_called_once_with(
         DeviceType.ECOMAX, timeout=WAIT_FOR_DEVICE_SECONDS
     )
 
