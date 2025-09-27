@@ -162,14 +162,14 @@ async def async_migrate_entry(
             data[CONF_PRODUCT_TYPE] = product.type
 
         if entry.version < 5:
-            # Capabilities got removed to sub_devices in version 5.
+            # Capabilities key was renamed to sub_devices in version 5.
             with suppress(KeyError):
                 del data[CONF_CAPABILITIES]
 
             data[CONF_SUB_DEVICES] = await async_get_sub_devices(device)
 
         if entry.version < 7:
-            # Product id were added in version 7.
+            # Product id was added in version 7.
             product = await device.get(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
             data[CONF_PRODUCT_ID] = product.id
 
