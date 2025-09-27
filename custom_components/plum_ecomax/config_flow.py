@@ -51,7 +51,6 @@ from pyplumio.structures.modules import ConnectedModules
 from pyplumio.structures.product_info import ProductInfo
 import voluptuous as vol
 
-from . import async_rediscover_devices
 from .connection import (
     DEFAULT_TIMEOUT,
     EcomaxConnection,
@@ -835,9 +834,14 @@ class OptionsFlowHandler(OptionsFlowWithReload):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle rediscovering connected devices."""
-        self.hass.async_create_task(
-            async_rediscover_devices(self.hass, self.config_entry, self.connection)
-        )
+
+        async def _async_discover_devices() -> None:
+            """Fetch list of connected devices and update config entry."""
+            data = dict(self.config_entry.data)
+            data[CONF_SUB_DEVICES] = await async_get_sub_devices(self.connection.device)
+            self.hass.config_entries.async_update_entry(self.config_entry, data=data)
+
+        self.config_entry.async_create_task(self.hass, _async_discover_devices())
         return self.async_create_entry(data=self.options)
 
     async def async_step_edit_entity(

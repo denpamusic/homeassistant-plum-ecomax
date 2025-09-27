@@ -3,7 +3,7 @@
 from collections.abc import Generator
 from dataclasses import replace
 from typing import Any, Final, cast
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, Mock, call, patch
 
 from homeassistant import config_entries
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
@@ -1305,15 +1305,14 @@ async def test_abort_no_entities_to_remove(
     assert result2["reason"] == "no_entities_to_edit_or_remove"
 
 
-@patch(
-    "custom_components.plum_ecomax.config_flow.async_rediscover_devices",
-    new_callable=Mock,
-)
-@patch("homeassistant.core.HomeAssistant.async_create_task")
-@pytest.mark.usefixtures("ecomax_860p3_o", "bypass_async_setup_entry")
+@patch("custom_components.plum_ecomax.config_flow.async_get_sub_devices")
+@patch("homeassistant.config_entries.ConfigEntries.async_update_entry")
+@patch("homeassistant.config_entries.ConfigEntries.async_reload")
+@pytest.mark.usefixtures("connection", "ecomax_860p3_o", "bypass_async_setup_entry")
 async def test_rediscover_devices(
-    mock_async_create_task,
-    mock_async_rediscover_devices,
+    mock_async_reload,
+    mock_async_update_entry,
+    mock_async_get_sub_devices,
     hass: HomeAssistant,
     config_entry: MockConfigEntry,
     setup_integration,
@@ -1323,14 +1322,14 @@ async def test_rediscover_devices(
     await setup_integration(hass, config_entry)
     result = await setup_options_flow(hass, config_entry)
 
-    # Reload the config.
+    # Rediscover devices.
     result2 = await hass.config_entries.options.async_configure(
         result["flow_id"], user_input={"next_step_id": "rediscover_devices"}
     )
     assert result2["type"] is FlowResultType.CREATE_ENTRY
-    mock_async_rediscover_devices.assert_called_once_with(
-        hass, config_entry, connection
-    )
-    mock_async_create_task.assert_called_once_with(
-        mock_async_rediscover_devices.return_value
-    )
+
+    mock_async_get_sub_devices.assert_awaited_once_with(connection.device)
+    expected_data = dict(config_entry.data)
+    expected_data[CONF_SUB_DEVICES] = mock_async_get_sub_devices.return_value
+    mock_async_update_entry.assert_has_calls([call(config_entry, data=expected_data)])
+    mock_async_reload.assert_awaited_once_with(config_entry.entry_id)

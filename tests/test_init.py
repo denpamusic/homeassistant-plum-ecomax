@@ -21,7 +21,6 @@ import pytest
 from custom_components.plum_ecomax import (
     PlumEcomaxData,
     async_migrate_entry,
-    async_rediscover_devices,
     async_setup_entry,
     async_setup_events,
     async_unload_entry,
@@ -258,28 +257,3 @@ async def test_migrate_entry_with_timeout(
         assert not await async_migrate_entry(hass, config_entry)
 
     assert "Migration failed" in caplog.text
-
-
-@pytest.mark.usefixtures("ecomax_p", "connection")
-async def test_reload_config(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
-    """Test reloading config."""
-    data = config_entry.runtime_data
-    connection = data.connection
-    with (
-        patch(
-            "custom_components.plum_ecomax.async_get_sub_devices"
-        ) as mock_async_get_sub_devices,
-        patch(
-            "homeassistant.config_entries.ConfigEntries.async_update_entry"
-        ) as mock_async_update_entry,
-        patch(
-            "homeassistant.config_entries.ConfigEntries.async_reload"
-        ) as mock_async_reload,
-    ):
-        await async_rediscover_devices(hass, config_entry, connection)
-
-    mock_async_get_sub_devices.assert_awaited_once_with(connection.device)
-    expected_data = dict(config_entry.data)
-    expected_data[CONF_SUB_DEVICES] = mock_async_get_sub_devices.return_value
-    mock_async_update_entry.assert_called_once_with(config_entry, data=expected_data)
-    mock_async_reload.assert_awaited_once_with(config_entry.entry_id)
