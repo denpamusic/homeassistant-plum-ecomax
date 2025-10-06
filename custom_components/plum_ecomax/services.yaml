@@ -37,6 +37,8 @@ get_schedule:
           options:
             - "heating"
             - "water_heater"
+            - "circulation_pump"
+            - "boiler_work"
     weekdays:
       example: "monday"
       required: true
@@ -64,6 +66,8 @@ set_schedule:
           options:
             - "heating"
             - "water_heater"
+            - "circulation_pump"
+            - "boiler_work"
     weekdays:
       example: "monday"
       required: true

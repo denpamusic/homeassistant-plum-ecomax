@@ -554,7 +554,9 @@
     "schedule_type": {
       "options": {
         "heating": "Отопление",
-        "water_heater": "Водонагреватель"
+        "water_heater": "Водонагреватель",
+        "circulation_pump": "Circulation pump",
+        "boiler_work": "Boiler"
       }
     },
     "sensor_device_class": {

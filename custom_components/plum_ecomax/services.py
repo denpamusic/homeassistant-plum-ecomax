@@ -44,7 +44,7 @@ PRESET_DAY: Final = "day"
 PRESET_NIGHT: Final = "night"
 PRESETS = (PRESET_DAY, PRESET_NIGHT)
 
-SCHEDULES: Final = ("heating", "water_heater")
+SCHEDULES: Final = ("heating", "water_heater", "circulation_pump", "boiler_work")
 
 SERVICE_GET_PARAMETER = "get_parameter"
 SERVICE_GET_PARAMETER_SCHEMA = make_entity_service_schema(

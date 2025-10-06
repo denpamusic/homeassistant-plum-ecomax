@@ -551,7 +551,9 @@
     "schedule_type": {
       "options": {
         "heating": "Chauffage",
-        "water_heater": "Chauffe-eau"
+        "water_heater": "Chauffe-eau",
+        "circulation_pump": "Circulation pump",
+        "boiler_work": "Boiler"
       }
     },
     "sensor_device_class": {

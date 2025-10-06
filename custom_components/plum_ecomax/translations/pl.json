@@ -554,7 +554,9 @@
     "schedule_type": {
       "options": {
         "heating": "Grzanie CO",
-        "water_heater": "Grzanie CWU"
+        "water_heater": "Grzanie CWU",
+        "circulation_pump": "Circulation pump",
+        "boiler_work": "Boiler"
       }
     },
     "sensor_device_class": {
