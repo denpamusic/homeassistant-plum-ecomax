@@ -551,7 +551,9 @@
     "schedule_type": {
       "options": {
         "heating": "Vytápění",
-        "water_heater": "Ohřev vody"
+        "water_heater": "Ohřev vody",
+        "circulation_pump": "Circulation pump",
+        "boiler_work": "Boiler"
       }
     },
     "sensor_device_class": {
