@@ -3,11 +3,12 @@
 from typing import Final, Literal
 from unittest.mock import AsyncMock, Mock, patch
 
-from homeassistant.const import ATTR_ENTITY_ID, ATTR_NAME
-from homeassistant.core import HomeAssistant
+from homeassistant.const import ATTR_DEVICE_ID, ATTR_NAME
+from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
-from homeassistant.helpers.device_registry import DeviceEntry
+from homeassistant.helpers import device_registry as dr
 from pyplumio.devices.ecomax import EcoMAX
+from pyplumio.devices.mixer import Mixer
 from pyplumio.parameters import Parameter
 from pyplumio.structures.schedules import Schedule, ScheduleDay
 import pytest
@@ -30,7 +31,10 @@ from custom_components.plum_ecomax.services import (
     SERVICE_SET_SCHEDULE,
     DeviceId,
     ProductId,
-    async_extract_target_device,
+    async_extract_connection_from_device_entry,
+    async_extract_device_from_service,
+    async_get_device_from_entry,
+    async_get_virtual_device,
     async_suggest_device_parameter_name,
     async_validate_device_parameter,
 )
@@ -55,34 +59,94 @@ def set_connected(connected):
     """Assume connected."""
 
 
-async def test_extract_missing_target_device(hass: HomeAssistant) -> None:
-    """Test extracting missing target device."""
-    mock_connection = AsyncMock(spec=EcomaxConnection)
-    with (
-        patch(
-            "homeassistant.helpers.device_registry.DeviceRegistry.async_get",
-            return_value=False,
-        ),
-        pytest.raises(HomeAssistantError),
-    ):
-        async_extract_target_device("nonexistent", hass, mock_connection)
+@pytest.fixture(name="get_device_entries")
+def fixture_get_device_entries(hass: HomeAssistant, config_entry: MockConfigEntry):
+    """Return a device entries getter."""
+
+    def _get_device_entries() -> list[dr.DeviceEntry]:
+        """Get list of device entries."""
+        device_registry = dr.async_get(hass)
+        devices = dr.async_entries_for_config_entry(
+            device_registry, config_entry.entry_id
+        )
+        return devices
+
+    return _get_device_entries
 
 
-async def test_extract_target_missing_mixer_device(
-    hass: HomeAssistant, ecomax_p: EcoMAX
+@pytest.mark.usefixtures("ecomax_p", "connection")
+async def test_async_extract_connection_from_device_entry(
+    hass: HomeAssistant, config_entry: MockConfigEntry, setup_config_entry
 ) -> None:
-    """Test extracting missing target mixer device."""
-    mock_connection = AsyncMock(spec=EcomaxConnection)
-    mock_connection.device = ecomax_p
-    mock_device_entry = Mock(spec=DeviceEntry)
-    mock_device_entry.identifiers = {("test", "test-mixer-1")}
-    with patch(
-        "homeassistant.helpers.device_registry.DeviceRegistry.async_get",
-        return_value=mock_device_entry,
-    ):
-        device = async_extract_target_device("test-mixer-1", hass, mock_connection)
+    """Test extracting connection instance from device entry."""
+    await setup_config_entry()
+    mock_device_entry = Mock(spec=dr.DeviceEntry, autospec=True)
+    mock_device_entry.configure_mock(config_entries={config_entry.entry_id})
+    async_extract_connection_from_device_entry(hass, mock_device_entry)
 
-    assert device == mock_connection.device
+    # Test without valid connection instance.
+    mock_device_entry.configure_mock(config_entries={})
+    with pytest.raises(ValueError, match="No connection instance found"):
+        async_extract_connection_from_device_entry(hass, mock_device_entry)
+
+
+@pytest.mark.usefixtures("ecomax_p", "mixers")
+async def test_async_get_virtual_device(
+    connection: EcomaxConnection, setup_config_entry
+) -> None:
+    """Test getting virtual device."""
+    await setup_config_entry()
+    virtual_device = async_get_virtual_device(connection, "TEST-mixer-0")
+    assert isinstance(virtual_device, Mixer)
+    assert virtual_device.index == 0
+
+    # Test with invalid hub id.
+    with pytest.raises(ValueError, match="Invalid hub id"):
+        async_get_virtual_device(connection, "TEST2-mixer-0")
+
+    # Test with missing virtual device.
+    with pytest.raises(ValueError, match="virtual device not found"):
+        async_get_virtual_device(connection, "TEST-mixer-3")
+
+
+@pytest.mark.usefixtures("ecomax_p", "connection")
+async def test_async_get_device_from_entry(
+    hass: HomeAssistant, config_entry: MockConfigEntry, setup_config_entry
+) -> None:
+    """Test getting device instance from device entry."""
+    await setup_config_entry()
+    mock_device_entry = Mock(spec=dr.DeviceEntry, autospec=True)
+    mock_device_entry.configure_mock(
+        config_entries={config_entry.entry_id},
+        identifiers={("not_domain", "TEST"), (DOMAIN, "TEST")},
+    )
+    device = async_get_device_from_entry(hass, mock_device_entry)
+    assert isinstance(device, EcoMAX)
+
+    # Test without our domain in identifiers.
+    mock_device_entry.configure_mock(
+        config_entries={config_entry.entry_id}, identifiers={("not_domain", "TEST")}
+    )
+    with pytest.raises(ValueError, match="Invalid Plum ecoMAX device entry"):
+        async_get_device_from_entry(hass, mock_device_entry)
+
+
+@pytest.mark.usefixtures("ecomax_p", "connection")
+async def test_async_extract_device_from_service(
+    hass: HomeAssistant, setup_config_entry, get_device_entries
+) -> None:
+    """Test extracting device instance from service call."""
+    await setup_config_entry()
+    mock_service_call = Mock(spec=ServiceCall, autospec=True)
+    device_entries = get_device_entries()
+    mock_service_call.configure_mock(data={ATTR_DEVICE_ID: device_entries[0].id})
+    device = async_extract_device_from_service(hass, mock_service_call)
+    assert isinstance(device, EcoMAX)
+
+    # Test with unknown device id.
+    mock_service_call.configure_mock(data={ATTR_DEVICE_ID: "404_not_found"})
+    with pytest.raises(ValueError, match="Unknown Plum ecoMAX device id"):
+        async_extract_device_from_service(hass, mock_service_call)
 
 
 @pytest.mark.parametrize(
@@ -94,7 +158,7 @@ async def test_extract_target_missing_mixer_device(
     ],
 )
 def test_suggest_device_parameter_name(
-    hass: HomeAssistant, ecomax_p: EcoMAX, name: str, expected_suggestion: str | None
+    ecomax_p: EcoMAX, name: str, expected_suggestion: str | None
 ) -> None:
     """Test getting parameter name suggestion."""
     suggestion = async_suggest_device_parameter_name(ecomax_p, name)
@@ -135,20 +199,19 @@ def test_async_validate_device_parameter(
 async def test_get_parameter_service(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    caplog,
+    setup_config_entry,
+    get_device_entries,
 ) -> None:
     """Test get parameter service."""
-    await setup_integration(hass, config_entry)
-    heating_temperature_entity_id = "sensor.ecomax_heating_temperature"
+    await setup_config_entry()
+    device_entries = get_device_entries()
 
     # Test getting parameter for EM device.
     response = await hass.services.async_call(
         DOMAIN,
         SERVICE_GET_PARAMETER,
         {
-            ATTR_ENTITY_ID: heating_temperature_entity_id,
+            ATTR_DEVICE_ID: device_entries[0].id,
             ATTR_NAME: "heating_target_temp",
         },
         blocking=True,
@@ -157,20 +220,16 @@ async def test_get_parameter_service(
     await hass.async_block_till_done()
 
     assert response == {
-        "parameters": [
-            {
-                "name": "heating_target_temp",
-                "value": 0,
-                "min_value": 0,
-                "max_value": 1,
-                "step": 1.0,
-                "unit_of_measurement": "°C",
-                "product": ProductId(
-                    model="ecoMAX 850P2-C",
-                    uid="TEST",
-                ),
-            }
-        ]
+        "name": "heating_target_temp",
+        "value": 0.0,
+        "min_value": 0.0,
+        "max_value": 1.0,
+        "step": 1.0,
+        "unit_of_measurement": "°C",
+        "product": ProductId(
+            model="ecoMAX 850P2-C",
+            uid="TEST",
+        ),
     }
 
     # Test getting switch for EM device.
@@ -178,7 +237,7 @@ async def test_get_parameter_service(
         DOMAIN,
         SERVICE_GET_PARAMETER,
         {
-            ATTR_ENTITY_ID: heating_temperature_entity_id,
+            ATTR_DEVICE_ID: device_entries[0].id,
             ATTR_NAME: "weather_control",
         },
         blocking=True,
@@ -187,27 +246,22 @@ async def test_get_parameter_service(
     await hass.async_block_till_done()
 
     assert response == {
-        "parameters": [
-            {
-                "name": "weather_control",
-                "value": "off",
-                "min_value": "off",
-                "max_value": "on",
-                "product": ProductId(
-                    model="ecoMAX 850P2-C",
-                    uid="TEST",
-                ),
-            }
-        ]
+        "name": "weather_control",
+        "value": "off",
+        "min_value": "off",
+        "max_value": "on",
+        "product": ProductId(
+            model="ecoMAX 850P2-C",
+            uid="TEST",
+        ),
     }
 
     # Test getting parameter for mixer.
-    mixer_temperature_entity_id = "sensor.ecomax_mixer_1_mixer_temperature"
     response = await hass.services.async_call(
         DOMAIN,
         SERVICE_GET_PARAMETER,
         {
-            ATTR_ENTITY_ID: mixer_temperature_entity_id,
+            ATTR_DEVICE_ID: device_entries[1].id,
             ATTR_NAME: "mixer_target_temp",
         },
         blocking=True,
@@ -216,21 +270,17 @@ async def test_get_parameter_service(
     await hass.async_block_till_done()
 
     assert response == {
-        "parameters": [
-            {
-                "name": "mixer_target_temp",
-                "value": 0,
-                "min_value": 0,
-                "max_value": 1,
-                "step": 1.0,
-                "unit_of_measurement": "°C",
-                "product": ProductId(
-                    model="ecoMAX 850P2-C",
-                    uid="TEST",
-                ),
-                "device": DeviceId(type="mixer", index=1),
-            }
-        ]
+        "name": "mixer_target_temp",
+        "value": 0.0,
+        "min_value": 0.0,
+        "max_value": 1.0,
+        "step": 1.0,
+        "unit_of_measurement": "°C",
+        "product": ProductId(
+            model="ecoMAX 850P2-C",
+            uid="TEST",
+        ),
+        "device": DeviceId(type="mixer", index=1),
     }
 
     # Test parameter not found error.
@@ -242,7 +292,7 @@ async def test_get_parameter_service(
             DOMAIN,
             SERVICE_GET_PARAMETER,
             {
-                ATTR_ENTITY_ID: heating_temperature_entity_id,
+                ATTR_DEVICE_ID: device_entries[0].id,
                 ATTR_NAME: "nonexistent",
             },
             blocking=True,
@@ -261,7 +311,7 @@ async def test_get_parameter_service(
             DOMAIN,
             SERVICE_GET_PARAMETER,
             {
-                ATTR_ENTITY_ID: heating_temperature_entity_id,
+                ATTR_DEVICE_ID: device_entries[0].id,
                 ATTR_NAME: "nonexistent",
             },
             blocking=True,
@@ -280,7 +330,7 @@ async def test_get_parameter_service(
             DOMAIN,
             SERVICE_GET_PARAMETER,
             {
-                ATTR_ENTITY_ID: heating_temperature_entity_id,
+                ATTR_DEVICE_ID: device_entries[0].id,
                 ATTR_NAME: "heating_target_temp",
             },
             blocking=True,
@@ -289,30 +339,22 @@ async def test_get_parameter_service(
         await hass.async_block_till_done()
 
     assert response == {
-        "parameters": [
-            {
-                "name": "heating_target_temp",
-                "value": 0,
-                "min_value": 0,
-                "max_value": 1,
-                "step": 1.0,
-                "unit_of_measurement": "°C",
-            }
-        ]
+        "name": "heating_target_temp",
+        "value": 0.0,
+        "min_value": 0.0,
+        "max_value": 1.0,
+        "step": 1.0,
+        "unit_of_measurement": "°C",
     }
 
 
-@pytest.mark.usefixtures("ecomax_p", "mixers")
+@pytest.mark.usefixtures("ecomax_p", "connection", "mixers")
 async def test_set_parameter_service(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    caplog,
+    hass: HomeAssistant, setup_config_entry, get_device_entries
 ) -> None:
     """Test set parameter service."""
-    await setup_integration(hass, config_entry)
-    heating_temperature_entity_id = "sensor.ecomax_heating_temperature"
+    await setup_config_entry()
+    device_entries = get_device_entries()
 
     # Test setting parameter for EM device.
     with patch("pyplumio.parameters.Parameter.set_nowait") as mock_set_nowait:
@@ -320,7 +362,7 @@ async def test_set_parameter_service(
             DOMAIN,
             SERVICE_SET_PARAMETER,
             {
-                ATTR_ENTITY_ID: heating_temperature_entity_id,
+                ATTR_DEVICE_ID: device_entries[0].id,
                 ATTR_NAME: "heating_target_temp",
                 ATTR_VALUE: 0,
             },
@@ -332,20 +374,16 @@ async def test_set_parameter_service(
     mock_set_nowait.assert_called_once_with(0.0, retries=0, timeout=15)
 
     assert response == {
-        "parameters": [
-            {
-                "name": "heating_target_temp",
-                "value": 0.0,
-                "min_value": 0.0,
-                "max_value": 1.0,
-                "step": 1.0,
-                "unit_of_measurement": "°C",
-                "product": ProductId(
-                    model="ecoMAX 850P2-C",
-                    uid="TEST",
-                ),
-            }
-        ]
+        "name": "heating_target_temp",
+        "value": 0.0,
+        "min_value": 0.0,
+        "max_value": 1.0,
+        "step": 1.0,
+        "unit_of_measurement": "°C",
+        "product": ProductId(
+            model="ecoMAX 850P2-C",
+            uid="TEST",
+        ),
     }
 
     # Test setting parameter without response.
@@ -354,7 +392,7 @@ async def test_set_parameter_service(
             DOMAIN,
             SERVICE_SET_PARAMETER,
             {
-                ATTR_ENTITY_ID: heating_temperature_entity_id,
+                ATTR_DEVICE_ID: device_entries[0].id,
                 ATTR_NAME: "heating_target_temp",
                 ATTR_VALUE: 5,
             },
@@ -365,13 +403,12 @@ async def test_set_parameter_service(
     mock_set_nowait.assert_called_once_with(5.0, retries=0, timeout=15)
 
     # Test setting parameter for a mixer.
-    mixer_temperature_entity_id = "sensor.ecomax_mixer_1_mixer_temperature"
     with patch("pyplumio.parameters.Parameter.set_nowait") as mock_set_nowait:
         await hass.services.async_call(
             DOMAIN,
             SERVICE_SET_PARAMETER,
             {
-                ATTR_ENTITY_ID: mixer_temperature_entity_id,
+                ATTR_DEVICE_ID: device_entries[1].id,
                 ATTR_NAME: "mixer_target_temp",
                 ATTR_VALUE: 0,
             },
@@ -392,7 +429,7 @@ async def test_set_parameter_service(
             DOMAIN,
             SERVICE_SET_PARAMETER,
             {
-                ATTR_ENTITY_ID: heating_temperature_entity_id,
+                ATTR_DEVICE_ID: device_entries[0].id,
                 ATTR_NAME: "heating_target_temp",
                 ATTR_VALUE: 100,
             },
@@ -415,7 +452,7 @@ async def test_set_parameter_service(
             DOMAIN,
             SERVICE_SET_PARAMETER,
             {
-                ATTR_ENTITY_ID: heating_temperature_entity_id,
+                ATTR_DEVICE_ID: device_entries[0].id,
                 ATTR_NAME: "not_a_parameter",
                 ATTR_VALUE: 0,
             },
@@ -434,7 +471,7 @@ async def test_set_parameter_service(
             DOMAIN,
             SERVICE_SET_PARAMETER,
             {
-                ATTR_ENTITY_ID: heating_temperature_entity_id,
+                ATTR_DEVICE_ID: device_entries[0].id,
                 ATTR_NAME: "nonexistent",
                 ATTR_VALUE: 0,
             },
@@ -445,31 +482,27 @@ async def test_set_parameter_service(
     assert exc2_info.value.translation_placeholders == {"parameter": "nonexistent"}
 
 
-@pytest.mark.usefixtures("ecomax_p")
+@pytest.mark.usefixtures("ecomax_p", "connection")
 async def test_get_schedule_service(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    hass: HomeAssistant, setup_config_entry, get_device_entries
 ) -> None:
     """Test get schedule service."""
-    await setup_integration(hass, config_entry)
-
-    mock_schedule = Mock(spec=Schedule)
-    mock_schedule.monday = ScheduleDay.from_iterable([True, True, False, True])
-    mock_schedule.tuesday = ScheduleDay.from_iterable([True, True, True, True])
-    schedules = {SCHEDULES[0]: mock_schedule}
+    await setup_config_entry()
+    device_entries = get_device_entries()
 
     # Test getting schedule for EM device.
-    with patch("pyplumio.devices.Device.get_nowait", return_value=schedules):
-        response = await hass.services.async_call(
-            DOMAIN,
-            SERVICE_GET_SCHEDULE,
-            {ATTR_TYPE: SCHEDULES[0], ATTR_WEEKDAYS: [WEEKDAYS[0], WEEKDAYS[1]]},
-            blocking=True,
-            return_response=True,
-        )
-        await hass.async_block_till_done()
+    response = await hass.services.async_call(
+        DOMAIN,
+        SERVICE_GET_SCHEDULE,
+        {
+            ATTR_DEVICE_ID: device_entries[0].id,
+            ATTR_TYPE: SCHEDULES[0],
+            ATTR_WEEKDAYS: [WEEKDAYS[0], WEEKDAYS[1]],
+        },
+        blocking=True,
+        return_response=True,
+    )
+    await hass.async_block_till_done()
 
     assert response == {
         "schedule": {
@@ -485,18 +518,20 @@ async def test_get_schedule_service(
                 "01:00": PRESET_DAY,
                 "01:30": PRESET_DAY,
             },
-        }
+        },
+        "product": ProductId(
+            model="ecoMAX 850P2-C",
+            uid="TEST",
+        ),
     }
 
     # Test getting an invalid schedule.
-    with (
-        pytest.raises(ServiceValidationError) as exc_info,
-        patch("pyplumio.devices.Device.get_nowait", return_value=schedules),
-    ):
+    with pytest.raises(ServiceValidationError) as exc_info:
         await hass.services.async_call(
             DOMAIN,
             SERVICE_GET_SCHEDULE,
             {
+                ATTR_DEVICE_ID: device_entries[0].id,
                 ATTR_TYPE: SCHEDULES[1],
                 ATTR_WEEKDAYS: WEEKDAYS[0],
             },
@@ -508,15 +543,13 @@ async def test_get_schedule_service(
     assert exc_info.value.translation_placeholders == {"schedule": "water_heater"}
 
 
-@pytest.mark.usefixtures("ecomax_p")
+@pytest.mark.usefixtures("ecomax_p", "connection")
 async def test_set_schedule_service(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    hass: HomeAssistant, setup_config_entry, get_device_entries
 ) -> None:
     """Test set schedule service."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
+    device_entries = get_device_entries()
 
     mock_schedule = Mock(spec=Schedule)
     mock_schedule.monday = Mock(spec=ScheduleDay)
@@ -532,6 +565,7 @@ async def test_set_schedule_service(
             DOMAIN,
             SERVICE_SET_SCHEDULE,
             {
+                ATTR_DEVICE_ID: device_entries[0].id,
                 ATTR_TYPE: SCHEDULES[0],
                 ATTR_WEEKDAYS: [WEEKDAYS[0], WEEKDAYS[1]],
                 ATTR_PRESET: PRESET_DAY,
@@ -556,6 +590,7 @@ async def test_set_schedule_service(
             DOMAIN,
             SERVICE_SET_SCHEDULE,
             {
+                ATTR_DEVICE_ID: device_entries[0].id,
                 ATTR_TYPE: SCHEDULES[0],
                 ATTR_WEEKDAYS: WEEKDAYS[0],
                 ATTR_PRESET: PRESET_DAY,
@@ -581,6 +616,7 @@ async def test_set_schedule_service(
             DOMAIN,
             SERVICE_SET_SCHEDULE,
             {
+                ATTR_DEVICE_ID: device_entries[0].id,
                 ATTR_TYPE: SCHEDULES[1],
                 ATTR_WEEKDAYS: WEEKDAYS[0],
                 ATTR_PRESET: PRESET_DAY,

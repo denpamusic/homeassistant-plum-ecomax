@@ -148,14 +148,11 @@ def fixture_serial_config_data(serial_user_input, config_data):
 
 
 @pytest.fixture
-async def setup_integration():
-    """Set up the integration."""
+def setup_config_entry(hass: HomeAssistant, config_entry: MockConfigEntry):
+    """Return integration setup."""
 
-    async def setup_entry(
-        hass: HomeAssistant,
-        config_entry: MockConfigEntry,
-        options: dict[str, Any] | None = None,
-    ):
+    async def _setup_config_entry_config_entry(options: dict[str, Any] | None = None):
+        """Set up the config entry for integration."""
         if options:
             hass.config_entries.async_update_entry(config_entry, options=options)
 
@@ -163,7 +160,7 @@ async def setup_integration():
         assert await hass.config_entries.async_setup(config_entry.entry_id)
         await hass.async_block_till_done()
 
-    return setup_entry
+    return _setup_config_entry_config_entry
 
 
 @pytest.fixture(name="config_entry")
@@ -191,7 +188,7 @@ def fixture_connection(
 
 @pytest.fixture
 def connected():
-    """Integration is connected."""
+    """Assume that integration is connected."""
     event = AsyncMock(spec=asyncio.Event)
     event.is_set = Mock(return_value=True)
     with patch(
@@ -371,6 +368,20 @@ async def fixture_ecomax_p(ecomax_common: EcoMAX):
                 values=ParameterValues(value=0, min_value=0, max_value=1),
                 description=EcomaxSwitchDescription("fuzzy_logic"),
             ),
+            "schedules": [
+                (
+                    0,
+                    [
+                        [True, True, False, True],
+                        [True, True, False, True],
+                        [True, True, True, True],
+                        [True, True, False, True],
+                        [True, True, False, True],
+                        [True, True, False, True],
+                        [True, True, False, True],
+                    ],
+                )
+            ],
         }
     )
 

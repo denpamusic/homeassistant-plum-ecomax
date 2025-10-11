@@ -656,6 +656,10 @@
     "get_parameter": {
       "description": "Získání parametru zařízení.",
       "fields": {
+        "device_id": {
+          "description": "Device to get parameter from.",
+          "name": "Device"
+        },
         "name": {
           "description": "Název parametru.",
           "name": "Název"
@@ -666,6 +670,10 @@
     "get_schedule": {
       "description": "Získaní rozvrh zařízení.",
       "fields": {
+        "device_id": {
+          "description": "Device to get schedule from.",
+          "name": "Device"
+        },
         "type": {
           "description": "Typ rozvrhu.",
           "name": "Typ"
@@ -684,6 +692,10 @@
     "set_parameter": {
       "description": "Nastavení parametru zařízení.",
       "fields": {
+        "device_id": {
+          "description": "Device to set parameter for.",
+          "name": "Device"
+        },
         "name": {
           "description": "Nazev parametru.",
           "name": "Název"
@@ -698,6 +710,10 @@
     "set_schedule": {
       "description": "Nastavení rozvrhu zařízení.",
       "fields": {
+        "device_id": {
+          "description": "Device to set schedule for.",
+          "name": "Device"
+        },
         "end": {
           "description": "Čas, kdy bude naplánovaný stav vymazán.",
           "name": "Konec"

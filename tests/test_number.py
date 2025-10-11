@@ -29,7 +29,6 @@ from homeassistant.helpers import entity_registry as er
 from pyplumio.parameters import ParameterValues
 from pyplumio.parameters.ecomax import EcomaxNumber, EcomaxNumberDescription
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import ATTR_ENTITIES
@@ -75,12 +74,11 @@ async def fixture_async_set_value():
 async def test_target_heating_temperature_number(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_set_value,
 ) -> None:
     """Test target heating temperature number."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     target_heating_temperature_entity_id = "number.ecomax_target_heating_temperature"
     target_heating_temperature_key = "heating_target_temp"
 
@@ -131,12 +129,11 @@ async def test_target_heating_temperature_number(
 async def test_minimum_heating_temperature_number(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_set_value,
 ) -> None:
     """Test minimum heating temperature number."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     minimum_heating_temperature_entity_id = "number.ecomax_minimum_heating_temperature"
     minimum_heating_temperature_key = "min_heating_target_temp"
 
@@ -187,12 +184,11 @@ async def test_minimum_heating_temperature_number(
 async def test_maximum_heating_temperature_number(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_set_value,
 ) -> None:
     """Test maximum heating temperature number."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     maximum_heating_temperature_entity_id = "number.ecomax_maximum_heating_temperature"
     maximum_heating_temperature_key = "max_heating_target_temp"
 
@@ -243,12 +239,11 @@ async def test_maximum_heating_temperature_number(
 async def test_grate_mode_temperature_number(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_set_value,
 ) -> None:
     """Test grate mode temperature number."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     grate_mode_temperature_entity_id = "number.ecomax_grate_mode_temperature"
     grate_mode_temperature_key = "grate_heating_temp"
 
@@ -299,12 +294,11 @@ async def test_grate_mode_temperature_number(
 async def test_fuzzy_logic_minimum_power_number(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_set_value,
 ) -> None:
     """Test fuzzy logic minimum power number."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     fuzzy_logic_minimum_power_entity_id = "number.ecomax_fuzzy_logic_minimum_power"
     fuzzy_logic_minimum_power_key = "min_fuzzy_logic_power"
 
@@ -354,12 +348,11 @@ async def test_fuzzy_logic_minimum_power_number(
 async def test_fuzzy_logic_maximum_power_number(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_set_value,
 ) -> None:
     """Test fuzzy logic maximum power number."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     fuzzy_logic_maximum_power_entity_id = "number.ecomax_fuzzy_logic_maximum_power"
     fuzzy_logic_maximum_power_key = "max_fuzzy_logic_power"
 
@@ -409,12 +402,11 @@ async def test_fuzzy_logic_maximum_power_number(
 async def test_fuel_calorific_value_number(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_set_value,
 ) -> None:
     """Test fuel calorific value number."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     fuel_calorific_value_entity_id = "number.ecomax_fuel_calorific_value"
     fuel_calorific_value_key = "fuel_calorific_value"
 
@@ -464,12 +456,11 @@ async def test_fuel_calorific_value_number(
 async def test_mixer_target_mixer_temperature_number(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_set_value,
 ) -> None:
     """Test mixer target mixer temperature number."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     target_mixer_temperature_entity_id = (
         "number.ecomax_mixer_1_target_mixer_temperature"
     )
@@ -524,12 +515,11 @@ async def test_mixer_target_mixer_temperature_number(
 async def test_mixer_minimum_mixer_temperature_number(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_set_value,
 ) -> None:
     """Test mixer minimum mixer temperature number."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     minimum_mixer_temperature_entity_id = (
         "number.ecomax_mixer_1_minimum_mixer_temperature"
     )
@@ -584,12 +574,11 @@ async def test_mixer_minimum_mixer_temperature_number(
 async def test_mixer_maximum_mixer_temperature_number(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_set_value,
 ) -> None:
     """Test mixer maximum mixer temperature number."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     maximum_mixer_temperature_entity_id = (
         "number.ecomax_mixer_1_maximum_mixer_temperature"
     )
@@ -644,12 +633,11 @@ async def test_mixer_maximum_mixer_temperature_number(
 async def test_circuit_target_circuit_temperature_number(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_set_value,
 ) -> None:
     """Test cicuit target circuit temperature number."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     target_circuit_temperature_entity_id = (
         "number.ecomax_circuit_1_target_circuit_temperature"
     )
@@ -704,12 +692,11 @@ async def test_circuit_target_circuit_temperature_number(
 async def test_circuit_minimum_circuit_temperature_number(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_set_value,
 ) -> None:
     """Test circuit minimum circuit temperature number."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     minimum_circuit_temperature_entity_id = (
         "number.ecomax_circuit_2_minimum_circuit_temperature"
     )
@@ -764,12 +751,11 @@ async def test_circuit_minimum_circuit_temperature_number(
 async def test_circuit_maximum_circuit_temperature_number(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_set_value,
 ) -> None:
     """Test circuit maximum circuit temperature number."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     maximum_circuit_temperature_entity_id = (
         "number.ecomax_circuit_2_maximum_circuit_temperature"
     )
@@ -824,12 +810,11 @@ async def test_circuit_maximum_circuit_temperature_number(
 async def test_circuit_day_target_circuit_temperature_number(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_set_value,
 ) -> None:
     """Test cicuit day target circuit temperature number."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     day_target_circuit_temperature_entity_id = (
         "number.ecomax_circuit_2_day_target_circuit_temperature"
     )
@@ -886,12 +871,11 @@ async def test_circuit_day_target_circuit_temperature_number(
 async def test_circuit_night_target_circuit_temperature_number(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_set_value,
 ) -> None:
     """Test cicuit night target circuit temperature number."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     night_target_circuit_temperature_entity_id = (
         "number.ecomax_circuit_2_night_target_circuit_temperature"
     )
@@ -998,16 +982,13 @@ async def test_custom_numbers(
     device_class: NumberDeviceClass | None,
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_set_value,
 ) -> None:
     """Test custom numbers."""
     custom_number_key = "custom_number"
-    await setup_integration(
-        hass,
-        config_entry,
-        options={
+    await setup_config_entry(
+        {
             ATTR_ENTITIES: {
                 Platform.NUMBER: {
                     custom_number_key: {
@@ -1020,7 +1001,7 @@ async def test_custom_numbers(
                     }
                 }
             }
-        },
+        }
     )
 
     # Test entry.

@@ -10,7 +10,6 @@ from homeassistant.setup import async_setup_component
 from pyplumio import __version__ as pyplumio_version
 from pyplumio.protocol import Statistics
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax import DOMAIN
 from custom_components.plum_ecomax.const import ATTR_ENTITIES
@@ -52,14 +51,11 @@ async def test_system_health(
     failed_frames: int,
     expected_failure_rate: str,
     hass: HomeAssistant,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
 ) -> None:
     """Test Plum ecoMAX system health."""
-    await setup_integration(
-        hass,
-        config_entry,
-        options={
+    await setup_config_entry(
+        {
             ATTR_ENTITIES: {
                 Platform.BINARY_SENSOR: {
                     "custom_binary_sensor": {
@@ -82,7 +78,7 @@ async def test_system_health(
                     }
                 },
             }
-        },
+        }
     )
     assert await async_setup_component(hass, "system_health", {})
     await hass.async_block_till_done()

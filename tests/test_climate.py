@@ -112,13 +112,13 @@ async def test_thermostat(
     hass: HomeAssistant,
     connection: EcomaxConnection,
     config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_set_preset_mode,
     frozen_time,
     caplog,
 ) -> None:
     """Test thermostat."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     thermostat_entity_id = "climate.ecomax_thermostat_1_thermostat"
     thermostat_state_key = "state"
     thermostat_contacts_key = "contacts"
@@ -224,7 +224,7 @@ async def test_thermostat(
         "custom_components.plum_ecomax.connection.EcomaxConnection.has_thermostats",
         False,
     ):
-        await setup_integration(hass, config_entry)
+        await setup_config_entry()
 
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(thermostat_entity_id)
@@ -235,14 +235,12 @@ async def test_thermostat(
 async def test_thermostat_presets(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_set_preset_mode,
     async_set_temperature,
-    caplog,
 ) -> None:
     """Test thermostat presets."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     thermostat_entity_id = "climate.ecomax_thermostat_1_thermostat"
     thermostat_mode_key = "mode"
     thermostat_target_temperature_key = "target_temp"

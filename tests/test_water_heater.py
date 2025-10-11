@@ -100,13 +100,13 @@ async def test_indirect_water_heater(
     hass: HomeAssistant,
     connection: EcomaxConnection,
     config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_set_operation_mode,
     async_set_temperature,
     frozen_time,
 ) -> None:
     """Test indirect water heater."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     indirect_water_heater_entity_id = "water_heater.ecomax_indirect_water_heater"
     water_heater_target_temperature_key = "water_heater_target_temp"
     water_heater_current_temperature_key = "water_heater_temp"
@@ -218,7 +218,7 @@ async def test_indirect_water_heater(
         "custom_components.plum_ecomax.connection.EcomaxConnection.has_water_heater",
         False,
     ):
-        await setup_integration(hass, config_entry)
+        await setup_config_entry()
 
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(indirect_water_heater_entity_id)

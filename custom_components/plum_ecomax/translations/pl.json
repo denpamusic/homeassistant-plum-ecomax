@@ -659,6 +659,10 @@
     "get_parameter": {
       "description": "Pobiera parametry urządzenia.",
       "fields": {
+        "device_id": {
+          "description": "Device to get parameter from.",
+          "name": "Device"
+        },
         "name": {
           "description": "Nazwa parametru.",
           "name": "Nazwa"
@@ -669,6 +673,10 @@
     "get_schedule": {
       "description": "Pobierz harmonogram urządzenia.",
       "fields": {
+        "device_id": {
+          "description": "Device to get schedule from.",
+          "name": "Device"
+        },
         "type": {
           "description": "Typ harmonogramu.",
           "name": "Typ"
@@ -687,6 +695,10 @@
     "set_parameter": {
       "description": "Ustawia parametry urządzenia.",
       "fields": {
+        "device_id": {
+          "description": "Device to set parameter for.",
+          "name": "Device"
+        },
         "name": {
           "description": "Nazwa parametru.",
           "name": "Nazwa"
@@ -701,6 +713,10 @@
     "set_schedule": {
       "description": "Ustaw harmonogram urządzenia.",
       "fields": {
+        "device_id": {
+          "description": "Device to set schedule for.",
+          "name": "Device"
+        },
         "end": {
           "description": "Czas w których nastaw ma zostać zakończony.",
           "name": "Czas zakończenia"

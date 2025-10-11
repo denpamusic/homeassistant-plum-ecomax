@@ -816,10 +816,10 @@ async def test_add_entity(
     expected_errors: dict[str, str] | None,
     hass: HomeAssistant,
     config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
 ) -> None:
     """Test adding an entity to an existing config entry."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     result = await setup_options_flow(hass, config_entry)
 
     # Get the add entity form.
@@ -858,10 +858,10 @@ async def test_add_entity(
 
 @pytest.mark.usefixtures("ecomax_860p3_o", "mixers")
 async def test_add_entity_with_disconnected_mixer(
-    hass: HomeAssistant, config_entry: MockConfigEntry, setup_integration, connection
+    hass: HomeAssistant, config_entry: MockConfigEntry, setup_config_entry, connection
 ) -> None:
     """Test adding an entity when mixer is disconnected after device selection."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     result = await setup_options_flow(hass, config_entry)
 
     # Get the add entity form.
@@ -888,10 +888,10 @@ async def test_add_entity_with_disconnected_mixer(
 
 @pytest.mark.usefixtures("ecomax_860p3_o", "custom_fields")
 async def test_add_entity_with_missing_number(
-    hass: HomeAssistant, config_entry: MockConfigEntry, setup_integration, connection
+    hass: HomeAssistant, config_entry: MockConfigEntry, setup_config_entry, connection
 ) -> None:
     """Test adding an entity when mixer is disconnected after device selection."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     result = await setup_options_flow(hass, config_entry)
 
     # Get the add entity form.
@@ -938,16 +938,11 @@ async def test_add_entity_with_missing_number(
 @pytest.mark.parametrize("key", ("heating_pump", "custom_binary_sensor"))
 @pytest.mark.usefixtures("connection", "ecomax_860p3_o", "custom_fields")
 async def test_add_entity_with_colliding_key(
-    key: str,
-    hass: HomeAssistant,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    key: str, hass: HomeAssistant, config_entry: MockConfigEntry, setup_config_entry
 ) -> None:
     """Test raising an error on key collision."""
-    await setup_integration(
-        hass,
-        config_entry,
-        options={
+    await setup_config_entry(
+        {
             ATTR_ENTITIES: {
                 Platform.BINARY_SENSOR: {
                     "custom_binary_sensor": {
@@ -958,7 +953,7 @@ async def test_add_entity_with_colliding_key(
                     }
                 }
             }
-        },
+        }
     )
     result = await setup_options_flow(hass, config_entry)
 
@@ -995,10 +990,10 @@ async def test_add_entity_with_colliding_key(
 async def test_abort_no_entities_to_add(
     hass: HomeAssistant,
     config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
 ) -> None:
     """Test aborting add entity when there are no entities to add."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     result = await setup_options_flow(hass, config_entry)
 
     # Get the add entity form.
@@ -1145,14 +1140,10 @@ async def test_edit_entity(
     expected_data: dict[str, Any],
     hass: HomeAssistant,
     config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
 ) -> None:
     """Test editing an existing entity in a config entry."""
-    await setup_integration(
-        hass,
-        config_entry,
-        options={ATTR_ENTITIES: {platform: entity_details}},
-    )
+    await setup_config_entry({ATTR_ENTITIES: {platform: entity_details}})
     result = await setup_options_flow(hass, config_entry)
 
     # Get the entity select form.
@@ -1180,13 +1171,11 @@ async def test_edit_entity(
 
 @pytest.mark.usefixtures("connection", "ecomax_860p3_o", "custom_fields")
 async def test_edit_entity_with_invalid_source_device(
-    hass: HomeAssistant, config_entry: MockConfigEntry, setup_integration
+    hass: HomeAssistant, config_entry: MockConfigEntry, setup_config_entry
 ) -> None:
     """Test editing an existing entity in a config entry."""
-    await setup_integration(
-        hass,
-        config_entry,
-        options={
+    await setup_config_entry(
+        {
             ATTR_ENTITIES: {
                 Platform.BINARY_SENSOR: {
                     "custom_binary_sensor": {
@@ -1197,7 +1186,7 @@ async def test_edit_entity_with_invalid_source_device(
                     }
                 }
             }
-        },
+        }
     )
     result = await setup_options_flow(hass, config_entry)
 
@@ -1221,10 +1210,10 @@ async def test_edit_entity_with_invalid_source_device(
 async def test_abort_no_entities_to_edit(
     hass: HomeAssistant,
     config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
 ) -> None:
     """Test aborting edit entity when there are no entities to edit."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     result = await setup_options_flow(hass, config_entry)
 
     # Get the entity select form.
@@ -1237,9 +1226,7 @@ async def test_abort_no_entities_to_edit(
 
 @pytest.mark.usefixtures("connection", "ecomax_860p3_o")
 async def test_remove_entity(
-    hass: HomeAssistant,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    hass: HomeAssistant, config_entry: MockConfigEntry, setup_config_entry
 ) -> None:
     """Test removing an existing entity from the config entry."""
     custom_sensor = {
@@ -1254,10 +1241,8 @@ async def test_remove_entity(
         }
     }
 
-    await setup_integration(
-        hass,
-        config_entry,
-        options={
+    await setup_config_entry(
+        {
             ATTR_ENTITIES: {
                 Platform.BINARY_SENSOR: {
                     "custom_binary_sensor": {
@@ -1269,7 +1254,7 @@ async def test_remove_entity(
                 },
                 Platform.SENSOR: custom_sensor,
             }
-        },
+        }
     )
     await hass.async_block_till_done()
     result = await setup_options_flow(hass, config_entry)
@@ -1301,10 +1286,10 @@ async def test_remove_entity(
 async def test_abort_no_entities_to_remove(
     hass: HomeAssistant,
     config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
 ) -> None:
     """Test aborting remove entity when there are no entities to remove."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     result = await setup_options_flow(hass, config_entry)
 
     # Get the entity select form.
@@ -1325,11 +1310,11 @@ async def test_rediscover_devices(
     mock_async_get_sub_devices,
     hass: HomeAssistant,
     config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     connection,
 ) -> None:
     """Test rediscovering devices for the config entry."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     result = await setup_options_flow(hass, config_entry)
 
     # Rediscover devices.

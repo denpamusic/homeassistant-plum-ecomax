@@ -659,6 +659,10 @@
     "get_parameter": {
       "description": "Gets device parameter.",
       "fields": {
+        "device_id": {
+          "description": "Device to get parameter from.",
+          "name": "[%key:common::config_flow::data::device%]"
+        },
         "name": {
           "description": "Name of the parameter.",
           "name": "Name"
@@ -669,6 +673,10 @@
     "get_schedule": {
       "description": "Gets device schedule.",
       "fields": {
+        "device_id": {
+          "description": "Device to get schedule from.",
+          "name": "[%key:common::config_flow::data::device%]"
+        },
         "type": {
           "description": "Type of the schedule.",
           "name": "Type"
@@ -687,6 +695,10 @@
     "set_parameter": {
       "description": "Sets device parameter.",
       "fields": {
+        "device_id": {
+          "description": "Device to set parameter for.",
+          "name": "[%key:common::config_flow::data::device%]"
+        },
         "name": {
           "description": "Name of the parameter.",
           "name": "Name"
@@ -701,6 +713,10 @@
     "set_schedule": {
       "description": "Sets device schedule.",
       "fields": {
+        "device_id": {
+          "description": "Device to set schedule for.",
+          "name": "[%key:common::config_flow::data::device%]"
+        },
         "end_time": {
           "description": "Time at which scheduled state will be cleared.",
           "name": "End time"

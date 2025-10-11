@@ -27,21 +27,16 @@ from homeassistant.const import (
     UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant, callback
-import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import EntityCategory
-from homeassistant.helpers.entity_platform import (
-    AddEntitiesCallback,
-    async_get_current_platform,
-)
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
 from pyplumio.const import DeviceState, ProductType
 from pyplumio.filters import aggregate, deadband, on_change, throttle
 from pyplumio.structures.sensor_data import ConnectedModules
-import voluptuous as vol
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import ATTR_VALUE, DEFAULT_TOLERANCE, DeviceType, ModuleType
+from .const import DEFAULT_TOLERANCE, DeviceType, ModuleType
 from .entity import (
     EcomaxEntity,
     EcomaxEntityDescription,
@@ -57,9 +52,6 @@ UPDATE_INTERVAL: Final = 10
 
 ATTR_BURNED_SINCE_LAST_UPDATE: Final = "burned_since_last_update"
 ATTR_NUMERIC_STATE: Final = "numeric_state"
-
-SERVICE_RESET_METER: Final = "reset_meter"
-SERVICE_CALIBRATE_METER: Final = "calibrate_meter"
 
 STATE_STABILIZATION: Final = "stabilization"
 STATE_KINDLING: Final = "kindling"
@@ -692,15 +684,6 @@ async def async_setup_entry(
     # Add ecoMAX meters.
     if meters := async_setup_ecomax_meters(connection):
         entities += meters
-        platform = async_get_current_platform()
-        platform.async_register_entity_service(
-            SERVICE_RESET_METER, {}, "async_reset_meter"
-        )
-        platform.async_register_entity_service(
-            SERVICE_CALIBRATE_METER,
-            {vol.Required(ATTR_VALUE): cv.positive_float},
-            "async_calibrate_meter",
-        )
 
     async_add_entities(entities)
     return True

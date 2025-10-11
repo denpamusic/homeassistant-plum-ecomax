@@ -1,7 +1,6 @@
 """Test the sensor platform."""
 
-from unittest import mock
-from unittest.mock import call, patch
+from unittest.mock import patch
 
 from freezegun import freeze_time
 from homeassistant.components.sensor import (
@@ -68,6 +67,8 @@ from custom_components.plum_ecomax.sensor import (
     ATTR_BURNED_SINCE_LAST_UPDATE,
     ATTR_NUMERIC_STATE,
     DEVICE_CLASS_METER,
+)
+from custom_components.plum_ecomax.services import (
     SERVICE_CALIBRATE_METER,
     SERVICE_RESET_METER,
 )
@@ -133,36 +134,11 @@ async def fixture_reset_meter():
 
 
 @pytest.mark.usefixtures("ecomax_p")
-async def test_setup_meter_services(
-    hass: HomeAssistant,
-    config_entry: MockConfigEntry,
-    setup_integration,
-) -> None:
-    """Test that meter services are set up."""
-    with patch(
-        "custom_components.plum_ecomax.sensor.async_get_current_platform"
-    ) as mock_async_get_current_platform:
-        await setup_integration(hass, config_entry)
-
-    platform = mock_async_get_current_platform.return_value
-    platform.async_register_entity_service.assert_has_calls(
-        [
-            call(SERVICE_RESET_METER, mock.ANY, "async_reset_meter"),
-            call(SERVICE_CALIBRATE_METER, mock.ANY, "async_calibrate_meter"),
-        ]
-    )
-
-
-@pytest.mark.usefixtures("ecomax_p")
 async def test_heating_temperature_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test heating temperature sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     heating_temperature_entity_id = "sensor.ecomax_heating_temperature"
 
     # Check entry.
@@ -192,16 +168,13 @@ async def test_heating_temperature_sensor(
 
 @pytest.mark.usefixtures("ecomax_p")
 async def test_heating_temperature_sensor_disabled(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry
 ) -> None:
     """Test that heating sensor is disabled if unavailable."""
     ecomax_data = dict(connection.device.data)
     del ecomax_data[ATTR_HEATING_TEMP]
     with patch("pyplumio.devices.ecomax.EcoMAX.data", ecomax_data):
-        await setup_integration(hass, config_entry)
+        await setup_config_entry()
 
     heating_temperature_entity_id = "sensor.ecomax_heating_temperature"
     entity_registry = er.async_get(hass)
@@ -214,14 +187,10 @@ async def test_heating_temperature_sensor_disabled(
 
 @pytest.mark.usefixtures("ecomax_p", "water_heater")
 async def test_water_heater_temperature_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test water heater temperature sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     water_heater_temperature_entity_id = "sensor.ecomax_water_heater_temperature"
 
     # Check entry.
@@ -250,15 +219,12 @@ async def test_water_heater_temperature_sensor(
     assert state.state == "51"
 
 
-@pytest.mark.usefixtures("ecomax_p")
+@pytest.mark.usefixtures("ecomax_p", "connection")
 async def test_water_heater_temperature_sensor_disabled(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    hass: HomeAssistant, setup_config_entry
 ) -> None:
     """Test that water heater sensor is disabled if unavailable."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     water_heater_temperature_entity_id = "sensor.ecomax_water_heater_temperature"
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(water_heater_temperature_entity_id)
@@ -270,14 +236,10 @@ async def test_water_heater_temperature_sensor_disabled(
 
 @pytest.mark.usefixtures("ecomax_p")
 async def test_outside_temperature_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test outside temperature sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     outside_temperature_entity_id = "sensor.ecomax_outside_temperature"
 
     # Check entry.
@@ -307,13 +269,10 @@ async def test_outside_temperature_sensor(
 
 @pytest.mark.usefixtures("ecomax_p")
 async def test_heating_target_temperature_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry
 ) -> None:
     """Test heating target temperature sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     heating_target_temperature_entity_id = "sensor.ecomax_heating_target_temperature"
 
     # Check entry.
@@ -342,13 +301,10 @@ async def test_heating_target_temperature_sensor(
 
 @pytest.mark.usefixtures("ecomax_p", "water_heater")
 async def test_water_heater_target_temperature_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry
 ) -> None:
     """Test water heater target temperature sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     water_heater_target_temperature_entity_id = (
         "sensor.ecomax_water_heater_target_temperature"
     )
@@ -381,13 +337,10 @@ async def test_water_heater_target_temperature_sensor(
 
 @pytest.mark.usefixtures("ecomax_p")
 async def test_state_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry
 ) -> None:
     """Test state sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     state_entity_id = "sensor.ecomax_state"
 
     # Check entry.
@@ -418,13 +371,10 @@ async def test_state_sensor(
 
 @pytest.mark.usefixtures("ecomax_p")
 async def test_service_password_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry
 ) -> None:
     """Test service password sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     service_password_entity_id = "sensor.ecomax_service_password"
 
     # Check entry.
@@ -449,13 +399,10 @@ async def test_service_password_sensor(
 
 @pytest.mark.usefixtures("ecomax_p")
 async def test_connected_modules_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry
 ) -> None:
     """Test connected_modules sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     connected_modules_entity_id = "sensor.ecomax_connected_modules"
 
     # Check entry.
@@ -488,11 +435,11 @@ async def test_oxygen_level_sensor(
     hass: HomeAssistant,
     connection: EcomaxConnection,
     config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     frozen_time,
 ) -> None:
     """Test oxygen level sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     oxygen_level_entity_id = "sensor.ecomax_oxygen_level"
 
     # Check entry.
@@ -523,20 +470,16 @@ async def test_oxygen_level_sensor(
         connection.device, ATTR_MODULES, ConnectedModules(ecolambda=None)
     )
     await hass.config_entries.async_remove(config_entry.entry_id)
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     assert hass.states.get(oxygen_level_entity_id) is None
 
 
 @pytest.mark.usefixtures("ecomax_p")
 async def test_boiler_power_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test boiler power sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     boiler_power_entity_id = "sensor.ecomax_boiler_power"
 
     # Check entry.
@@ -565,14 +508,10 @@ async def test_boiler_power_sensor(
 
 @pytest.mark.usefixtures("ecomax_p")
 async def test_fuel_level_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test fuel level sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     fuel_level_entity_id = "sensor.ecomax_fuel_level"
 
     # Check entry.
@@ -601,14 +540,10 @@ async def test_fuel_level_sensor(
 
 @pytest.mark.usefixtures("ecomax_p")
 async def test_fuel_consumption_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test fuel consumption sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     fuel_consumption_entity_id = "sensor.ecomax_fuel_consumption"
 
     # Check entry.
@@ -637,14 +572,10 @@ async def test_fuel_consumption_sensor(
 
 @pytest.mark.usefixtures("ecomax_p")
 async def test_boiler_load_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test boiler load sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     boiler_load_entity_id = "sensor.ecomax_boiler_load"
 
     # Check entry.
@@ -671,14 +602,10 @@ async def test_boiler_load_sensor(
 
 @pytest.mark.usefixtures("ecomax_p")
 async def test_fan_power_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test fan power sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     fan_power_entity_id = "sensor.ecomax_fan_power"
 
     # Check entry.
@@ -707,14 +634,10 @@ async def test_fan_power_sensor(
 
 @pytest.mark.usefixtures("ecomax_p")
 async def test_flame_intensity_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test flame intensity sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     flame_intensity_entity_id = "sensor.ecomax_flame_intensity"
 
     # Check entry.
@@ -743,14 +666,10 @@ async def test_flame_intensity_sensor(
 
 @pytest.mark.usefixtures("ecomax_p")
 async def test_feeder_temperature_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test feeder temperature sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     feeder_temperature_entity_id = "sensor.ecomax_feeder_temperature"
 
     # Check entry.
@@ -779,14 +698,10 @@ async def test_feeder_temperature_sensor(
 
 @pytest.mark.usefixtures("ecomax_p")
 async def test_exhaust_temperature_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test exhaust temperature sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     exhaust_temperature_entity_id = "sensor.ecomax_exhaust_temperature"
 
     # Test entry.
@@ -815,14 +730,10 @@ async def test_exhaust_temperature_sensor(
 
 @pytest.mark.usefixtures("ecomax_p")
 async def test_return_temperature_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test return temperature sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     return_temperature_entity_id = "sensor.ecomax_return_temperature"
 
     # Check entry.
@@ -851,14 +762,10 @@ async def test_return_temperature_sensor(
 
 @pytest.mark.usefixtures("ecomax_p")
 async def test_lower_buffer_temperature_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test lower buffer temperature sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     lower_buffer_temperature_entity_id = "sensor.ecomax_lower_buffer_temperature"
 
     # Check entry.
@@ -887,14 +794,10 @@ async def test_lower_buffer_temperature_sensor(
 
 @pytest.mark.usefixtures("ecomax_p")
 async def test_upper_buffer_temperature_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test upper buffer temperature sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     upper_buffer_temperature_entity_id = "sensor.ecomax_upper_buffer_temperature"
 
     # Check entry.
@@ -923,14 +826,10 @@ async def test_upper_buffer_temperature_sensor(
 
 @pytest.mark.usefixtures("ecomax_i")
 async def test_lower_solar_temperature_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test lower solar temperature sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     lower_solar_temperature_entity_id = "sensor.ecomax_lower_solar_temperature"
 
     # Check entry.
@@ -959,14 +858,10 @@ async def test_lower_solar_temperature_sensor(
 
 @pytest.mark.usefixtures("ecomax_i")
 async def test_upper_solar_temperature_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test upper solar temperature sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     upper_solar_temperature_entity_id = "sensor.ecomax_upper_solar_temperature"
 
     # Check entry.
@@ -995,14 +890,10 @@ async def test_upper_solar_temperature_sensor(
 
 @pytest.mark.usefixtures("ecomax_i")
 async def test_fireplace_temperature_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test fireplace temperature sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     fireplace_temperature_entity_id = "sensor.ecomax_fireplace_temperature"
 
     # Check entry.
@@ -1031,14 +922,10 @@ async def test_fireplace_temperature_sensor(
 
 @pytest.mark.usefixtures("ecomax_p", "mixers")
 async def test_mixer_temperature_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test mixer temperature sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     mixer_temperature_entity_id = "sensor.ecomax_mixer_1_mixer_temperature"
 
     # Check entry.
@@ -1067,14 +954,10 @@ async def test_mixer_temperature_sensor(
 
 @pytest.mark.usefixtures("ecomax_p", "mixers")
 async def test_mixer_target_temperature_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test mixer target temperature sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     mixer_target_temperature_entity_id = (
         "sensor.ecomax_mixer_1_mixer_target_temperature"
     )
@@ -1108,14 +991,10 @@ async def test_mixer_target_temperature_sensor(
 
 @pytest.mark.usefixtures("ecomax_i", "mixers")
 async def test_circuit_temperature_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test circuit temperature sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     circuit_temperature_entity_id = "sensor.ecomax_circuit_1_circuit_temperature"
 
     # Check entry.
@@ -1146,14 +1025,10 @@ async def test_circuit_temperature_sensor(
 
 @pytest.mark.usefixtures("ecomax_i", "mixers")
 async def test_circuit_target_temperature_sensor(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test circuit target temperature sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     circuit_target_temperature_entity_id = (
         "sensor.ecomax_circuit_1_circuit_target_temperature"
     )
@@ -1189,14 +1064,13 @@ async def test_circuit_target_temperature_sensor(
 async def test_total_fuel_burned_sensor(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     calibrate_meter,
     reset_meter,
     frozen_time,
 ) -> None:
     """Test total fuel burned sensor."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     fuel_burned_entity_id = "sensor.ecomax_total_fuel_burned"
 
     # Check entry.
@@ -1299,14 +1173,11 @@ async def test_custom_sensors(
     state_class: SensorStateClass | None,
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
 ) -> None:
     """Test custom sensors."""
-    await setup_integration(
-        hass,
-        config_entry,
-        options={
+    await setup_config_entry(
+        {
             ATTR_ENTITIES: {
                 Platform.SENSOR: {
                     "custom_sensor": {
@@ -1319,7 +1190,7 @@ async def test_custom_sensors(
                     }
                 }
             }
-        },
+        }
     )
 
     # Test entry.
@@ -1359,17 +1230,11 @@ async def test_custom_sensors(
 
 @pytest.mark.usefixtures("ecomax_p", "custom_fields")
 async def test_custom_sensors_update_interval(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
-    frozen_time,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
     """Test custom sensors with update interval."""
-    await setup_integration(
-        hass,
-        config_entry,
-        options={
+    await setup_config_entry(
+        {
             ATTR_ENTITIES: {
                 Platform.SENSOR: {
                     "custom_sensor": {
@@ -1412,16 +1277,11 @@ async def test_custom_sensors_update_interval(
 
 @pytest.mark.usefixtures("ecomax_p", "ecomax_860p3_o", "custom_fields")
 async def test_custom_regdata_sensors(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry
 ):
     """Test custom regdata sensors."""
-    await setup_integration(
-        hass,
-        config_entry,
-        options={
+    await setup_config_entry(
+        {
             ATTR_ENTITIES: {
                 Platform.SENSOR: {
                     "9001": {

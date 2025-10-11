@@ -31,7 +31,6 @@ from pyplumio.parameters.mixer import (
 )
 from pyplumio.structures.ecomax_parameters import ATTR_ECOMAX_CONTROL
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import ATTR_ENTITIES
@@ -93,13 +92,12 @@ async def fixture_async_turn_off():
 async def test_ecomax_control_switch(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_turn_off,
     async_turn_on,
 ) -> None:
     """Test ecoMAX control switch."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     controller_switch_entity_id = "switch.ecomax_controller_switch"
 
     # Check entry.
@@ -149,13 +147,12 @@ async def test_ecomax_control_switch(
 async def test_water_heater_disinfection_switch(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_turn_off,
     async_turn_on,
 ) -> None:
     """Test water heater disinfection switch."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     water_heater_disinfection_switch_entity_id = (
         "switch.ecomax_water_heater_disinfection_switch"
     )
@@ -215,13 +212,12 @@ async def test_water_heater_disinfection_switch(
 async def test_water_heater_pump_switch(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_turn_off,
     async_turn_on,
 ) -> None:
     """Test water heater pump switch."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     water_heater_pump_switch_entity_id = "switch.ecomax_water_heater_pump_switch"
     water_heater_pump_switch_key = "water_heater_work_mode"
 
@@ -272,13 +268,12 @@ async def test_water_heater_pump_switch(
 async def test_weather_control_switch(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_turn_off,
     async_turn_on,
 ) -> None:
     """Test weather control switch."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     weather_control_switch_entity_id = "switch.ecomax_weather_control_switch"
     weather_control_switch_key = "weather_control"
 
@@ -329,13 +324,12 @@ async def test_weather_control_switch(
 async def test_fuzzy_logic_switch(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_turn_off,
     async_turn_on,
 ) -> None:
     """Test fuzzy logic switch."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     fuzzy_logic_switch_entity_id = "switch.ecomax_fuzzy_logic_switch"
     fuzzy_logic_switch_key = "fuzzy_logic"
 
@@ -386,13 +380,12 @@ async def test_fuzzy_logic_switch(
 async def test_heating_schedule_switch(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_turn_off,
     async_turn_on,
 ) -> None:
     """Test heating schedule switch."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     heating_schedule_switch_entity_id = "switch.ecomax_heating_schedule_switch"
     heating_schedule_switch_key = "heating_schedule_switch"
 
@@ -443,13 +436,12 @@ async def test_heating_schedule_switch(
 async def test_water_heater_schedule_switch(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_turn_off,
     async_turn_on,
 ) -> None:
     """Test water heater schedule switch."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     water_heater_schedule_switch_entity_id = (
         "switch.ecomax_water_heater_schedule_switch"
     )
@@ -502,13 +494,12 @@ async def test_water_heater_schedule_switch(
 async def test_mixer_enable_in_summer_mode_switch(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_turn_off,
     async_turn_on,
 ) -> None:
     """Test enable in summer mode switch."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     enable_in_summer_mode_entity_id = "switch.ecomax_mixer_1_enable_in_summer_mode"
     enable_in_summer_mode_key = "summer_work"
 
@@ -561,13 +552,12 @@ async def test_mixer_enable_in_summer_mode_switch(
 async def test_circuit_enable_in_summer_mode_switch(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_turn_off,
     async_turn_on,
 ) -> None:
     """Test enable in summer mode switch."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     enable_in_summer_mode_entity_id = "switch.ecomax_circuit_1_enable_in_summer_mode"
     enable_in_summer_mode_key = "summer_work"
 
@@ -620,13 +610,12 @@ async def test_circuit_enable_in_summer_mode_switch(
 async def test_mixer_weather_control_switch(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_turn_off,
     async_turn_on,
 ) -> None:
     """Test mixer weather control switch."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     mixer_weather_control_switch_entity_id = (
         "switch.ecomax_mixer_1_weather_control_switch"
     )
@@ -680,13 +669,12 @@ async def test_mixer_weather_control_switch(
 async def test_mixer_disable_pump_on_thermostat_switch(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_turn_off,
     async_turn_on,
 ) -> None:
     """Test disable pump on thermostat switch."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     disable_pump_on_thermostat_entity_id = (
         "switch.ecomax_mixer_1_disable_pump_on_thermostat"
     )
@@ -742,13 +730,12 @@ async def test_mixer_disable_pump_on_thermostat_switch(
 async def test_circuit_enable_circuit_switch(
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_turn_off,
     async_turn_on,
 ) -> None:
     """Test enable circuit switch."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     enable_circuit_entity_id = "switch.ecomax_circuit_1_enable_circuit"
     enable_circuit_key = "enable_circuit"
 
@@ -797,12 +784,10 @@ async def test_circuit_enable_circuit_switch(
 
 @pytest.mark.usefixtures("ecomax_i", "mixers")
 async def test_circuit_enable_circuit_switch_is_unavailable_for_second_circuit(
-    hass: HomeAssistant,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    hass: HomeAssistant, setup_config_entry
 ) -> None:
     """Test enable circuit switch is not available for second circuit."""
-    await setup_integration(hass, config_entry)
+    await setup_config_entry()
     enable_circuit_entity_id = "switch.ecomax_circuit_2_enable_circuit"
 
     # Check entry.
@@ -843,17 +828,14 @@ async def test_custom_switches(
     friendly_name: str,
     hass: HomeAssistant,
     connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_integration,
+    setup_config_entry,
     async_turn_off,
     async_turn_on,
 ) -> None:
     """Test custom switches."""
     custom_switch_key = "custom_switch"
-    await setup_integration(
-        hass,
-        config_entry,
-        options={
+    await setup_config_entry(
+        {
             ATTR_ENTITIES: {
                 Platform.SWITCH: {
                     custom_switch_key: {
@@ -863,7 +845,7 @@ async def test_custom_switches(
                     }
                 }
             }
-        },
+        }
     )
 
     # Test entry.

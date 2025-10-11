@@ -18,6 +18,7 @@ from homeassistant.const import (
 from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers.typing import ConfigType
 from pyplumio.filters import custom, delta
 from pyplumio.structures.alerts import ATTR_ALERTS, Alert
 
@@ -69,6 +70,12 @@ class PlumEcomaxData:
     connection: EcomaxConnection
 
 
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Set up the Plum ecoMAX component."""
+    async_setup_services(hass)
+    return True
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: PlumEcomaxConfigEntry) -> bool:
     """Set up the Plum ecoMAX from a config entry."""
     connection_type = entry.data.get(CONF_CONNECTION_TYPE, DEFAULT_CONNECTION_TYPE)
@@ -86,7 +93,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: PlumEcomaxConfigEntry) -
         ) from e
 
     entry.runtime_data = PlumEcomaxData(connection)
-    async_setup_services(hass, connection)
     async_setup_events(hass, connection)
 
     async def _async_close_connection(event: Event | None = None) -> None:

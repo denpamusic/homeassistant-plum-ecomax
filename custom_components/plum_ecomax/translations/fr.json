@@ -656,6 +656,10 @@
     "get_parameter": {
       "description": "Obtient le paramètre de l'appareil.",
       "fields": {
+        "device_id": {
+          "description": "Device to get parameter from.",
+          "name": "Device"
+        },
         "name": {
           "description": "Nom du paramètre",
           "name": "Nom"
@@ -666,6 +670,10 @@
     "get_schedule": {
       "description": "Permet d'obtenir la programmation de l'appareil.",
       "fields": {
+        "device_id": {
+          "description": "Device to get schedule from.",
+          "name": "Device"
+        },
         "type": {
           "description": "Type de programmation",
           "name": "Type"
@@ -684,6 +692,10 @@
     "set_parameter": {
       "description": "Définie la valeur du capteur.",
       "fields": {
+        "device_id": {
+          "description": "Device to set parameter for.",
+          "name": "Device"
+        },
         "name": {
           "description": "Nom du paramètre",
           "name": "Nom"
@@ -698,6 +710,10 @@
     "set_schedule": {
       "description": "Définit la programmation de l'appareil.",
       "fields": {
+        "device_id": {
+          "description": "Device to set schedule for.",
+          "name": "Device"
+        },
         "end": {
           "description": "Heure à laquelle l'état programmé sera effacé.",
           "name": "Heure de fin"

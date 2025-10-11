@@ -659,6 +659,10 @@
     "get_parameter": {
       "description": "Получает значение параметра устройства.",
       "fields": {
+        "device_id": {
+          "description": "Device to get parameter from.",
+          "name": "Device"
+        },
         "name": {
           "description": "Название параметра.",
           "name": "Название"
@@ -669,6 +673,10 @@
     "get_schedule": {
       "description": "Получает расписание работы устройства.",
       "fields": {
+        "device_id": {
+          "description": "Device to get schedule from.",
+          "name": "Device"
+        },
         "type": {
           "description": "Тип расписания.",
           "name": "Тип"
@@ -687,6 +695,10 @@
     "set_parameter": {
       "description": "Устанавливает значение параметра устройства.",
       "fields": {
+        "device_id": {
+          "description": "Device to set parameter for.",
+          "name": "Device"
+        },
         "name": {
           "description": "Название параметра.",
           "name": "Название"
@@ -701,6 +713,10 @@
     "set_schedule": {
       "description": "Устанавливает расписание работы устройства.",
       "fields": {
+        "device_id": {
+          "description": "Device to set schedule for.",
+          "name": "Device"
+        },
         "end": {
           "description": "Заданое состояние будет сброшено начиная с этого времени.",
           "name": "Конец"
