@@ -36,7 +36,7 @@ from homeassistant.helpers.entity_platform import (
 from homeassistant.helpers.typing import StateType
 from pyplumio.const import DeviceState, ProductType
 from pyplumio.filters import aggregate, deadband, on_change, throttle
-from pyplumio.structures.modules import ConnectedModules
+from pyplumio.structures.sensor_data import ConnectedModules
 import voluptuous as vol
 
 from . import PlumEcomaxConfigEntry
@@ -226,7 +226,9 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
     ),
     EcomaxSensorEntityDescription(
         key="fan_power",
-        filter_fn=lambda x: throttle(on_change(x), seconds=UPDATE_INTERVAL),
+        filter_fn=lambda x: throttle(
+            deadband(x, tolerance=DEFAULT_TOLERANCE), seconds=UPDATE_INTERVAL
+        ),
         native_unit_of_measurement=PERCENTAGE,
         product_types={ProductType.ECOMAX_P},
         state_class=SensorStateClass.MEASUREMENT,

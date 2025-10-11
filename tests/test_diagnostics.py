@@ -1,7 +1,7 @@
 """Test Plum ecoMAX diagnostics."""
 
 from typing import Any
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 from homeassistant.components.diagnostics import REDACTED
 from homeassistant.config_entries import ConfigEntry
@@ -65,6 +65,8 @@ async def test_diagnostics(
     assert ecomax_data[ATTR_PRODUCT].uid != REDACTED
 
     # Check that redactor doesn't fail on missing key.
-    del ecomax_p.data[ATTR_PASSWORD]
-    result = await async_get_config_entry_diagnostics(hass, config_entry)
+    del ecomax_data[ATTR_PASSWORD]
+    with patch("pyplumio.devices.ecomax.EcoMAX.data", ecomax_data):
+        result = await async_get_config_entry_diagnostics(hass, config_entry)
+
     assert ATTR_PASSWORD not in result["data"]

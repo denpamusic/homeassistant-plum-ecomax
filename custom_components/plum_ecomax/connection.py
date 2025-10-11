@@ -20,10 +20,12 @@ from pyplumio.connection import Connection
 from pyplumio.const import FrameType, ProductType
 from pyplumio.devices import PhysicalDevice
 from pyplumio.structures.mixer_parameters import ATTR_MIXER_PARAMETERS
-from pyplumio.structures.mixer_sensors import ATTR_MIXERS_CONNECTED
-from pyplumio.structures.temperatures import ATTR_WATER_HEATER_TEMP
+from pyplumio.structures.sensor_data import (
+    ATTR_MIXERS_CONNECTED,
+    ATTR_THERMOSTATS_CONNECTED,
+    ATTR_WATER_HEATER_TEMP,
+)
 from pyplumio.structures.thermostat_parameters import ATTR_THERMOSTAT_PARAMETERS
-from pyplumio.structures.thermostat_sensors import ATTR_THERMOSTATS_CONNECTED
 
 from .const import (
     ATTR_MIXERS,

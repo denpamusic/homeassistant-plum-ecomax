@@ -356,8 +356,8 @@ async def test_abort_unsupported_product(
 
     # Identify the device.
     unknown_device_type = 2
-    ecomax_p.data["product"] = replace(
-        ecomax_p.data["product"], type=unknown_device_type
+    await ecomax_p.dispatch(
+        "product", replace(ecomax_p.data["product"], type=unknown_device_type)
     )
     with patch(
         "custom_components.plum_ecomax.config_flow.async_get_connection_handler",
@@ -909,10 +909,14 @@ async def test_add_entity_with_missing_number(
         result3["flow_id"], user_input={"next_step_id": "add_number"}
     )
 
-    del connection.device.data["custom_number"]
+    ecomax_data = dict(connection.device.data)
+    del ecomax_data["custom_number"]
 
     # Expect error on adding the entity if selected number is missing.
-    with pytest.raises(HomeAssistantError) as exc_info:
+    with (
+        patch("pyplumio.devices.ecomax.EcoMAX.data", ecomax_data),
+        pytest.raises(HomeAssistantError) as exc_info,
+    ):
         await hass.config_entries.options.async_configure(
             result4["flow_id"],
             {

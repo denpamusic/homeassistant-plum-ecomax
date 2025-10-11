@@ -25,7 +25,7 @@ from homeassistant.helpers.service import (
 )
 from pyplumio.const import State, UnitOfMeasurement
 from pyplumio.devices import Device, VirtualDevice
-from pyplumio.parameters import Number, NumericType, Parameter
+from pyplumio.parameters import Number, Numeric, Parameter
 from pyplumio.structures.product_info import ProductInfo
 from pyplumio.structures.schedules import Schedule, ScheduleDay
 import voluptuous as vol
@@ -156,9 +156,9 @@ class ParameterResponse(TypedDict):
     """Represents a response from get/set parameter services."""
 
     name: str
-    value: NumericType | State | bool
-    min_value: NumericType | State | bool
-    max_value: NumericType | State | bool
+    value: Numeric | State | bool
+    min_value: Numeric | State | bool
+    max_value: Numeric | State | bool
     step: NotRequired[float]
     unit_of_measurement: NotRequired[str | None]
     device: NotRequired[DeviceId]

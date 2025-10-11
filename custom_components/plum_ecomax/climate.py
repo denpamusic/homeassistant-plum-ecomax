@@ -24,8 +24,10 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyplumio.filters import Filter, on_change, throttle
+from pyplumio.filters import Filter, deadband, on_change, throttle
 from pyplumio.parameters.thermostat import ThermostatNumber
+
+from custom_components.plum_ecomax.sensor import DEFAULT_TOLERANCE
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
@@ -104,8 +106,12 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
             "mode": on_change(self.async_update_preset_mode),
             "state": on_change(self.async_update_preset_mode),
             "contacts": on_change(self.async_update_hvac_action),
-            "current_temp": throttle(on_change(self.async_update), seconds=10),
-            "target_temp": on_change(self.async_update_target_temperature),
+            "current_temp": throttle(
+                deadband(self.async_update, tolerance=DEFAULT_TOLERANCE), seconds=10
+            ),
+            "target_temp": deadband(
+                self.async_update_target_temperature, tolerance=DEFAULT_TOLERANCE
+            ),
         }
         self.index = index
         super().__init__(connection, description)

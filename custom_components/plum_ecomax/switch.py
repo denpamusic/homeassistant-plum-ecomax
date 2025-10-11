@@ -11,7 +11,7 @@ from homeassistant.const import STATE_OFF, STATE_ON, Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.const import ProductType, State
-from pyplumio.parameters import NumericType, Parameter
+from pyplumio.parameters import Numeric, Parameter
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
@@ -35,9 +35,9 @@ _LOGGER = logging.getLogger(__name__)
 class EcomaxSwitchEntityDescription(EcomaxEntityDescription, SwitchEntityDescription):
     """Describes an ecoMAX switch."""
 
-    state_off: State | NumericType = STATE_OFF
-    state_on: State | NumericType = STATE_ON
-    extra_states: dict[State | NumericType, bool] = field(default_factory=dict)
+    state_off: State | Numeric = STATE_OFF
+    state_on: State | Numeric = STATE_ON
+    extra_states: dict[State | Numeric, bool] = field(default_factory=dict)
 
 
 SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (

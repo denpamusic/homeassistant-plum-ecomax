@@ -24,35 +24,34 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_registry import RegistryEntry
-from pyplumio.const import (
-    ATTR_CURRENT_TEMP,
-    ATTR_PASSWORD,
-    ATTR_STATE,
-    ATTR_TARGET_TEMP,
-    DeviceState,
-)
+from pyplumio.const import ATTR_PASSWORD, DeviceState
 from pyplumio.devices.ecomax import ATTR_FUEL_BURNED
-from pyplumio.structures.boiler_load import ATTR_BOILER_LOAD
-from pyplumio.structures.boiler_power import ATTR_BOILER_POWER
-from pyplumio.structures.fan_power import ATTR_FAN_POWER
-from pyplumio.structures.fuel_consumption import ATTR_FUEL_CONSUMPTION
-from pyplumio.structures.fuel_level import ATTR_FUEL_LEVEL
-from pyplumio.structures.lambda_sensor import ATTR_LAMBDA_LEVEL
-from pyplumio.structures.modules import ATTR_MODULES, ConnectedModules
-from pyplumio.structures.statuses import ATTR_HEATING_TARGET, ATTR_WATER_HEATER_TARGET
-from pyplumio.structures.temperatures import (
+from pyplumio.structures.sensor_data import (
+    ATTR_BOILER_LOAD,
+    ATTR_BOILER_POWER,
+    ATTR_CURRENT_TEMP,
     ATTR_EXHAUST_TEMP,
+    ATTR_FAN_POWER,
     ATTR_FEEDER_TEMP,
     ATTR_FIREPLACE_TEMP,
+    ATTR_FUEL_CONSUMPTION,
+    ATTR_FUEL_LEVEL,
+    ATTR_HEATING_TARGET,
     ATTR_HEATING_TEMP,
+    ATTR_LAMBDA_LEVEL,
     ATTR_LOWER_BUFFER_TEMP,
     ATTR_LOWER_SOLAR_TEMP,
+    ATTR_MODULES,
     ATTR_OPTICAL_TEMP,
     ATTR_OUTSIDE_TEMP,
     ATTR_RETURN_TEMP,
+    ATTR_STATE,
+    ATTR_TARGET_TEMP,
     ATTR_UPPER_BUFFER_TEMP,
     ATTR_UPPER_SOLAR_TEMP,
+    ATTR_WATER_HEATER_TARGET,
     ATTR_WATER_HEATER_TEMP,
+    ConnectedModules,
 )
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -199,8 +198,11 @@ async def test_heating_temperature_sensor_disabled(
     setup_integration,
 ) -> None:
     """Test that heating sensor is disabled if unavailable."""
-    del connection.device.data[ATTR_HEATING_TEMP]
-    await setup_integration(hass, config_entry)
+    ecomax_data = dict(connection.device.data)
+    del ecomax_data[ATTR_HEATING_TEMP]
+    with patch("pyplumio.devices.ecomax.EcoMAX.data", ecomax_data):
+        await setup_integration(hass, config_entry)
+
     heating_temperature_entity_id = "sensor.ecomax_heating_temperature"
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(heating_temperature_entity_id)

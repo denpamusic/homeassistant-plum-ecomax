@@ -46,9 +46,9 @@ from pyplumio.connection import Connection
 from pyplumio.const import ProductType
 from pyplumio.devices import PhysicalDevice, VirtualDevice
 from pyplumio.exceptions import ConnectionFailedError
-from pyplumio.parameters import Number, NumericType, State, Switch, UnitOfMeasurement
-from pyplumio.structures.modules import ConnectedModules
+from pyplumio.parameters import Number, Numeric, State, Switch, UnitOfMeasurement
 from pyplumio.structures.product_info import ProductInfo
+from pyplumio.structures.sensor_data import ConnectedModules
 import voluptuous as vol
 
 from .connection import (
@@ -513,7 +513,7 @@ def _is_valid_source(platform: Platform, value: Any) -> bool:
 
 
 @overload
-def _format_source_value(value: Number) -> NumericType | str: ...
+def _format_source_value(value: Number) -> Numeric | str: ...
 
 
 @overload

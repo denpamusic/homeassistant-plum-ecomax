@@ -14,8 +14,7 @@ from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity import EntityCategory
 from pyplumio.const import ATTR_CONNECTED
-from pyplumio.structures.mixer_sensors import ATTR_PUMP
-from pyplumio.structures.outputs import (
+from pyplumio.structures.sensor_data import (
     ATTR_CIRCULATION_PUMP,
     ATTR_FAN,
     ATTR_FAN2_EXHAUST,
@@ -23,10 +22,11 @@ from pyplumio.structures.outputs import (
     ATTR_FIREPLACE_PUMP,
     ATTR_HEATING_PUMP,
     ATTR_LIGHTER,
+    ATTR_PENDING_ALERTS,
+    ATTR_PUMP,
     ATTR_SOLAR_PUMP,
     ATTR_WATER_HEATER_PUMP,
 )
-from pyplumio.structures.pending_alerts import ATTR_PENDING_ALERTS
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 

@@ -13,7 +13,7 @@ from pyplumio.devices import Device
 from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
 from pyplumio.filters import Filter, on_change, throttle
-from pyplumio.structures.modules import ConnectedModules
+from pyplumio.structures.sensor_data import ConnectedModules
 
 from custom_components.plum_ecomax import PlumEcomaxConfigEntry
 
