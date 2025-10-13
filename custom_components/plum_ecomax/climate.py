@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import Any, Final, cast, overload
+from typing import Any, Final, cast
 
 from homeassistant.components.climate import (
     PRESET_AWAY,
@@ -144,13 +144,7 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
         await self._async_update_target_temperature_attributes(value)
         self.async_write_ha_state()
 
-    @overload
-    async def async_update_preset_mode(self, mode: int) -> None: ...
-
-    @overload
-    async def async_update_preset_mode(self, mode: ThermostatNumber) -> None: ...
-
-    async def async_update_preset_mode(self, mode: Any) -> None:
+    async def async_update_preset_mode(self, mode: ThermostatNumber | int) -> None:
         """Update preset mode."""
         if isinstance(mode, ThermostatNumber):
             mode = int(mode.value)
