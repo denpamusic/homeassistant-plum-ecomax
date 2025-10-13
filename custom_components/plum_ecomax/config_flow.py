@@ -521,12 +521,14 @@ def _format_source_value(value: Switch) -> State: ...
 
 
 @overload
-def _format_source_value[SensorValueT: str | int | float](
+def _format_source_value[SensorValueT: Numeric | str](
     value: SensorValueT,
 ) -> SensorValueT: ...
 
 
-def _format_source_value(value: Any) -> Any:
+def _format_source_value(
+    value: Number | Switch | Numeric | str,
+) -> State | Numeric | str:
     """Format the source value."""
     if isinstance(value, Number):
         unit = value.unit_of_measurement
@@ -539,7 +541,7 @@ def _format_source_value(value: Any) -> Any:
     elif isinstance(value, float):
         value = round(value, 2)
 
-        return value
+    return value
 
 
 def generate_select_schema(entities: dict[str, Any]) -> vol.Schema | None:
