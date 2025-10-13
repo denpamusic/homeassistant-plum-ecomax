@@ -57,7 +57,7 @@ async def async_get_config_entry_diagnostics(
             "version": pyplumio_version,
         },
         "data": async_redact_data(
-            _async_data_as_dict(connection.device.data),
+            _async_data_as_dict(dict(connection.device.data)),
             to_redact={CONF_UID, ATTR_PASSWORD},
         ),
     }
