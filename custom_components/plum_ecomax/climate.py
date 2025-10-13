@@ -33,6 +33,8 @@ from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
 from .entity import EcomaxEntityDescription, ThermostatEntity
 
+UPDATE_INTERVAL: Final = 10
+
 TEMPERATURE_STEP: Final = 0.1
 
 PRESET_SCHEDULE: Final = "schedule"
@@ -107,11 +109,10 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
             "state": on_change(self.async_update_preset_mode),
             "contacts": on_change(self.async_update_hvac_action),
             "current_temp": throttle(
-                deadband(self.async_update, tolerance=DEFAULT_TOLERANCE), seconds=10
+                deadband(self.async_update, tolerance=DEFAULT_TOLERANCE),
+                seconds=UPDATE_INTERVAL,
             ),
-            "target_temp": deadband(
-                self.async_update_target_temperature, tolerance=DEFAULT_TOLERANCE
-            ),
+            "target_temp": on_change(self.async_update_target_temperature),
         }
         self.index = index
         super().__init__(connection, description)
