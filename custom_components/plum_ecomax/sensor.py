@@ -41,7 +41,7 @@ import voluptuous as vol
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import ATTR_VALUE, DeviceType, ModuleType
+from .const import ATTR_VALUE, DEFAULT_TOLERANCE, DeviceType, ModuleType
 from .entity import (
     EcomaxEntity,
     EcomaxEntityDescription,
@@ -53,9 +53,10 @@ from .entity import (
     async_get_custom_entities,
 )
 
+UPDATE_INTERVAL: Final = 10
+
 ATTR_BURNED_SINCE_LAST_UPDATE: Final = "burned_since_last_update"
 ATTR_NUMERIC_STATE: Final = "numeric_state"
-
 
 SERVICE_RESET_METER: Final = "reset_meter"
 SERVICE_CALIBRATE_METER: Final = "calibrate_meter"
@@ -80,10 +81,6 @@ EM_TO_HA_STATE: dict[DeviceState, str] = {
 }
 
 DEVICE_CLASS_METER: Final = "plum_ecomax__meter"
-
-UPDATE_INTERVAL: Final = 10
-
-DEFAULT_TOLERANCE: Final = 0.1
 
 _LOGGER = logging.getLogger(__name__)
 

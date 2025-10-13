@@ -25,10 +25,9 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.filters import Filter, deadband, on_change, throttle
 from pyplumio.parameters import Parameter
 
-from custom_components.plum_ecomax.sensor import DEFAULT_TOLERANCE
-
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
+from .const import DEFAULT_TOLERANCE
 from .entity import EcomaxEntity, EcomaxEntityDescription
 
 UPDATE_INTERVAL: Final = 10
