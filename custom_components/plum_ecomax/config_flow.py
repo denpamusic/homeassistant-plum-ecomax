@@ -915,12 +915,14 @@ class OptionsFlowHandler(OptionsFlowWithReload):
         self, entity_keys: list[str], selected: str
     ) -> dict[str, Any]:
         """Return source candidates for regdata."""
-        existing_keys = [key for key in entity_keys if key.isnumeric()]
+        existing_keys = [int(key) for key in entity_keys if key.isnumeric()]
         regdata = cast(
-            dict[str, Any], self.connection.device.get_nowait(ATTR_REGDATA, {})
+            dict[int, Any], self.connection.device.get_nowait(ATTR_REGDATA, {})
         )
         return {
-            k: v for k, v in regdata.items() if k not in existing_keys or k == selected
+            str(k): v
+            for k, v in regdata.items()
+            if k not in existing_keys or str(k) == selected
         }
 
     def _virtual_device_source_candidates(
