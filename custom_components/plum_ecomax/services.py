@@ -5,7 +5,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 import difflib
 import logging
-from typing import TYPE_CHECKING, Final, NotRequired, TypedDict, cast
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Final,
+    Literal,
+    NotRequired,
+    TypedDict,
+    cast,
+)
 
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.const import ATTR_DEVICE_ID, ATTR_NAME, STATE_OFF, STATE_ON
@@ -338,10 +346,14 @@ def async_setup_set_parameter_service(hass: HomeAssistant) -> None:
     )
 
 
+type Time = Annotated[str, "Time string in %H:%M format"]
+
+
 class ScheduleResponse(TypedDict):
     """Represents a response from get schedule service."""
 
-    schedule: dict[str, dict[str, str]]
+    name: str
+    schedule: dict[str, dict[Time, Literal["day", "night"]]]
     product: NotRequired[ProductId]
 
 
