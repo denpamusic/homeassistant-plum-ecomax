@@ -365,13 +365,14 @@ def async_make_schedule_response(
 ) -> ScheduleResponse:
     """Make a parameter response."""
     response: ScheduleResponse = {
+        "name": schedule.name,
         "schedule": {
             weekday: {
                 interval: PRESET_DAY if state == STATE_ON else PRESET_NIGHT
                 for interval, state in getattr(schedule, weekday).items()
             }
             for weekday in weekdays
-        }
+        },
     }
     if product_info := cast(ProductInfo | None, device.get_nowait(ATTR_PRODUCT)):
         response["product"] = ProductId(model=product_info.model, uid=product_info.uid)

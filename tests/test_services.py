@@ -505,6 +505,7 @@ async def test_get_schedule_service(
     await hass.async_block_till_done()
 
     assert response == {
+        "name": "heating",
         "schedule": {
             "monday": {
                 "00:00": PRESET_DAY,
