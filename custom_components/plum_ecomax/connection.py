@@ -10,8 +10,7 @@ import logging
 import math
 from typing import Any, Final, cast
 
-from homeassistant.components.network import async_get_source_ip
-from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
+from aiohttp.resolver import AsyncResolver
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
@@ -63,28 +62,30 @@ FORCE_CLOSE_AFTER_SECONDS: Final = 10
 _LOGGER = logging.getLogger(__name__)
 
 
+async def async_resolve_host_name(hass: HomeAssistant, host: str) -> str | None:
+    """Resolve a host name via async resolver."""
+    resolver = AsyncResolver(loop=hass.loop)
+    result = await resolver.resolve(host)
+    await resolver.close()
+    if not result:
+        return None
+
+    return result[0][CONF_HOST]
+
+
 async def async_get_connection_handler(
     connection_type: str, hass: HomeAssistant, data: Mapping[str, Any]
 ) -> Connection:
     """Return the connection handler."""
     _LOGGER.debug("Getting connection handler for type: %s...", connection_type)
-
-    public_ip = await async_get_source_ip(hass, target_ip=IPV4_BROADCAST_ADDR)
-    protocol = pyplumio.AsyncProtocol(
-        ethernet_parameters=pyplumio.EthernetParameters(ip=public_ip)
-    )
-
     if connection_type == CONNECTION_TYPE_TCP:
         return pyplumio.TcpConnection(
-            data[CONF_HOST],
-            data.get(CONF_PORT, DEFAULT_PORT),
-            protocol=protocol,
+            data[CONF_HOST], data.get(CONF_PORT, DEFAULT_PORT)
         )
 
     return pyplumio.SerialConnection(
         data.get(CONF_DEVICE, DEFAULT_DEVICE),
         int(data.get(CONF_BAUDRATE, DEFAULT_BAUDRATE)),
-        protocol=protocol,
     )
 
 

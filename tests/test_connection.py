@@ -1,7 +1,8 @@
 """Test Plum ecoMAX connection."""
 
+from functools import partial
 import logging
-from typing import Any, Final
+from typing import Any
 from unittest.mock import AsyncMock, Mock, patch
 
 from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
@@ -23,6 +24,7 @@ from custom_components.plum_ecomax.connection import (
     EcomaxConnection,
     async_get_connection_handler,
     async_get_sub_devices,
+    async_resolve_host_name,
 )
 from custom_components.plum_ecomax.const import (
     ATTR_MIXERS,
@@ -40,40 +42,57 @@ from custom_components.plum_ecomax.const import (
     DeviceType,
 )
 
-SOURCE_IP: Final = "1.1.1.1"
+
+@pytest.mark.parametrize(
+    ("host", "ip"), (("example.com", "8.8.8.8"), ("8.8.8.8", "8.8.8.8"))
+)
+@patch("aiohttp.resolver.AsyncResolver.resolve")
+@patch("aiohttp.resolver.AsyncResolver.close")
+async def test_async_resolve_host_name(
+    mock_close, mock_resolve, host: str, ip: str, hass: HomeAssistant
+) -> None:
+    """Test resolving a host name."""
+    mock_resolve.side_effect = ([{CONF_HOST: ip}], None)
+    result = await async_resolve_host_name(hass, host)
+    assert result == ip
+    mock_resolve.assert_awaited_once_with(host)
+    mock_close.assert_awaited_once()
+    result2 = await async_resolve_host_name(hass, host)
+    assert result2 is None
 
 
-@pytest.fixture(name="async_get_source_ip")
-def fixture_async_get_source_ip():
-    """Mock async get source ip."""
-    with patch(
-        "custom_components.plum_ecomax.connection.async_get_source_ip",
-        return_value=SOURCE_IP,
-    ) as async_get_source_ip:
-        yield async_get_source_ip
-
-
+@pytest.mark.parametrize(
+    ("connection_type", "connection_cls"),
+    ((CONNECTION_TYPE_TCP, TcpConnection), (CONNECTION_TYPE_SERIAL, SerialConnection)),
+)
+@patch("pyplumio.EthernetParameters")
+@patch("custom_components.plum_ecomax.connection.async_resolve_host_name")
+@patch("custom_components.plum_ecomax.connection.async_get_source_ip")
 async def test_async_get_connection_handler(
+    mock_async_get_source_ip,
+    mock_async_resolve_host_name,
+    mock_ethernet_parameters,
+    connection_type: str,
+    connection_cls: type[Connection],
     hass: HomeAssistant,
     tcp_config_data: dict[str, Any],
     serial_config_data: dict[str, Any],
-    async_get_source_ip,
 ) -> None:
     """Test helper function to get connection handler."""
-    with patch("pyplumio.EthernetParameters") as mock_ethernet_parameters:
-        connection: Connection = await async_get_connection_handler(
-            CONNECTION_TYPE_TCP, hass, tcp_config_data
+    connection_partial = partial(async_get_connection_handler, connection_type, hass)
+    if connection_type == CONNECTION_TYPE_TCP:
+        connection = await connection_partial(tcp_config_data)
+        resolver_func = mock_async_resolve_host_name
+        mock_async_resolve_host_name.assert_awaited_once_with(hass, host="localhost")
+    else:
+        connection = await connection_partial(serial_config_data)
+        resolver_func = mock_async_get_source_ip
+        mock_async_get_source_ip.assert_awaited_once_with(
+            hass, target_ip=IPV4_BROADCAST_ADDR
         )
 
-    assert isinstance(connection, TcpConnection)
-    async_get_source_ip.assert_awaited_once_with(hass, target_ip=IPV4_BROADCAST_ADDR)
-    mock_ethernet_parameters.assert_called_once_with(ip=SOURCE_IP)
-
-    # Test with serial connection.
-    connection = await async_get_connection_handler(
-        CONNECTION_TYPE_SERIAL, hass, serial_config_data
-    )
-    assert isinstance(connection, SerialConnection)
+    assert isinstance(connection, connection_cls)
+    mock_ethernet_parameters.assert_called_once_with(ip=resolver_func.return_value)
 
 
 @pytest.mark.usefixtures("mixers", "thermostats", "water_heater")
