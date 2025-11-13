@@ -5,7 +5,7 @@ from __future__ import annotations
 from contextlib import suppress
 from dataclasses import asdict, dataclass, replace
 import logging
-from typing import Final
+from typing import Final, cast
 
 from homeassistant.components.network import async_get_source_ip
 from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
@@ -113,7 +113,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: PlumEcomaxConfigEntry) -
             _LOGGER.debug("Could not get server IP for network info")
             return
 
-        protocol: AsyncProtocol = handler.protocol
+        protocol = cast(AsyncProtocol, handler.protocol)
         ethernet_parameters = protocol.network_info.ethernet
         protocol.network_info.ethernet = replace(
             ethernet_parameters, ip=server_ip, status=True
