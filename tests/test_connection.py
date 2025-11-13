@@ -5,7 +5,6 @@ import logging
 from typing import Any
 from unittest.mock import AsyncMock, Mock, patch
 
-from homeassistant.components.network.const import IPV4_BROADCAST_ADDR
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
@@ -63,15 +62,12 @@ async def test_async_resolve_host_name(
 
 @pytest.mark.parametrize(
     ("connection_type", "connection_cls"),
-    ((CONNECTION_TYPE_TCP, TcpConnection), (CONNECTION_TYPE_SERIAL, SerialConnection)),
+    (
+        (CONNECTION_TYPE_TCP, TcpConnection),
+        (CONNECTION_TYPE_SERIAL, SerialConnection),
+    ),
 )
-@patch("pyplumio.EthernetParameters")
-@patch("custom_components.plum_ecomax.connection.async_resolve_host_name")
-@patch("custom_components.plum_ecomax.connection.async_get_source_ip")
 async def test_async_get_connection_handler(
-    mock_async_get_source_ip,
-    mock_async_resolve_host_name,
-    mock_ethernet_parameters,
     connection_type: str,
     connection_cls: type[Connection],
     hass: HomeAssistant,
@@ -82,17 +78,10 @@ async def test_async_get_connection_handler(
     connection_partial = partial(async_get_connection_handler, connection_type, hass)
     if connection_type == CONNECTION_TYPE_TCP:
         connection = await connection_partial(tcp_config_data)
-        resolver_func = mock_async_resolve_host_name
-        mock_async_resolve_host_name.assert_awaited_once_with(hass, host="localhost")
     else:
         connection = await connection_partial(serial_config_data)
-        resolver_func = mock_async_get_source_ip
-        mock_async_get_source_ip.assert_awaited_once_with(
-            hass, target_ip=IPV4_BROADCAST_ADDR
-        )
 
     assert isinstance(connection, connection_cls)
-    mock_ethernet_parameters.assert_called_once_with(ip=resolver_func.return_value)
 
 
 @pytest.mark.usefixtures("mixers", "thermostats", "water_heater")

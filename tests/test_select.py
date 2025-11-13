@@ -42,11 +42,6 @@ def bypass_async_migrate_entry():
         yield
 
 
-@pytest.fixture(autouse=True)
-def set_connected(connected):
-    """Assume connected."""
-
-
 @pytest.fixture(name="async_select_option")
 async def fixture_async_select_option():
     """Select the option."""

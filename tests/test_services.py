@@ -54,11 +54,6 @@ def bypass_async_migrate_entry():
         yield
 
 
-@pytest.fixture(autouse=True)
-def set_connected(connected):
-    """Assume connected."""
-
-
 @pytest.fixture(name="get_device_entries")
 def fixture_get_device_entries(hass: HomeAssistant, config_entry: MockConfigEntry):
     """Return a device entries getter."""
