@@ -83,7 +83,7 @@ class DeviceType(StrEnum):
     THERMOSTAT = "thermostat"
 
 
-VIRTUAL_DEVICES: Final = (DeviceType.MIXER, DeviceType.THERMOSTAT)
+LOGICAL_DEVICES: Final = (DeviceType.MIXER, DeviceType.THERMOSTAT)
 
 
 @unique

@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock, Mock, patch
 from homeassistant.core import HomeAssistant
 from pyplumio.connection import Connection
 from pyplumio.const import DeviceState, ProductType, UnitOfMeasurement
-from pyplumio.devices import PhysicalDevice, VirtualDevice
+from pyplumio.devices import LogicalDevice, PhysicalDevice
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
@@ -786,7 +786,7 @@ async def dispatch_value(
         await physical_device.dispatch(name, value)
     else:
         device_type, index = source_device.rsplit("_", 1)
-        vitual_devices = cast(
-            dict[int, VirtualDevice], physical_device.get_nowait(f"{device_type}s")
+        devices = cast(
+            dict[int, LogicalDevice], physical_device.get_nowait(f"{device_type}s")
         )
-        await vitual_devices[int(index)].dispatch(name, value)
+        await devices[int(index)].dispatch(name, value)

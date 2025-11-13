@@ -44,7 +44,7 @@ from homeassistant.helpers import entity_registry as er, selector
 import homeassistant.helpers.config_validation as cv
 from pyplumio.connection import Connection
 from pyplumio.const import ProductType
-from pyplumio.devices import PhysicalDevice, VirtualDevice
+from pyplumio.devices import LogicalDevice, PhysicalDevice
 from pyplumio.exceptions import ConnectionFailedError
 from pyplumio.parameters import Number, Numeric, State, Switch, UnitOfMeasurement
 from pyplumio.structures.product_info import ProductInfo
@@ -86,7 +86,7 @@ from .const import (
     DEFAULT_DEVICE,
     DEFAULT_PORT,
     DOMAIN,
-    VIRTUAL_DEVICES,
+    LOGICAL_DEVICES,
     DeviceType,
 )
 
@@ -903,7 +903,7 @@ class OptionsFlowHandler(OptionsFlowWithReload):
     ) -> dict[str, Any]:
         """Return source candidates for ecoMAX."""
         existing_keys = [
-            key for key in entity_keys if key.split("_", 1)[0] not in VIRTUAL_DEVICES
+            key for key in entity_keys if key.split("_", 1)[0] not in LOGICAL_DEVICES
         ]
         return {
             k: v
@@ -925,18 +925,18 @@ class OptionsFlowHandler(OptionsFlowWithReload):
             if k not in existing_keys or str(k) == selected
         }
 
-    def _virtual_device_source_candidates(
+    def _logical_device_source_candidates(
         self, entity_keys: list[str], selected: str
     ) -> dict[str, Any]:
-        """Return source candidates for virtual device."""
-        device_type, index = self.source_device.split("_", 1)
-        virtual_device = self._get_virtual_device(DeviceType(device_type), int(index))
+        """Return source candidates for logical device."""
+        device_type, device_id = self.source_device.split("_", 1)
+        device = self._get_logical_device(DeviceType(device_type), int(device_id))
         existing_keys = [
-            key for key in entity_keys if key.startswith(f"{device_type}-{index}")
+            key for key in entity_keys if key.startswith(f"{device_type}-{device_id}")
         ]
         return {
             k: v
-            for k, v in virtual_device.data.items()
+            for k, v in device.data.items()
             if k not in existing_keys or k == selected
         }
 
@@ -950,8 +950,8 @@ class OptionsFlowHandler(OptionsFlowWithReload):
         elif self.source_device == ATTR_REGDATA:
             return self._regdata_source_candidates(entity_keys, selected)
 
-        elif self.source_device.startswith(VIRTUAL_DEVICES):
-            return self._virtual_device_source_candidates(entity_keys, selected)
+        elif self.source_device.startswith(LOGICAL_DEVICES):
+            return self._logical_device_source_candidates(entity_keys, selected)
 
         raise HomeAssistantError(
             translation_key="unsupported_device",
@@ -959,19 +959,21 @@ class OptionsFlowHandler(OptionsFlowWithReload):
         )
 
     @cache
-    def _get_virtual_device(self, device_type: DeviceType, index: int) -> VirtualDevice:
-        """Get the virtual device by device type and index."""
+    def _get_logical_device(
+        self, device_type: DeviceType, device_id: int
+    ) -> LogicalDevice:
+        """Get the logical device by device type and id."""
         device = self.connection.device
-        virtual_devices = cast(
-            dict[int, VirtualDevice], device.get_nowait(f"{device_type}s", {})
+        devices = cast(
+            dict[int, LogicalDevice], device.get_nowait(f"{device_type}s", {})
         )
 
         try:
-            return virtual_devices[index]
+            return devices[device_id]
         except KeyError as e:
             raise HomeAssistantError(
                 translation_key="device_disconnected",
-                translation_placeholders={"device": f"{device_type} {index}"},
+                translation_placeholders={"device": f"{device_type} {device_id}"},
             ) from e
 
     def _entity_source_select_options(
@@ -1019,12 +1021,12 @@ class OptionsFlowHandler(OptionsFlowWithReload):
         if self.source_device == DeviceType.ECOMAX:
             number = device.get_nowait(key, None)
 
-        elif self.source_device.startswith(VIRTUAL_DEVICES):
-            device_type, index = self.source_device.split("_", 1)
-            virtual_device = self._get_virtual_device(
-                DeviceType(device_type), int(index)
+        elif self.source_device.startswith(LOGICAL_DEVICES):
+            device_type, device_id = self.source_device.split("_", 1)
+            logical_device = self._get_logical_device(
+                DeviceType(device_type), int(device_id)
             )
-            number = virtual_device.get_nowait(key, None)
+            number = logical_device.get_nowait(key, None)
 
         number = cast(Number | None, number)
         if not number:

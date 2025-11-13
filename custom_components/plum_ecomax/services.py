@@ -31,7 +31,7 @@ from homeassistant.helpers import (
     service,
 )
 from pyplumio.const import State, UnitOfMeasurement
-from pyplumio.devices import Device, VirtualDevice
+from pyplumio.devices import Device, LogicalDevice
 from pyplumio.parameters import Number, Numeric, Parameter
 from pyplumio.structures.product_info import ProductInfo
 from pyplumio.structures.schedules import Schedule, ScheduleDay
@@ -115,22 +115,22 @@ def async_extract_connection_from_device_entry(
 
 
 @callback
-def async_get_virtual_device(
+def async_get_logical_device(
     connection: EcomaxConnection, device_id: str
-) -> VirtualDevice:
-    """Extract virtual device."""
+) -> LogicalDevice:
+    """Extract logical device."""
     hub_id, device_type, index = device_id.split("-", 3)
     if hub_id != connection.uid:
         raise ValueError(
-            f"Invalid hub id for selected virtual device: {connection.uid} != {hub_id}"
+            f"Invalid hub id for selected logical device: {connection.uid} != {hub_id}"
         )
 
     device = connection.device
-    devices = cast(dict[int, VirtualDevice], device.get_nowait(f"{device_type}s", {}))
-    if not (virtual_device := devices.get(int(index), None)):
-        raise ValueError(f"Selected virtual device not found: {device_id}")
+    devices = cast(dict[int, LogicalDevice], device.get_nowait(f"{device_type}s", {}))
+    if not (logical_device := devices.get(int(index), None)):
+        raise ValueError(f"Selected logical device not found: {device_id}")
 
-    return virtual_device
+    return logical_device
 
 
 @callback
@@ -146,7 +146,7 @@ def async_get_device_from_entry(
         if identifier[1] == connection.uid:
             return connection.device
 
-        return async_get_virtual_device(connection, device_id=identifier[1])
+        return async_get_logical_device(connection, device_id=identifier[1])
 
     raise ValueError(f"Invalid Plum ecoMAX device entry: {device_entry.id}")
 
@@ -224,7 +224,7 @@ def async_make_parameter_response(
             else parameter.unit_of_measurement
         )
 
-    if isinstance(device, VirtualDevice):
+    if isinstance(device, LogicalDevice):
         response["device"] = DeviceId(
             type=device.__class__.__name__.lower(), index=device.index + 1
         )

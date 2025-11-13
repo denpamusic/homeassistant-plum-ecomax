@@ -34,7 +34,7 @@ from custom_components.plum_ecomax.services import (
     async_extract_connection_from_device_entry,
     async_extract_device_from_service,
     async_get_device_from_entry,
-    async_get_virtual_device,
+    async_get_logical_device,
     async_suggest_device_parameter_name,
     async_validate_device_parameter,
 )
@@ -86,22 +86,22 @@ async def test_async_extract_connection_from_device_entry(
 
 
 @pytest.mark.usefixtures("ecomax_p", "mixers")
-async def test_async_get_virtual_device(
+async def test_async_get_logical_device(
     connection: EcomaxConnection, setup_config_entry
 ) -> None:
-    """Test getting virtual device."""
+    """Test getting logical device."""
     await setup_config_entry()
-    virtual_device = async_get_virtual_device(connection, "TEST-mixer-0")
-    assert isinstance(virtual_device, Mixer)
-    assert virtual_device.index == 0
+    logical_device = async_get_logical_device(connection, "TEST-mixer-0")
+    assert isinstance(logical_device, Mixer)
+    assert logical_device.index == 0
 
     # Test with invalid hub id.
     with pytest.raises(ValueError, match="Invalid hub id"):
-        async_get_virtual_device(connection, "TEST2-mixer-0")
+        async_get_logical_device(connection, "TEST2-mixer-0")
 
-    # Test with missing virtual device.
-    with pytest.raises(ValueError, match="virtual device not found"):
-        async_get_virtual_device(connection, "TEST-mixer-3")
+    # Test with missing logical device.
+    with pytest.raises(ValueError, match="logical device not found"):
+        async_get_logical_device(connection, "TEST-mixer-3")
 
 
 @pytest.mark.usefixtures("ecomax_p", "connection")

@@ -30,7 +30,7 @@ from .const import (
     CONF_UPDATE_INTERVAL,
     CONNECTION_TYPE_TCP,
     DOMAIN,
-    VIRTUAL_DEVICES,
+    LOGICAL_DEVICES,
     DeviceType,
     ModuleType,
 )
@@ -142,7 +142,7 @@ def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
     index = 0
     for entity in entities[target_platform].values():
         entity_source = entity[CONF_SOURCE_DEVICE]
-        if entity_source.startswith(VIRTUAL_DEVICES):
+        if entity_source.startswith(LOGICAL_DEVICES):
             entity_source, index = entity[CONF_SOURCE_DEVICE].split("_", 1)
 
         if entity_source == source_device:

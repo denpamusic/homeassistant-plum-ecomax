@@ -292,7 +292,7 @@ and change between ecoSTER operation modes.
 
 ### Mixers (Circuits)
 
-Following section lists entities that are added to each virtual device.
+Following section lists entities that are added to each logical device.
 
 Please note, that for the ecoMAX installation controllers `mixers` are
 listed as `circuits`.
