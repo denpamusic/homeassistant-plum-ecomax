@@ -49,11 +49,6 @@ def bypass_async_migrate_entry():
         yield
 
 
-@pytest.fixture(autouse=True)
-def set_connected(connected):
-    """Assume connected."""
-
-
 @pytest.fixture(name="async_set_value")
 async def fixture_async_set_value():
     """Set the value."""

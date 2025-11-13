@@ -1,7 +1,7 @@
 """Fixtures for the test suite."""
 
 import asyncio
-from collections.abc import Generator
+from collections.abc import AsyncGenerator, Generator
 import json
 from typing import Any, Final, cast
 from unittest.mock import AsyncMock, Mock, patch
@@ -92,25 +92,25 @@ def bypass_pyplumio_events():
 
 
 @pytest.fixture(name="tcp_user_input")
-def fixture_tcp_user_input():
+def fixture_tcp_user_input() -> dict[str, Any]:
     """Get the TCP config data."""
-    yield {
+    return {
         CONF_HOST: HOST,
         CONF_PORT: DEFAULT_PORT,
     }
 
 
 @pytest.fixture(name="serial_user_input")
-def fixture_serial_user_input():
+def fixture_serial_user_input() -> dict[str, Any]:
     """Get the serial config data."""
-    yield {
+    return {
         CONF_DEVICE: DEFAULT_DEVICE,
         CONF_BAUDRATE: DEFAULT_BAUDRATE,
     }
 
 
 @pytest.fixture(name="config_data")
-def fixture_config_data():
+def fixture_config_data() -> dict[str, Any]:
     """Get the data for config flow."""
     return {
         CONF_UID: "TEST",
@@ -130,21 +130,21 @@ def fixture_config_data():
 
 
 @pytest.fixture(name="tcp_config_data")
-def fixture_tcp_config_data(tcp_user_input, config_data):
+def fixture_tcp_config_data(tcp_user_input, config_data) -> dict[str, Any]:
     """Inject the TCP connection type."""
-    config_data |= tcp_user_input
-    config_data.update({CONF_CONNECTION_TYPE: CONNECTION_TYPE_TCP})
-
-    yield config_data
+    tcp_config_data = dict(config_data)
+    tcp_config_data |= tcp_user_input
+    tcp_config_data.update({CONF_CONNECTION_TYPE: CONNECTION_TYPE_TCP})
+    return tcp_config_data
 
 
 @pytest.fixture(name="serial_config_data")
-def fixture_serial_config_data(serial_user_input, config_data):
+def fixture_serial_config_data(serial_user_input, config_data) -> dict[str, Any]:
     """Inject the serial connection type."""
-    config_data |= serial_user_input
-    config_data.update({CONF_CONNECTION_TYPE: CONNECTION_TYPE_SERIAL})
-
-    yield config_data
+    serial_config_data = dict(config_data)
+    serial_config_data |= serial_user_input
+    serial_config_data.update({CONF_CONNECTION_TYPE: CONNECTION_TYPE_SERIAL})
+    return serial_config_data
 
 
 @pytest.fixture
@@ -186,19 +186,6 @@ def fixture_connection(
     return connection
 
 
-@pytest.fixture
-def connected():
-    """Assume that integration is connected."""
-    event = AsyncMock(spec=asyncio.Event)
-    event.is_set = Mock(return_value=True)
-    with patch(
-        "custom_components.plum_ecomax.connection.EcomaxConnection.connected",
-        event,
-        create=True,
-    ):
-        yield
-
-
 class MutableEcoMAX(EcoMAX):
     """Allows to set otherwise properties readonly due to __slots__."""
 
@@ -208,8 +195,15 @@ class MutableEcoMAX(EcoMAX):
 @pytest.fixture(name="ecomax_base")
 def fixture_ecomax_base() -> Generator[EcoMAX]:
     """Return base ecoMAX device with no data."""
-    ecomax = MutableEcoMAX(queue=Mock(), network=NetworkInfo())
+    event = AsyncMock(spec=asyncio.Event)
+    event.is_set = Mock(return_value=True)
+    ecomax = MutableEcoMAX(write_queue=Mock(), network_info=NetworkInfo())
     with (
+        patch(
+            "custom_components.plum_ecomax.connection.EcomaxConnection.connected",
+            event,
+            create=True,
+        ),
         patch(
             "custom_components.plum_ecomax.connection.EcomaxConnection.device", ecomax
         ),
@@ -224,7 +218,7 @@ def fixture_ecomax_base() -> Generator[EcoMAX]:
 
 
 @pytest.fixture(name="ecomax_common")
-async def fixture_ecomax_common(ecomax_base: EcoMAX):
+async def fixture_ecomax_common(ecomax_base: EcoMAX) -> EcoMAX:
     """Inject common ecomax data."""
     await ecomax_base.load(
         {
@@ -245,11 +239,11 @@ async def fixture_ecomax_common(ecomax_base: EcoMAX):
             ),
         }
     )
-    yield ecomax_base
+    return ecomax_base
 
 
 @pytest.fixture
-async def ecomax_control(ecomax_common: EcoMAX):
+async def ecomax_control(ecomax_common: EcoMAX) -> EcoMAX:
     """Inject ecomax control parameter."""
     await ecomax_common.load(
         {
@@ -260,11 +254,11 @@ async def ecomax_control(ecomax_common: EcoMAX):
             )
         }
     )
-    yield ecomax_common
+    return ecomax_common
 
 
 @pytest.fixture(name="ecomax_p")
-async def fixture_ecomax_p(ecomax_common: EcoMAX):
+async def fixture_ecomax_p(ecomax_common: EcoMAX) -> AsyncGenerator[EcoMAX]:
     """Inject ecomax p data."""
     await ecomax_common.load(
         {
@@ -399,7 +393,7 @@ async def fixture_ecomax_p(ecomax_common: EcoMAX):
 
 
 @pytest.fixture(name="ecomax_i")
-async def fixture_ecomax_i(ecomax_common: EcoMAX):
+async def fixture_ecomax_i(ecomax_common: EcoMAX) -> AsyncGenerator[EcoMAX]:
     """Inject ecomax i data."""
     await ecomax_common.load(
         {
@@ -439,7 +433,7 @@ async def fixture_ecomax_i(ecomax_common: EcoMAX):
 
 
 @pytest.fixture
-async def ecomax_860p3_o(ecomax_p: EcoMAX):
+async def ecomax_860p3_o(ecomax_p: EcoMAX) -> AsyncGenerator[EcoMAX]:
     """Inject data for ecoMAX 860P3-O.
 
     (product_type: 0, product_id: 51)
@@ -515,9 +509,9 @@ async def water_heater(ecomax_common: EcoMAX):
 
 
 @pytest.fixture
-async def mixers(ecomax_common: EcoMAX):
+async def mixers(ecomax_common: EcoMAX) -> AsyncGenerator[EcoMAX]:
     """Inject mixer data."""
-    mixer_0 = Mixer(queue=Mock(spec=asyncio.Queue), parent=ecomax_common)
+    mixer_0 = Mixer(write_queue=Mock(spec=asyncio.Queue), parent=ecomax_common)
     await mixer_0.load(
         {
             "pump": False,
@@ -579,7 +573,7 @@ async def mixers(ecomax_common: EcoMAX):
         }
     )
 
-    mixer_1 = Mixer(queue=Mock(spec=asyncio.Queue), parent=ecomax_common)
+    mixer_1 = Mixer(write_queue=Mock(spec=asyncio.Queue), parent=ecomax_common)
     await mixer_1.load(
         {
             "enable_circuit": MixerNumber(
@@ -642,9 +636,9 @@ async def mixers(ecomax_common: EcoMAX):
 
 
 @pytest.fixture
-async def thermostats(ecomax_common: EcoMAX):
+async def thermostats(ecomax_common: EcoMAX) -> AsyncGenerator[EcoMAX]:
     """Inject thermostats data."""
-    thermostat = Thermostat(queue=Mock(spec=asyncio.Queue), parent=ecomax_common)
+    thermostat = Thermostat(write_queue=Mock(spec=asyncio.Queue), parent=ecomax_common)
     await thermostat.load(
         {
             "state": 0,
@@ -745,7 +739,7 @@ async def thermostats(ecomax_common: EcoMAX):
 
 
 @pytest.fixture
-async def custom_fields(ecomax_common: EcoMAX):
+async def custom_fields(ecomax_common: EcoMAX) -> AsyncGenerator[EcoMAX]:
     """Inject custom fields."""
 
     custom_fields = {

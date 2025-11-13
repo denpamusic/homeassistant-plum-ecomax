@@ -47,11 +47,6 @@ def bypass_async_migrate_entry():
         yield
 
 
-@pytest.fixture(autouse=True)
-def set_connected(connected):
-    """Assume connected."""
-
-
 @pytest.fixture(name="frozen_time")
 def fixture_frozen_time():
     """Get frozen time."""

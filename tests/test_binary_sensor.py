@@ -48,11 +48,6 @@ def bypass_async_migrate_entry():
         yield
 
 
-@pytest.fixture(autouse=True)
-def set_connected(connected):
-    """Assume connected."""
-
-
 @pytest.mark.usefixtures("ecomax_p")
 async def test_heating_pump_binary_sensor(
     hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry

@@ -51,11 +51,6 @@ def bypass_async_migrate_entry():
         yield
 
 
-@pytest.fixture(autouse=True)
-def set_connected(connected):
-    """Assume connected."""
-
-
 @pytest.fixture(name="async_turn_on")
 async def fixture_async_turn_on():
     """Turn switch on."""
