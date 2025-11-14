@@ -19,7 +19,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import config_validation as cv, device_registry as dr
 from homeassistant.helpers.typing import ConfigType
 from pyplumio import AsyncProtocol
 from pyplumio.filters import custom, delta
@@ -63,6 +63,8 @@ PLATFORMS: list[Platform] = [
 ]
 
 DATE_STR_FORMAT: Final = "%Y-%m-%d %H:%M:%S"
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 _LOGGER = logging.getLogger(__name__)
 
