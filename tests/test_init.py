@@ -173,7 +173,7 @@ async def test_setup_entry_with_name_resolution_error(
         assert await async_setup_entry(hass, config_entry)
 
     await hass.async_block_till_done(wait_background_tasks=True)
-    assert "Could not get server IP" in caplog.text
+    assert "Could not resolve server IP" in caplog.text
     assert isinstance(data := config_entry.runtime_data, PlumEcomaxData)
     assert isinstance(connection := data.connection, EcomaxConnection)
     network_info = cast(NetworkInfo, connection.network_info)
