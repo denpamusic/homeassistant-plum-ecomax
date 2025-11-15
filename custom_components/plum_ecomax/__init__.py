@@ -112,7 +112,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: PlumEcomaxConfigEntry) -
             server_ip = await async_get_source_ip(hass, target_ip=IPV4_BROADCAST_ADDR)
 
         if not server_ip:
-            _LOGGER.debug("Could not get server IP for network info")
+            _LOGGER.debug("Could not resolve server IP for network info")
             return
 
         protocol = cast(AsyncProtocol, handler.protocol)
