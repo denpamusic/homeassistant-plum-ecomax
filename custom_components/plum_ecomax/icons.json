@@ -96,7 +96,12 @@
     },
     "select": {
       "summer_mode": {
-        "default": "mdi:weather-sunny"
+        "default": "mdi:sun-snowflake-variant",
+        "state": {
+          "winter": "mdi:snowflake",
+          "summer": "mdi:weather-sunny",
+          "auto": "mdi:sun-snowflake-variant"
+        }
       }
     },
     "sensor": {
