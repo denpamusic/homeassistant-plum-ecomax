@@ -365,13 +365,13 @@
       "message": "Invalid interval for \"{schedule}\". Got {start} to {end}."
     },
     "parameter_not_found": {
-      "message": "Запрошенный параметр \"{parameter}\" не найден"
+      "message": "Запрошенный параметр \"{parameter}\" не найден ({device})"
     },
     "parameter_not_found_with_suggestion": {
-      "message": "Запрошенный параметр \"{parameter}\" не найден, возможно Вы искали \"{suggestion}\"?"
+      "message": "Запрошенный параметр \"{parameter}\" не найден, возможно Вы искали \"{suggestion}\"? ({device})"
     },
     "schedule_not_found": {
-      "message": "Запрошенное расписание \"{schedule}\" не найдено"
+      "message": "Запрошенное расписание \"{schedule}\" не найдено ({device})"
     },
     "set_parameter_timeout": {
       "message": "Таймаут запроса на изменение параметра \"{parameter}\""
@@ -746,11 +746,11 @@
       "pyplumio_version": "Версия PyPlumIO",
       "received_frames": "Получено кадров",
       "sent_frames": "Отправлено кадров",
-      "failed_frames": "Неверных кадров",
+      "failed_frames": "Ошибочных кадров",
       "failure_rate": "Процент ошибок",
       "connected_since": "Подключено",
       "connection_losses": "Потерь подключения",
-      "custom_entities": "Добавленных объектов"
+      "custom_entities": "Пользовательских объектов"
     }
   }
 }

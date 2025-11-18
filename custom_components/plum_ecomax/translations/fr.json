@@ -365,10 +365,13 @@
       "message": "Interval sélectionné invalide pour \"{schedule}\". De {start} à {end}."
     },
     "parameter_not_found": {
-      "message": "Le paramètre \"{parameter}\" demandé n'a pas été trouvé"
+      "message": "Le paramètre \"{parameter}\" demandé n'a pas été trouvé ({device})"
+    },
+    "parameter_not_found_with_suggestion": {
+      "message": "Requested parameter \"{parameter}\" not found, did you mean \"{suggestion}\"? ({device})"
     },
     "schedule_not_found": {
-      "message": "La programmation \"{schedule}\" demandée n'a pas été trouvée"
+      "message": "La programmation \"{schedule}\" demandée n'a pas été trouvée ({device})"
     },
     "set_parameter_timeout": {
       "message": "La définition d'un paramètre \"{parameter}\" a expiré"

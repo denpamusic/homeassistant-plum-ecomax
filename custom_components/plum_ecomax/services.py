@@ -261,13 +261,20 @@ def async_validate_device_parameter(device: Device, name: str) -> Parameter:
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
                 translation_key="parameter_not_found_with_suggestion",
-                translation_placeholders={"parameter": name, "suggestion": suggestion},
+                translation_placeholders={
+                    "parameter": name,
+                    "suggestion": suggestion,
+                    "device": device.__class__.__name__.lower(),
+                },
             )
         else:
             raise HomeAssistantError(
                 translation_domain=DOMAIN,
                 translation_key="parameter_not_found",
-                translation_placeholders={"parameter": name},
+                translation_placeholders={
+                    "parameter": name,
+                    "device": device.__class__.__name__.lower(),
+                },
             )
 
     if not isinstance(parameter, Parameter):
@@ -365,7 +372,10 @@ def async_validate_schedule(device: Device, name: str) -> Schedule:
         raise ServiceValidationError(
             translation_domain=DOMAIN,
             translation_key="schedule_not_found",
-            translation_placeholders={"schedule": name},
+            translation_placeholders={
+                "schedule": name,
+                "device": device.__class__.__name__.lower(),
+            },
         )
 
     return schedules[name]

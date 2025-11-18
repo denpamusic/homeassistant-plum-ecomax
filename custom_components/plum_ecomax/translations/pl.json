@@ -365,13 +365,13 @@
       "message": "Invalid interval for \"{schedule}\". Got {start} to {end}."
     },
     "parameter_not_found": {
-      "message": "Requested \"{parameter}\" parameter not found"
+      "message": "Requested \"{parameter}\" parameter not found ({device})"
     },
     "parameter_not_found_with_suggestion": {
-      "message": "Requested parameter \"{parameter}\" not found, did you mean \"{suggestion}\"?"
+      "message": "Requested parameter \"{parameter}\" not found, did you mean \"{suggestion}\"? ({device})"
     },
     "schedule_not_found": {
-      "message": "Requested schedule \"{schedule}\" not found"
+      "message": "Requested schedule \"{schedule}\" not found ({device})"
     },
     "set_parameter_timeout": {
       "message": "Request to set a \"{parameter}\" parameter timed out"

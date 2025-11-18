@@ -367,6 +367,9 @@
     "parameter_not_found": {
       "message": "Požadovaný \"{parameter}\" parametr nebyl nalezen"
     },
+    "parameter_not_found_with_suggestion": {
+      "message": "Requested parameter \"{parameter}\" not found, did you mean \"{suggestion}\"? ({device})"
+    },
     "schedule_not_found": {
       "message": "Požadovaný \"{schedule}\"rozvrh nebyl nalezen"
     },

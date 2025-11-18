@@ -295,7 +295,10 @@ async def test_get_parameter_service(
         )
 
     assert exc_info.value.translation_key == "parameter_not_found"
-    assert exc_info.value.translation_placeholders == {"parameter": "nonexistent"}
+    assert exc_info.value.translation_placeholders == {
+        "parameter": "nonexistent",
+        "device": "mutableecomax",
+    }
 
     # Test getting an invalid parameter.
     with (
@@ -474,7 +477,10 @@ async def test_set_parameter_service(
         )
 
     assert exc2_info.value.translation_key == "parameter_not_found"
-    assert exc2_info.value.translation_placeholders == {"parameter": "nonexistent"}
+    assert exc2_info.value.translation_placeholders == {
+        "parameter": "nonexistent",
+        "device": "mutableecomax",
+    }
 
 
 @pytest.mark.usefixtures("ecomax_p", "connection")
@@ -536,7 +542,10 @@ async def test_get_schedule_service(
         )
 
     assert exc_info.value.translation_key == "schedule_not_found"
-    assert exc_info.value.translation_placeholders == {"schedule": "water_heater"}
+    assert exc_info.value.translation_placeholders == {
+        "schedule": "water_heater",
+        "device": "mutableecomax",
+    }
 
 
 @pytest.mark.usefixtures("ecomax_p", "connection")
@@ -623,4 +632,7 @@ async def test_set_schedule_service(
         )
 
     assert exc_info.value.translation_key == "schedule_not_found"
-    assert exc_info.value.translation_placeholders == {"schedule": "water_heater"}
+    assert exc_info.value.translation_placeholders == {
+        "schedule": "water_heater",
+        "device": "mutableecomax",
+    }
