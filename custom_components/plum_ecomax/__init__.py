@@ -87,7 +87,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: PlumEcomaxConfigEntry) -> bool:
     """Set up the Plum ecoMAX from a config entry."""
     connection_type = entry.data.get(CONF_CONNECTION_TYPE, DEFAULT_CONNECTION_TYPE)
-    handler = await async_get_connection_handler(connection_type, hass, entry.data)
+    handler = await async_get_connection_handler(connection_type, entry.data)
     connection = EcomaxConnection(hass, entry, connection=handler)
 
     try:
@@ -186,7 +186,7 @@ async def async_migrate_entry(
     _LOGGER.debug("Migrating from version %s", entry.version)
 
     connection_type = entry.data.get(CONF_CONNECTION_TYPE, DEFAULT_CONNECTION_TYPE)
-    handler = await async_get_connection_handler(connection_type, hass, entry.data)
+    handler = await async_get_connection_handler(connection_type, entry.data)
     connection = EcomaxConnection(hass, entry, connection=handler)
     await connection.connect()
     data = dict(entry.data)

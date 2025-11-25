@@ -107,16 +107,14 @@ STEP_SERIAL_DATA_SCHEMA = vol.Schema(
 )
 
 
-async def validate_input(
-    connection_type: str, hass: HomeAssistant, data: Mapping[str, Any]
-) -> Connection:
+async def validate_input(connection_type: str, data: Mapping[str, Any]) -> Connection:
     """Validate the user input allows us to connect.
 
     Data has the keys from STEP_TCP_DATA_SCHEMA or
     STEP_SERIAL_DATA_SCHEMA with values provided by the user.
     """
     try:
-        connection = await async_get_connection_handler(connection_type, hass, data)
+        connection = await async_get_connection_handler(connection_type, data)
         await asyncio.wait_for(connection.connect(), timeout=DEFAULT_TIMEOUT)
     except ConnectionFailedError as connection_failure:
         raise CannotConnect from connection_failure
@@ -165,9 +163,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
 
         try:
             connection_type = CONNECTION_TYPE_TCP
-            self.connection = await validate_input(
-                connection_type, self.hass, user_input
-            )
+            self.connection = await validate_input(connection_type, user_input)
             self.init_info = user_input
             self.init_info[CONF_CONNECTION_TYPE] = connection_type
             return await self.async_step_identify()
@@ -196,9 +192,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
 
         try:
             connection_type = CONNECTION_TYPE_SERIAL
-            self.connection = await validate_input(
-                connection_type, self.hass, user_input
-            )
+            self.connection = await validate_input(connection_type, user_input)
             self.init_info = user_input
             self.init_info[CONF_CONNECTION_TYPE] = connection_type
             return await self.async_step_identify()

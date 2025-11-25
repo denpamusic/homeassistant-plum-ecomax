@@ -74,7 +74,7 @@ async def async_resolve_host_name(hass: HomeAssistant, host: str) -> str | None:
 
 
 async def async_get_connection_handler(
-    connection_type: str, hass: HomeAssistant, data: Mapping[str, Any]
+    connection_type: str, data: Mapping[str, Any]
 ) -> Connection:
     """Return the connection handler."""
     _LOGGER.debug("Getting connection handler for type: %s...", connection_type)

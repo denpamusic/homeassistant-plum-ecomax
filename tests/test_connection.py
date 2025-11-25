@@ -70,12 +70,11 @@ async def test_async_resolve_host_name(
 async def test_async_get_connection_handler(
     connection_type: str,
     connection_cls: type[Connection],
-    hass: HomeAssistant,
     tcp_config_data: dict[str, Any],
     serial_config_data: dict[str, Any],
 ) -> None:
     """Test helper function to get connection handler."""
-    connection_partial = partial(async_get_connection_handler, connection_type, hass)
+    connection_partial = partial(async_get_connection_handler, connection_type)
     if connection_type == CONNECTION_TYPE_TCP:
         connection = await connection_partial(tcp_config_data)
     else:
