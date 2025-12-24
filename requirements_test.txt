@@ -2,7 +2,7 @@ aiohttp_cors>=0.7.0
 codespell==2.4.1
 coverage>=7.3.1
 fnv-hash-fast>=0.5.0
-pre-commit==4.5.0
+pre-commit==4.5.1
 mypy-dev==1.20.0a1
 psutil-home-assistant>=0.0.1
 pytest>=7.4.3
