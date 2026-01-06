@@ -141,7 +141,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
         self.device: PhysicalDevice | None = None
         self.discover_task: asyncio.Task | None = None
         self.identify_task: asyncio.Task | None = None
-        self.init_info: dict[str, Any] = {}
+        self._data: dict[str, Any] = {}
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -159,13 +159,13 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
         if user_input is None:
             return self.async_show_form(step_id="tcp", data_schema=STEP_TCP_DATA_SCHEMA)
 
-        errors = {}
+        errors: dict[str, str] = {}
 
         try:
             connection_type = CONNECTION_TYPE_TCP
             self.connection = await validate_input(connection_type, user_input)
-            self.init_info = user_input
-            self.init_info[CONF_CONNECTION_TYPE] = connection_type
+            self._data = deepcopy(user_input)
+            self._data[CONF_CONNECTION_TYPE] = connection_type
             return await self.async_step_identify()
         except CannotConnect:
             errors[CONF_BASE] = "cannot_connect"
@@ -188,13 +188,13 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
                 step_id="serial", data_schema=STEP_SERIAL_DATA_SCHEMA
             )
 
-        errors = {}
+        errors: dict[str, str] = {}
 
         try:
             connection_type = CONNECTION_TYPE_SERIAL
             self.connection = await validate_input(connection_type, user_input)
-            self.init_info = user_input
-            self.init_info[CONF_CONNECTION_TYPE] = connection_type
+            self._data = deepcopy(user_input)
+            self._data[CONF_CONNECTION_TYPE] = connection_type
             return await self.async_step_identify()
         except CannotConnect:
             errors[CONF_BASE] = "cannot_connect"
@@ -240,7 +240,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Discover connected modules."""
-        await self._async_set_unique_id(self.init_info[CONF_UID])
+        await self._async_set_unique_id(self._data[CONF_UID])
 
         if not self.discover_task:
             self.discover_task = self.hass.async_create_task(
@@ -252,7 +252,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
                 step_id="discover",
                 progress_action="discover_modules",
                 progress_task=self.discover_task,
-                description_placeholders={"model": self.init_info[CONF_MODEL]},
+                description_placeholders={"model": self._data[CONF_MODEL]},
             )
 
         try:
@@ -272,9 +272,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
         if self.connection:
             await self.connection.close()
 
-        return self.async_create_entry(
-            title=self.init_info[CONF_MODEL], data=self.init_info
-        )
+        return self.async_create_entry(title=self._data[CONF_MODEL], data=self._data)
 
     async def async_step_device_not_found(
         self, user_input: dict[str, Any] | None = None
@@ -311,7 +309,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
         except ValueError as validation_failure:
             raise UnsupportedProduct from validation_failure
 
-        self.init_info.update(
+        self._data.update(
             {
                 CONF_UID: product.uid,
                 CONF_MODEL: product.model,
@@ -328,11 +326,8 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
         )
         sub_devices = await async_get_sub_devices(device)
 
-        self.init_info.update(
-            {
-                CONF_SOFTWARE: asdict(modules),
-                CONF_SUB_DEVICES: sub_devices,
-            }
+        self._data.update(
+            {CONF_SOFTWARE: asdict(modules), CONF_SUB_DEVICES: sub_devices}
         )
 
     async def _async_set_unique_id(self, uid: str) -> None:
@@ -455,7 +450,7 @@ def _validate_entity_details(
     entity: dict[str, Any], platform: Platform
 ) -> dict[str, str]:
     """Validate entity details."""
-    errors = {}
+    errors: dict[str, str] = {}
 
     if platform in PLATFORM_UNITS:
         try:
