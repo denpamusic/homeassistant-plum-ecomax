@@ -10,4 +10,4 @@ pytest-asyncio>=0.21.0
 pytest-homeassistant-custom-component>=0.13.201
 ruff==0.14.8
 tomli==2.3.0
-tox==4.32.0
+tox==4.33.0
