@@ -1,0 +1,505 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Das Gerät ist bereits konfiguriert",
+      "discovery_failed": "Modul-Erkennung konnte nicht abgeschlossen werden",
+      "no_devices_found": "Keine Geräte im Netzwerk gefunden",
+      "unsupported_product": "Das verbundene Gerät wird nicht unterstützt"
+    },
+    "error": {
+      "cannot_connect": "Verbindung fehlgeschlagen",
+      "timeout_connect": "Zeitüberschreitung beim Verbindungsaufbau",
+      "unknown": "Unerwarteter Fehler"
+    },
+    "progress": {
+      "discover_modules": "Suche nach Modulen für {model}...",
+      "identify_device": "Gerätemodell wird geprüft..."
+    },
+    "step": {
+      "serial": {
+        "data": {
+          "baudrate": "Baudrate",
+          "device": "Gerät"
+        },
+        "title": "Serielle Einstellungen"
+      },
+      "tcp": {
+        "data": {
+          "host": "Host",
+          "port": "Port"
+        },
+        "title": "Netzwerkeinstellungen"
+      },
+      "user": {
+        "menu_options": {
+          "serial": "Über seriell verbinden (RS-485)",
+          "tcp": "Über Netzwerk verbinden (TCP)"
+        },
+        "title": "Verbindungstyp auswählen"
+      }
+    }
+  },
+  "device": {
+    "circuit": {
+      "name": "{device_name} Heizkreis {mixer_number}"
+    },
+    "mixer": {
+      "name": "{device_name} Mischer {mixer_number}"
+    },
+    "thermostat": {
+      "name": "{device_name} Thermostat {thermostat_number}"
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "alert": {
+        "name": "Alarm"
+      },
+      "circuit_pump": {
+        "name": "Heizkreispumpe"
+      },
+      "circulation_pump": {
+        "name": "Zirkulationspumpe"
+      },
+      "connection_status": {
+        "name": "Verbindungsstatus"
+      },
+      "exhaust_fan": {
+        "name": "Abgasgebläse"
+      },
+      "fan": {
+        "name": "Gebläse"
+      },
+      "feeder": {
+        "name": "Zuführung"
+      },
+      "fireplace_pump": {
+        "name": "Kaminpumpe"
+      },
+      "heating_pump": {
+        "name": "Heizungspumpe"
+      },
+      "lighter": {
+        "name": "Zünder"
+      },
+      "mixer_pump": {
+        "name": "Mischerpumpe"
+      },
+      "solar_pump": {
+        "name": "Solarpumpe"
+      },
+      "water_heater_pump": {
+        "name": "Warmwasserpumpe"
+      }
+    },
+    "button": {
+      "detect_sub_devices": {
+        "name": "Untergeräte erkennen"
+      }
+    },
+    "climate": {
+      "thermostat": {
+        "name": "Thermostat",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "airing": "Lüften",
+              "antifreeze": "Frostschutz",
+              "holidays": "Urlaub",
+              "party": "Party",
+              "schedule": "Zeitplan"
+            }
+          }
+        }
+      }
+    },
+    "number": {
+      "day_target_circuit_temp": {
+        "name": "Soll-Temperatur Heizkreis (Tag)"
+      },
+      "fuel_calorific_value": {
+        "name": "Brennwert des Brennstoffs",
+        "unit_of_measurement": "kWh/kg"
+      },
+      "fuzzy_logic_max_power": {
+        "name": "Fuzzy-Logic maximale Leistung"
+      },
+      "fuzzy_logic_min_power": {
+        "name": "Fuzzy-Logic minimale Leistung"
+      },
+      "grate_mode_temp": {
+        "name": "Rost-Modus Temperatur"
+      },
+      "max_circuit_temp": {
+        "name": "Maximale Heizkreistemperatur"
+      },
+      "max_heating_temp": {
+        "name": "Maximale Heizungstemperatur"
+      },
+      "max_mixer_temp": {
+        "name": "Maximale Mischertemperatur"
+      },
+      "min_circuit_temp": {
+        "name": "Minimale Heizkreistemperatur"
+      },
+      "min_heating_temp": {
+        "name": "Minimale Heizungstemperatur"
+      },
+      "min_mixer_temp": {
+        "name": "Minimale Mischertemperatur"
+      },
+      "night_target_circuit_temp": {
+        "name": "Soll-Temperatur Heizkreis (Nacht)"
+      },
+      "target_circuit_temp": {
+        "name": "Soll-Heizkreistemperatur"
+      },
+      "target_heating_temp": {
+        "name": "Soll-Heizungstemperatur"
+      },
+      "target_mixer_temp": {
+        "name": "Soll-Mischertemperatur"
+      }
+    },
+    "select": {
+      "mixer_work_mode": {
+        "name": "Betriebsmodus",
+        "state": {
+          "heated_floor": "Fußbodenheizung",
+          "heating": "Heizen",
+          "off": "Aus",
+          "pump_only": "Nur Pumpe"
+        }
+      },
+      "summer_mode": {
+        "name": "Sommermodus",
+        "state": {
+          "auto": "Auto",
+          "summer": "Sommer",
+          "winter": "Winter"
+        }
+      }
+    },
+    "sensor": {
+      "ash_pan_full": {
+        "name": "Aschekasten voll"
+      },
+      "boiler_load": {
+        "name": "Kessellast"
+      },
+      "boiler_power": {
+        "name": "Kesselleistung"
+      },
+      "circuit_target_temp": {
+        "name": "Heizkreis Soll-Temperatur"
+      },
+      "circuit_temp": {
+        "name": "Heizkreis Temperatur"
+      },
+      "connected_modules": {
+        "name": "Verbundene Module",
+        "state_attributes": {
+          "ecolambda": {
+            "name": "ecoLAMBDA Softwareversion"
+          },
+          "ecoster": {
+            "name": "ecoSTER Softwareversion"
+          },
+          "module_a": {
+            "name": "Modul A Softwareversion"
+          },
+          "module_b": {
+            "name": "Modul B Softwareversion"
+          },
+          "module_c": {
+            "name": "Modul C Softwareversion"
+          },
+          "panel": {
+            "name": "Panel Softwareversion"
+          }
+        }
+      },
+      "ecomax_state": {
+        "name": "Status",
+        "state": {
+          "alert": "Alarm",
+          "burning_off": "Ausbrennen",
+          "heating": "Heizen",
+          "idle": "Leerlauf",
+          "kindling": "Anzünden",
+          "off": "Aus",
+          "paused": "Pausiert",
+          "stabilization": "Stabilisierung",
+          "standby": "Standby",
+          "unknown": "Unbekannt"
+        },
+        "state_attributes": {
+          "numeric_state": {
+            "name": "Numerischer Status"
+          }
+        }
+      },
+      "exhaust_temp": {
+        "name": "Abgastemperatur"
+      },
+      "fan_power": {
+        "name": "Gebläseleistung"
+      },
+      "feeder_temp": {
+        "name": "Zuführungstemperatur"
+      },
+      "fireplace_temp": {
+        "name": "Kamintemperatur"
+      },
+      "flame_intensity": {
+        "name": "Flammenintensität"
+      },
+      "fuel_consumption": {
+        "name": "Brennstoffverbrauch",
+        "unit_of_measurement": "kg/h"
+      },
+      "fuel_level": {
+        "name": "Brennstoffstand"
+      },
+      "heating_target": {
+        "name": "Heizung Soll-Temperatur"
+      },
+      "heating_temp": {
+        "name": "Heizungstemperatur"
+      },
+      "lower_buffer_temp": {
+        "name": "Pufferspeicher Temperatur unten"
+      },
+      "lower_solar_temp": {
+        "name": "Solar Temperatur unten"
+      },
+      "mixer_target_temp": {
+        "name": "Mischer Soll-Temperatur"
+      },
+      "mixer_temp": {
+        "name": "Mischertemperatur"
+      },
+      "mixer_valve_opening_percentage": {
+        "name": "Mischerventil Öffnungsgrad"
+      },
+      "mixer_valve_state": {
+        "name": "Mischerventil Status",
+        "state": {
+          "closing": "Schließen",
+          "off": "Aus",
+          "opening": "Öffnen",
+          "unknown": "Unbekannt"
+        }
+      },
+      "outside_temp": {
+        "name": "Außentemperatur"
+      },
+      "oxygen_level": {
+        "name": "Sauerstoffgehalt"
+      },
+      "return_temp": {
+        "name": "Rücklauftemperatur"
+      },
+      "service_password": {
+        "name": "Service-Passwort"
+      },
+      "total_fuel_burned": {
+        "name": "Brennstoffverbrauch gesamt",
+        "state_attributes": {
+          "burned_since_last_update": {
+            "name": "Verbraucht seit letztem Update, g"
+          }
+        }
+      },
+      "uid": {
+        "name": "UID"
+      },
+      "upper_buffer_temp": {
+        "name": "Pufferspeicher Temperatur oben"
+      },
+      "upper_solar_temp": {
+        "name": "Solar Temperatur oben"
+      },
+      "water_heater_target": {
+        "name": "Warmwasser Soll-Temperatur"
+      },
+      "water_heater_temp": {
+        "name": "Warmwassertemperatur"
+      }
+    },
+    "switch": {
+      "controller_switch": {
+        "name": "Regler-Schalter"
+      },
+      "disable_pump_on_thermostat": {
+        "name": "Pumpe bei Thermostat-Abschaltung deaktivieren"
+      },
+      "enable_circuit": {
+        "name": "Heizkreis aktivieren"
+      },
+      "enable_in_summer_mode": {
+        "name": "Im Sommermodus aktivieren"
+      },
+      "fuzzy_logic_switch": {
+        "name": "Fuzzy-Logic Schalter"
+      },
+      "heating_schedule_switch": {
+        "name": "Heizplan Schalter"
+      },
+      "water_heater_disinfection_switch": {
+        "name": "Warmwasser-Desinfektionsschalter"
+      },
+      "water_heater_pump_switch": {
+        "name": "Warmwasserpumpen-Schalter"
+      },
+      "water_heater_schedule_switch": {
+        "name": "Warmwasserplan Schalter"
+      },
+      "weather_control_switch": {
+        "name": "Wettergeführte Steuerung"
+      }
+    },
+    "water_heater": {
+      "indirect_water_heater": {
+        "name": "Indirekter Warmwasserspeicher"
+      }
+    }
+  },
+  "exceptions": {
+    "connection_timeout": {
+      "message": "Zeitüberschreitung beim Verbindungsversuch ({connection})"
+    },
+    "device_not_found": {
+      "message": "Angefordertes Gerät nicht gefunden ({device})"
+    },
+    "device_not_ready": {
+      "message": "Gerät nicht bereit ({device})"
+    },
+    "property_not_writable": {
+      "message": "Die schreibgeschützte Eigenschaft \"{property}\" kann nicht geändert werden"
+    },
+    "invalid_parameter_value": {
+      "message": "Ungültiger Wert \"{value}\" für den Parameter \"{parameter}\""
+    },
+    "invalid_schedule_interval": {
+      "message": "Ungültiges Intervall für \"{schedule}\". Erhalten: {start} bis {end}."
+    },
+    "parameter_not_found": {
+      "message": "Angeforderter Parameter \"{parameter}\" nicht gefunden"
+    },
+    "parameter_not_found_with_suggestion": {
+      "message": "Angeforderter Parameter \"{parameter}\" nicht gefunden. Meinten Sie \"{suggestion}\"?"
+    },
+    "schedule_not_found": {
+      "message": "Angeforderter Zeitplan \"{schedule}\" nicht gefunden"
+    },
+    "set_parameter_timeout": {
+      "message": "Anfrage zum Setzen des Parameters \"{parameter}\" zeitlich überschritten"
+    }
+  },
+  "selector": {
+    "preset": {
+      "options": {
+        "day": "Tag",
+        "night": "Nacht"
+      }
+    },
+    "schedule_type": {
+      "options": {
+        "heating": "Heizung",
+        "water_heater": "Warmwasser"
+      }
+    },
+    "weekdays": {
+      "options": {
+        "friday": "Freitag",
+        "monday": "Montag",
+        "saturday": "Samstag",
+        "sunday": "Sonntag",
+        "thursday": "Donnerstag",
+        "tuesday": "Dienstag",
+        "wednesday": "Mittwoch"
+      }
+    }
+  },
+  "services": {
+    "calibrate_meter": {
+      "description": "Ermöglicht das Kalibrieren des Zählers durch Voreinstellen seines Wertes.",
+      "fields": {
+        "value": {
+          "description": "Setzt den Zähler auf diesen Wert.",
+          "name": "Wert"
+        }
+      },
+      "name": "Zähler kalibrieren"
+    },
+    "get_parameter": {
+      "description": "Ruft einen Geräteparameter ab.",
+      "fields": {
+        "name": {
+          "description": "Name des Parameters.",
+          "name": "Name"
+        }
+      },
+      "name": "Parameter abrufen"
+    },
+    "get_schedule": {
+      "description": "Ruft den Gerätezeitplan ab.",
+      "fields": {
+        "type": {
+          "description": "Typ des Zeitplans.",
+          "name": "Typ"
+        },
+        "weekdays": {
+          "description": "Wochentage, für die der Zeitplan abgerufen werden soll.",
+          "name": "Wochentage"
+        }
+      },
+      "name": "Zeitplan abrufen"
+    },
+    "reset_meter": {
+      "description": "Setzt den Zählerwert zurück.",
+      "name": "Zähler zurücksetzen"
+    },
+    "set_parameter": {
+      "description": "Setzt einen Geräte parameter.",
+      "fields": {
+        "name": {
+          "description": "Name des Parameters.",
+          "name": "Name"
+        },
+        "value": {
+          "description": "Ein Wert, auf den der Parameter gesetzt wird.",
+          "name": "Wert"
+        }
+      },
+      "name": "Parameter setzen"
+    },
+    "set_schedule": {
+      "description": "Legt den Gerätezeitplan fest.",
+      "fields": {
+        "end": {
+          "description": "Zeitpunkt, zu dem der geplante Status beendet wird.",
+          "name": "Endzeit"
+        },
+        "preset": {
+          "description": "Voreinstellung zum geplanten Zeitpunkt.",
+          "name": "Voreinstellung"
+        },
+        "start": {
+          "description": "Zeitpunkt, zu dem der geplante Status beginnt.",
+          "name": "Startzeit"
+        },
+        "type": {
+          "description": "Typ des Zeitplans.",
+          "name": "Typ"
+        },
+        "weekdays": {
+          "description": "Wochentage, für die der Zeitplan festgelegt werden soll.",
+          "name": "Wochentage"
+        }
+      },
+      "name": "Zeitplan setzen"
+    }
+  }
+}
