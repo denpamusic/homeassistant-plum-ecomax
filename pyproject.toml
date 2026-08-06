@@ -13,7 +13,7 @@ skip = ".git,.mypy_cache,.pytest_cache,.ruff_cache,.tox,.vscode,build,*/translat
 ignore-words-list = "hass"
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
 platform = "linux"
 show_error_codes = true
 follow_imports = "normal"
@@ -74,7 +74,7 @@ exclude = [
 ]
 line-length = 88
 indent-width = 4
-target-version = "py313"
+target-version = "py314"
 
 [tool.ruff.lint]
 select = [
@@ -202,7 +202,7 @@ exclude_lines = [
 [tool.tox]
 legacy_tox_ini = """
     [tox]
-    envlist = py313, lint, type
+    envlist = py314, lint, type
     isolated_build = True
     skip_missing_interpreters = True
     ignore_basepython_conflict = True
@@ -210,7 +210,7 @@ legacy_tox_ini = """
 
     [gh-actions]
     python =
-        3.13: py313, lint, type
+        3.14: py314, lint, type
 
     [testenv]
     deps =
