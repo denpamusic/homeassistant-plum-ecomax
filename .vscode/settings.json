@@ -5,7 +5,7 @@
   "editor.codeActionsOnSave": {
     "source.organizeImports": "explicit"
   },
-  "editor.rulers": [72, 88],
+  "editor.rulers": [ 72, 88 ],
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.tabSize": 4
@@ -17,5 +17,6 @@
     "*.yaml": "home-assistant"
   },
   "json.format.keepLines": true,
-  "python.defaultInterpreterPath": "python3.12"
+  "python.defaultInterpreterPath": "python3.14",
+  "python-envs.defaultEnvManager": "ms-python.python:system"
 }
