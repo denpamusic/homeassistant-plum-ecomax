@@ -2,13 +2,14 @@
 
 from unittest.mock import patch
 
-from homeassistant.components.select.const import (
+from homeassistant.components.select.const import ATTR_OPTIONS, DOMAIN
+from homeassistant.const import (
+    ATTR_ENTITY_ID,
+    ATTR_FRIENDLY_NAME,
     ATTR_OPTION,
-    ATTR_OPTIONS,
-    DOMAIN,
     SERVICE_SELECT_OPTION,
+    STATE_OFF,
 )
-from homeassistant.const import ATTR_ENTITY_ID, ATTR_FRIENDLY_NAME, STATE_OFF
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
 from pyplumio.parameters import ParameterValues
