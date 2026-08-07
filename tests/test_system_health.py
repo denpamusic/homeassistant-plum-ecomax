@@ -4,6 +4,10 @@ from datetime import datetime
 from typing import Any, cast
 from unittest.mock import Mock, patch
 
+from homeassistant.components.system_health import (
+    DATA_SYSTEM_HEALTH_PLATFORMS,
+    DOMAIN as SYSTEM_HEALTH_DOMAIN,
+)
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.setup import async_setup_component
@@ -31,9 +35,11 @@ def bypass_connection_setup():
 
 async def get_system_health_info(hass: HomeAssistant, domain: str) -> dict[str, Any]:
     """Get system health info."""
-    return cast(
-        dict[str, Any], await hass.data["system_health"][domain].info_callback(hass)
-    )
+    platform_registrations = await hass.data[
+        DATA_SYSTEM_HEALTH_PLATFORMS
+    ].async_get_platforms()
+    registrations = {**hass.data[SYSTEM_HEALTH_DOMAIN], **platform_registrations}
+    return cast(dict[str, Any], await registrations[domain].info_callback(hass))
 
 
 @pytest.mark.parametrize(
