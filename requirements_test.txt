@@ -7,7 +7,7 @@ mypy-dev==1.20.0a6
 psutil-home-assistant>=0.0.1
 pytest>=7.4.3
 pytest-asyncio>=0.21.0
-pytest-homeassistant-custom-component>=0.13.354
+pytest-homeassistant-custom-component>=0.13.355
 ruff==0.15.5
 tomli==2.4.1
 tox==4.58.0
