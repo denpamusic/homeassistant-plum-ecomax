@@ -8,6 +8,7 @@ from copy import deepcopy
 from dataclasses import asdict
 from functools import cache
 import logging
+import math
 from typing import Any, cast, overload
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
@@ -498,6 +499,9 @@ def _is_valid_source(platform: Platform, value: Any) -> bool:
     if isinstance(value, bool):
         return True if bool in platform_types else False
 
+    if isinstance(value, float) and math.isnan(value):
+        return False
+
     return isinstance(value, platform_types)
 
 
@@ -902,14 +906,14 @@ class OptionsFlowHandler(OptionsFlowWithReload):
 
     def _regdata_source_candidates(
         self, entity_keys: list[str], selected: str
-    ) -> dict[str, Any]:
+    ) -> dict[int, Any]:
         """Return source candidates for regdata."""
         existing_keys = [int(key) for key in entity_keys if key.isnumeric()]
         regdata = cast(
             dict[int, Any], self.connection.device.get_nowait(ATTR_REGDATA, {})
         )
         return {
-            str(k): v
+            k: v
             for k, v in regdata.items()
             if k not in existing_keys or str(k) == selected
         }
@@ -929,7 +933,7 @@ class OptionsFlowHandler(OptionsFlowWithReload):
             if k not in existing_keys or k == selected
         }
 
-    def _entity_source_candidates(self, selected: str) -> dict[str, Any]:
+    def _entity_source_candidates(self, selected: str) -> dict[str | int, Any]:
         """Return custom entity source candidates."""
         entity_keys = _entity_keys_for_config_entry(self.hass, self.config_entry)
 
