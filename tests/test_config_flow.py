@@ -851,6 +851,9 @@ async def test_add_entity(
         keys = [int(option["value"]) for option in options]
         assert keys == sorted(keys)
 
+        # Test regdata NaN filter.
+        assert "225" not in keys
+
     # Add the entity.
     result5 = await hass.config_entries.options.async_configure(
         result4["flow_id"], user_input

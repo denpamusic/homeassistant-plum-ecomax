@@ -8,6 +8,7 @@ from copy import deepcopy
 from dataclasses import asdict
 from functools import cache
 import logging
+import math
 from typing import Any, cast, overload
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
@@ -497,6 +498,9 @@ def _is_valid_source(platform: Platform, value: Any) -> bool:
     platform_types = PLATFORM_TYPES[platform]
     if isinstance(value, bool):
         return True if bool in platform_types else False
+
+    if isinstance(value, float) and math.isnan(value):
+        return False
 
     return isinstance(value, platform_types)
 
