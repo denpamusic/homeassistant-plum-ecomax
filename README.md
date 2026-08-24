@@ -8,11 +8,6 @@
 
 ---
 
-> ⚠️ **Important Announcement**  
-Due to personal health reasons, this project is now on hold until April, 2026. No support and no updates will be available until then, however PR's are still very much welcome and will be reviewed ASAP. Thank you for the understanding and sorry for any inconvenience!
-
----
-
 ## 📖 Overview
 
 This Home Assistant integration provides support for ecoMAX controllers manufactured by [Plum Sp. z o.o.](https://www.plum.pl/).
