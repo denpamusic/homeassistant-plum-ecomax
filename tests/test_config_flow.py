@@ -26,7 +26,7 @@ from homeassistant.const import (
     UnitOfVolume,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import FlowResultType, InvalidData
+from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from pyplumio.connection import SerialConnection, TcpConnection
@@ -983,17 +983,18 @@ async def test_add_entity_with_colliding_key(
     )
 
     # Expect error on adding the entity if key is colliding.
-    with pytest.raises(InvalidData) as exc_info:
-        await hass.config_entries.options.async_configure(
-            result4["flow_id"],
-            {
-                CONF_NAME: "Colliding key",
-                CONF_KEY: key,
-                CONF_DEVICE_CLASS: BinarySensorDeviceClass.RUNNING,
-            },
-        )
+    result5 = await hass.config_entries.options.async_configure(
+        result4["flow_id"],
+        {
+            CONF_NAME: "Colliding key",
+            CONF_KEY: key,
+            CONF_DEVICE_CLASS: BinarySensorDeviceClass.RUNNING,
+        },
+    )
+    errors = result5["errors"]
 
-    assert exc_info.value.path == ["key"]
+    assert errors
+    assert CONF_KEY in errors
 
 
 @pytest.mark.usefixtures("connection", "ecomax_base")

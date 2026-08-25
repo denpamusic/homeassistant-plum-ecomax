@@ -447,11 +447,69 @@ def _validate_state_class(data: dict[str, Any]) -> None:
         )
 
 
+def _entities_for_config_entry(
+    hass: HomeAssistant, config_entry: ConfigEntry
+) -> list[er.RegistryEntry]:
+    """Get entity keys for config entry."""
+    entity_registry = er.async_get(hass)
+    return er.async_entries_for_config_entry(entity_registry, config_entry.entry_id)
+
+
+def _entity_registry_key(entry: er.RegistryEntry) -> str:
+    return entry.unique_id.rsplit("-", 1)[-1]
+
+
+def _existing_keys_for_source(
+    source_device: str, registry: dict[str, er.RegistryEntry]
+) -> set[str]:
+    """Return entity keys already used for the selected source device."""
+    if source_device == DeviceType.ECOMAX:
+        return {key for key in registry if not key.startswith(LOGICAL_DEVICES)}
+
+    if source_device == ATTR_REGDATA:
+        return {key for key in registry if key.isnumeric()}
+
+    if source_device.startswith(LOGICAL_DEVICES):
+        device_type, device_id = source_device.split("_", 1)
+        prefix = f"{device_type}-{device_id}"
+        return {key for key in registry if key.startswith(prefix)}
+
+    return set()
+
+
+def _validate_key(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    entity: dict[str, Any],
+    source_device: str,
+) -> None:
+    """Validate key for duplicates."""
+    entity_key: str = entity[CONF_KEY]
+    entries = _entities_for_config_entry(hass, config_entry)
+    registry = {_entity_registry_key(entry): entry for entry in entries}
+    existing_keys = _existing_keys_for_source(source_device, registry)
+
+    if entity_key in existing_keys and (duplicate := registry.get(entity_key)):
+        raise vol.Invalid(
+            f"Entity '{entity_key}' already exists with an id '{duplicate.entity_id}'; "
+            "Please remove it and try again."
+        )
+
+
 def _validate_entity_details(
-    entity: dict[str, Any], platform: Platform
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    entity: dict[str, Any],
+    source_device: str,
+    platform: Platform,
 ) -> dict[str, str]:
     """Validate entity details."""
     errors: dict[str, str] = {}
+
+    try:
+        _validate_key(hass, config_entry, entity, source_device)
+    except vol.Invalid as e:
+        errors[CONF_KEY] = str(e.msg)
 
     if platform in PLATFORM_UNITS:
         try:
@@ -466,15 +524,6 @@ def _validate_entity_details(
             errors[CONF_STATE_CLASS] = str(e.msg)
 
     return errors
-
-
-def _entity_keys_for_config_entry(
-    hass: HomeAssistant, config_entry: ConfigEntry
-) -> list[str]:
-    """Get entity keys for config entry."""
-    entity_registry = er.async_get(hass)
-    entities = er.async_entries_for_config_entry(entity_registry, config_entry.entry_id)
-    return [entity.unique_id.split("-")[-1] for entity in entities]
 
 
 def _custom_entity_options(
@@ -783,17 +832,19 @@ class OptionsFlowHandler(OptionsFlowWithReload):
         if user_input is None:
             errors = {}
         elif not (
-            errors := _validate_entity_details(user_input, platform=self.platform)
+            errors := _validate_entity_details(
+                self.hass,
+                self.config_entry,
+                user_input,
+                source_device=self.source_device,
+                platform=self.platform,
+            )
         ):
             user_input[CONF_SOURCE_DEVICE] = self.source_device
             key = entity.get(CONF_KEY, user_input[CONF_KEY])
             return self._async_step_create_entry(key, data=user_input)
 
-        if not (
-            source_options := self._entity_source_select_options(
-                selected=entity.get(CONF_KEY, "")
-            )
-        ):
+        if not (source_options := self._entity_source_select_options()):
             return self.async_abort(reason="no_entities_to_add")
 
         return self.async_show_form(
@@ -891,60 +942,30 @@ class OptionsFlowHandler(OptionsFlowWithReload):
             if entity.unique_id.split("-")[-1] == key:
                 entity_registry.async_remove(entity_id=entity.entity_id)
 
-    def _ecomax_source_candidates(
-        self, entity_keys: list[str], selected: str
-    ) -> dict[str, Any]:
+    def _ecomax_source_candidates(self) -> dict[str, Any]:
         """Return source candidates for ecoMAX."""
-        existing_keys = [
-            key for key in entity_keys if key.split("_", 1)[0] not in LOGICAL_DEVICES
-        ]
-        return {
-            k: v
-            for k, v in self.connection.device.data.items()
-            if k not in existing_keys or k == selected
-        }
+        return self.connection.device.data
 
-    def _regdata_source_candidates(
-        self, entity_keys: list[str], selected: str
-    ) -> dict[int, Any]:
+    def _regdata_source_candidates(self) -> dict[int, Any]:
         """Return source candidates for regdata."""
-        existing_keys = [int(key) for key in entity_keys if key.isnumeric()]
-        regdata = cast(
-            dict[int, Any], self.connection.device.get_nowait(ATTR_REGDATA, {})
-        )
-        return {
-            k: v
-            for k, v in regdata.items()
-            if k not in existing_keys or str(k) == selected
-        }
+        return cast(dict[int, Any], self.connection.device.get_nowait(ATTR_REGDATA, {}))
 
-    def _logical_device_source_candidates(
-        self, entity_keys: list[str], selected: str
-    ) -> dict[str, Any]:
+    def _logical_device_source_candidates(self) -> dict[str, Any]:
         """Return source candidates for logical device."""
         device_type, device_id = self.source_device.split("_", 1)
         device = self._get_logical_device(DeviceType(device_type), int(device_id))
-        existing_keys = [
-            key for key in entity_keys if key.startswith(f"{device_type}-{device_id}")
-        ]
-        return {
-            k: v
-            for k, v in device.data.items()
-            if k not in existing_keys or k == selected
-        }
+        return device.data
 
-    def _entity_source_candidates(self, selected: str) -> dict[str | int, Any]:
+    def _entity_source_candidates(self) -> dict[str | int, Any]:
         """Return custom entity source candidates."""
-        entity_keys = _entity_keys_for_config_entry(self.hass, self.config_entry)
-
         if self.source_device == DeviceType.ECOMAX:
-            return self._ecomax_source_candidates(entity_keys, selected)
+            return self._ecomax_source_candidates()
 
         elif self.source_device == ATTR_REGDATA:
-            return self._regdata_source_candidates(entity_keys, selected)
+            return self._regdata_source_candidates()
 
         elif self.source_device.startswith(LOGICAL_DEVICES):
-            return self._logical_device_source_candidates(entity_keys, selected)
+            return self._logical_device_source_candidates()
 
         raise HomeAssistantError(
             translation_key="unsupported_device",
@@ -969,11 +990,9 @@ class OptionsFlowHandler(OptionsFlowWithReload):
                 translation_placeholders={"device": f"{device_type} {device_id}"},
             ) from e
 
-    def _entity_source_select_options(
-        self, selected: str = ""
-    ) -> list[selector.SelectOptionDict]:
+    def _entity_source_select_options(self) -> list[selector.SelectOptionDict]:
         """Return source options."""
-        source_candidates = self._entity_source_candidates(selected)
+        source_candidates = self._entity_source_candidates()
         data = dict(sorted(source_candidates.items()))
 
         return [
