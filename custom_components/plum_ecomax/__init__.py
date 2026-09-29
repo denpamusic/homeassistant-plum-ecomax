@@ -48,7 +48,9 @@ from .const import (
     DEFAULT_CONNECTION_TYPE,
     DOMAIN,
     EVENT_PLUM_ECOMAX_ALERT,
+    MANUFACTURER,
     DeviceType,
+    ModuleType,
 )
 from .services import async_setup_services
 
@@ -132,6 +134,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: PlumEcomaxConfigEntry) -
 
     entry.async_on_unload(
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, _async_close_connection)
+    )
+
+    device_registry = dr.async_get(hass)
+    device_registry.async_get_or_create(
+        config_entry_id=entry.entry_id,
+        configuration_url=(
+            f"http://{entry.data[CONF_HOST]}"
+            if connection_type == CONNECTION_TYPE_TCP
+            else None
+        ),
+        identifiers={(DOMAIN, connection.uid)},
+        manufacturer=MANUFACTURER,
+        model=connection.model,
+        name=connection.name,
+        serial_number=connection.uid,
+        sw_version=connection.software.get(ModuleType.A),
     )
 
     async_setup_events(hass, connection)

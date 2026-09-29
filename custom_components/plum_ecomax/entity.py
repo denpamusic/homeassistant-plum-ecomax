@@ -7,6 +7,7 @@ from typing import Any, Final, Literal, cast, final, overload, override
 
 from homeassistant.const import CONF_UNIT_OF_MEASUREMENT, Platform
 from homeassistant.core import callback
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
 from pyplumio.const import ProductType
 from pyplumio.devices import Device
@@ -31,11 +32,10 @@ from .const import (
     CONNECTION_TYPE_TCP,
     DOMAIN,
     LOGICAL_DEVICES,
+    MANUFACTURER,
     DeviceType,
     ModuleType,
 )
-
-MANUFACTURER: Final = "Plum Sp. z o.o."
 
 ALL: Final = "all"
 
@@ -294,7 +294,11 @@ class ThermostatEntity(EcomaxEntity):
             },
             manufacturer=MANUFACTURER,
             sw_version=self.connection.software[ModuleType.ECOSTER],
-            via_device=(DOMAIN, self.connection.uid),
+            via_device_id=dr.async_get_device_id_by_identifier(
+                self.hass,
+                identifier=(DOMAIN, self.connection.uid),
+                config_entry_id=self.connection.entry.entry_id,
+            ),
         )
 
     @cached_property
@@ -338,7 +342,11 @@ class MixerEntity(EcomaxEntity):
                 (DOMAIN, f"{self.connection.uid}-{DeviceType.MIXER}-{self.index}")
             },
             manufacturer=MANUFACTURER,
-            via_device=(DOMAIN, self.connection.uid),
+            via_device_id=dr.async_get_device_id_by_identifier(
+                self.hass,
+                identifier=(DOMAIN, self.connection.uid),
+                config_entry_id=self.connection.entry.entry_id,
+            ),
         )
 
     @cached_property

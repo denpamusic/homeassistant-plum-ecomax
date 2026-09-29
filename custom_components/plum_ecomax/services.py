@@ -103,7 +103,7 @@ _LOGGER = logging.getLogger(__name__)
 
 @callback
 def async_extract_connection_from_device_entry(
-    hass: HomeAssistant, device_entry: dr.DeviceEntry
+    hass: HomeAssistant, device_entry: dr.BaseDeviceEntry
 ) -> EcomaxConnection:
     """Extract connection instance from device entry."""
     entry: PlumEcomaxConfigEntry
@@ -135,7 +135,7 @@ def async_get_logical_device(
 
 @callback
 def async_get_device_from_entry(
-    hass: HomeAssistant, device_entry: dr.DeviceEntry
+    hass: HomeAssistant, device_entry: dr.BaseDeviceEntry
 ) -> Device:
     """Get device instance from device entry."""
     connection = async_extract_connection_from_device_entry(hass, device_entry)
