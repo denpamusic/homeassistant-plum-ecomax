@@ -156,7 +156,9 @@ def setup_config_entry(hass: HomeAssistant, config_entry: MockConfigEntry):
         if options:
             hass.config_entries.async_update_entry(config_entry, options=options)
 
-        config_entry.add_to_hass(hass)
+        if config_entry.entry_id not in hass.config_entries.async_entry_ids():
+            config_entry.add_to_hass(hass)
+
         assert await hass.config_entries.async_setup(config_entry.entry_id)
         await hass.async_block_till_done()
 
