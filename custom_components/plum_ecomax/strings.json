@@ -349,14 +349,17 @@
     "connection_timeout": {
       "message": "Timed out while trying to connect ({connection})"
     },
+    "device_disconnected": {
+      "message": "The selected device was disconnected ({device})"
+    },
     "device_not_found": {
       "message": "Requested device not found ({device})"
     },
     "device_not_ready": {
       "message": "Device not ready ({device})"
     },
-    "property_not_writable": {
-      "message": "Cannot change read-only \"{property}\" property"
+    "entity_not_found": {
+      "message": "The selected entity \"{entity}\" was not found on the device ({device})"
     },
     "invalid_parameter_value": {
       "message": "Invalid value \"{value}\" for the \"{parameter}\" parameter"
@@ -370,41 +373,37 @@
     "parameter_not_found_with_suggestion": {
       "message": "Requested parameter \"{parameter}\" not found, did you mean \"{suggestion}\"? ({device})"
     },
+    "property_not_writable": {
+      "message": "Cannot change read-only \"{property}\" property"
+    },
     "schedule_not_found": {
       "message": "Requested schedule \"{schedule}\" not found ({device})"
     },
     "set_parameter_timeout": {
       "message": "Request to set a \"{parameter}\" parameter timed out"
     },
-    "device_disconnected": {
-      "message": "The selected device was disconnected ({device})"
-    },
     "unsupported_device": {
       "message": "The selected device is invalid or not supported ({device})"
-    },
-    "entity_not_found": {
-      "message": "The selected entity \"{entity}\" was not found on the device ({device})"
     }
   },
   "options": {
+    "abort": {
+      "entry_not_ready": "Config entry not ready, please wait and try again.",
+      "no_entities_to_add": "No entities to add, all available entities have been added already.",
+      "no_entities_to_edit_or_remove": "No entities to edit or remove, you'll need to add some first."
+    },
     "step": {
       "add_entity": {
-        "title": "Select a source device",
         "data": {
           "source_device": "Source device"
-        }
+        },
+        "title": "Select a source device"
       },
       "edit_entity": {
-        "title": "Select an entity to edit",
         "data": {
           "entity_id": "Entity"
-        }
-      },
-      "remove_entity": {
-        "title": "Select an entity to remove",
-        "data": {
-          "entity_id": "Entity"
-        }
+        },
+        "title": "Select an entity to edit"
       },
       "entity_details": {
         "data": {
@@ -431,15 +430,16 @@
         "menu_options": {
           "add_entity": "Add a new entity",
           "edit_entity": "Edit an entity",
-          "remove_entity": "Remove an entity",
-          "rediscover_devices": "Rediscover connected devices"
+          "rediscover_devices": "Rediscover connected devices",
+          "remove_entity": "Remove an entity"
         }
+      },
+      "remove_entity": {
+        "data": {
+          "entity_id": "Entity"
+        },
+        "title": "Select an entity to remove"
       }
-    },
-    "abort": {
-      "no_entities_to_edit_or_remove": "No entities to edit or remove, you'll need to add some first.",
-      "no_entities_to_add": "No entities to add, all available entities have been added already.",
-      "entry_not_ready": "Config entry not ready, please wait and try again."
     }
   },
   "selector": {
@@ -478,8 +478,8 @@
       "options": {
         "absolute_humidity": "[%key:component::number::entity_component::absolute_humidity::name%]",
         "apparent_power": "[%key:component::number::entity_component::apparent_power::name%]",
-        "area": "[%key:component::number::entity_component::area::name%]",
         "aqi": "[%key:component::number::entity_component::aqi::name%]",
+        "area": "[%key:component::number::entity_component::area::name%]",
         "atmospheric_pressure": "[%key:component::number::entity_component::atmospheric_pressure::name%]",
         "battery": "[%key:component::number::entity_component::battery::name%]",
         "blood_glucose_concentration": "[%key:component::number::entity_component::blood_glucose_concentration::name%]",
@@ -514,8 +514,8 @@
         "precipitation": "[%key:component::number::entity_component::precipitation::name%]",
         "precipitation_intensity": "[%key:component::number::entity_component::precipitation_intensity::name%]",
         "pressure": "[%key:component::number::entity_component::pressure::name%]",
-        "reactive_power": "[%key:component::number::entity_component::reactive_power::name%]",
         "reactive_energy": "[%key:component::number::entity_component::reactive_energy::name%]",
+        "reactive_power": "[%key:component::number::entity_component::reactive_power::name%]",
         "signal_strength": "[%key:component::number::entity_component::signal_strength::name%]",
         "sound_pressure": "[%key:component::number::entity_component::sound_pressure::name%]",
         "speed": "[%key:component::number::entity_component::speed::name%]",
@@ -529,8 +529,8 @@
         "volume_storage": "[%key:component::number::entity_component::volume_storage::name%]",
         "water": "[%key:component::number::entity_component::water::name%]",
         "weight": "[%key:component::number::entity_component::weight::name%]",
-        "wind_speed": "[%key:component::number::entity_component::wind_speed::name%]",
-        "wind_direction": "[%key:component::number::entity_component::wind_direction::name%]"
+        "wind_direction": "[%key:component::number::entity_component::wind_direction::name%]",
+        "wind_speed": "[%key:component::number::entity_component::wind_speed::name%]"
       }
     },
     "number_mode": {
@@ -553,18 +553,18 @@
     },
     "schedule_type": {
       "options": {
-        "heating": "Heating",
-        "water_heater": "Water heater",
+        "boiler_work": "Boiler",
         "circulation_pump": "Circulation pump",
-        "boiler_work": "Boiler"
+        "heating": "Heating",
+        "water_heater": "Water heater"
       }
     },
     "sensor_device_class": {
       "options": {
         "absolute_humidity": "[%key:component::sensor::entity_component::absolute_humidity::name%]",
         "apparent_power": "[%key:component::sensor::entity_component::apparent_power::name%]",
-        "area": "[%key:component::sensor::entity_component::area::name%]",
         "aqi": "[%key:component::sensor::entity_component::aqi::name%]",
+        "area": "[%key:component::sensor::entity_component::area::name%]",
         "atmospheric_pressure": "[%key:component::sensor::entity_component::atmospheric_pressure::name%]",
         "battery": "[%key:component::sensor::entity_component::battery::name%]",
         "blood_glucose_concentration": "[%key:component::sensor::entity_component::blood_glucose_concentration::name%]",
@@ -600,8 +600,8 @@
         "precipitation": "[%key:component::sensor::entity_component::precipitation::name%]",
         "precipitation_intensity": "[%key:component::sensor::entity_component::precipitation_intensity::name%]",
         "pressure": "[%key:component::sensor::entity_component::pressure::name%]",
-        "reactive_power": "[%key:component::sensor::entity_component::reactive_power::name%]",
         "reactive_energy": "[%key:component::sensor::entity_component::reactive_energy::name%]",
+        "reactive_power": "[%key:component::sensor::entity_component::reactive_power::name%]",
         "signal_strength": "[%key:component::sensor::entity_component::signal_strength::name%]",
         "sound_pressure": "[%key:component::sensor::entity_component::sound_pressure::name%]",
         "speed": "[%key:component::sensor::entity_component::speed::name%]",
@@ -616,8 +616,8 @@
         "volume_storage": "[%key:component::sensor::entity_component::volume_storage::name%]",
         "water": "[%key:component::sensor::entity_component::water::name%]",
         "weight": "[%key:component::sensor::entity_component::weight::name%]",
-        "wind_speed": "[%key:component::sensor::entity_component::wind_speed::name%]",
-        "wind_direction": "[%key:component::sensor::entity_component::wind_direction::name%]"
+        "wind_direction": "[%key:component::sensor::entity_component::wind_direction::name%]",
+        "wind_speed": "[%key:component::sensor::entity_component::wind_speed::name%]"
       }
     },
     "sensor_state_class": {
@@ -743,14 +743,14 @@
   },
   "system_health": {
     "info": {
-      "pyplumio_version": "PyPlumIO version",
-      "received_frames": "Received frames",
-      "sent_frames": "Sent frames",
-      "failed_frames": "Failed frames",
-      "failure_rate": "Failure rate",
       "connected_since": "Connected since",
       "connection_losses": "Connection losses",
-      "custom_entities": "Custom entities"
+      "custom_entities": "Custom entities",
+      "failed_frames": "Failed frames",
+      "failure_rate": "Failure rate",
+      "pyplumio_version": "PyPlumIO version",
+      "received_frames": "Received frames",
+      "sent_frames": "Sent frames"
     }
   }
 }

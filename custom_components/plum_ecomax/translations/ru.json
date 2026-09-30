@@ -349,14 +349,17 @@
     "connection_timeout": {
       "message": "Таймаут при попытке подключения ({connection})"
     },
+    "device_disconnected": {
+      "message": "Выбранное устройство прервало подключение ({device})"
+    },
     "device_not_found": {
       "message": "Устройство не найдено ({device})"
     },
     "device_not_ready": {
       "message": "Устройство не готово ({device})"
     },
-    "property_not_writable": {
-      "message": "Невозможно изменить параметр только для чтения\"{property}\""
+    "entity_not_found": {
+      "message": "Выбранный объект \"{entity}\" не найден на устройстве ({device})"
     },
     "invalid_parameter_value": {
       "message": "Неверное значение \"{value}\" параметра \"{parameter}\""
@@ -370,41 +373,37 @@
     "parameter_not_found_with_suggestion": {
       "message": "Запрошенный параметр \"{parameter}\" не найден, возможно Вы искали \"{suggestion}\"? ({device})"
     },
+    "property_not_writable": {
+      "message": "Невозможно изменить параметр только для чтения\"{property}\""
+    },
     "schedule_not_found": {
       "message": "Запрошенное расписание \"{schedule}\" не найдено ({device})"
     },
     "set_parameter_timeout": {
       "message": "Таймаут запроса на изменение параметра \"{parameter}\""
     },
-    "device_disconnected": {
-      "message": "Выбранное устройство прервало подключение ({device})"
-    },
     "unsupported_device": {
       "message": "Выбраное устройство неверно или не поддерживается ({device})"
-    },
-    "entity_not_found": {
-      "message": "Выбранный объект \"{entity}\" не найден на устройстве ({device})"
     }
   },
   "options": {
+    "abort": {
+      "entry_not_ready": "Запись конфигурации не готова, пожалуйста, подождите и попробуйте ещё раз.",
+      "no_entities_to_add": "Нет объектов для добавления, все доступные объекты уже были добавлены.",
+      "no_entities_to_edit_or_remove": "Нет объектов для удаления или редактирования, добавьте несколько."
+    },
     "step": {
       "add_entity": {
-        "title": "Выберите устройство",
         "data": {
           "source_device": "Устройство"
-        }
+        },
+        "title": "Выберите устройство"
       },
       "edit_entity": {
-        "title": "Выберите объект",
         "data": {
           "entity_id": "Объект"
-        }
-      },
-      "remove_entity": {
-        "title": "Выберите объект для удаления",
-        "data": {
-          "entity_id": "Объект"
-        }
+        },
+        "title": "Выберите объект"
       },
       "entity_details": {
         "data": {
@@ -431,15 +430,16 @@
         "menu_options": {
           "add_entity": "Добавить новый объект",
           "edit_entity": "Редактировать объект",
-          "remove_entity": "Удалить объект",
-          "rediscover_devices": "Повторить обнаружение устройств"
+          "rediscover_devices": "Повторить обнаружение устройств",
+          "remove_entity": "Удалить объект"
         }
+      },
+      "remove_entity": {
+        "data": {
+          "entity_id": "Объект"
+        },
+        "title": "Выберите объект для удаления"
       }
-    },
-    "abort": {
-      "no_entities_to_edit_or_remove": "Нет объектов для удаления или редактирования, добавьте несколько.",
-      "no_entities_to_add": "Нет объектов для добавления, все доступные объекты уже были добавлены.",
-      "entry_not_ready": "Запись конфигурации не готова, пожалуйста, подождите и попробуйте ещё раз."
     }
   },
   "selector": {
@@ -478,8 +478,8 @@
       "options": {
         "absolute_humidity": "Абсолютная влажность",
         "apparent_power": "Мощность",
-        "area": "Площадь",
         "aqi": "Индекс качества воздуха",
+        "area": "Площадь",
         "atmospheric_pressure": "Атмосферное давление",
         "battery": "Батарея",
         "blood_glucose_concentration": "Концентрация глюкозы в крови",
@@ -514,8 +514,8 @@
         "precipitation": "Осадки",
         "precipitation_intensity": "Интенсивность осадков",
         "pressure": "Давление",
-        "reactive_power": "Реактивная мощность",
         "reactive_energy": "Реактивная энергия",
+        "reactive_power": "Реактивная мощность",
         "signal_strength": "Уровень сигнала",
         "sound_pressure": "Звуковое давление",
         "speed": "Скорость",
@@ -529,8 +529,8 @@
         "volume_storage": "Накопленый объем",
         "water": "Вода",
         "weight": "Вес",
-        "wind_speed": "Скорость ветра",
-        "wind_direction": "Направление ветра"
+        "wind_direction": "Направление ветра",
+        "wind_speed": "Скорость ветра"
       }
     },
     "number_mode": {
@@ -553,18 +553,18 @@
     },
     "schedule_type": {
       "options": {
-        "heating": "Отопление",
-        "water_heater": "Водонагреватель",
+        "boiler_work": "Boiler",
         "circulation_pump": "Circulation pump",
-        "boiler_work": "Boiler"
+        "heating": "Отопление",
+        "water_heater": "Водонагреватель"
       }
     },
     "sensor_device_class": {
       "options": {
         "absolute_humidity": "Абсолютная влажность",
         "apparent_power": "Мощность",
-        "area": "Площадь",
         "aqi": "Индекс качества воздуха",
+        "area": "Площадь",
         "atmospheric_pressure": "Атмосферное давление",
         "battery": "Батарея",
         "blood_glucose_concentration": "Концентрация глюкозы в крови",
@@ -600,8 +600,8 @@
         "precipitation": "Осадки",
         "precipitation_intensity": "Интенсивность осадков",
         "pressure": "Давление",
-        "reactive_power": "Реактивная мощность",
         "reactive_energy": "Реактивная энергия",
+        "reactive_power": "Реактивная мощность",
         "signal_strength": "Уровень сигнала",
         "sound_pressure": "Звуковое давление",
         "speed": "Скорость",
@@ -616,8 +616,8 @@
         "volume_storage": "Накопленый объем",
         "water": "Вода",
         "weight": "Вес",
-        "wind_speed": "Скорость ветра",
-        "wind_direction": "Направление ветра"
+        "wind_direction": "Направление ветра",
+        "wind_speed": "Скорость ветра"
       }
     },
     "sensor_state_class": {
@@ -717,7 +717,7 @@
           "description": "Device to set schedule for.",
           "name": "Device"
         },
-        "end": {
+        "end_time": {
           "description": "Заданое состояние будет сброшено начиная с этого времени.",
           "name": "Конец"
         },
@@ -725,7 +725,7 @@
           "description": "Состояние устройства в заданный интервал времени.",
           "name": "Состояние"
         },
-        "start": {
+        "start_time": {
           "description": "Заданное состояние будет установлено начиная с этого времени.",
           "name": "Начало"
         },
@@ -743,14 +743,14 @@
   },
   "system_health": {
     "info": {
-      "pyplumio_version": "Версия PyPlumIO",
-      "received_frames": "Получено кадров",
-      "sent_frames": "Отправлено кадров",
-      "failed_frames": "Ошибочных кадров",
-      "failure_rate": "Процент ошибок",
       "connected_since": "Подключено",
       "connection_losses": "Потерь подключения",
-      "custom_entities": "Пользовательских объектов"
+      "custom_entities": "Пользовательских объектов",
+      "failed_frames": "Ошибочных кадров",
+      "failure_rate": "Процент ошибок",
+      "pyplumio_version": "Версия PyPlumIO",
+      "received_frames": "Получено кадров",
+      "sent_frames": "Отправлено кадров"
     }
   }
 }
