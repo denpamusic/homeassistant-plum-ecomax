@@ -16,3 +16,11 @@ repos:
     rev: v1.14.1
     hooks:
       - id: mypy
+  - repo: local
+    hooks:
+      - id: sync-translations
+        name: sync translations
+        entry: python scripts/sync_translations.py --sort
+        language: system
+        pass_filenames: false
+        files: ^custom_components/plum_ecomax/(strings\.json|translations/.*\.json)$
