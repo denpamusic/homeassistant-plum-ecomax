@@ -147,8 +147,8 @@ def test_sync_dict_type_mismatch() -> None:
     }
 
 
-def test_sync_translation_file_dry_run(tmp_path: Path) -> None:
-    """Test sync_translation_file does not modify files in dry_run mode."""
+def test_sync_translation_file_check(tmp_path: Path) -> None:
+    """Test sync_translation_file does not modify files in check_only mode."""
     strings_data = {"key1": "one", "key2": "two"}
     strings_keys = get_all_keys(strings_data)
 
@@ -157,7 +157,7 @@ def test_sync_translation_file_dry_run(tmp_path: Path) -> None:
     target_file.write_text(initial_content, encoding="utf-8")
 
     added, removed, changed = sync_translation_file(
-        strings_data, strings_keys, target_file, dry_run=True
+        strings_data, strings_keys, target_file, check_only=True
     )
     assert added == ["key2"]
     assert removed == ["old"]
@@ -168,7 +168,7 @@ def test_sync_translation_file_dry_run(tmp_path: Path) -> None:
 
 
 def test_sync_translation_file_writes(tmp_path: Path) -> None:
-    """Test sync_translation_file writes synced content when dry_run is False."""
+    """Test sync_translation_file writes synced content when check_only is False."""
     strings_data = {"key1": "one", "key2": "two"}
     strings_keys = get_all_keys(strings_data)
 
@@ -179,7 +179,7 @@ def test_sync_translation_file_writes(tmp_path: Path) -> None:
     )
 
     added, removed, changed = sync_translation_file(
-        strings_data, strings_keys, target_file, dry_run=False
+        strings_data, strings_keys, target_file, check_only=False
     )
     assert added == ["key2"]
     assert removed == ["old"]
@@ -233,8 +233,8 @@ def test_resolve_paths_repo_root(
     assert t.name == "translations"
 
 
-def test_main_cli_dry_run(tmp_path: Path) -> None:
-    """Test main CLI execution with dry-run."""
+def test_main_cli_check_out_of_sync(tmp_path: Path) -> None:
+    """Test main CLI execution with --check when out of sync returns 1."""
     strings_file = tmp_path / "strings.json"
     strings_file.write_text(json.dumps({"msg": "Hello"}), encoding="utf-8")
 
@@ -249,12 +249,34 @@ def test_main_cli_dry_run(tmp_path: Path) -> None:
             str(strings_file),
             "--translations",
             str(trans_dir),
-            "--dry-run",
+            "--check",
+        ]
+    )
+    assert ret == 1
+    # Check must not touch de.json
+    assert json.loads(de_file.read_text(encoding="utf-8")) == {"old": "Hallo"}
+
+
+def test_main_cli_check_in_sync(tmp_path: Path) -> None:
+    """Test main CLI execution with --check when in sync returns 0."""
+    strings_file = tmp_path / "strings.json"
+    strings_file.write_text(json.dumps({"msg": "Hello"}), encoding="utf-8")
+
+    trans_dir = tmp_path / "translations"
+    trans_dir.mkdir()
+    de_file = trans_dir / "de.json"
+    de_file.write_text(json.dumps({"msg": "Hallo"}), encoding="utf-8")
+
+    ret = main(
+        [
+            "--strings",
+            str(strings_file),
+            "--translations",
+            str(trans_dir),
+            "--check",
         ]
     )
     assert ret == 0
-    # Dry run must not touch de.json
-    assert json.loads(de_file.read_text(encoding="utf-8")) == {"old": "Hallo"}
 
 
 def test_main_cli_sync(tmp_path: Path) -> None:
@@ -315,8 +337,8 @@ def test_main_cli_sort(tmp_path: Path) -> None:
     assert sorted_de_keys == ["a", "z"]
 
 
-def test_main_cli_sort_dry_run(tmp_path: Path) -> None:
-    """Test main CLI execution with --sort and --dry-run flags."""
+def test_main_cli_sort_check_unsorted(tmp_path: Path) -> None:
+    """Test main CLI with --sort --check when unsorted returns 1."""
     strings_file = tmp_path / "strings.json"
     strings_content = json.dumps({"z": "Z", "a": "A"})
     strings_file.write_text(strings_content, encoding="utf-8")
@@ -334,18 +356,43 @@ def test_main_cli_sort_dry_run(tmp_path: Path) -> None:
             "--translations",
             str(trans_dir),
             "--sort",
-            "--dry-run",
+            "--check",
         ]
     )
-    assert ret == 0
+    assert ret == 1
 
     # Neither file should be modified
     assert strings_file.read_text(encoding="utf-8") == strings_content
     assert de_file.read_text(encoding="utf-8") == de_content
 
 
-def test_main_cli_sort_dry_run_with_add_remove(tmp_path: Path) -> None:
-    """Test main CLI execution with --sort, --dry-run and added/removed keys."""
+def test_main_cli_sort_check_already_sorted(tmp_path: Path) -> None:
+    """Test main CLI with --sort --check when already sorted returns 0."""
+    strings_file = tmp_path / "strings.json"
+    strings_file.write_text(json.dumps({"a": "A", "z": "Z"}), encoding="utf-8")
+
+    trans_dir = tmp_path / "translations"
+    trans_dir.mkdir()
+    de_file = trans_dir / "de.json"
+    de_file.write_text(
+        json.dumps({"a": "Translated A", "z": "Translated Z"}), encoding="utf-8"
+    )
+
+    ret = main(
+        [
+            "--strings",
+            str(strings_file),
+            "--translations",
+            str(trans_dir),
+            "--sort",
+            "--check",
+        ]
+    )
+    assert ret == 0
+
+
+def test_main_cli_sort_check_with_add_remove(tmp_path: Path) -> None:
+    """Test main CLI execution with --sort, --check and added/removed keys returns 1."""
     strings_file = tmp_path / "strings.json"
     strings_file.write_text(json.dumps({"b": "B", "a": "A"}), encoding="utf-8")
 
@@ -363,10 +410,10 @@ def test_main_cli_sort_dry_run_with_add_remove(tmp_path: Path) -> None:
             "--translations",
             str(trans_dir),
             "--sort",
-            "--dry-run",
+            "--check",
         ]
     )
-    assert ret == 0
+    assert ret == 1
 
 
 def test_main_cli_sort_with_add_remove(tmp_path: Path) -> None:

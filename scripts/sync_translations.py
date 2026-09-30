@@ -66,7 +66,7 @@ def sync_translation_file(
     strings_data: TranslationDict,
     strings_keys: set[str],
     target_path: Path,
-    dry_run: bool = False,
+    check_only: bool = False,
     sort_keys: bool = False,
 ) -> tuple[list[str], list[str], bool]:
     """Synchronize a single translation file with strings data."""
@@ -85,7 +85,7 @@ def sync_translation_file(
     new_dump = json.dumps(synced_data, indent=2, ensure_ascii=False) + "\n"
     content_changed = current_dump != new_dump
 
-    if not dry_run and content_changed:
+    if not check_only and content_changed:
         with target_path.open("w", encoding="utf-8", newline="\n") as f:
             f.write(new_dump)
 
@@ -158,10 +158,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Path to translations directory (default: auto-detected)",
     )
     parser.add_argument(
-        "-n",
-        "--dry-run",
+        "-c",
+        "--check",
         action="store_true",
-        help="List planned additions and removals without modifying files",
+        help="Check if translation files are in sync without modifying files",
     )
     parser.add_argument(
         "--sort",
@@ -169,6 +169,38 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Sort keys in source and translation files in alphabetical order",
     )
     return parser.parse_args(argv)
+
+
+def report_file_sync(
+    file_name: str,
+    added: list[str],
+    removed: list[str],
+    content_changed: bool,
+    check_only: bool,
+    sort_keys: bool,
+) -> None:
+    """Print synchronization details for a single translation file."""
+    sys.stdout.write(f"{file_name}:\n")
+    order_only_changed = content_changed and not added and not removed
+    if not added and not removed and not order_only_changed:
+        sys.stdout.write("  In sync (no changes).\n\n")
+        return
+
+    action_add = "Would add" if check_only else "Added"
+    action_rem = "Would remove" if check_only else "Removed"
+    action_sort = "Would sort" if check_only else "Sorted"
+
+    if added:
+        sys.stdout.write(f"  {action_add} ({len(added)} keys):\n")
+        for key in added:
+            sys.stdout.write(f"    + {key}\n")
+    if removed:
+        sys.stdout.write(f"  {action_rem} ({len(removed)} keys):\n")
+        for key in removed:
+            sys.stdout.write(f"    - {key}\n")
+    if sort_keys and content_changed:
+        sys.stdout.write(f"  {action_sort} keys in alphabetical order.\n")
+    sys.stdout.write("\n")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -205,7 +237,7 @@ def main(argv: list[str] | None = None) -> int:
         if current_strings_dump != new_strings_dump:
             strings_changed = True
             strings_data = sorted_strings
-            if not args.dry_run:
+            if not args.check:
                 with strings_path.open("w", encoding="utf-8", newline="\n") as f:
                     f.write(new_strings_dump)
 
@@ -216,7 +248,7 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.write(f"No translation files found in '{translations_path}'.\n")
         return 0
 
-    mode_prefix = "[DRY RUN] " if args.dry_run else ""
+    mode_prefix = "[CHECK] " if args.check else ""
     sys.stdout.write(
         f"{mode_prefix}Synchronizing translations with '{strings_path.as_posix()}'...\n\n"
     )
@@ -224,7 +256,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.sort:
         sys.stdout.write(f"{strings_path.name}:\n")
         if strings_changed:
-            action = "Would sort" if args.dry_run else "Sorted"
+            action = "Would sort" if args.check else "Sorted"
             sys.stdout.write(f"  {action} keys in alphabetical order.\n\n")
         else:
             sys.stdout.write("  In sync (keys already sorted).\n\n")
@@ -239,7 +271,7 @@ def main(argv: list[str] | None = None) -> int:
                 strings_data=strings_data,
                 strings_keys=strings_keys,
                 target_path=file_path,
-                dry_run=args.dry_run,
+                check_only=args.check,
                 sort_keys=args.sort,
             )
         except json.JSONDecodeError as err:
@@ -249,36 +281,22 @@ def main(argv: list[str] | None = None) -> int:
         file_stats.append((file_path.name, len(added), len(removed), content_changed))
         total_added += len(added)
         total_removed += len(removed)
-
-        sys.stdout.write(f"{file_path.name}:\n")
-        order_only_changed = content_changed and not added and not removed
-        if not added and not removed and not order_only_changed:
-            sys.stdout.write("  In sync (no changes).\n\n")
-            continue
-
-        action_add = "Would add" if args.dry_run else "Added"
-        action_rem = "Would remove" if args.dry_run else "Removed"
-        action_sort = "Would sort" if args.dry_run else "Sorted"
-
-        if added:
-            sys.stdout.write(f"  {action_add} ({len(added)} keys):\n")
-            for key in added:
-                sys.stdout.write(f"    + {key}\n")
-        if removed:
-            sys.stdout.write(f"  {action_rem} ({len(removed)} keys):\n")
-            for key in removed:
-                sys.stdout.write(f"    - {key}\n")
-        if args.sort and content_changed:
-            sys.stdout.write(f"  {action_sort} keys in alphabetical order.\n")
-        sys.stdout.write("\n")
+        report_file_sync(
+            file_name=file_path.name,
+            added=added,
+            removed=removed,
+            content_changed=content_changed,
+            check_only=args.check,
+            sort_keys=args.sort,
+        )
 
     summary_title = (
-        "[DRY RUN] Summary of planned changes:" if args.dry_run else "Summary:"
+        "[CHECK] Summary of changes:" if args.check else "Summary:"
     )
     sys.stdout.write(f"{summary_title}\n")
     if args.sort:
         if strings_changed:
-            status = "to sort" if args.dry_run else "sorted"
+            status = "to sort" if args.check else "sorted"
             sys.stdout.write(f"  {strings_path.name}: {status}\n")
         else:
             sys.stdout.write(f"  {strings_path.name}: in sync\n")
@@ -286,14 +304,14 @@ def main(argv: list[str] | None = None) -> int:
     for name, add_count, rem_count, changed in file_stats:
         if add_count == 0 and rem_count == 0:
             if changed and args.sort:
-                status = "in sync (to sort)" if args.dry_run else "in sync (sorted)"
+                status = "in sync (to sort)" if args.check else "in sync (sorted)"
                 sys.stdout.write(f"  {name}: {status}\n")
             else:
                 sys.stdout.write(f"  {name}: in sync\n")
         else:
             sort_suffix = ""
             if changed and args.sort:
-                sort_suffix = " (to sort)" if args.dry_run else " (sorted)"
+                sort_suffix = " (to sort)" if args.check else " (sorted)"
             sys.stdout.write(f"  {name}: +{add_count}, -{rem_count}{sort_suffix}\n")
 
     sys.stdout.write(
@@ -301,8 +319,19 @@ def main(argv: list[str] | None = None) -> int:
         f"{len(file_stats)} file(s).\n"
     )
 
-    if args.dry_run:
-        sys.stdout.write("Dry run complete: no files were modified.\n")
+    has_changes = (
+        strings_changed
+        or total_added > 0
+        or total_removed > 0
+        or any(changed for _, _, _, changed in file_stats)
+    )
+
+    if args.check:
+        if has_changes:
+            sys.stdout.write("Check failed: translation files are out of sync.\n")
+            return 1
+        sys.stdout.write("Check passed: translation files are in sync.\n")
+        return 0
 
     return 0
 
