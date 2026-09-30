@@ -47,6 +47,28 @@ def test_sort_dict() -> None:
     assert list(sorted_data["a"].keys()) == ["b", "d"]
 
 
+def test_sync_dict_nested_both() -> None:
+    """Test recursive synchronization when both strings and target have dicts."""
+    strings = {
+        "section": {
+            "key1": "Value 1",
+            "key2": "Value 2",
+        }
+    }
+    target = {
+        "section": {
+            "key1": "Translated 1",
+        }
+    }
+    synced = sync_dict(strings, target)
+    assert synced == {
+        "section": {
+            "key1": "Translated 1",
+            "key2": "Value 2",
+        }
+    }
+
+
 def test_sync_dict_add_missing_keys() -> None:
     """Test missing keys in target are added from strings."""
     strings = {
@@ -187,6 +209,20 @@ def test_resolve_paths_cwd(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> N
     assert t == tmp_path / "translations"
 
 
+def test_resolve_paths_component_subdir(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Test resolve_paths detects custom_components/plum_ecomax in cwd."""
+    monkeypatch.chdir(tmp_path)
+    comp_dir = tmp_path / "custom_components" / "plum_ecomax"
+    (comp_dir / "translations").mkdir(parents=True)
+    (comp_dir / "strings.json").write_text("{}", encoding="utf-8")
+
+    s, t = resolve_paths(None, None)
+    assert s == comp_dir / "strings.json"
+    assert t == comp_dir / "translations"
+
+
 def test_resolve_paths_repo_root(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -306,6 +342,56 @@ def test_main_cli_sort_dry_run(tmp_path: Path) -> None:
     # Neither file should be modified
     assert strings_file.read_text(encoding="utf-8") == strings_content
     assert de_file.read_text(encoding="utf-8") == de_content
+
+
+def test_main_cli_sort_dry_run_with_add_remove(tmp_path: Path) -> None:
+    """Test main CLI execution with --sort, --dry-run and added/removed keys."""
+    strings_file = tmp_path / "strings.json"
+    strings_file.write_text(json.dumps({"b": "B", "a": "A"}), encoding="utf-8")
+
+    trans_dir = tmp_path / "translations"
+    trans_dir.mkdir()
+    de_file = trans_dir / "de.json"
+    de_file.write_text(
+        json.dumps({"b": "Translated B", "old": "Old"}), encoding="utf-8"
+    )
+
+    ret = main(
+        [
+            "--strings",
+            str(strings_file),
+            "--translations",
+            str(trans_dir),
+            "--sort",
+            "--dry-run",
+        ]
+    )
+    assert ret == 0
+
+
+def test_main_cli_sort_with_add_remove(tmp_path: Path) -> None:
+    """Test main CLI execution with --sort and added/removed keys."""
+    strings_file = tmp_path / "strings.json"
+    strings_file.write_text(json.dumps({"b": "B", "a": "A"}), encoding="utf-8")
+
+    trans_dir = tmp_path / "translations"
+    trans_dir.mkdir()
+    de_file = trans_dir / "de.json"
+    de_file.write_text(
+        json.dumps({"b": "Translated B", "old": "Old"}), encoding="utf-8"
+    )
+
+    ret = main(
+        [
+            "--strings",
+            str(strings_file),
+            "--translations",
+            str(trans_dir),
+            "--sort",
+        ]
+    )
+    assert ret == 0
+    assert list(json.loads(de_file.read_text(encoding="utf-8")).keys()) == ["a", "b"]
 
 
 def test_main_sort_already_sorted(tmp_path: Path) -> None:
