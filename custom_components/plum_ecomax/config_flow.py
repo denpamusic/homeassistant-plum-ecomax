@@ -21,7 +21,6 @@ from homeassistant.components.sensor.const import (
     CONF_STATE_CLASS,
     DEVICE_CLASS_STATE_CLASSES,
     DEVICE_CLASS_UNITS as SENSOR_DEVICE_CLASS_UNITS,
-    SensorDeviceClass,
     SensorStateClass,
 )
 from homeassistant.config_entries import (
@@ -41,8 +40,22 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers import entity_registry as er, selector
+from homeassistant.helpers import entity_registry as er
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.selector import (
+    DeviceClassSelector,
+    DeviceClassSelectorConfig,
+    NumberSelector,
+    NumberSelectorConfig,
+    NumberSelectorMode,
+    SelectOptionDict,
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+    StateClassSelector,
+    StateClassSelectorConfig,
+    TextSelector,
+)
 from pyplumio.connection import Connection
 from pyplumio.const import ProductType
 from pyplumio.devices import LogicalDevice, PhysicalDevice
@@ -479,7 +492,7 @@ def _entity_keys_for_config_entry(
 
 def _custom_entity_options(
     entities: dict[str, Any],
-) -> list[selector.SelectOptionDict]:
+) -> list[SelectOptionDict]:
     """Return custom entity options."""
     platforms = list(PLATFORM_TYPES)
     entities = {
@@ -490,7 +503,7 @@ def _custom_entity_options(
     }
     entities = dict(sorted(entities.items(), key=lambda item: item[1]))
 
-    return [selector.SelectOptionDict(value=k, label=v) for k, v in entities.items()]
+    return [SelectOptionDict(value=k, label=v) for k, v in entities.items()]
 
 
 def _is_valid_source(platform: Platform, value: Any) -> bool:
@@ -545,8 +558,8 @@ def generate_select_schema(entities: dict[str, Any]) -> vol.Schema | None:
 
     return vol.Schema(
         {
-            vol.Required("entity_id"): selector.SelectSelector(
-                selector.SelectSelectorConfig(options=options)
+            vol.Required("entity_id"): SelectSelector(
+                SelectSelectorConfig(options=options)
             )
         }
     )
@@ -554,7 +567,7 @@ def generate_select_schema(entities: dict[str, Any]) -> vol.Schema | None:
 
 def generate_edit_schema(
     platform: Platform,
-    source_options: list[selector.SelectOptionDict],
+    source_options: list[SelectOptionDict],
     entity: dict[str, Any],
 ) -> vol.Schema:
     """Generate schema."""
@@ -562,12 +575,10 @@ def generate_edit_schema(
     schema: dict[vol.Marker, Any] = {
         vol.Required(
             CONF_NAME, default=entity.get(CONF_NAME, vol.UNDEFINED)
-        ): selector.TextSelector(),
+        ): TextSelector(),
         vol.Required(
             CONF_KEY, default=entity.get(CONF_KEY, vol.UNDEFINED)
-        ): selector.SelectSelector(
-            selector.SelectSelectorConfig(options=source_options)
-        ),
+        ): SelectSelector(SelectSelectorConfig(options=source_options)),
     }
 
     if platform is Platform.SENSOR:
@@ -575,8 +586,8 @@ def generate_edit_schema(
             vol.Optional(
                 CONF_UNIT_OF_MEASUREMENT,
                 default=entity.get(CONF_UNIT_OF_MEASUREMENT, vol.UNDEFINED),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
+            ): SelectSelector(
+                SelectSelectorConfig(
                     options=list(
                         {
                             str(unit)
@@ -585,7 +596,7 @@ def generate_edit_schema(
                             if unit is not None
                         }
                     ),
-                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    mode=SelectSelectorMode.DROPDOWN,
                     translation_key="sensor_unit_of_measurement",
                     custom_value=True,
                     sort=True,
@@ -594,38 +605,27 @@ def generate_edit_schema(
             vol.Optional(
                 CONF_DEVICE_CLASS,
                 default=entity.get(CONF_DEVICE_CLASS, vol.UNDEFINED),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=[
-                        cls.value
-                        for cls in SensorDeviceClass
-                        if cls != SensorDeviceClass.ENUM
-                    ],
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key="sensor_device_class",
-                    sort=True,
-                ),
-            ),
+            ): DeviceClassSelector(DeviceClassSelectorConfig(domain=platform)),
             vol.Optional(
                 CONF_STATE_CLASS,
                 default=entity.get(CONF_STATE_CLASS, vol.UNDEFINED),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
-                    options=[cls.value for cls in SensorStateClass],
-                    mode=selector.SelectSelectorMode.DROPDOWN,
-                    translation_key="sensor_state_class",
-                    sort=True,
-                ),
+            ): StateClassSelector(
+                StateClassSelectorConfig(
+                    state_classes=[
+                        SensorStateClass.MEASUREMENT,
+                        SensorStateClass.TOTAL_INCREASING,
+                    ],
+                )
             ),
             vol.Optional(
                 CONF_UPDATE_INTERVAL, default=entity.get(CONF_UPDATE_INTERVAL, 10)
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
+            ): NumberSelector(
+                NumberSelectorConfig(
                     min=10,
                     max=60,
                     step=1,
                     unit_of_measurement=UnitOfTime.SECONDS,
-                    mode=selector.NumberSelectorMode.BOX,
+                    mode=NumberSelectorMode.BOX,
                 )
             ),
         }
@@ -635,10 +635,10 @@ def generate_edit_schema(
             vol.Optional(
                 CONF_DEVICE_CLASS,
                 default=entity.get(CONF_DEVICE_CLASS, vol.UNDEFINED),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
+            ): SelectSelector(
+                SelectSelectorConfig(
                     options=[cls.value for cls in BinarySensorDeviceClass],
-                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    mode=SelectSelectorMode.DROPDOWN,
                     translation_key="binary_sensor_device_class",
                     sort=True,
                 ),
@@ -649,8 +649,8 @@ def generate_edit_schema(
         schema |= {
             vol.Required(
                 CONF_MODE, default=entity.get(CONF_MODE, vol.UNDEFINED)
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
+            ): SelectSelector(
+                SelectSelectorConfig(
                     options=[NumberMode.AUTO, NumberMode.BOX, NumberMode.SLIDER],
                     translation_key="number_mode",
                 )
@@ -658,8 +658,8 @@ def generate_edit_schema(
             vol.Optional(
                 CONF_UNIT_OF_MEASUREMENT,
                 default=entity.get(CONF_UNIT_OF_MEASUREMENT, vol.UNDEFINED),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
+            ): SelectSelector(
+                SelectSelectorConfig(
                     options=list(
                         {
                             str(unit)
@@ -668,7 +668,7 @@ def generate_edit_schema(
                             if unit is not None
                         }
                     ),
-                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    mode=SelectSelectorMode.DROPDOWN,
                     translation_key="number_unit_of_measurement",
                     custom_value=True,
                     sort=True,
@@ -677,10 +677,10 @@ def generate_edit_schema(
             vol.Optional(
                 CONF_DEVICE_CLASS,
                 default=entity.get(CONF_DEVICE_CLASS, vol.UNDEFINED),
-            ): selector.SelectSelector(
-                selector.SelectSelectorConfig(
+            ): SelectSelector(
+                SelectSelectorConfig(
                     options=[cls.value for cls in NumberDeviceClass],
-                    mode=selector.SelectSelectorMode.DROPDOWN,
+                    mode=SelectSelectorMode.DROPDOWN,
                     translation_key="number_device_class",
                     sort=True,
                 ),
@@ -727,8 +727,8 @@ class OptionsFlowHandler(OptionsFlowWithReload):
             step_id="add_entity",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_SOURCE_DEVICE): selector.SelectSelector(
-                        selector.SelectSelectorConfig(
+                    vol.Required(CONF_SOURCE_DEVICE): SelectSelector(
+                        SelectSelectorConfig(
                             options=self._source_device_select_options()
                         )
                     )
@@ -973,20 +973,20 @@ class OptionsFlowHandler(OptionsFlowWithReload):
 
     def _entity_source_select_options(
         self, selected: str = ""
-    ) -> list[selector.SelectOptionDict]:
+    ) -> list[SelectOptionDict]:
         """Return source options."""
         source_candidates = self._entity_source_candidates(selected)
         data = dict(sorted(source_candidates.items()))
 
         return [
-            selector.SelectOptionDict(
+            SelectOptionDict(
                 value=str(k), label=f"{k} (value: {_format_source_value(v)})"
             )
             for k, v in data.items()
             if _is_valid_source(self.platform, v)
         ]
 
-    def _source_device_select_options(self) -> list[selector.SelectOptionDict]:
+    def _source_device_select_options(self) -> list[SelectOptionDict]:
         """Return source device options."""
         model = self.connection.model
         device = self.connection.device
@@ -1006,7 +1006,7 @@ class OptionsFlowHandler(OptionsFlowWithReload):
                 for thermostat in thermostats
             }
 
-        return [selector.SelectOptionDict(value=k, label=v) for k, v in sources.items()]
+        return [SelectOptionDict(value=k, label=v) for k, v in sources.items()]
 
     def _number_native_step(self, key: str) -> float:
         """Return native step for the number entity."""
