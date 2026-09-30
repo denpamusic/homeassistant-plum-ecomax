@@ -197,7 +197,8 @@ max-complexity = 25
 [tool.coverage.report]
 exclude_lines = [
     "if TYPE_CHECKING:",
-    "@overload"
+    "@overload",
+    "if __name__ == .__main__.:"
 ]
 
 [tool.tox]
@@ -219,7 +220,7 @@ legacy_tox_ini = """
         -r{toxinidir}/requirements_test.txt
 
     commands =
-        coverage run --source=custom_components/plum_ecomax -m pytest tests/
+        coverage run --source=custom_components/plum_ecomax,scripts -m pytest tests/
         coverage report -m
 
     [testenv:lint]

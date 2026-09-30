@@ -3,6 +3,8 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from scripts.sync_translations import (
     get_all_keys,
     main,
@@ -26,6 +28,8 @@ def test_get_all_keys() -> None:
         },
     }
     assert get_all_keys(data) == {"a", "b.c", "b.d.e", "b.empty"}
+    assert get_all_keys({}, prefix="empty_root") == {"empty_root"}
+    assert get_all_keys("scalar", prefix="leaf") == {"leaf"}
 
 
 def test_sort_dict() -> None:
@@ -172,6 +176,27 @@ def test_resolve_paths_explicit(tmp_path: Path) -> None:
     assert t == translations
 
 
+def test_resolve_paths_cwd(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test resolve_paths detects strings.json and translations in cwd."""
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "strings.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "translations").mkdir()
+
+    s, t = resolve_paths(None, None)
+    assert s == tmp_path / "strings.json"
+    assert t == tmp_path / "translations"
+
+
+def test_resolve_paths_repo_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Test resolve_paths fallback when run in a directory without files."""
+    monkeypatch.chdir(tmp_path)
+    s, t = resolve_paths(None, None)
+    assert s.name == "strings.json"
+    assert t.name == "translations"
+
+
 def test_main_cli_dry_run(tmp_path: Path) -> None:
     """Test main CLI execution with dry-run."""
     strings_file = tmp_path / "strings.json"
@@ -283,6 +308,28 @@ def test_main_cli_sort_dry_run(tmp_path: Path) -> None:
     assert de_file.read_text(encoding="utf-8") == de_content
 
 
+def test_main_sort_already_sorted(tmp_path: Path) -> None:
+    """Test running --sort when keys are already sorted."""
+    strings_file = tmp_path / "strings.json"
+    strings_file.write_text(json.dumps({"a": "A", "b": "B"}), encoding="utf-8")
+
+    trans_dir = tmp_path / "translations"
+    trans_dir.mkdir()
+    de_file = trans_dir / "de.json"
+    de_file.write_text(json.dumps({"a": "A", "b": "B"}), encoding="utf-8")
+
+    ret = main(
+        [
+            "--strings",
+            str(strings_file),
+            "--translations",
+            str(trans_dir),
+            "--sort",
+        ]
+    )
+    assert ret == 0
+
+
 def test_main_missing_strings(tmp_path: Path) -> None:
     """Test main returns error on missing strings.json."""
     missing = tmp_path / "nonexistent.json"
@@ -299,3 +346,39 @@ def test_main_missing_translations(tmp_path: Path) -> None:
     missing_dir = tmp_path / "nonexistent_dir"
     ret = main(["--strings", str(strings), "--translations", str(missing_dir)])
     assert ret == 1
+
+
+def test_main_invalid_json_strings(tmp_path: Path) -> None:
+    """Test main returns error on corrupted strings.json."""
+    strings = tmp_path / "strings.json"
+    strings.write_text("{bad json", encoding="utf-8")
+    trans_dir = tmp_path / "translations"
+    trans_dir.mkdir()
+    ret = main(["--strings", str(strings), "--translations", str(trans_dir)])
+    assert ret == 1
+
+
+def test_main_invalid_json_translation(tmp_path: Path) -> None:
+    """Test main skips corrupted translation files gracefully."""
+    strings = tmp_path / "strings.json"
+    strings.write_text(json.dumps({"a": "1"}), encoding="utf-8")
+    trans_dir = tmp_path / "translations"
+    trans_dir.mkdir()
+    bad_file = trans_dir / "bad.json"
+    bad_file.write_text("{corrupt", encoding="utf-8")
+    good_file = trans_dir / "good.json"
+    good_file.write_text("{}", encoding="utf-8")
+
+    ret = main(["--strings", str(strings), "--translations", str(trans_dir)])
+    assert ret == 0
+    assert json.loads(good_file.read_text(encoding="utf-8")) == {"a": "1"}
+
+
+def test_main_no_translation_files(tmp_path: Path) -> None:
+    """Test main when translations directory has no json files."""
+    strings = tmp_path / "strings.json"
+    strings.write_text("{}", encoding="utf-8")
+    trans_dir = tmp_path / "translations"
+    trans_dir.mkdir()
+    ret = main(["--strings", str(strings), "--translations", str(trans_dir)])
+    assert ret == 0
