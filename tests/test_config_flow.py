@@ -597,6 +597,25 @@ async def test_abort_config_entry_not_ready(
         (
             "ecomax",
             COMMON_TYPE_MENU_OPTIONS,
+            Platform.SENSOR,
+            {
+                CONF_NAME: "Custom sensor",
+                CONF_KEY: "custom_sensor",
+                CONF_DEVICE_CLASS: SensorDeviceClass.DATE,
+                CONF_STATE_CLASS: SensorStateClass.MEASUREMENT,
+                CONF_UPDATE_INTERVAL: 10,
+            },
+            {},
+            {
+                CONF_STATE_CLASS: (
+                    "'measurement' is not a valid state class for device class "
+                    "'date'; expected no state class"
+                )
+            },
+        ),
+        (
+            "ecomax",
+            COMMON_TYPE_MENU_OPTIONS,
             Platform.NUMBER,
             {
                 CONF_NAME: "Custom number",
@@ -792,6 +811,7 @@ async def test_abort_config_entry_not_ready(
         "ecoMAX sensor",
         "ecoMAX sensor with invalid unit",
         "ecoMAX sensor with invalid state class",
+        "ecoMAX sensor with unsupported state class",
         "ecoMAX number",
         "ecoMAX number with invalid unit",
         "ecoMAX switch",

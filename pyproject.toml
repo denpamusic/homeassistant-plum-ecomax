@@ -9,7 +9,7 @@ authors = [
 ]
 license = "MIT"
 dependencies = [
-    "homeassistant>=2026.9.4",
+    "homeassistant>=2026.10.0",
     "pyplumio==0.7.1",
 ]
 
@@ -21,7 +21,7 @@ dev = [
     "packaging>=24.2",
     "prek==0.5.7",
     "pytest-cov>=7.1.0",
-    "pytest-homeassistant-custom-component==0.13.373",
+    "pytest-homeassistant-custom-component==0.13.375",
     "pytest-xdist>=3.8.0",
     "ruff==0.17.2",
 ]
