@@ -229,9 +229,9 @@ legacy_tox_ini = """
         -r{toxinidir}/requirements_test.txt
 
     commands =
-        pre-commit run codespell --all-files
-        pre-commit run ruff --all-files
-        pre-commit run check-json --all-files
+        prek run codespell --all-files
+        prek run ruff-check --all-files
+        prek run check-json --all-files
 
     [testenv:test]
     deps =

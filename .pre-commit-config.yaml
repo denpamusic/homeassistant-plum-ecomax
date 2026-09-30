@@ -5,18 +5,16 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.16.9
     hooks:
-      - id: ruff
-        args:
-          - --fix
+      - id: ruff-check
+      - id: ruff-format
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.3
     hooks:
       - id: codespell
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+  - repo: "builtin"
     hooks:
       - id: check-json
-        exclude: (.vscode|.devcontainer)
+        exclude: (.vscode|tests/)
   - repo: local
     hooks:
       - id: sync-translations
