@@ -1,6 +1,6 @@
 aiohttp_cors>=0.8.1
 codespell==2.4.3
-coverage>=7.15.4
+coverage>=7.16.2
 fnv-hash-fast>=2.0.3
 prek==0.5.4
 mypy-dev==2.4.0a3
