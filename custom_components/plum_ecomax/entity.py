@@ -370,16 +370,28 @@ class MixerEntity(EcomaxEntity):
         return cast(Mixer, device.data[ATTR_MIXERS][self.index])
 
 
+@dataclass(frozen=True, kw_only=True)
+class RegdataEntityDescription(EcomaxEntityDescription):
+    """Describes a regulator data entity.
+
+    Custom entities use the numeric regdata key as the entity key,
+    built-in entities use a named key with an explicit regdata key.
+    """
+
+    regdata_key: int | None = None
+
+
 class RegdataEntity(EcomaxEntity):
     """Represents a regulator data entity."""
 
     _regdata_key: int
 
     def __init__(
-        self, connection: EcomaxConnection, description: EcomaxEntityDescription
+        self, connection: EcomaxConnection, description: RegdataEntityDescription
     ) -> None:
         """Initialize a new regdata entity."""
-        self._regdata_key = int(description.key)
+        regdata_key = description.regdata_key
+        self._regdata_key = int(description.key) if regdata_key is None else regdata_key
         super().__init__(connection, description)
 
     async def async_added_to_hass(self) -> None:

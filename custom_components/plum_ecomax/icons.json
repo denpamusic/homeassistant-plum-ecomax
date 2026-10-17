@@ -138,6 +138,9 @@
       "fan_power": {
         "default": "mdi:fan"
       },
+      "feeder_time": {
+        "default": "mdi:timer-outline"
+      },
       "flame_intensity": {
         "default": "mdi:fire"
       },
@@ -147,8 +150,20 @@
       "fuel_level": {
         "default": "mdi:gas-station"
       },
+      "kindling_count": {
+        "default": "mdi:fire"
+      },
       "oxygen_level": {
         "default": "mdi:weather-windy-variant"
+      },
+      "power_100_time": {
+        "default": "mdi:timer-outline"
+      },
+      "power_30_time": {
+        "default": "mdi:timer-outline"
+      },
+      "power_50_time": {
+        "default": "mdi:timer-outline"
       },
       "service_password": {
         "default": "mdi:form-textbox-password"

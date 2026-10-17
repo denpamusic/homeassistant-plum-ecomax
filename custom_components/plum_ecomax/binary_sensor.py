@@ -27,6 +27,7 @@ from .entity import (
     EcomaxEntityDescription,
     MixerEntity,
     RegdataEntity,
+    RegdataEntityDescription,
     ThermostatEntity,
     async_get_by_modules,
     async_get_by_product_type,
@@ -244,7 +245,9 @@ def async_setup_custom_mixer_binary_sensors(
 
 
 @dataclass(frozen=True, kw_only=True)
-class RegdataBinarySensorEntityDescription(EcomaxBinarySensorEntityDescription):
+class RegdataBinarySensorEntityDescription(
+    EcomaxBinarySensorEntityDescription, RegdataEntityDescription
+):
     """Describes a regulator data binary sensor."""
 
 

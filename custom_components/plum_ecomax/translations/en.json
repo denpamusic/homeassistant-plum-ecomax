@@ -761,6 +761,9 @@
           }
         }
       },
+      "draft": {
+        "name": "Draft"
+      },
       "ecomax_state": {
         "name": "State",
         "state": {
@@ -790,6 +793,9 @@
       "feeder_temp": {
         "name": "Feeder temperature"
       },
+      "feeder_time": {
+        "name": "Feeder operating time"
+      },
       "fireplace_temp": {
         "name": "Fireplace temperature"
       },
@@ -809,6 +815,9 @@
       "heating_temp": {
         "name": "Heating temperature"
       },
+      "kindling_count": {
+        "name": "Kindling count"
+      },
       "lower_buffer_temp": {
         "name": "Lower buffer temperature"
       },
@@ -826,6 +835,15 @@
       },
       "oxygen_level": {
         "name": "Oxygen level"
+      },
+      "power_100_time": {
+        "name": "Operating time at 100% power"
+      },
+      "power_30_time": {
+        "name": "Operating time at 30% power"
+      },
+      "power_50_time": {
+        "name": "Operating time at 50% power"
       },
       "return_temp": {
         "name": "Return temperature"
@@ -855,6 +873,9 @@
       },
       "water_heater_temp": {
         "name": "Water heater temperature"
+      },
+      "water_pressure": {
+        "name": "Water pressure"
       }
     },
     "switch": {

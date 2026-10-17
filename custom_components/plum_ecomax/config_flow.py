@@ -90,6 +90,7 @@ from .const import (
     LOGICAL_DEVICES,
     DeviceType,
 )
+from .sensor import async_get_regdata_sensor_types
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -909,6 +910,10 @@ class OptionsFlowHandler(OptionsFlowWithReload):
     ) -> dict[int, Any]:
         """Return source candidates for regdata."""
         existing_keys = [int(key) for key in entity_keys if key.isnumeric()]
+        existing_keys += [
+            cast(int, description.regdata_key)
+            for description in async_get_regdata_sensor_types(self.connection)
+        ]
         regdata = cast(
             dict[int, Any], self.connection.device.get_nowait(ATTR_REGDATA, {})
         )

@@ -62,6 +62,7 @@ from custom_components.plum_ecomax.const import (
     DEFAULT_PORT,
     DOMAIN,
 )
+from tests.conftest import load_regdata_fixture
 
 
 @pytest.fixture(autouse=True)
@@ -865,6 +866,42 @@ async def test_add_entity(
     else:
         assert result5["type"] is FlowResultType.CREATE_ENTRY
         assert result5["data"] == {ATTR_ENTITIES: {platform: expected_data}}
+
+
+@pytest.mark.parametrize(
+    ("product", "builtin_keys_offered"),
+    (("ecomax_860p3_o", True), ("ecomax_860p4", False)),
+    indirect=["product"],
+)
+@pytest.mark.usefixtures("connection")
+async def test_add_regdata_entity_without_builtin_keys(
+    product: EcoMAX,
+    builtin_keys_offered: bool,
+    hass: HomeAssistant,
+    config_entry: MockConfigEntry,
+    setup_config_entry,
+) -> None:
+    """Test that regdata keys with built-in sensors are not offered."""
+    await product.load(
+        {ATTR_REGDATA: load_regdata_fixture("regdata__ecomax_860p3_o.json")}
+    )
+    await setup_config_entry()
+    result = await setup_options_flow(hass, config_entry)
+    result2 = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "add_entity"}
+    )
+    result3 = await hass.config_entries.options.async_configure(
+        result2["flow_id"], {CONF_SOURCE_DEVICE: ATTR_REGDATA}
+    )
+    result4 = await hass.config_entries.options.async_configure(
+        result3["flow_id"], user_input={"next_step_id": "add_sensor"}
+    )
+    assert result4["data_schema"]
+    select_config: dict[str, Any] = result4["data_schema"].schema["key"].config
+    keys = {int(option["value"]) for option in select_config["options"]}
+    assert 1792 in keys
+    assert (65 in keys) is builtin_keys_offered
+    assert (66 in keys) is builtin_keys_offered
 
 
 @pytest.mark.usefixtures("ecomax_860p3_o", "mixers")

@@ -761,6 +761,9 @@
           }
         }
       },
+      "draft": {
+        "name": "Tirage"
+      },
       "ecomax_state": {
         "name": "Etat",
         "state": {
@@ -790,6 +793,9 @@
       "feeder_temp": {
         "name": "Température de l'alimentation"
       },
+      "feeder_time": {
+        "name": "Temps de fonctionnement de l'alimentation"
+      },
       "fireplace_temp": {
         "name": "Température du foyer"
       },
@@ -809,6 +815,9 @@
       "heating_temp": {
         "name": "Température de chauffage"
       },
+      "kindling_count": {
+        "name": "Nombre d'allumages"
+      },
       "lower_buffer_temp": {
         "name": "Température du ballon bas"
       },
@@ -826,6 +835,15 @@
       },
       "oxygen_level": {
         "name": "Niveau d'oxygène"
+      },
+      "power_100_time": {
+        "name": "Temps de fonctionnement à 100% de puissance"
+      },
+      "power_30_time": {
+        "name": "Temps de fonctionnement à 30% de puissance"
+      },
+      "power_50_time": {
+        "name": "Temps de fonctionnement à 50% de puissance"
       },
       "return_temp": {
         "name": "Température de retour"
@@ -855,6 +873,9 @@
       },
       "water_heater_temp": {
         "name": "Température du chauffe eauw"
+      },
+      "water_pressure": {
+        "name": "Pression d'eau"
       }
     },
     "switch": {

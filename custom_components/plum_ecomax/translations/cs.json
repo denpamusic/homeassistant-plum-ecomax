@@ -761,6 +761,9 @@
           }
         }
       },
+      "draft": {
+        "name": "Podtlak"
+      },
       "ecomax_state": {
         "name": "State",
         "state": {
@@ -790,6 +793,9 @@
       "feeder_temp": {
         "name": "Teplota podavače"
       },
+      "feeder_time": {
+        "name": "Doba provozu podavače"
+      },
       "fireplace_temp": {
         "name": "Teplota ohniště"
       },
@@ -809,6 +815,9 @@
       "heating_temp": {
         "name": "Teplota ohřevu"
       },
+      "kindling_count": {
+        "name": "Počet zapálení"
+      },
       "lower_buffer_temp": {
         "name": "Spodní teplota vyrovnávače"
       },
@@ -826,6 +835,15 @@
       },
       "oxygen_level": {
         "name": "Hodnota okysličení"
+      },
+      "power_100_time": {
+        "name": "Doba provozu na 100% výkonu"
+      },
+      "power_30_time": {
+        "name": "Doba provozu na 30% výkonu"
+      },
+      "power_50_time": {
+        "name": "Doba provozu na 50% výkonu"
       },
       "return_temp": {
         "name": "Teplota zpátečky"
@@ -855,6 +873,9 @@
       },
       "water_heater_temp": {
         "name": "Teplota ohřívače vody"
+      },
+      "water_pressure": {
+        "name": "Tlak vody"
       }
     },
     "switch": {

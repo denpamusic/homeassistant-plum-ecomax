@@ -761,6 +761,9 @@
           }
         }
       },
+      "draft": {
+        "name": "Unterdruck"
+      },
       "ecomax_state": {
         "name": "Status",
         "state": {
@@ -790,6 +793,9 @@
       "feeder_temp": {
         "name": "Zuführungstemperatur"
       },
+      "feeder_time": {
+        "name": "Betriebszeit der Zuführung"
+      },
       "fireplace_temp": {
         "name": "Kamintemperatur"
       },
@@ -809,6 +815,9 @@
       "heating_temp": {
         "name": "Heizungstemperatur"
       },
+      "kindling_count": {
+        "name": "Anzahl der Zündungen"
+      },
       "lower_buffer_temp": {
         "name": "Pufferspeicher Temperatur unten"
       },
@@ -826,6 +835,15 @@
       },
       "oxygen_level": {
         "name": "Sauerstoffgehalt"
+      },
+      "power_100_time": {
+        "name": "Betriebszeit bei 100% Leistung"
+      },
+      "power_30_time": {
+        "name": "Betriebszeit bei 30% Leistung"
+      },
+      "power_50_time": {
+        "name": "Betriebszeit bei 50% Leistung"
       },
       "return_temp": {
         "name": "Rücklauftemperatur"
@@ -855,6 +873,9 @@
       },
       "water_heater_temp": {
         "name": "Warmwassertemperatur"
+      },
+      "water_pressure": {
+        "name": "Wasserdruck"
       }
     },
     "switch": {

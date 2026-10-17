@@ -761,6 +761,9 @@
           }
         }
       },
+      "draft": {
+        "name": "Podciśnienie w komorze spalania"
+      },
       "ecomax_state": {
         "name": "Tryb",
         "state": {
@@ -790,6 +793,9 @@
       "feeder_temp": {
         "name": "Temperatura podajnika"
       },
+      "feeder_time": {
+        "name": "Czas pracy podajnika"
+      },
       "fireplace_temp": {
         "name": "Temperatura kominkowa"
       },
@@ -809,6 +815,9 @@
       "heating_temp": {
         "name": "Temperatura CO"
       },
+      "kindling_count": {
+        "name": "Ilość rozpaleń"
+      },
       "lower_buffer_temp": {
         "name": "Temperatura dolna bufora"
       },
@@ -826,6 +835,15 @@
       },
       "oxygen_level": {
         "name": "Poziom tlenu"
+      },
+      "power_100_time": {
+        "name": "Czas pracy na mocy 100%"
+      },
+      "power_30_time": {
+        "name": "Czas pracy na mocy 30%"
+      },
+      "power_50_time": {
+        "name": "Czas pracy na mocy 50%"
       },
       "return_temp": {
         "name": "Temperatura powrotu"
@@ -855,6 +873,9 @@
       },
       "water_heater_temp": {
         "name": "Temperatura CWU"
+      },
+      "water_pressure": {
+        "name": "Ciśnienie wody"
       }
     },
     "switch": {
