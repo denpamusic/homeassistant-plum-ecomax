@@ -1027,3 +1027,24 @@ async def test_config_switch(
     mock_set_nowait.assert_called_once_with(key, STATE_ON)
     assert isinstance(state, State)
     assert state.state == STATE_ON
+
+
+@pytest.mark.usefixtures("ecomax_p", "extended_parameters")
+async def test_fuzzy_logic_switch_replaced_by_control_mode(
+    hass: HomeAssistant, setup_config_entry
+) -> None:
+    """Test fuzzy logic switch is not created with the control mode select."""
+    await setup_config_entry()
+    entity_registry = er.async_get(hass)
+    assert not entity_registry.async_get("switch.ecomax_fuzzy_logic_switch")
+    assert entity_registry.async_get("select.ecomax_control_mode")
+
+
+@pytest.mark.usefixtures("ecomax_p", "ecomax_860p4")
+async def test_fuzzy_logic_switch_without_extended_parameters(
+    hass: HomeAssistant, setup_config_entry
+) -> None:
+    """Test fuzzy logic switch is kept when the extended table never arrives."""
+    await setup_config_entry()
+    entity_registry = er.async_get(hass)
+    assert entity_registry.async_get("switch.ecomax_fuzzy_logic_switch")

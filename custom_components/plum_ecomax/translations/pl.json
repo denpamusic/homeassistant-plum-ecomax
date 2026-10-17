@@ -109,6 +109,9 @@
       }
     },
     "number": {
+      "airflow_correction": {
+        "name": "Korekta powietrza"
+      },
       "airflow_correction_100": {
         "name": "Korekta nadmuchu 100%"
       },
@@ -133,6 +136,12 @@
       "boiler_alert_temp": {
         "name": "Temperatura schładzania kotła"
       },
+      "boiler_cooling_temp": {
+        "name": "Temperatura schładzania kotła"
+      },
+      "boiler_output_limit": {
+        "name": "Ograniczenie max. mocy kotła"
+      },
       "boiler_power_100": {
         "name": "Max. moc kotła"
       },
@@ -151,14 +160,32 @@
       "buffer_load_stop": {
         "name": "Temperatura zakończenia ładowania"
       },
+      "burner_cleaning_interval": {
+        "name": "Czyszczenie palnika"
+      },
       "burning_off_airflow_power": {
         "name": "Nadmuch wygaszania"
       },
       "burning_off_cleaning_time": {
         "name": "Czas czyszczenia w wygaszaniu"
       },
+      "burning_off_detection_delta_temp": {
+        "name": "Delta detekcji wygaszania"
+      },
+      "burning_off_detection_end_temp": {
+        "name": "Próg końca detekcji"
+      },
+      "burning_off_detection_start_temp": {
+        "name": "Próg rozpoczęcia detekcji"
+      },
+      "burning_off_draft": {
+        "name": "Podciśnienie wygaszania"
+      },
       "burning_off_fan_pause": {
         "name": "Czas przerwy nadmuchu WYGASZANIE"
+      },
+      "burning_off_fan_speed": {
+        "name": "Nadmuch wygaszania"
       },
       "burning_off_fan_work": {
         "name": "Czas pracy nadmuchu WYGASZANIE"
@@ -193,11 +220,47 @@
       "day_target_circuit_temp": {
         "name": "Temperatura zadana dzień"
       },
+      "draft_100": {
+        "name": "Podciśnienie 100%"
+      },
+      "draft_30": {
+        "name": "Podciśnienie 30%"
+      },
+      "draft_50": {
+        "name": "Podciśnienie 50%"
+      },
+      "draft_alarm_max": {
+        "name": "Max. podciśnienie (alarm)"
+      },
+      "draft_alarm_min": {
+        "name": "Min. podciśnienie (alarm)"
+      },
+      "draft_correction": {
+        "name": "Korekcja pomiaru podciśnienia"
+      },
+      "exhaust_fan_pi_gain": {
+        "name": "Wzmocnienie reg. PI wyciągu"
+      },
       "external_boiler_temp": {
         "name": "Kocioł rezerwowy"
       },
+      "fan_pi_integral": {
+        "name": "Stała całkowania reg. PI wentylatora"
+      },
+      "fan_power_decrease_delay": {
+        "name": "Opóźnienie obniżenia mocy wentylatora"
+      },
       "fan_power_gain": {
         "name": "Wzmocnienie mocy nadmuchu"
+      },
+      "fan_speed_100": {
+        "name": "Moc nadmuchu 100%"
+      },
+      "fan_speed_30": {
+        "name": "Moc nadmuchu 30%"
+      },
+      "fan_speed_50": {
+        "name": "Moc nadmuchu 50%"
       },
       "feed2_h1": {
         "name": "Podajnik dodatkowy H1"
@@ -233,6 +296,9 @@
         "name": "Kaloryczność paliwa",
         "unit_of_measurement": "kWh/kg"
       },
+      "fuel_correction": {
+        "name": "Korekta paliwa"
+      },
       "fuel_detection_exhaust_temp": {
         "name": "Temperatura spalin braku opału"
       },
@@ -260,6 +326,21 @@
       "fuel_flow_correction": {
         "name": "Korekta strumienia paliwa"
       },
+      "full_power_down_cycles": {
+        "name": "Cykle pełnego przejścia w dół"
+      },
+      "full_power_up_cycles": {
+        "name": "Cykle pełnego przejścia w górę"
+      },
+      "fuzzy_logic_a": {
+        "name": "Parametr A FuzzyLogic"
+      },
+      "fuzzy_logic_b": {
+        "name": "Parametr B FuzzyLogic"
+      },
+      "fuzzy_logic_c": {
+        "name": "Parametr C FuzzyLogic"
+      },
       "fuzzy_logic_fuel_flow_correction": {
         "name": "Korekta strumienia paliwa FL"
       },
@@ -272,8 +353,14 @@
       "fuzzy_logic_oxygen_correction": {
         "name": "Korekta tlenu FL"
       },
+      "glowing_duration": {
+        "name": "Czas rozżarzania"
+      },
       "grate_airflow_power": {
         "name": "Moc nadmuchu RUSZT"
+      },
+      "grate_cleaning_cycles": {
+        "name": "Cykle czyszczenia rusztu"
       },
       "grate_fan_pause": {
         "name": "Czas przerwy nadmuchu RUSZT"
@@ -296,6 +383,9 @@
       "h2_hysteresis": {
         "name": "50% Histereza H2"
       },
+      "heat_exchanger_cleaning_time": {
+        "name": "Czyszczenie wymiennika - praca"
+      },
       "heating_curve": {
         "name": "Krzywa grzewcza"
       },
@@ -308,11 +398,23 @@
       "heating_pump_enable_temp": {
         "name": "Temperatura załączenia pompy CO"
       },
+      "heating_pump_start_temp": {
+        "name": "Temperatura załączenia pompy CO"
+      },
+      "hopper_capacity": {
+        "name": "Pojemność zbiornika"
+      },
+      "ignition_test_time": {
+        "name": "Czas testu zapłonu"
+      },
       "increase_fan_support_mode": {
         "name": "Tryb zwiększonego wspomagania nadmuchu"
       },
       "increase_heating_temp_for_water_heater": {
         "name": "Podwyższenie temp. kotła od CWU i mieszacza"
+      },
+      "intermediate_boiler_output": {
+        "name": "Pośrednia moc kotła"
       },
       "kindling_airflow_delay": {
         "name": "Opóźnienie nadmuchu rozpalania"
@@ -323,10 +425,22 @@
       "kindling_delta_temp": {
         "name": "Delta temperatury kotła w rozpalaniu"
       },
+      "kindling_draft": {
+        "name": "Podciśnienie w rozpalaniu"
+      },
+      "kindling_duration": {
+        "name": "Czas rozpalania"
+      },
+      "kindling_fan_speed": {
+        "name": "Nadmuch rozpalania"
+      },
       "kindling_feeder_dose": {
         "name": "Dawka paliwa"
       },
       "kindling_feeder_work": {
+        "name": "Czas podawania w rozpalaniu"
+      },
+      "kindling_feeding_time": {
         "name": "Czas podawania w rozpalaniu"
       },
       "kindling_finish_exhaust_temp": {
@@ -344,6 +458,9 @@
       "kindling_min_power_time": {
         "name": "Czas rozżarzania"
       },
+      "kindling_temp_delta": {
+        "name": "Delta rozpalania"
+      },
       "kindling_test_time": {
         "name": "Czas testu zapłonu"
       },
@@ -353,8 +470,14 @@
       "lambda_correction_range": {
         "name": "Zakres korekcji nadmuchu"
       },
+      "max_boiler_output": {
+        "name": "Max. moc kotła"
+      },
       "max_boiler_power": {
         "name": "Górny limit mocy kotła"
+      },
+      "max_boiler_target_temp": {
+        "name": "Max. temperatura kotła"
       },
       "max_buffer_temp": {
         "name": "Max. temperatura bufora"
@@ -365,8 +488,14 @@
       "max_fan_boiler_power": {
         "name": "Moc nadmuchu przy maks. mocy kotła"
       },
+      "max_fan_output": {
+        "name": "Max. moc nadmuchu"
+      },
       "max_fan_power": {
         "name": "Max. moc nadmuchu"
+      },
+      "max_fan_speed": {
+        "name": "Max. obroty wentylatora"
       },
       "max_feeder_temp": {
         "name": "Max. temperatura podajnika"
@@ -383,20 +512,38 @@
       "max_water_heater_target_temp": {
         "name": "Max. temperatura CWU"
       },
+      "min_boiler_output": {
+        "name": "Min. moc kotła"
+      },
       "min_boiler_power": {
         "name": "Dolny limit mocy kotła"
+      },
+      "min_boiler_target_temp": {
+        "name": "Min. temperatura kotła"
       },
       "min_buffer_temp": {
         "name": "Min. temperatura bufora"
       },
+      "min_burning_off_duration": {
+        "name": "Min. czas wygaszania"
+      },
       "min_circuit_temp": {
         "name": "Min. temperatura obiegu"
+      },
+      "min_draft": {
+        "name": "Min. zadane podciśnienie"
       },
       "min_fan_boiler_power": {
         "name": "Moc nadmuchu przy min. mocy kotła"
       },
+      "min_fan_output": {
+        "name": "Min. moc nadmuchu"
+      },
       "min_fan_power": {
         "name": "Min. moc nadmuchu"
+      },
+      "min_fan_speed": {
+        "name": "Min. obroty wentylatora"
       },
       "min_heating_temp": {
         "name": "Min. temperatura kotła"
@@ -410,8 +557,17 @@
       "mixer_input_dead_zone": {
         "name": "Nieczułość mieszacza"
       },
+      "moving_grate_work_time": {
+        "name": "Praca ruchomego rusztu"
+      },
       "night_target_circuit_temp": {
         "name": "Temperatura zadana noc"
+      },
+      "no_fuel_detection_time": {
+        "name": "Czas detekcji braku paliwa"
+      },
+      "no_fuel_exhaust_temp": {
+        "name": "Temperatura spalin braku opału"
       },
       "oxygen_100": {
         "name": "100% Tlen"
@@ -437,6 +593,12 @@
       "stabilization_airflow_power": {
         "name": "Moc nadmuchu po rozpaleniu"
       },
+      "stabilization_draft": {
+        "name": "Podciśnienie po rozpaleniu"
+      },
+      "stabilization_fan_speed": {
+        "name": "Nadmuch po rozpaleniu"
+      },
       "stabilization_time": {
         "name": "Czas stabilizacji"
       },
@@ -455,11 +617,23 @@
       "supervision_airflow_power": {
         "name": "Moc nadmuchu NADZÓR"
       },
+      "supervision_boiler_output": {
+        "name": "Moc kotła w trybie NADZÓR"
+      },
       "supervision_cycle_duration": {
         "name": "Czas cyklu NADZÓR"
       },
+      "supervision_draft": {
+        "name": "Podciśnienie NADZÓR"
+      },
+      "supervision_duration": {
+        "name": "Czas nadzoru"
+      },
       "supervision_fan_pause": {
         "name": "Czas przerwy nadmuchu NADZÓR"
+      },
+      "supervision_fan_speed": {
+        "name": "Moc nadmuchu NADZÓR"
       },
       "supervision_fan_work": {
         "name": "Czas pracy nadmuchu NADZÓR"
@@ -485,6 +659,9 @@
       "target_mixer_temp": {
         "name": "Temperatura zadana mieszacza"
       },
+      "thermostat_decrease_boiler_temp": {
+        "name": "Obniżenie temperatury kotła od termostatu"
+      },
       "thermostat_decrease_target_temp": {
         "name": "Obniżenie temperatury od termostatu"
       },
@@ -503,6 +680,9 @@
       "warming_up_cycle_time": {
         "name": "Czas cyklu rozgrzewania"
       },
+      "warming_up_duration": {
+        "name": "Czas rozgrzewania"
+      },
       "warming_up_pause_time": {
         "name": "Czas przerwy rozgrzewania"
       },
@@ -520,6 +700,13 @@
       }
     },
     "select": {
+      "control_mode": {
+        "name": "Tryb regulacji",
+        "state": {
+          "fuzzy_logic": "FuzzyLogic",
+          "standard": "Standardowy"
+        }
+      },
       "mixer_work_mode": {
         "name": "Obsługa mieszacza",
         "state": {

@@ -15,6 +15,7 @@ from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
 from pyplumio.parameters import ParameterValues
 from pyplumio.parameters.ecomax import (
+    EXTENDED_PARAMETER_TYPES,
     EcomaxNumber,
     EcomaxNumberDescription,
     EcomaxSwitch,
@@ -27,6 +28,9 @@ from pyplumio.parameters.mixer import (
     MixerSwitchDescription,
 )
 from pyplumio.parameters.thermostat import ThermostatNumber, ThermostatNumberDescription
+from pyplumio.structures.ecomax_extended_parameters import (
+    ATTR_ECOMAX_EXTENDED_PARAMETERS,
+)
 from pyplumio.structures.ecomax_parameters import ATTR_ECOMAX_CONTROL
 from pyplumio.structures.network_info import NetworkInfo
 from pyplumio.structures.product_info import ProductInfo
@@ -462,6 +466,80 @@ async def ecomax_860p3_o(ecomax_p: EcoMAX) -> AsyncGenerator[EcoMAX]:
         product_model,
     ):
         yield ecomax_p
+
+
+@pytest.fixture
+def product(request: pytest.FixtureRequest) -> EcoMAX:
+    """Inject product data from the fixture named by the indirect parameter."""
+    return cast(EcoMAX, request.getfixturevalue(request.param))
+
+
+ECOMAX_860P4_MODEL: Final = "ecoMAX 860P4-NM TOUCH"
+
+# Raw extended parameter values read from the ecoMAX 860P4-NM TOUCH.
+ECOMAX_860P4_EXTENDED_PARAMETERS: Final[dict[int, ParameterValues]] = {
+    13: ParameterValues(value=140, min_value=106, max_value=255),
+    19: ParameterValues(value=19, min_value=15, max_value=255),
+    23: ParameterValues(value=1, min_value=0, max_value=2),
+    29: ParameterValues(value=14, min_value=1, max_value=255),
+    53: ParameterValues(value=18, min_value=1, max_value=255),
+    59: ParameterValues(value=70, min_value=40, max_value=255),
+    63: ParameterValues(value=70, min_value=40, max_value=255),
+    72: ParameterValues(value=50, min_value=1, max_value=60),
+    117: ParameterValues(value=0, min_value=0, max_value=30),
+    196: ParameterValues(value=27, min_value=10, max_value=250),
+    207: ParameterValues(value=101, min_value=0, max_value=200),
+}
+
+
+@pytest.fixture
+async def ecomax_860p4(ecomax_p: EcoMAX) -> AsyncGenerator[EcoMAX]:
+    """Inject data for ecoMAX 860P4-NM TOUCH.
+
+    (product_type: 0, product_id: 41)
+    """
+    await ecomax_p.load(
+        {
+            ATTR_PRODUCT: ProductInfo(
+                type=ProductType.ECOMAX_P,
+                id=41,
+                uid="TEST",
+                logo=1,
+                image=2816,
+                model=ECOMAX_860P4_MODEL,
+            ),
+        }
+    )
+
+    with (
+        patch(
+            "custom_components.plum_ecomax.connection.EcomaxConnection.model",
+            ECOMAX_860P4_MODEL,
+        ),
+        patch(
+            "custom_components.plum_ecomax.connection.EcomaxConnection.product_id",
+            41,
+        ),
+    ):
+        yield ecomax_p
+
+
+@pytest.fixture
+async def extended_parameters(ecomax_860p4: EcoMAX) -> EcoMAX:
+    """Inject ecoMAX 860P4-NM TOUCH extended parameters."""
+    await ecomax_860p4.dispatch(
+        ATTR_ECOMAX_EXTENDED_PARAMETERS,
+        [
+            (
+                index,
+                ECOMAX_860P4_EXTENDED_PARAMETERS.get(
+                    index, ParameterValues(value=1, min_value=0, max_value=255)
+                ),
+            )
+            for index in EXTENDED_PARAMETER_TYPES[(41, ECOMAX_860P4_MODEL)]
+        ],
+    )
+    return ecomax_860p4
 
 
 @pytest.fixture

@@ -95,6 +95,13 @@
       }
     },
     "select": {
+      "control_mode": {
+        "default": "mdi:tune-variant",
+        "state": {
+          "fuzzy_logic": "mdi:brain",
+          "standard": "mdi:tune-variant"
+        }
+      },
       "summer_mode": {
         "default": "mdi:sun-snowflake-variant",
         "state": {

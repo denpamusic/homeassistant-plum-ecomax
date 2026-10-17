@@ -109,6 +109,9 @@
       }
     },
     "number": {
+      "airflow_correction": {
+        "name": "Коррекция воздуха"
+      },
       "airflow_correction_100": {
         "name": "Airflow correction 100%"
       },
@@ -133,6 +136,12 @@
       "boiler_alert_temp": {
         "name": "Boiler cooling temperature"
       },
+      "boiler_cooling_temp": {
+        "name": "Температура начала охлаждения котла"
+      },
+      "boiler_output_limit": {
+        "name": "Ограничение мощности котла"
+      },
       "boiler_power_100": {
         "name": "Maximum boiler power (100%)"
       },
@@ -151,14 +160,32 @@
       "buffer_load_stop": {
         "name": "Buffer loading stop temperature"
       },
+      "burner_cleaning_interval": {
+        "name": "Интервал очистки горелки"
+      },
       "burning_off_airflow_power": {
         "name": "Burning off airflow power"
       },
       "burning_off_cleaning_time": {
         "name": "Burning off cleaning time"
       },
+      "burning_off_detection_delta_temp": {
+        "name": "Дельта обнаружения гашения"
+      },
+      "burning_off_detection_end_temp": {
+        "name": "Порог окончания обнаружения гашения"
+      },
+      "burning_off_detection_start_temp": {
+        "name": "Порог начала обнаружения гашения"
+      },
+      "burning_off_draft": {
+        "name": "Разрежение при гашении"
+      },
       "burning_off_fan_pause": {
         "name": "Burning off fan pause time"
+      },
+      "burning_off_fan_speed": {
+        "name": "Обороты вентилятора при гашении"
       },
       "burning_off_fan_work": {
         "name": "Burning off fan work time"
@@ -193,11 +220,47 @@
       "day_target_circuit_temp": {
         "name": "Дневная температура контура"
       },
+      "draft_100": {
+        "name": "Разрежение 100%"
+      },
+      "draft_30": {
+        "name": "Разрежение 30%"
+      },
+      "draft_50": {
+        "name": "Разрежение 50%"
+      },
+      "draft_alarm_max": {
+        "name": "Сигнализация максимального разрежения"
+      },
+      "draft_alarm_min": {
+        "name": "Сигнализация минимального разрежения"
+      },
+      "draft_correction": {
+        "name": "Коррекция измерения разрежения"
+      },
+      "exhaust_fan_pi_gain": {
+        "name": "Коэффициент усиления ПИ-регулятора дымососа"
+      },
       "external_boiler_temp": {
         "name": "Reserve boiler temperature"
       },
+      "fan_pi_integral": {
+        "name": "Время интегрирования ПИ-регулятора вентилятора"
+      },
+      "fan_power_decrease_delay": {
+        "name": "Задержка снижения мощности вентилятора"
+      },
       "fan_power_gain": {
         "name": "Fan power gain"
+      },
+      "fan_speed_100": {
+        "name": "Обороты вентилятора 100%"
+      },
+      "fan_speed_30": {
+        "name": "Обороты вентилятора 30%"
+      },
+      "fan_speed_50": {
+        "name": "Обороты вентилятора 50%"
       },
       "feed2_h1": {
         "name": "Feeder 2 H1"
@@ -233,6 +296,9 @@
         "name": "Теплотворность топлива",
         "unit_of_measurement": "кВтч/кг"
       },
+      "fuel_correction": {
+        "name": "Коррекция топлива"
+      },
       "fuel_detection_exhaust_temp": {
         "name": "No fuel exhaust temperature"
       },
@@ -260,6 +326,21 @@
       "fuel_flow_correction": {
         "name": "Fuel flow correction"
       },
+      "full_power_down_cycles": {
+        "name": "Циклы полного снижения мощности"
+      },
+      "full_power_up_cycles": {
+        "name": "Циклы полного повышения мощности"
+      },
+      "fuzzy_logic_a": {
+        "name": "Параметр A Fuzzy logic"
+      },
+      "fuzzy_logic_b": {
+        "name": "Параметр B Fuzzy logic"
+      },
+      "fuzzy_logic_c": {
+        "name": "Параметр C Fuzzy logic"
+      },
       "fuzzy_logic_fuel_flow_correction": {
         "name": "Fuzzy logic fuel flow correction"
       },
@@ -272,8 +353,14 @@
       "fuzzy_logic_oxygen_correction": {
         "name": "Fuzzy logic oxygen correction"
       },
+      "glowing_duration": {
+        "name": "Время разгорания"
+      },
       "grate_airflow_power": {
         "name": "Grate airflow power"
+      },
+      "grate_cleaning_cycles": {
+        "name": "Циклы очистки колосника"
       },
       "grate_fan_pause": {
         "name": "Grate fan pause time"
@@ -296,6 +383,9 @@
       "h2_hysteresis": {
         "name": "H2 hysteresis"
       },
+      "heat_exchanger_cleaning_time": {
+        "name": "Время очистки теплообменника"
+      },
       "heating_curve": {
         "name": "Heating curve"
       },
@@ -308,11 +398,23 @@
       "heating_pump_enable_temp": {
         "name": "Heating pump enable temperature"
       },
+      "heating_pump_start_temp": {
+        "name": "Температура включения насоса отопления"
+      },
+      "hopper_capacity": {
+        "name": "Ёмкость бункера"
+      },
+      "ignition_test_time": {
+        "name": "Время теста зажигания"
+      },
       "increase_fan_support_mode": {
         "name": "Increased fan support mode"
       },
       "increase_heating_temp_for_water_heater": {
         "name": "Boiler temperature increase for water heater and mixer"
+      },
+      "intermediate_boiler_output": {
+        "name": "Средняя мощность котла"
       },
       "kindling_airflow_delay": {
         "name": "Kindling airflow delay"
@@ -323,11 +425,23 @@
       "kindling_delta_temp": {
         "name": "Kindling boiler temperature delta"
       },
+      "kindling_draft": {
+        "name": "Разрежение при розжиге"
+      },
+      "kindling_duration": {
+        "name": "Время розжига"
+      },
+      "kindling_fan_speed": {
+        "name": "Обороты вентилятора при розжиге"
+      },
       "kindling_feeder_dose": {
         "name": "Kindling fuel dose"
       },
       "kindling_feeder_work": {
         "name": "Kindling feeding time"
+      },
+      "kindling_feeding_time": {
+        "name": "Время подачи при розжиге"
       },
       "kindling_finish_exhaust_temp": {
         "name": "Kindling finish exhaust temperature"
@@ -344,6 +458,9 @@
       "kindling_min_power_time": {
         "name": "Glowing time"
       },
+      "kindling_temp_delta": {
+        "name": "Дельта температуры розжига"
+      },
       "kindling_test_time": {
         "name": "Ignition test time"
       },
@@ -353,8 +470,14 @@
       "lambda_correction_range": {
         "name": "Lambda airflow correction range"
       },
+      "max_boiler_output": {
+        "name": "Максимальная мощность котла"
+      },
       "max_boiler_power": {
         "name": "Boiler power upper limit"
+      },
+      "max_boiler_target_temp": {
+        "name": "Максимальная заданная температура котла"
       },
       "max_buffer_temp": {
         "name": "Maximum buffer temperature"
@@ -365,8 +488,14 @@
       "max_fan_boiler_power": {
         "name": "Fan power at maximum boiler power"
       },
+      "max_fan_output": {
+        "name": "Максимальная мощность вентилятора"
+      },
       "max_fan_power": {
         "name": "Maximum airflow power"
+      },
+      "max_fan_speed": {
+        "name": "Максимальные обороты вентилятора"
       },
       "max_feeder_temp": {
         "name": "Maximum feeder temperature"
@@ -383,20 +512,38 @@
       "max_water_heater_target_temp": {
         "name": "Maximum water heater temperature"
       },
+      "min_boiler_output": {
+        "name": "Минимальная мощность котла"
+      },
       "min_boiler_power": {
         "name": "Boiler power lower limit"
+      },
+      "min_boiler_target_temp": {
+        "name": "Минимальная заданная температура котла"
       },
       "min_buffer_temp": {
         "name": "Minimum buffer temperature"
       },
+      "min_burning_off_duration": {
+        "name": "Минимальное время гашения"
+      },
       "min_circuit_temp": {
         "name": "Минимальная температура контура"
+      },
+      "min_draft": {
+        "name": "Минимальное заданное разрежение"
       },
       "min_fan_boiler_power": {
         "name": "Fan power at minimum boiler power"
       },
+      "min_fan_output": {
+        "name": "Минимальная мощность вентилятора"
+      },
       "min_fan_power": {
         "name": "Minimum airflow power"
+      },
+      "min_fan_speed": {
+        "name": "Минимальные обороты вентилятора"
       },
       "min_heating_temp": {
         "name": "Минимальная температура отопления"
@@ -410,8 +557,17 @@
       "mixer_input_dead_zone": {
         "name": "Mixer dead zone"
       },
+      "moving_grate_work_time": {
+        "name": "Время работы подвижного колосника"
+      },
       "night_target_circuit_temp": {
         "name": "Ночная температура контура"
+      },
+      "no_fuel_detection_time": {
+        "name": "Время обнаружения отсутствия топлива"
+      },
+      "no_fuel_exhaust_temp": {
+        "name": "Порог температуры дымовых газов при отсутствии топлива"
       },
       "oxygen_100": {
         "name": "Oxygen 100%"
@@ -437,6 +593,12 @@
       "stabilization_airflow_power": {
         "name": "Glowing airflow power"
       },
+      "stabilization_draft": {
+        "name": "Разрежение при стабилизации"
+      },
+      "stabilization_fan_speed": {
+        "name": "Обороты вентилятора при стабилизации"
+      },
       "stabilization_time": {
         "name": "Stabilization time"
       },
@@ -455,11 +617,23 @@
       "supervision_airflow_power": {
         "name": "Supervision airflow power"
       },
+      "supervision_boiler_output": {
+        "name": "Мощность котла в режиме надзора"
+      },
       "supervision_cycle_duration": {
         "name": "Supervision cycle duration"
       },
+      "supervision_draft": {
+        "name": "Разрежение в режиме надзора"
+      },
+      "supervision_duration": {
+        "name": "Время надзора"
+      },
       "supervision_fan_pause": {
         "name": "Supervision fan pause time"
+      },
+      "supervision_fan_speed": {
+        "name": "Обороты вентилятора в режиме надзора"
       },
       "supervision_fan_work": {
         "name": "Supervision fan work time"
@@ -485,6 +659,9 @@
       "target_mixer_temp": {
         "name": "Заданная температура миксера"
       },
+      "thermostat_decrease_boiler_temp": {
+        "name": "Снижение температуры котла от термостата"
+      },
       "thermostat_decrease_target_temp": {
         "name": "Thermostat target temperature decrease"
       },
@@ -503,6 +680,9 @@
       "warming_up_cycle_time": {
         "name": "Warming up cycle time"
       },
+      "warming_up_duration": {
+        "name": "Время прогрева"
+      },
       "warming_up_pause_time": {
         "name": "Warming up pause time"
       },
@@ -520,6 +700,13 @@
       }
     },
     "select": {
+      "control_mode": {
+        "name": "Режим регулирования",
+        "state": {
+          "fuzzy_logic": "Fuzzy logic",
+          "standard": "Стандартный"
+        }
+      },
       "mixer_work_mode": {
         "name": "Режим работы",
         "state": {

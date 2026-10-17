@@ -109,6 +109,9 @@
       }
     },
     "number": {
+      "airflow_correction": {
+        "name": "Airflow correction"
+      },
       "airflow_correction_100": {
         "name": "Airflow correction 100%"
       },
@@ -133,6 +136,12 @@
       "boiler_alert_temp": {
         "name": "Boiler cooling temperature"
       },
+      "boiler_cooling_temp": {
+        "name": "Boiler cooling start temperature"
+      },
+      "boiler_output_limit": {
+        "name": "Boiler output limit"
+      },
       "boiler_power_100": {
         "name": "Maximum boiler power (100%)"
       },
@@ -151,14 +160,32 @@
       "buffer_load_stop": {
         "name": "Buffer loading stop temperature"
       },
+      "burner_cleaning_interval": {
+        "name": "Burner cleaning interval"
+      },
       "burning_off_airflow_power": {
         "name": "Burning off airflow power"
       },
       "burning_off_cleaning_time": {
         "name": "Burning off cleaning time"
       },
+      "burning_off_detection_delta_temp": {
+        "name": "Burning off detection delta"
+      },
+      "burning_off_detection_end_temp": {
+        "name": "Burning off detection end threshold"
+      },
+      "burning_off_detection_start_temp": {
+        "name": "Burning off detection start threshold"
+      },
+      "burning_off_draft": {
+        "name": "Burning off draft"
+      },
       "burning_off_fan_pause": {
         "name": "Burning off fan pause time"
+      },
+      "burning_off_fan_speed": {
+        "name": "Burning off fan speed"
       },
       "burning_off_fan_work": {
         "name": "Burning off fan work time"
@@ -193,11 +220,47 @@
       "day_target_circuit_temp": {
         "name": "Day target circuit temperature"
       },
+      "draft_100": {
+        "name": "Draft 100%"
+      },
+      "draft_30": {
+        "name": "Draft 30%"
+      },
+      "draft_50": {
+        "name": "Draft 50%"
+      },
+      "draft_alarm_max": {
+        "name": "Maximum draft alarm"
+      },
+      "draft_alarm_min": {
+        "name": "Minimum draft alarm"
+      },
+      "draft_correction": {
+        "name": "Draft measurement correction"
+      },
+      "exhaust_fan_pi_gain": {
+        "name": "Exhaust fan PI gain"
+      },
       "external_boiler_temp": {
         "name": "Reserve boiler temperature"
       },
+      "fan_pi_integral": {
+        "name": "Fan PI integral time"
+      },
+      "fan_power_decrease_delay": {
+        "name": "Fan power decrease delay"
+      },
       "fan_power_gain": {
         "name": "Fan power gain"
+      },
+      "fan_speed_100": {
+        "name": "Fan speed 100%"
+      },
+      "fan_speed_30": {
+        "name": "Fan speed 30%"
+      },
+      "fan_speed_50": {
+        "name": "Fan speed 50%"
       },
       "feed2_h1": {
         "name": "Feeder 2 H1"
@@ -233,6 +296,9 @@
         "name": "Fuel calorific value",
         "unit_of_measurement": "kWh/kg"
       },
+      "fuel_correction": {
+        "name": "Fuel correction"
+      },
       "fuel_detection_exhaust_temp": {
         "name": "No fuel exhaust temperature"
       },
@@ -260,6 +326,21 @@
       "fuel_flow_correction": {
         "name": "Fuel flow correction"
       },
+      "full_power_down_cycles": {
+        "name": "Full power down cycles"
+      },
+      "full_power_up_cycles": {
+        "name": "Full power up cycles"
+      },
+      "fuzzy_logic_a": {
+        "name": "Fuzzy logic parameter A"
+      },
+      "fuzzy_logic_b": {
+        "name": "Fuzzy logic parameter B"
+      },
+      "fuzzy_logic_c": {
+        "name": "Fuzzy logic parameter C"
+      },
       "fuzzy_logic_fuel_flow_correction": {
         "name": "Fuzzy logic fuel flow correction"
       },
@@ -272,8 +353,14 @@
       "fuzzy_logic_oxygen_correction": {
         "name": "Fuzzy logic oxygen correction"
       },
+      "glowing_duration": {
+        "name": "Glowing duration"
+      },
       "grate_airflow_power": {
         "name": "Grate airflow power"
+      },
+      "grate_cleaning_cycles": {
+        "name": "Grate cleaning cycles"
       },
       "grate_fan_pause": {
         "name": "Grate fan pause time"
@@ -296,6 +383,9 @@
       "h2_hysteresis": {
         "name": "H2 hysteresis"
       },
+      "heat_exchanger_cleaning_time": {
+        "name": "Heat exchanger cleaning time"
+      },
       "heating_curve": {
         "name": "Heating curve"
       },
@@ -308,11 +398,23 @@
       "heating_pump_enable_temp": {
         "name": "Heating pump enable temperature"
       },
+      "heating_pump_start_temp": {
+        "name": "Heating pump start temperature"
+      },
+      "hopper_capacity": {
+        "name": "Hopper capacity"
+      },
+      "ignition_test_time": {
+        "name": "Ignition test duration"
+      },
       "increase_fan_support_mode": {
         "name": "Increased fan support mode"
       },
       "increase_heating_temp_for_water_heater": {
         "name": "Boiler temperature increase for water heater and mixer"
+      },
+      "intermediate_boiler_output": {
+        "name": "Intermediate boiler output"
       },
       "kindling_airflow_delay": {
         "name": "Kindling airflow delay"
@@ -323,11 +425,23 @@
       "kindling_delta_temp": {
         "name": "Kindling boiler temperature delta"
       },
+      "kindling_draft": {
+        "name": "Kindling draft"
+      },
+      "kindling_duration": {
+        "name": "Kindling duration"
+      },
+      "kindling_fan_speed": {
+        "name": "Kindling fan speed"
+      },
       "kindling_feeder_dose": {
         "name": "Kindling fuel dose"
       },
       "kindling_feeder_work": {
         "name": "Kindling feeding time"
+      },
+      "kindling_feeding_time": {
+        "name": "Kindling feeder run time"
       },
       "kindling_finish_exhaust_temp": {
         "name": "Kindling finish exhaust temperature"
@@ -344,6 +458,9 @@
       "kindling_min_power_time": {
         "name": "Glowing time"
       },
+      "kindling_temp_delta": {
+        "name": "Kindling temperature delta"
+      },
       "kindling_test_time": {
         "name": "Ignition test time"
       },
@@ -353,8 +470,14 @@
       "lambda_correction_range": {
         "name": "Lambda airflow correction range"
       },
+      "max_boiler_output": {
+        "name": "Maximum boiler output"
+      },
       "max_boiler_power": {
         "name": "Boiler power upper limit"
+      },
+      "max_boiler_target_temp": {
+        "name": "Maximum boiler target temperature"
       },
       "max_buffer_temp": {
         "name": "Maximum buffer temperature"
@@ -365,8 +488,14 @@
       "max_fan_boiler_power": {
         "name": "Fan power at maximum boiler power"
       },
+      "max_fan_output": {
+        "name": "Maximum fan output"
+      },
       "max_fan_power": {
         "name": "Maximum airflow power"
+      },
+      "max_fan_speed": {
+        "name": "Maximum fan speed"
       },
       "max_feeder_temp": {
         "name": "Maximum feeder temperature"
@@ -383,20 +512,38 @@
       "max_water_heater_target_temp": {
         "name": "Maximum water heater temperature"
       },
+      "min_boiler_output": {
+        "name": "Minimum boiler output"
+      },
       "min_boiler_power": {
         "name": "Boiler power lower limit"
+      },
+      "min_boiler_target_temp": {
+        "name": "Minimum boiler target temperature"
       },
       "min_buffer_temp": {
         "name": "Minimum buffer temperature"
       },
+      "min_burning_off_duration": {
+        "name": "Minimum burning off duration"
+      },
       "min_circuit_temp": {
         "name": "Minimum circuit temperature"
+      },
+      "min_draft": {
+        "name": "Minimum target draft"
       },
       "min_fan_boiler_power": {
         "name": "Fan power at minimum boiler power"
       },
+      "min_fan_output": {
+        "name": "Minimum fan output"
+      },
       "min_fan_power": {
         "name": "Minimum airflow power"
+      },
+      "min_fan_speed": {
+        "name": "Minimum fan speed"
       },
       "min_heating_temp": {
         "name": "Minimum heating temperature"
@@ -410,8 +557,17 @@
       "mixer_input_dead_zone": {
         "name": "Mixer dead zone"
       },
+      "moving_grate_work_time": {
+        "name": "Moving grate work time"
+      },
       "night_target_circuit_temp": {
         "name": "Night target circuit temperature"
+      },
+      "no_fuel_detection_time": {
+        "name": "No fuel detection duration"
+      },
+      "no_fuel_exhaust_temp": {
+        "name": "No fuel exhaust temperature threshold"
       },
       "oxygen_100": {
         "name": "Oxygen 100%"
@@ -437,6 +593,12 @@
       "stabilization_airflow_power": {
         "name": "Airflow power after kindling"
       },
+      "stabilization_draft": {
+        "name": "Stabilization draft"
+      },
+      "stabilization_fan_speed": {
+        "name": "Stabilization fan speed"
+      },
       "stabilization_time": {
         "name": "Stabilization time"
       },
@@ -455,11 +617,23 @@
       "supervision_airflow_power": {
         "name": "Supervision airflow power"
       },
+      "supervision_boiler_output": {
+        "name": "Supervision boiler output"
+      },
       "supervision_cycle_duration": {
         "name": "Supervision cycle duration"
       },
+      "supervision_draft": {
+        "name": "Supervision draft"
+      },
+      "supervision_duration": {
+        "name": "Supervision duration"
+      },
       "supervision_fan_pause": {
         "name": "Supervision fan pause time"
+      },
+      "supervision_fan_speed": {
+        "name": "Supervision fan speed"
       },
       "supervision_fan_work": {
         "name": "Supervision fan work time"
@@ -485,6 +659,9 @@
       "target_mixer_temp": {
         "name": "Target mixer temperature"
       },
+      "thermostat_decrease_boiler_temp": {
+        "name": "Thermostat boiler temperature decrease"
+      },
       "thermostat_decrease_target_temp": {
         "name": "Thermostat target temperature decrease"
       },
@@ -503,6 +680,9 @@
       "warming_up_cycle_time": {
         "name": "Warming up cycle time"
       },
+      "warming_up_duration": {
+        "name": "Warming up duration"
+      },
       "warming_up_pause_time": {
         "name": "Warming up pause time"
       },
@@ -520,6 +700,13 @@
       }
     },
     "select": {
+      "control_mode": {
+        "name": "Control mode",
+        "state": {
+          "fuzzy_logic": "Fuzzy logic",
+          "standard": "Standard"
+        }
+      },
       "mixer_work_mode": {
         "name": "Work mode",
         "state": {

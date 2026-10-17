@@ -12,6 +12,9 @@ from pyplumio import RequestError
 from pyplumio.connection import Connection, SerialConnection, TcpConnection
 from pyplumio.const import FrameType
 from pyplumio.devices.ecomax import EcoMAX
+from pyplumio.structures.ecomax_extended_parameters import (
+    ATTR_ECOMAX_EXTENDED_PARAMETERS,
+)
 from pyplumio.structures.mixer_parameters import ATTR_MIXER_PARAMETERS
 from pyplumio.structures.thermostat_parameters import ATTR_THERMOSTAT_PARAMETERS
 import pytest
@@ -20,6 +23,7 @@ from custom_components.plum_ecomax.connection import (
     DEFAULT_RETRIES,
     DEFAULT_TIMEOUT,
     WAIT_FOR_DEVICE_SECONDS,
+    WAIT_FOR_EXTENDED_PARAMETERS_SECONDS,
     EcomaxConnection,
     async_get_connection_handler,
     async_get_sub_devices,
@@ -252,3 +256,54 @@ async def test_async_setup_regdata(
     )
     if error_message:
         assert error_message in caplog.text
+
+
+@pytest.mark.usefixtures("ecomax_p", "extended_parameters")
+async def test_async_setup_extended_parameters(connection: EcomaxConnection) -> None:
+    """Test setup extended parameters."""
+    assert await connection.async_setup_extended_parameters() is True
+
+
+@pytest.mark.usefixtures("ecomax_p", "ecomax_860p4")
+async def test_async_setup_extended_parameters_timeout(
+    connection: EcomaxConnection, caplog
+) -> None:
+    """Test setup extended parameters when the table never arrives."""
+    wait_for = connection.device.wait_for
+
+    async def _wait_for(name: str, timeout: float | None = None) -> None:
+        """Never receive the extended parameters."""
+        if name == ATTR_ECOMAX_EXTENDED_PARAMETERS:
+            raise TimeoutError
+
+        await wait_for(name, timeout=timeout)
+
+    with patch.object(
+        connection.device, "wait_for", side_effect=_wait_for
+    ) as mock_wait_for:
+        assert await connection.async_setup_extended_parameters() is False
+        assert await connection.async_setup_extended_parameters() is False
+
+    mock_wait_for.assert_awaited_with(
+        ATTR_ECOMAX_EXTENDED_PARAMETERS,
+        timeout=WAIT_FOR_EXTENDED_PARAMETERS_SECONDS,
+    )
+    # Product and extended parameters, the second call is cached.
+    assert mock_wait_for.await_count == 2
+    assert "Extended parameters are not available" in caplog.text
+
+
+@pytest.mark.parametrize("product", ("ecomax_p", "ecomax_i"), indirect=True)
+@pytest.mark.usefixtures("product")
+async def test_async_setup_extended_parameters_for_other_products(
+    connection: EcomaxConnection,
+) -> None:
+    """Test setup extended parameters for products without the table."""
+    with patch.object(
+        connection.device, "wait_for", wraps=connection.device.wait_for
+    ) as mock_wait_for:
+        assert await connection.async_setup_extended_parameters() is False
+
+    assert ATTR_ECOMAX_EXTENDED_PARAMETERS not in {
+        call.args[0] for call in mock_wait_for.call_args_list
+    }

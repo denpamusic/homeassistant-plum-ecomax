@@ -9,20 +9,28 @@ from homeassistant.const import (
     ATTR_OPTION,
     SERVICE_SELECT_OPTION,
     STATE_OFF,
+    STATE_UNKNOWN,
 )
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.entity import EntityCategory
 from pyplumio.parameters import ParameterValues
-from pyplumio.parameters.ecomax import EcomaxNumber, EcomaxNumberDescription
+from pyplumio.parameters.ecomax import (
+    EcomaxExtendedNumber,
+    EcomaxNumber,
+    EcomaxNumberDescription,
+)
 from pyplumio.parameters.mixer import MixerNumber, MixerNumberDescription
 import pytest
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.select import (
     STATE_AUTO,
+    STATE_FUZZY_LOGIC,
     STATE_HEATED_FLOOR,
     STATE_HEATING,
     STATE_PUMP_ONLY,
+    STATE_STANDARD,
     STATE_SUMMER,
     STATE_WINTER,
 )
@@ -231,3 +239,74 @@ async def test_circuit_work_mode_select_is_unavailable_for_first_circuit(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(work_mode_entity_id)
     assert not entry
+
+
+@pytest.mark.usefixtures("ecomax_p", "extended_parameters")
+async def test_control_mode_select(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    setup_config_entry,
+    async_select_option,
+) -> None:
+    """Test control mode select."""
+    await setup_config_entry()
+    control_mode_entity_id = "select.ecomax_control_mode"
+    control_mode_select_key = "control_mode"
+
+    # Test entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(control_mode_entity_id)
+    assert entry
+    assert entry.translation_key == "control_mode"
+    assert entry.entity_category == EntityCategory.CONFIG
+
+    # Get initial value.
+    state = hass.states.get(control_mode_entity_id)
+    assert isinstance(state, State)
+    assert state.state == STATE_FUZZY_LOGIC
+    assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Control mode"
+    assert state.attributes[ATTR_OPTIONS] == [STATE_STANDARD, STATE_FUZZY_LOGIC]
+
+    # Dispatch new values.
+    for value, expected_state in (
+        (0, STATE_STANDARD),
+        (2, STATE_UNKNOWN),
+        (1, STATE_FUZZY_LOGIC),
+    ):
+        await dispatch_value(
+            connection.device,
+            control_mode_select_key,
+            EcomaxExtendedNumber(
+                device=connection.device,
+                values=ParameterValues(value=value, min_value=0, max_value=2),
+                description=EcomaxNumberDescription(control_mode_select_key),
+                index=23,
+            ),
+        )
+        state = hass.states.get(control_mode_entity_id)
+        assert isinstance(state, State)
+        assert state.state == expected_state
+
+    # Select an option.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_select_option(hass, control_mode_entity_id, STATE_STANDARD)
+
+    mock_set_nowait.assert_called_once_with(control_mode_select_key, 0)
+    assert isinstance(state, State)
+    assert state.state == STATE_STANDARD
+
+
+@pytest.mark.parametrize(
+    "product",
+    ("ecomax_p", "ecomax_860p4"),
+    ids=["other product", "extended table never arrives"],
+    indirect=True,
+)
+@pytest.mark.usefixtures("product")
+async def test_control_mode_select_without_extended_parameters(
+    hass: HomeAssistant, setup_config_entry
+) -> None:
+    """Test control mode select is not created without extended parameters."""
+    await setup_config_entry()
+    entity_registry = er.async_get(hass)
+    assert not entity_registry.async_get("select.ecomax_control_mode")

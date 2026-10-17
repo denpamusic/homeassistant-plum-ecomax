@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Mapping
+from collections.abc import Awaitable, Callable, Mapping
 from contextlib import suppress
 from functools import cached_property
 import logging
@@ -18,6 +18,10 @@ import pyplumio
 from pyplumio.connection import Connection
 from pyplumio.const import FrameType, ProductType
 from pyplumio.devices import PhysicalDevice
+from pyplumio.parameters.ecomax import EXTENDED_PARAMETER_TYPES
+from pyplumio.structures.ecomax_extended_parameters import (
+    ATTR_ECOMAX_EXTENDED_PARAMETERS,
+)
 from pyplumio.structures.mixer_parameters import ATTR_MIXER_PARAMETERS
 from pyplumio.structures.sensor_data import (
     ATTR_MIXERS_CONNECTED,
@@ -28,6 +32,7 @@ from pyplumio.structures.thermostat_parameters import ATTR_THERMOSTAT_PARAMETERS
 
 from .const import (
     ATTR_MIXERS,
+    ATTR_PRODUCT,
     ATTR_REGDATA,
     ATTR_THERMOSTATS,
     ATTR_WATER_HEATER,
@@ -57,6 +62,7 @@ DEFAULT_RETRIES: Final = 5
 
 WAIT_FOR_DEVICE_SECONDS: Final = 30
 WAIT_FOR_SETUP_SECONDS: Final = 15
+WAIT_FOR_EXTENDED_PARAMETERS_SECONDS: Final = 30
 FORCE_CLOSE_AFTER_SECONDS: Final = 10
 
 _LOGGER = logging.getLogger(__name__)
@@ -160,24 +166,36 @@ class EcomaxConnection:
             await device.wait_for(ATTR_SETUP, timeout=WAIT_FOR_SETUP_SECONDS)
             self._device = device
 
-    async def _request_with_cache(self, name: str, frame_type: FrameType) -> bool:
-        """Make request and cache the result."""
+    async def _setup_with_cache(
+        self, name: str, setup: Callable[[], Awaitable[bool]]
+    ) -> bool:
+        """Run setup once and cache the result."""
         request_lock = self._request_locks.setdefault(name, asyncio.Lock())
         async with request_lock:
             if name not in self._request_cache:
-                try:
-                    await self.device.request(
-                        name=name,
-                        frame_type=frame_type,
-                        retries=DEFAULT_RETRIES,
-                        timeout=DEFAULT_TIMEOUT,
-                    )
-                    self._request_cache[name] = True
-                except pyplumio.RequestError:
-                    _LOGGER.warning("Request for '%s' with %r failed", name, frame_type)
-                    self._request_cache[name] = False
+                self._request_cache[name] = await setup()
 
         return self._request_cache[name]
+
+    async def _request_with_cache(self, name: str, frame_type: FrameType) -> bool:
+        """Make request and cache the result."""
+
+        async def _request() -> bool:
+            """Make request."""
+            try:
+                await self.device.request(
+                    name=name,
+                    frame_type=frame_type,
+                    retries=DEFAULT_RETRIES,
+                    timeout=DEFAULT_TIMEOUT,
+                )
+            except pyplumio.RequestError:
+                _LOGGER.warning("Request for '%s' with %r failed", name, frame_type)
+                return False
+
+            return True
+
+        return await self._setup_with_cache(name, _request)
 
     async def async_setup_thermostats(self) -> bool:
         """Set up thermostats."""
@@ -196,6 +214,30 @@ class EcomaxConnection:
         return await self._request_with_cache(
             ATTR_REGDATA, FrameType.REQUEST_REGULATOR_DATA_SCHEMA
         )
+
+    async def async_setup_extended_parameters(self) -> bool:
+        """Set up extended parameters."""
+        return await self._setup_with_cache(
+            ATTR_ECOMAX_EXTENDED_PARAMETERS, self._wait_for_extended_parameters
+        )
+
+    async def _wait_for_extended_parameters(self) -> bool:
+        """Wait for extended parameters, if the product has them."""
+        try:
+            product = await self.device.get(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
+            if (product.id, product.model) not in EXTENDED_PARAMETER_TYPES:
+                return False
+
+            # Table is requested after the frame version announcement.
+            await self.device.wait_for(
+                ATTR_ECOMAX_EXTENDED_PARAMETERS,
+                timeout=WAIT_FOR_EXTENDED_PARAMETERS_SECONDS,
+            )
+        except TimeoutError:
+            _LOGGER.warning("Extended parameters are not available")
+            return False
+
+        return True
 
     async def async_close(self) -> None:
         """Close ecoMAX connection."""

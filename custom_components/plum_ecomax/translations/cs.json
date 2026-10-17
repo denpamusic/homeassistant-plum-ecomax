@@ -109,6 +109,9 @@
       }
     },
     "number": {
+      "airflow_correction": {
+        "name": "Korekce vzduchu"
+      },
       "airflow_correction_100": {
         "name": "Airflow correction 100%"
       },
@@ -133,6 +136,12 @@
       "boiler_alert_temp": {
         "name": "Boiler cooling temperature"
       },
+      "boiler_cooling_temp": {
+        "name": "Teplota zahájení chlazení kotle"
+      },
+      "boiler_output_limit": {
+        "name": "Omezení výkonu kotle"
+      },
       "boiler_power_100": {
         "name": "Maximum boiler power (100%)"
       },
@@ -151,14 +160,32 @@
       "buffer_load_stop": {
         "name": "Buffer loading stop temperature"
       },
+      "burner_cleaning_interval": {
+        "name": "Interval čištění hořáku"
+      },
       "burning_off_airflow_power": {
         "name": "Burning off airflow power"
       },
       "burning_off_cleaning_time": {
         "name": "Burning off cleaning time"
       },
+      "burning_off_detection_delta_temp": {
+        "name": "Delta detekce vyhasínání"
+      },
+      "burning_off_detection_end_temp": {
+        "name": "Práh konce detekce vyhasínání"
+      },
+      "burning_off_detection_start_temp": {
+        "name": "Práh začátku detekce vyhasínání"
+      },
+      "burning_off_draft": {
+        "name": "Podtlak při vyhasínání"
+      },
       "burning_off_fan_pause": {
         "name": "Burning off fan pause time"
+      },
+      "burning_off_fan_speed": {
+        "name": "Otáčky ventilátoru při vyhasínání"
       },
       "burning_off_fan_work": {
         "name": "Burning off fan work time"
@@ -193,11 +220,47 @@
       "day_target_circuit_temp": {
         "name": "Denní cílová teplota okruhu"
       },
+      "draft_100": {
+        "name": "Podtlak 100%"
+      },
+      "draft_30": {
+        "name": "Podtlak 30%"
+      },
+      "draft_50": {
+        "name": "Podtlak 50%"
+      },
+      "draft_alarm_max": {
+        "name": "Alarm maximálního podtlaku"
+      },
+      "draft_alarm_min": {
+        "name": "Alarm minimálního podtlaku"
+      },
+      "draft_correction": {
+        "name": "Korekce měření podtlaku"
+      },
+      "exhaust_fan_pi_gain": {
+        "name": "Zesílení PI regulátoru odtahového ventilátoru"
+      },
       "external_boiler_temp": {
         "name": "Reserve boiler temperature"
       },
+      "fan_pi_integral": {
+        "name": "Integrační konstanta PI regulátoru ventilátoru"
+      },
+      "fan_power_decrease_delay": {
+        "name": "Zpoždění snížení výkonu ventilátoru"
+      },
       "fan_power_gain": {
         "name": "Fan power gain"
+      },
+      "fan_speed_100": {
+        "name": "Otáčky ventilátoru 100%"
+      },
+      "fan_speed_30": {
+        "name": "Otáčky ventilátoru 30%"
+      },
+      "fan_speed_50": {
+        "name": "Otáčky ventilátoru 50%"
       },
       "feed2_h1": {
         "name": "Feeder 2 H1"
@@ -233,6 +296,9 @@
         "name": "Výhřevnost paliva",
         "unit_of_measurement": "kWh/kg"
       },
+      "fuel_correction": {
+        "name": "Korekce paliva"
+      },
       "fuel_detection_exhaust_temp": {
         "name": "No fuel exhaust temperature"
       },
@@ -260,6 +326,21 @@
       "fuel_flow_correction": {
         "name": "Fuel flow correction"
       },
+      "full_power_down_cycles": {
+        "name": "Cykly úplného snížení výkonu"
+      },
+      "full_power_up_cycles": {
+        "name": "Cykly úplného zvýšení výkonu"
+      },
+      "fuzzy_logic_a": {
+        "name": "Parametr A fuzzy logiky"
+      },
+      "fuzzy_logic_b": {
+        "name": "Parametr B fuzzy logiky"
+      },
+      "fuzzy_logic_c": {
+        "name": "Parametr C fuzzy logiky"
+      },
       "fuzzy_logic_fuel_flow_correction": {
         "name": "Fuzzy logic fuel flow correction"
       },
@@ -272,8 +353,14 @@
       "fuzzy_logic_oxygen_correction": {
         "name": "Fuzzy logic oxygen correction"
       },
+      "glowing_duration": {
+        "name": "Doba rozžhavení"
+      },
       "grate_airflow_power": {
         "name": "Grate airflow power"
+      },
+      "grate_cleaning_cycles": {
+        "name": "Cykly čištění roštu"
       },
       "grate_fan_pause": {
         "name": "Grate fan pause time"
@@ -296,6 +383,9 @@
       "h2_hysteresis": {
         "name": "H2 hysteresis"
       },
+      "heat_exchanger_cleaning_time": {
+        "name": "Doba čištění výměníku"
+      },
       "heating_curve": {
         "name": "Heating curve"
       },
@@ -308,11 +398,23 @@
       "heating_pump_enable_temp": {
         "name": "Heating pump enable temperature"
       },
+      "heating_pump_start_temp": {
+        "name": "Teplota sepnutí čerpadla ÚT"
+      },
+      "hopper_capacity": {
+        "name": "Kapacita zásobníku paliva"
+      },
+      "ignition_test_time": {
+        "name": "Doba testu zapálení"
+      },
       "increase_fan_support_mode": {
         "name": "Increased fan support mode"
       },
       "increase_heating_temp_for_water_heater": {
         "name": "Boiler temperature increase for water heater and mixer"
+      },
+      "intermediate_boiler_output": {
+        "name": "Střední výkon kotle"
       },
       "kindling_airflow_delay": {
         "name": "Kindling airflow delay"
@@ -323,11 +425,23 @@
       "kindling_delta_temp": {
         "name": "Kindling boiler temperature delta"
       },
+      "kindling_draft": {
+        "name": "Podtlak při zapalování"
+      },
+      "kindling_duration": {
+        "name": "Doba zapalování"
+      },
+      "kindling_fan_speed": {
+        "name": "Otáčky ventilátoru při zapalování"
+      },
       "kindling_feeder_dose": {
         "name": "Kindling fuel dose"
       },
       "kindling_feeder_work": {
         "name": "Kindling feeding time"
+      },
+      "kindling_feeding_time": {
+        "name": "Doba podávání při zapalování"
       },
       "kindling_finish_exhaust_temp": {
         "name": "Kindling finish exhaust temperature"
@@ -344,6 +458,9 @@
       "kindling_min_power_time": {
         "name": "Glowing time"
       },
+      "kindling_temp_delta": {
+        "name": "Teplotní delta zapalování"
+      },
       "kindling_test_time": {
         "name": "Ignition test time"
       },
@@ -353,8 +470,14 @@
       "lambda_correction_range": {
         "name": "Lambda airflow correction range"
       },
+      "max_boiler_output": {
+        "name": "Maximální výkon kotle"
+      },
       "max_boiler_power": {
         "name": "Boiler power upper limit"
+      },
+      "max_boiler_target_temp": {
+        "name": "Maximální cílová teplota kotle"
       },
       "max_buffer_temp": {
         "name": "Maximum buffer temperature"
@@ -365,8 +488,14 @@
       "max_fan_boiler_power": {
         "name": "Fan power at maximum boiler power"
       },
+      "max_fan_output": {
+        "name": "Maximální výkon ventilátoru"
+      },
       "max_fan_power": {
         "name": "Maximum airflow power"
+      },
+      "max_fan_speed": {
+        "name": "Maximální otáčky ventilátoru"
       },
       "max_feeder_temp": {
         "name": "Maximum feeder temperature"
@@ -383,20 +512,38 @@
       "max_water_heater_target_temp": {
         "name": "Maximum water heater temperature"
       },
+      "min_boiler_output": {
+        "name": "Minimální výkon kotle"
+      },
       "min_boiler_power": {
         "name": "Boiler power lower limit"
+      },
+      "min_boiler_target_temp": {
+        "name": "Minimální cílová teplota kotle"
       },
       "min_buffer_temp": {
         "name": "Minimum buffer temperature"
       },
+      "min_burning_off_duration": {
+        "name": "Minimální doba vyhasínání"
+      },
       "min_circuit_temp": {
         "name": "Minimální teplova okruhu"
+      },
+      "min_draft": {
+        "name": "Minimální cílový podtlak"
       },
       "min_fan_boiler_power": {
         "name": "Fan power at minimum boiler power"
       },
+      "min_fan_output": {
+        "name": "Minimální výkon ventilátoru"
+      },
       "min_fan_power": {
         "name": "Minimum airflow power"
+      },
+      "min_fan_speed": {
+        "name": "Minimální otáčky ventilátoru"
       },
       "min_heating_temp": {
         "name": "Minimální teplota ohřevu"
@@ -410,8 +557,17 @@
       "mixer_input_dead_zone": {
         "name": "Mixer dead zone"
       },
+      "moving_grate_work_time": {
+        "name": "Doba práce pohyblivého roštu"
+      },
       "night_target_circuit_temp": {
         "name": "Noční cílová teplota okruhu"
+      },
+      "no_fuel_detection_time": {
+        "name": "Doba detekce nedostatku paliva"
+      },
+      "no_fuel_exhaust_temp": {
+        "name": "Práh teploty spalin při nedostatku paliva"
       },
       "oxygen_100": {
         "name": "Oxygen 100%"
@@ -437,6 +593,12 @@
       "stabilization_airflow_power": {
         "name": "Glowing airflow power"
       },
+      "stabilization_draft": {
+        "name": "Podtlak při stabilizaci"
+      },
+      "stabilization_fan_speed": {
+        "name": "Otáčky ventilátoru při stabilizaci"
+      },
       "stabilization_time": {
         "name": "Stabilization time"
       },
@@ -455,11 +617,23 @@
       "supervision_airflow_power": {
         "name": "Supervision airflow power"
       },
+      "supervision_boiler_output": {
+        "name": "Výkon kotle v útlumu"
+      },
       "supervision_cycle_duration": {
         "name": "Supervision cycle duration"
       },
+      "supervision_draft": {
+        "name": "Podtlak v útlumu"
+      },
+      "supervision_duration": {
+        "name": "Doba útlumu"
+      },
       "supervision_fan_pause": {
         "name": "Supervision fan pause time"
+      },
+      "supervision_fan_speed": {
+        "name": "Otáčky ventilátoru v útlumu"
       },
       "supervision_fan_work": {
         "name": "Supervision fan work time"
@@ -485,6 +659,9 @@
       "target_mixer_temp": {
         "name": "Cílová teplota směšovače"
       },
+      "thermostat_decrease_boiler_temp": {
+        "name": "Snížení teploty kotle termostatem"
+      },
       "thermostat_decrease_target_temp": {
         "name": "Thermostat target temperature decrease"
       },
@@ -503,6 +680,9 @@
       "warming_up_cycle_time": {
         "name": "Warming up cycle time"
       },
+      "warming_up_duration": {
+        "name": "Doba nahřívání"
+      },
       "warming_up_pause_time": {
         "name": "Warming up pause time"
       },
@@ -520,6 +700,13 @@
       }
     },
     "select": {
+      "control_mode": {
+        "name": "Režim regulace",
+        "state": {
+          "fuzzy_logic": "Fuzzy logika",
+          "standard": "Standardní"
+        }
+      },
       "mixer_work_mode": {
         "name": "Pracovní režim",
         "state": {

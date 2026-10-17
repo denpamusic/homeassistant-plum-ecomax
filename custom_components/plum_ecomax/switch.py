@@ -23,6 +23,7 @@ from .entity import (
     MixerEntity,
     SubdeviceEntityDescription,
     ThermostatEntity,
+    async_get_by_extended_parameters,
     async_get_by_index,
     async_get_by_modules,
     async_get_by_product_type,
@@ -148,9 +149,12 @@ def async_setup_ecomax_switches(connection: EcomaxConnection) -> list[EcomaxSwit
     """Set up the ecoMAX switches."""
     return [
         EcomaxSwitch(connection, description)
-        for description in async_get_by_modules(
-            connection.device.modules,
-            async_get_by_product_type(connection.product_type, SWITCH_TYPES),
+        for description in async_get_by_extended_parameters(
+            connection.device.data,
+            async_get_by_modules(
+                connection.device.modules,
+                async_get_by_product_type(connection.product_type, SWITCH_TYPES),
+            ),
         )
     ]
 
@@ -307,6 +311,7 @@ async def async_setup_entry(
     _LOGGER.debug("Starting setup of switch platform...")
 
     connection = entry.runtime_data.connection
+    await connection.async_setup_extended_parameters()
     entities = async_setup_ecomax_switches(connection)
 
     # Add custom ecoMAX switches.

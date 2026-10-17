@@ -1,6 +1,6 @@
 """Contains base entity classes."""
 
-from collections.abc import Callable, Generator, Iterable
+from collections.abc import Callable, Generator, Iterable, Mapping
 from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, Final, Literal, cast, final, overload, override
@@ -31,6 +31,7 @@ from .const import (
     CONF_UPDATE_INTERVAL,
     CONNECTION_TYPE_TCP,
     DOMAIN,
+    EXTENDED_PARAMETER_REPLACEMENTS,
     LOGICAL_DEVICES,
     MANUFACTURER,
     DeviceType,
@@ -69,6 +70,17 @@ def async_get_by_modules[DescriptorT: EcomaxEntityDescription](
     """Filter descriptions by connected modules."""
     for description in descriptions:
         if getattr(connected_modules, description.module, None) is not None:
+            yield description
+
+
+@callback
+def async_get_by_extended_parameters[DescriptorT: EcomaxEntityDescription](
+    device_data: Mapping[str, Any], descriptions: Iterable[DescriptorT]
+) -> Generator[DescriptorT]:
+    """Filter out descriptions replaced by extended parameters."""
+    for description in descriptions:
+        replaced_by = EXTENDED_PARAMETER_REPLACEMENTS.get(description.key)
+        if replaced_by is None or replaced_by not in device_data:
             yield description
 
 
