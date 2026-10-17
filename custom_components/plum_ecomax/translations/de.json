@@ -109,12 +109,159 @@
       }
     },
     "number": {
+      "airflow_correction_100": {
+        "name": "Airflow correction 100%"
+      },
+      "airflow_correction_30": {
+        "name": "Airflow correction 30%"
+      },
+      "airflow_correction_50": {
+        "name": "Airflow correction 50%"
+      },
+      "airflow_power_100": {
+        "name": "Airflow power 100%"
+      },
+      "airflow_power_30": {
+        "name": "Airflow power 30%"
+      },
+      "airflow_power_50": {
+        "name": "Airflow power 50%"
+      },
+      "alert_notify": {
+        "name": "Alarm signaling"
+      },
+      "boiler_alert_temp": {
+        "name": "Boiler cooling temperature"
+      },
+      "boiler_power_100": {
+        "name": "Maximum boiler power (100%)"
+      },
+      "boiler_power_30": {
+        "name": "Minimum boiler power (30%)"
+      },
+      "boiler_power_50": {
+        "name": "Intermediate boiler power (50%)"
+      },
+      "buffer_hysteresis": {
+        "name": "Buffer hysteresis"
+      },
+      "buffer_load_start": {
+        "name": "Buffer loading start temperature"
+      },
+      "buffer_load_stop": {
+        "name": "Buffer loading stop temperature"
+      },
+      "burning_off_airflow_power": {
+        "name": "Burning off airflow power"
+      },
+      "burning_off_cleaning_time": {
+        "name": "Burning off cleaning time"
+      },
+      "burning_off_fan_pause": {
+        "name": "Burning off fan pause time"
+      },
+      "burning_off_fan_work": {
+        "name": "Burning off fan work time"
+      },
+      "burning_off_max_time": {
+        "name": "Maximum burning off time"
+      },
+      "burning_off_min_time": {
+        "name": "Minimum burning off time"
+      },
+      "burning_off_time": {
+        "name": "Burning off time"
+      },
+      "circulation_pause": {
+        "name": "Circulation pump pause time"
+      },
+      "circulation_start_temp": {
+        "name": "Circulation start temperature"
+      },
+      "circulation_work": {
+        "name": "Circulation pump work time"
+      },
+      "cleaning_airflow_power": {
+        "name": "Cleaning airflow power"
+      },
+      "cleaning_begin_time": {
+        "name": "Kindling cleaning time"
+      },
+      "cycle_duration": {
+        "name": "Feeder cycle duration"
+      },
       "day_target_circuit_temp": {
         "name": "Soll-Temperatur Heizkreis (Tag)"
+      },
+      "external_boiler_temp": {
+        "name": "Reserve boiler temperature"
+      },
+      "fan_power_gain": {
+        "name": "Fan power gain"
+      },
+      "feed2_h1": {
+        "name": "Feeder 2 H1"
+      },
+      "feed2_h2": {
+        "name": "Feeder 2 H2"
+      },
+      "feed2_h3": {
+        "name": "Feeder 2 H3"
+      },
+      "feed2_h4": {
+        "name": "Feeder 2 H4"
+      },
+      "feed2_pause": {
+        "name": "Feeder 2 pause time"
+      },
+      "feed2_work": {
+        "name": "Feeder 2 work time"
+      },
+      "feeder_calibration": {
+        "name": "Feeder calibration"
+      },
+      "feeder_correction_100": {
+        "name": "Feeder correction 100%"
+      },
+      "feeder_correction_30": {
+        "name": "Feeder correction 30%"
+      },
+      "feeder_correction_50": {
+        "name": "Feeder correction 50%"
       },
       "fuel_calorific_value": {
         "name": "Brennwert des Brennstoffs",
         "unit_of_measurement": "kWh/kg"
+      },
+      "fuel_detection_exhaust_temp": {
+        "name": "No fuel exhaust temperature"
+      },
+      "fuel_detection_time": {
+        "name": "No fuel detection time"
+      },
+      "fuel_feeding_pause_100": {
+        "name": "Fuel feeding pause 100%"
+      },
+      "fuel_feeding_pause_30": {
+        "name": "Fuel feeding pause 30%"
+      },
+      "fuel_feeding_pause_50": {
+        "name": "Fuel feeding pause 50%"
+      },
+      "fuel_feeding_work_100": {
+        "name": "Fuel feeding work 100%"
+      },
+      "fuel_feeding_work_30": {
+        "name": "Fuel feeding work 30%"
+      },
+      "fuel_feeding_work_50": {
+        "name": "Fuel feeding work 50%"
+      },
+      "fuel_flow_correction": {
+        "name": "Fuel flow correction"
+      },
+      "fuzzy_logic_fuel_flow_correction": {
+        "name": "Fuzzy logic fuel flow correction"
       },
       "fuzzy_logic_max_power": {
         "name": "Fuzzy-Logic maximale Leistung"
@@ -122,11 +269,110 @@
       "fuzzy_logic_min_power": {
         "name": "Fuzzy-Logic minimale Leistung"
       },
+      "fuzzy_logic_oxygen_correction": {
+        "name": "Fuzzy logic oxygen correction"
+      },
+      "grate_airflow_power": {
+        "name": "Grate airflow power"
+      },
+      "grate_fan_pause": {
+        "name": "Grate fan pause time"
+      },
+      "grate_fan_work": {
+        "name": "Grate fan work time"
+      },
+      "grate_fuel_detection_time": {
+        "name": "Grate no fuel detection time"
+      },
+      "grate_heating_hysteresis": {
+        "name": "Grate heating hysteresis"
+      },
       "grate_mode_temp": {
         "name": "Rost-Modus Temperatur"
       },
+      "h1_hysteresis": {
+        "name": "H1 hysteresis"
+      },
+      "h2_hysteresis": {
+        "name": "H2 hysteresis"
+      },
+      "heating_curve": {
+        "name": "Heating curve"
+      },
+      "heating_curve_shift": {
+        "name": "Heating curve shift"
+      },
+      "heating_hysteresis": {
+        "name": "Heating hysteresis"
+      },
+      "heating_pump_enable_temp": {
+        "name": "Heating pump enable temperature"
+      },
+      "increase_fan_support_mode": {
+        "name": "Increased fan support mode"
+      },
+      "increase_heating_temp_for_water_heater": {
+        "name": "Boiler temperature increase for water heater and mixer"
+      },
+      "kindling_airflow_delay": {
+        "name": "Kindling airflow delay"
+      },
+      "kindling_airflow_power": {
+        "name": "Kindling airflow power"
+      },
+      "kindling_delta_temp": {
+        "name": "Kindling boiler temperature delta"
+      },
+      "kindling_feeder_dose": {
+        "name": "Kindling fuel dose"
+      },
+      "kindling_feeder_work": {
+        "name": "Kindling feeding time"
+      },
+      "kindling_finish_exhaust_temp": {
+        "name": "Kindling finish exhaust temperature"
+      },
+      "kindling_finish_threshold_temp": {
+        "name": "Kindling finish threshold temperature"
+      },
+      "kindling_fumes_delta_temp": {
+        "name": "Kindling delta"
+      },
+      "kindling_low_airflow_power": {
+        "name": "Kindling low airflow power"
+      },
+      "kindling_min_power_time": {
+        "name": "Glowing time"
+      },
+      "kindling_test_time": {
+        "name": "Ignition test time"
+      },
+      "kindling_time": {
+        "name": "Kindling time"
+      },
+      "lambda_correction_range": {
+        "name": "Lambda airflow correction range"
+      },
+      "max_boiler_power": {
+        "name": "Boiler power upper limit"
+      },
+      "max_buffer_temp": {
+        "name": "Maximum buffer temperature"
+      },
       "max_circuit_temp": {
         "name": "Maximale Heizkreistemperatur"
+      },
+      "max_fan_boiler_power": {
+        "name": "Fan power at maximum boiler power"
+      },
+      "max_fan_power": {
+        "name": "Maximum airflow power"
+      },
+      "max_feeder_temp": {
+        "name": "Maximum feeder temperature"
+      },
+      "max_fuel_flow": {
+        "name": "Feeder capacity"
       },
       "max_heating_temp": {
         "name": "Maximale Heizungstemperatur"
@@ -134,8 +380,23 @@
       "max_mixer_temp": {
         "name": "Maximale Mischertemperatur"
       },
+      "max_water_heater_target_temp": {
+        "name": "Maximum water heater temperature"
+      },
+      "min_boiler_power": {
+        "name": "Boiler power lower limit"
+      },
+      "min_buffer_temp": {
+        "name": "Minimum buffer temperature"
+      },
       "min_circuit_temp": {
         "name": "Minimale Heizkreistemperatur"
+      },
+      "min_fan_boiler_power": {
+        "name": "Fan power at minimum boiler power"
+      },
+      "min_fan_power": {
+        "name": "Minimum airflow power"
       },
       "min_heating_temp": {
         "name": "Minimale Heizungstemperatur"
@@ -143,8 +404,77 @@
       "min_mixer_temp": {
         "name": "Minimale Mischertemperatur"
       },
+      "min_water_heater_target_temp": {
+        "name": "Minimum water heater temperature"
+      },
+      "mixer_input_dead_zone": {
+        "name": "Mixer dead zone"
+      },
       "night_target_circuit_temp": {
         "name": "Soll-Temperatur Heizkreis (Nacht)"
+      },
+      "oxygen_100": {
+        "name": "Oxygen 100%"
+      },
+      "oxygen_30": {
+        "name": "Oxygen 30%"
+      },
+      "oxygen_50": {
+        "name": "Oxygen 50%"
+      },
+      "pause_heating_for_water_heater": {
+        "name": "Heating pause for water heater"
+      },
+      "pump_hysteresis": {
+        "name": "Pump hysteresis"
+      },
+      "reduction_airflow_temp": {
+        "name": "Airflow reduction temperature"
+      },
+      "remind_time": {
+        "name": "Reminder time"
+      },
+      "stabilization_airflow_power": {
+        "name": "Glowing airflow power"
+      },
+      "stabilization_time": {
+        "name": "Stabilization time"
+      },
+      "start_burning_off": {
+        "name": "Burning off start"
+      },
+      "stop_burning_off": {
+        "name": "Burning off stop"
+      },
+      "summer_mode_disable_temp": {
+        "name": "Summer mode disable temperature"
+      },
+      "summer_mode_enable_temp": {
+        "name": "Summer mode enable temperature"
+      },
+      "supervision_airflow_power": {
+        "name": "Supervision airflow power"
+      },
+      "supervision_cycle_duration": {
+        "name": "Supervision cycle duration"
+      },
+      "supervision_fan_pause": {
+        "name": "Supervision fan pause time"
+      },
+      "supervision_fan_work": {
+        "name": "Supervision fan work time"
+      },
+      "supervision_feeder_dose": {
+        "name": "Supervision fuel dose"
+      },
+      "supervision_feeder_pause": {
+        "name": "Supervision feeding pause"
+      },
+      "supervision_feeder_work": {
+        "name": "Supervision feeding time"
+      },
+      "supervision_time": {
+        "name": "Supervision time"
       },
       "target_circuit_temp": {
         "name": "Soll-Heizkreistemperatur"
@@ -154,6 +484,39 @@
       },
       "target_mixer_temp": {
         "name": "Soll-Mischertemperatur"
+      },
+      "thermostat_decrease_target_temp": {
+        "name": "Thermostat target temperature decrease"
+      },
+      "thermostat_mode": {
+        "name": "Thermostat mode"
+      },
+      "thermostat_operation": {
+        "name": "Thermostat operation"
+      },
+      "thermostat_pause": {
+        "name": "Thermostat pause time"
+      },
+      "thermostat_work": {
+        "name": "Thermostat work time"
+      },
+      "warming_up_cycle_time": {
+        "name": "Warming up cycle time"
+      },
+      "warming_up_pause_time": {
+        "name": "Warming up pause time"
+      },
+      "warming_up_time": {
+        "name": "Igniter warming up time"
+      },
+      "water_heater_hysteresis": {
+        "name": "Water heater hysteresis"
+      },
+      "water_heater_work_extension": {
+        "name": "Water heater work extension"
+      },
+      "weather_factor": {
+        "name": "Room temperature factor"
       }
     },
     "select": {
@@ -308,6 +671,12 @@
       }
     },
     "switch": {
+      "buffer_control": {
+        "name": "Buffer control"
+      },
+      "circulation_control": {
+        "name": "Circulation control"
+      },
       "controller_switch": {
         "name": "Regler-Schalter"
       },
@@ -325,6 +694,18 @@
       },
       "heating_schedule_switch": {
         "name": "Heizplan Schalter"
+      },
+      "lambda_control": {
+        "name": "Lambda sensor control"
+      },
+      "schedule_feeder_2": {
+        "name": "Feeder 2 schedule"
+      },
+      "thermostat_mode": {
+        "name": "Thermostat mode"
+      },
+      "thermostat_operation": {
+        "name": "Thermostat operation"
       },
       "water_heater_disinfection_switch": {
         "name": "Warmwasser-Desinfektionsschalter"

@@ -1,6 +1,7 @@
 """Test the number platform."""
 
 from math import isclose
+from typing import cast
 from unittest.mock import patch
 
 from homeassistant.components.number import (
@@ -9,6 +10,7 @@ from homeassistant.components.number import (
     ATTR_MODE,
     ATTR_STEP,
     ATTR_VALUE,
+    DEVICE_CLASS_UNITS,
     DOMAIN,
     SERVICE_SET_VALUE,
     NumberDeviceClass,
@@ -20,18 +22,36 @@ from homeassistant.const import (
     ATTR_FRIENDLY_NAME,
     ATTR_UNIT_OF_MEASUREMENT,
     PERCENTAGE,
+    STATE_UNAVAILABLE,
     Platform,
     UnitOfMass,
     UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
-from pyplumio.parameters import ParameterValues
-from pyplumio.parameters.ecomax import EcomaxNumber, EcomaxNumberDescription
+from homeassistant.helpers.entity import EntityCategory
+from pyplumio.const import ProductType
+from pyplumio.devices.ecomax import EcoMAX
+from pyplumio.parameters import NumberDescription, ParameterDescription, ParameterValues
+from pyplumio.parameters.ecomax import (
+    PARAMETER_TYPES as ECOMAX_PARAMETER_TYPES,
+    EcomaxNumber,
+    EcomaxNumberDescription,
+)
+from pyplumio.parameters.mixer import (
+    PARAMETER_TYPES as MIXER_PARAMETER_TYPES,
+    MixerNumber,
+    MixerNumberDescription,
+)
 import pytest
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import ATTR_ENTITIES
+from custom_components.plum_ecomax.number import (
+    MIXER_NUMBER_TYPES,
+    NUMBER_TYPES,
+    EcomaxNumberEntityDescription,
+)
 from tests.conftest import FLOAT_TOLERANCE, dispatch_value
 
 
@@ -1046,3 +1066,303 @@ async def test_custom_numbers(
     mock_set_nowait.assert_called_once_with(custom_number_key, 40)
     assert isinstance(state, State)
     assert state.state == "40.0"
+
+
+# Configuration numbers (ecoMAX P service parameters), as (key, entity_id).
+# Translation keys of these entities are equal to their keys.
+ECOMAX_P_CONFIG_NUMBERS: tuple[tuple[str, str], ...] = (
+    ("heating_hysteresis", "number.ecomax_heating_hysteresis"),
+    ("h1_hysteresis", "number.ecomax_h1_hysteresis"),
+    ("h2_hysteresis", "number.ecomax_h2_hysteresis"),
+    ("heating_pump_enable_temp", "number.ecomax_heating_pump_enable_temperature"),
+    ("water_heater_hysteresis", "number.ecomax_water_heater_hysteresis"),
+    ("airflow_power_100", "number.ecomax_airflow_power_100"),
+    ("airflow_power_50", "number.ecomax_airflow_power_50"),
+    ("airflow_power_30", "number.ecomax_airflow_power_30"),
+    ("boiler_power_100", "number.ecomax_maximum_boiler_power_100"),
+    ("boiler_power_50", "number.ecomax_intermediate_boiler_power_50"),
+    ("boiler_power_30", "number.ecomax_minimum_boiler_power_30"),
+    ("max_fan_boiler_power", "number.ecomax_fan_power_at_maximum_boiler_power"),
+    ("min_fan_boiler_power", "number.ecomax_fan_power_at_minimum_boiler_power"),
+    ("fuel_feeding_work_100", "number.ecomax_fuel_feeding_work_100"),
+    ("fuel_feeding_work_50", "number.ecomax_fuel_feeding_work_50"),
+    ("fuel_feeding_work_30", "number.ecomax_fuel_feeding_work_30"),
+    ("fuel_feeding_pause_100", "number.ecomax_fuel_feeding_pause_100"),
+    ("fuel_feeding_pause_50", "number.ecomax_fuel_feeding_pause_50"),
+    ("fuel_feeding_pause_30", "number.ecomax_fuel_feeding_pause_30"),
+    ("cycle_duration", "number.ecomax_feeder_cycle_duration"),
+    ("min_boiler_power", "number.ecomax_boiler_power_lower_limit"),
+    ("max_boiler_power", "number.ecomax_boiler_power_upper_limit"),
+    ("min_fan_power", "number.ecomax_minimum_airflow_power"),
+    ("max_fan_power", "number.ecomax_maximum_airflow_power"),
+    ("reduction_airflow_temp", "number.ecomax_airflow_reduction_temperature"),
+    ("fan_power_gain", "number.ecomax_fan_power_gain"),
+    (
+        "fuzzy_logic_fuel_flow_correction",
+        "number.ecomax_fuzzy_logic_fuel_flow_correction",
+    ),
+    ("fuel_flow_correction", "number.ecomax_fuel_flow_correction"),
+    ("airflow_correction_100", "number.ecomax_airflow_correction_100"),
+    ("feeder_correction_100", "number.ecomax_feeder_correction_100"),
+    ("airflow_correction_50", "number.ecomax_airflow_correction_50"),
+    ("feeder_correction_50", "number.ecomax_feeder_correction_50"),
+    ("airflow_correction_30", "number.ecomax_airflow_correction_30"),
+    ("feeder_correction_30", "number.ecomax_feeder_correction_30"),
+    ("grate_airflow_power", "number.ecomax_grate_airflow_power"),
+    ("grate_heating_hysteresis", "number.ecomax_grate_heating_hysteresis"),
+    ("grate_fan_work", "number.ecomax_grate_fan_work_time"),
+    ("grate_fan_pause", "number.ecomax_grate_fan_pause_time"),
+    ("grate_fuel_detection_time", "number.ecomax_grate_no_fuel_detection_time"),
+    ("kindling_airflow_power", "number.ecomax_kindling_airflow_power"),
+    ("kindling_low_airflow_power", "number.ecomax_kindling_low_airflow_power"),
+    ("kindling_airflow_delay", "number.ecomax_kindling_airflow_delay"),
+    ("kindling_test_time", "number.ecomax_ignition_test_time"),
+    ("kindling_feeder_work", "number.ecomax_kindling_feeding_time"),
+    ("kindling_feeder_dose", "number.ecomax_kindling_fuel_dose"),
+    ("kindling_time", "number.ecomax_kindling_time"),
+    ("warming_up_time", "number.ecomax_igniter_warming_up_time"),
+    (
+        "kindling_finish_exhaust_temp",
+        "number.ecomax_kindling_finish_exhaust_temperature",
+    ),
+    (
+        "kindling_finish_threshold_temp",
+        "number.ecomax_kindling_finish_threshold_temperature",
+    ),
+    ("kindling_fumes_delta_temp", "number.ecomax_kindling_delta"),
+    ("kindling_delta_temp", "number.ecomax_kindling_boiler_temperature_delta"),
+    ("kindling_min_power_time", "number.ecomax_glowing_time"),
+    ("stabilization_time", "number.ecomax_stabilization_time"),
+    ("stabilization_airflow_power", "number.ecomax_airflow_power_after_kindling"),
+    ("supervision_time", "number.ecomax_supervision_time"),
+    ("supervision_feeder_work", "number.ecomax_supervision_feeding_time"),
+    ("supervision_feeder_dose", "number.ecomax_supervision_fuel_dose"),
+    ("supervision_feeder_pause", "number.ecomax_supervision_feeding_pause"),
+    ("supervision_cycle_duration", "number.ecomax_supervision_cycle_duration"),
+    ("supervision_airflow_power", "number.ecomax_supervision_airflow_power"),
+    ("supervision_fan_pause", "number.ecomax_supervision_fan_pause_time"),
+    ("supervision_fan_work", "number.ecomax_supervision_fan_work_time"),
+    ("increase_fan_support_mode", "number.ecomax_increased_fan_support_mode"),
+    ("burning_off_max_time", "number.ecomax_maximum_burning_off_time"),
+    ("burning_off_min_time", "number.ecomax_minimum_burning_off_time"),
+    ("burning_off_time", "number.ecomax_burning_off_time"),
+    ("burning_off_airflow_power", "number.ecomax_burning_off_airflow_power"),
+    ("burning_off_fan_work", "number.ecomax_burning_off_fan_work_time"),
+    ("burning_off_fan_pause", "number.ecomax_burning_off_fan_pause_time"),
+    ("start_burning_off", "number.ecomax_burning_off_start"),
+    ("stop_burning_off", "number.ecomax_burning_off_stop"),
+    ("cleaning_begin_time", "number.ecomax_kindling_cleaning_time"),
+    ("burning_off_cleaning_time", "number.ecomax_burning_off_cleaning_time"),
+    ("cleaning_airflow_power", "number.ecomax_cleaning_airflow_power"),
+    ("warming_up_pause_time", "number.ecomax_warming_up_pause_time"),
+    ("warming_up_cycle_time", "number.ecomax_warming_up_cycle_time"),
+    ("remind_time", "number.ecomax_reminder_time"),
+    ("lambda_correction_range", "number.ecomax_lambda_airflow_correction_range"),
+    ("oxygen_100", "number.ecomax_oxygen_100"),
+    ("oxygen_50", "number.ecomax_oxygen_50"),
+    ("oxygen_30", "number.ecomax_oxygen_30"),
+    ("fuzzy_logic_oxygen_correction", "number.ecomax_fuzzy_logic_oxygen_correction"),
+    ("max_fuel_flow", "number.ecomax_feeder_capacity"),
+    ("feeder_calibration", "number.ecomax_feeder_calibration"),
+    ("fuel_detection_time", "number.ecomax_no_fuel_detection_time"),
+    ("fuel_detection_exhaust_temp", "number.ecomax_no_fuel_exhaust_temperature"),
+    ("feed2_h1", "number.ecomax_feeder_2_h1"),
+    ("feed2_h2", "number.ecomax_feeder_2_h2"),
+    ("feed2_h3", "number.ecomax_feeder_2_h3"),
+    ("feed2_h4", "number.ecomax_feeder_2_h4"),
+    ("feed2_work", "number.ecomax_feeder_2_work_time"),
+    ("feed2_pause", "number.ecomax_feeder_2_pause_time"),
+    ("pause_heating_for_water_heater", "number.ecomax_heating_pause_for_water_heater"),
+    ("thermostat_pause", "number.ecomax_thermostat_pause_time"),
+    ("thermostat_work", "number.ecomax_thermostat_work_time"),
+    (
+        "increase_heating_temp_for_water_heater",
+        "number.ecomax_boiler_temperature_increase_for_water_heater_and_mixer",
+    ),
+    ("heating_curve", "number.ecomax_heating_curve"),
+    ("heating_curve_shift", "number.ecomax_heating_curve_shift"),
+    ("weather_factor", "number.ecomax_room_temperature_factor"),
+    ("thermostat_operation", "number.ecomax_thermostat_operation"),
+    (
+        "thermostat_decrease_target_temp",
+        "number.ecomax_thermostat_target_temperature_decrease",
+    ),
+    ("boiler_alert_temp", "number.ecomax_boiler_cooling_temperature"),
+    ("max_feeder_temp", "number.ecomax_maximum_feeder_temperature"),
+    ("external_boiler_temp", "number.ecomax_reserve_boiler_temperature"),
+    ("alert_notify", "number.ecomax_alarm_signaling"),
+    ("pump_hysteresis", "number.ecomax_pump_hysteresis"),
+    ("min_water_heater_target_temp", "number.ecomax_minimum_water_heater_temperature"),
+    ("max_water_heater_target_temp", "number.ecomax_maximum_water_heater_temperature"),
+    ("summer_mode_enable_temp", "number.ecomax_summer_mode_enable_temperature"),
+    ("summer_mode_disable_temp", "number.ecomax_summer_mode_disable_temperature"),
+    ("water_heater_work_extension", "number.ecomax_water_heater_work_extension"),
+    ("circulation_pause", "number.ecomax_circulation_pump_pause_time"),
+    ("circulation_work", "number.ecomax_circulation_pump_work_time"),
+    ("circulation_start_temp", "number.ecomax_circulation_start_temperature"),
+    ("max_buffer_temp", "number.ecomax_maximum_buffer_temperature"),
+    ("min_buffer_temp", "number.ecomax_minimum_buffer_temperature"),
+    ("buffer_hysteresis", "number.ecomax_buffer_hysteresis"),
+    ("buffer_load_start", "number.ecomax_buffer_loading_start_temperature"),
+    ("buffer_load_stop", "number.ecomax_buffer_loading_stop_temperature"),
+)
+
+MIXER_CONFIG_NUMBERS: tuple[tuple[str, str], ...] = (
+    (
+        "thermostat_decrease_target_temp",
+        "number.ecomax_mixer_1_thermostat_target_temperature_decrease",
+    ),
+    ("heating_curve", "number.ecomax_mixer_1_heating_curve"),
+    ("heating_curve_shift", "number.ecomax_mixer_1_heating_curve_shift"),
+    ("weather_factor", "number.ecomax_mixer_1_room_temperature_factor"),
+    ("mixer_input_dead_zone", "number.ecomax_mixer_1_mixer_dead_zone"),
+    ("thermostat_mode", "number.ecomax_mixer_1_thermostat_selection"),
+)
+
+ECOMAX_P_PARAMETERS: dict[str, ParameterDescription] = {
+    description.name: description
+    for description in ECOMAX_PARAMETER_TYPES[ProductType.ECOMAX_P]
+}
+MIXER_P_PARAMETERS: dict[str, ParameterDescription] = {
+    description.name: description
+    for description in MIXER_PARAMETER_TYPES[ProductType.ECOMAX_P]
+}
+
+
+@pytest.fixture(name="config_numbers")
+async def fixture_config_numbers(ecomax_p: EcoMAX, mixers: EcoMAX) -> EcoMAX:
+    """Inject ecoMAX P and mixer configuration numbers."""
+    await ecomax_p.load(
+        {
+            key: EcomaxNumber(
+                device=ecomax_p,
+                values=ParameterValues(value=0, min_value=0, max_value=1),
+                description=cast(EcomaxNumberDescription, ECOMAX_P_PARAMETERS[key]),
+            )
+            for key, _ in ECOMAX_P_CONFIG_NUMBERS
+        }
+    )
+    await ecomax_p.mixers[0].load(
+        {
+            key: MixerNumber(
+                device=ecomax_p,
+                values=ParameterValues(value=0, min_value=0, max_value=1),
+                description=cast(MixerNumberDescription, MIXER_P_PARAMETERS[key]),
+            )
+            for key, _ in MIXER_CONFIG_NUMBERS
+        }
+    )
+    return ecomax_p
+
+
+@pytest.mark.parametrize(
+    ("descriptions", "table"),
+    (
+        (NUMBER_TYPES, ECOMAX_P_CONFIG_NUMBERS),
+        (MIXER_NUMBER_TYPES, MIXER_CONFIG_NUMBERS),
+    ),
+)
+def test_config_numbers_table_is_complete(
+    descriptions: tuple[EcomaxNumberEntityDescription, ...],
+    table: tuple[tuple[str, str], ...],
+) -> None:
+    """Test that every configuration number is covered by the test table."""
+    assert [key for key, _ in table] == [
+        description.key
+        for description in descriptions
+        if description.entity_category == EntityCategory.CONFIG
+    ]
+
+
+@pytest.mark.parametrize(
+    ("source_device", "key", "entity_id"),
+    [("ecomax", key, entity_id) for key, entity_id in ECOMAX_P_CONFIG_NUMBERS]
+    + [("mixer_0", key, entity_id) for key, entity_id in MIXER_CONFIG_NUMBERS],
+)
+@pytest.mark.usefixtures("ecomax_p", "mixers", "config_numbers")
+async def test_config_number(
+    source_device: str,
+    key: str,
+    entity_id: str,
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    setup_config_entry,
+    async_set_value,
+) -> None:
+    """Test ecoMAX P and mixer configuration numbers."""
+    await setup_config_entry()
+    if source_device == "ecomax":
+        description = ECOMAX_P_PARAMETERS[key]
+        number_cls: type[EcomaxNumber | MixerNumber] = EcomaxNumber
+    else:
+        description = MIXER_P_PARAMETERS[key]
+        number_cls = MixerNumber
+
+    assert isinstance(description, NumberDescription)
+
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(entity_id)
+    assert entry
+    assert entry.translation_key == key
+    assert entry.entity_category == EntityCategory.CONFIG
+    assert entry.disabled_by is None
+
+    # Get initial state.
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert state.state != STATE_UNAVAILABLE
+    assert isclose(
+        state.attributes[ATTR_STEP], description.step, rel_tol=FLOAT_TOLERANCE
+    )
+    unit_of_measurement = state.attributes.get(ATTR_UNIT_OF_MEASUREMENT)
+    if description.unit_of_measurement:
+        # Units follow pyplumio.
+        assert unit_of_measurement == getattr(
+            description.unit_of_measurement, "value", description.unit_of_measurement
+        )
+
+    if device_class := state.attributes.get(ATTR_DEVICE_CLASS):
+        assert (
+            unit_of_measurement in DEVICE_CLASS_UNITS[NumberDeviceClass(device_class)]
+        )
+
+    # Dispatch new state.
+    new_state = number_cls(
+        device=connection.device,
+        values=ParameterValues(value=15, min_value=10, max_value=20),
+        description=description,
+    )
+    await dispatch_value(connection.device, key, new_state, source_device=source_device)
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert isclose(float(state.state), new_state.value, rel_tol=FLOAT_TOLERANCE)
+    assert isclose(
+        state.attributes[ATTR_MIN], new_state.min_value, rel_tol=FLOAT_TOLERANCE
+    )
+    assert isclose(
+        state.attributes[ATTR_MAX], new_state.max_value, rel_tol=FLOAT_TOLERANCE
+    )
+
+    # Set new state.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_set_value(hass, entity_id, new_state.max_value)
+
+    mock_set_nowait.assert_called_once_with(key, new_state.max_value)
+    assert isinstance(state, State)
+    assert isclose(float(state.state), new_state.max_value, rel_tol=FLOAT_TOLERANCE)
+
+
+@pytest.mark.usefixtures("ecomax_p", "mixers")
+async def test_config_number_disabled(hass: HomeAssistant, setup_config_entry) -> None:
+    """Test that configuration numbers not sent by the controller are disabled."""
+    await setup_config_entry()
+    entity_registry = er.async_get(hass)
+    for entity_id in (
+        "number.ecomax_airflow_power_100",
+        "number.ecomax_mixer_1_heating_curve",
+    ):
+        entry = entity_registry.async_get(entity_id)
+        assert entry, entity_id
+        assert entry.disabled_by == er.RegistryEntryDisabler.INTEGRATION
+        assert hass.states.get(entity_id) is None

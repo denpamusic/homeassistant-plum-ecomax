@@ -16,14 +16,19 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
-from pyplumio.parameters import ParameterValues
+from homeassistant.helpers.entity import EntityCategory
+from pyplumio.const import ProductType
+from pyplumio.devices.ecomax import EcoMAX
+from pyplumio.parameters import ParameterDescription, ParameterValues, SwitchDescription
 from pyplumio.parameters.ecomax import (
+    PARAMETER_TYPES as ECOMAX_PARAMETER_TYPES,
     EcomaxNumber,
     EcomaxNumberDescription,
     EcomaxSwitch,
     EcomaxSwitchDescription,
 )
 from pyplumio.parameters.mixer import (
+    PARAMETER_TYPES as MIXER_PARAMETER_TYPES,
     MixerNumber,
     MixerNumberDescription,
     MixerSwitch,
@@ -34,6 +39,11 @@ import pytest
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import ATTR_ENTITIES
+from custom_components.plum_ecomax.switch import (
+    MIXER_SWITCH_TYPES,
+    SWITCH_TYPES,
+    EcomaxSwitchEntityDescription,
+)
 from tests.conftest import dispatch_value
 
 
@@ -880,5 +890,140 @@ async def test_custom_switches(
         state = await async_turn_on(hass, entity_id)
 
     mock_set_nowait.assert_called_once_with(custom_switch_key, STATE_ON)
+    assert isinstance(state, State)
+    assert state.state == STATE_ON
+
+
+# Configuration switches (ecoMAX P service parameters), as (key, entity_id).
+# Translation keys of these entities are equal to their keys.
+ECOMAX_P_CONFIG_SWITCHES: tuple[tuple[str, str], ...] = (
+    ("lambda_control", "switch.ecomax_lambda_sensor_control"),
+    ("schedule_feeder_2", "switch.ecomax_feeder_2_schedule"),
+    ("thermostat_mode", "switch.ecomax_thermostat_selection"),
+    ("circulation_control", "switch.ecomax_circulation_control"),
+    ("buffer_control", "switch.ecomax_buffer_control"),
+)
+
+MIXER_CONFIG_SWITCHES: tuple[tuple[str, str], ...] = (
+    ("thermostat_operation", "switch.ecomax_mixer_1_thermostat_operation"),
+)
+
+
+@pytest.fixture(name="config_switches")
+async def fixture_config_switches(ecomax_p: EcoMAX, mixers: EcoMAX) -> EcoMAX:
+    """Inject ecoMAX P and mixer configuration switches."""
+    await ecomax_p.load(
+        {
+            key: EcomaxSwitch(
+                device=ecomax_p,
+                values=ParameterValues(value=0, min_value=0, max_value=1),
+                description=EcomaxSwitchDescription(key),
+            )
+            for key, _ in ECOMAX_P_CONFIG_SWITCHES
+        }
+    )
+    await ecomax_p.mixers[0].load(
+        {
+            key: MixerSwitch(
+                device=ecomax_p,
+                values=ParameterValues(value=0, min_value=0, max_value=1),
+                description=MixerSwitchDescription(key),
+            )
+            for key, _ in MIXER_CONFIG_SWITCHES
+        }
+    )
+    return ecomax_p
+
+
+@pytest.mark.parametrize(
+    ("descriptions", "parameter_types", "table"),
+    (
+        (SWITCH_TYPES, ECOMAX_PARAMETER_TYPES, ECOMAX_P_CONFIG_SWITCHES),
+        (MIXER_SWITCH_TYPES, MIXER_PARAMETER_TYPES, MIXER_CONFIG_SWITCHES),
+    ),
+)
+def test_config_switches_table_is_complete(
+    descriptions: tuple[EcomaxSwitchEntityDescription, ...],
+    parameter_types: dict[ProductType, list[ParameterDescription]],
+    table: tuple[tuple[str, str], ...],
+) -> None:
+    """Test that every configuration switch is covered and is a switch."""
+    assert [key for key, _ in table] == [
+        description.key
+        for description in descriptions
+        if description.entity_category == EntityCategory.CONFIG
+    ]
+    switches = {
+        description.name
+        for description in parameter_types[ProductType.ECOMAX_P]
+        if isinstance(description, SwitchDescription)
+    }
+    assert {key for key, _ in table} <= switches
+
+
+@pytest.mark.parametrize(
+    ("source_device", "key", "entity_id"),
+    [("ecomax", key, entity_id) for key, entity_id in ECOMAX_P_CONFIG_SWITCHES]
+    + [("mixer_0", key, entity_id) for key, entity_id in MIXER_CONFIG_SWITCHES],
+)
+@pytest.mark.usefixtures("ecomax_p", "mixers", "config_switches")
+async def test_config_switch(
+    source_device: str,
+    key: str,
+    entity_id: str,
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    setup_config_entry,
+    async_turn_off,
+    async_turn_on,
+) -> None:
+    """Test ecoMAX P and mixer configuration switches."""
+    await setup_config_entry()
+
+    # Check entry.
+    entity_registry = er.async_get(hass)
+    entry = entity_registry.async_get(entity_id)
+    assert entry
+    assert entry.translation_key == key
+    assert entry.entity_category == EntityCategory.CONFIG
+    assert entry.disabled_by is None
+
+    # Get initial value.
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert state.state == STATE_OFF
+
+    # Dispatch new value.
+    new_value: EcomaxSwitch | MixerSwitch = (
+        EcomaxSwitch(
+            device=connection.device,
+            values=ParameterValues(value=1, min_value=0, max_value=1),
+            description=EcomaxSwitchDescription(key),
+        )
+        if source_device == "ecomax"
+        else MixerSwitch(
+            device=connection.device,
+            values=ParameterValues(value=1, min_value=0, max_value=1),
+            description=MixerSwitchDescription(key),
+        )
+    )
+    await dispatch_value(connection.device, key, new_value, source_device=source_device)
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert state.state == STATE_ON
+
+    # Turn off.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_off(hass, entity_id)
+
+    mock_set_nowait.assert_called_once_with(key, STATE_OFF)
+    assert isinstance(state, State)
+    assert state.state == STATE_OFF
+
+    # Turn on.
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        state = await async_turn_on(hass, entity_id)
+
+    mock_set_nowait.assert_called_once_with(key, STATE_ON)
     assert isinstance(state, State)
     assert state.state == STATE_ON

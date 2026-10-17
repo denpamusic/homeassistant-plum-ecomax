@@ -9,6 +9,7 @@ from typing import Any, cast
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.const import STATE_OFF, STATE_ON, Platform
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.const import ProductType, State
 from pyplumio.parameters import Numeric, Parameter
@@ -75,6 +76,36 @@ SWITCH_TYPES: tuple[EcomaxSwitchEntityDescription, ...] = (
         key="water_heater_schedule_switch",
         product_types={ProductType.ECOMAX_P},
         translation_key="water_heater_schedule_switch",
+    ),
+    EcomaxSwitchEntityDescription(
+        key="lambda_control",
+        entity_category=EntityCategory.CONFIG,
+        product_types={ProductType.ECOMAX_P},
+        translation_key="lambda_control",
+    ),
+    EcomaxSwitchEntityDescription(
+        key="schedule_feeder_2",
+        entity_category=EntityCategory.CONFIG,
+        product_types={ProductType.ECOMAX_P},
+        translation_key="schedule_feeder_2",
+    ),
+    EcomaxSwitchEntityDescription(
+        key="thermostat_mode",
+        entity_category=EntityCategory.CONFIG,
+        product_types={ProductType.ECOMAX_P},
+        translation_key="thermostat_mode",
+    ),
+    EcomaxSwitchEntityDescription(
+        key="circulation_control",
+        entity_category=EntityCategory.CONFIG,
+        product_types={ProductType.ECOMAX_P},
+        translation_key="circulation_control",
+    ),
+    EcomaxSwitchEntityDescription(
+        key="buffer_control",
+        entity_category=EntityCategory.CONFIG,
+        product_types={ProductType.ECOMAX_P},
+        translation_key="buffer_control",
     ),
 )
 
@@ -170,6 +201,12 @@ MIXER_SWITCH_TYPES: tuple[MixerSwitchEntityDescription, ...] = (
         state_off=0,
         state_on=1,
         translation_key="enable_circuit",
+    ),
+    MixerSwitchEntityDescription(
+        key="thermostat_operation",
+        entity_category=EntityCategory.CONFIG,
+        product_types={ProductType.ECOMAX_P},
+        translation_key="thermostat_operation",
     ),
 )
 

@@ -74,6 +74,9 @@ DEFAULT_TOLERANCE: Final = 0.1
 # Events.
 EVENT_PLUM_ECOMAX_ALERT: Final = "plum_ecomax_alert"
 
+# Units.
+FLOW_KG_H: Final = "kg/h"
+
 
 @unique
 class DeviceType(StrEnum):
