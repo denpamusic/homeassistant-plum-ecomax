@@ -19,7 +19,7 @@ dev = [
     "complexipy>=8.0.1",
     "mypy==2.4.0",
     "packaging>=24.2",
-    "prek==0.5.5",
+    "prek==0.5.7",
     "pytest-cov>=7.1.0",
     "pytest-homeassistant-custom-component==0.13.373",
     "pytest-xdist>=3.8.0",
