@@ -1,0 +1,60 @@
+[[repos]]
+repo = "builtin"
+
+[[repos.hooks]]
+id = "check-json"
+exclude = '(.vscode|tests/)'
+
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "ruff-check"
+name = "ruff check"
+entry = "uv run ruff check --fix"
+language = "system"
+types = ["python"]
+
+[[repos.hooks]]
+id = "ruff-format"
+name = "ruff format"
+entry = "uv run ruff format"
+language = "system"
+types = ["python"]
+
+[[repos.hooks]]
+id = "codespell"
+name = "codespell"
+entry = "uv run codespell"
+language = "system"
+types = ["text"]
+
+[[repos.hooks]]
+id = "complexipy"
+name = "complexipy"
+entry = "uv run complexipy custom_components tests --max-complexity-allowed 15"
+language = "system"
+pass_filenames = false
+
+[[repos.hooks]]
+id = "mypy"
+name = "mypy"
+entry = "uv run mypy custom_components/plum_ecomax tests scripts"
+language = "system"
+pass_filenames = false
+
+[[repos.hooks]]
+id = "sync-translations"
+name = "sync translations"
+entry = "uv run python scripts/sync_translations.py --sort"
+language = "system"
+pass_filenames = false
+files = '^custom_components/plum_ecomax/(strings\.json|translations/.*\.json)$'
+
+[[repos.hooks]]
+id = "sync-manifest"
+name = "sync manifest"
+entry = "uv run python scripts/sync_manifest.py"
+language = "system"
+pass_filenames = false
+files = '^(pyproject\.toml|custom_components/plum_ecomax/manifest\.json|hacs\.json)$'

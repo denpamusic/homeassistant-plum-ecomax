@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -e
+
+cd "$(dirname "$0")/.."
+
+# Trust repository directory in git inside devcontainer
+git config --global --add safe.directory "${PWD}" || true
+
+# Initialize and update submodules if in a git repository
+if git rev-parse --git-dir > /dev/null 2>&1; then
+    git submodule update --init --recursive
+fi
+
+# Ensure uv is installed
+if ! command -v uv &> /dev/null; then
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    export PATH="${HOME}/.local/bin:${PATH}"
+fi
+
+# Sync dependencies with uv
+uv sync
+
+# Install prek hooks if in a git repository
+if git rev-parse --git-dir > /dev/null 2>&1; then
+    uv run prek install || true
+fi

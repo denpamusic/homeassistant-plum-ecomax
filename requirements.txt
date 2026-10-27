@@ -1,2 +1,0 @@
-homeassistant>=2026.9.4
-pyplumio==0.6.8

@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -e
+
+cd "$(dirname "$0")/.."
+
+# Create config directory structure
+mkdir -p config/custom_components
+
+# Link custom_components/plum_ecomax to config/custom_components/plum_ecomax
+ln -sfn "${PWD}/custom_components/plum_ecomax" "${PWD}/config/custom_components/plum_ecomax"
+
+# Ensure default configuration.yaml exists with debug logging for Plum ecoMAX
+if [ ! -f config/configuration.yaml ]; then
+    cat << 'EOF' > config/configuration.yaml
+default_config:
+
+logger:
+  default: info
+  logs:
+    custom_components.plum_ecomax: debug
+    pyplumio: debug
+EOF
+fi
+
+# Run Home Assistant Core with config directory
+uv run hass -c config

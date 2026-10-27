@@ -1,0 +1,65 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Prepare Home Assistant config",
+            "type": "shell",
+            "command": "mkdir -p config/custom_components && ln -sfn \"${workspaceFolder}/custom_components/plum_ecomax\" \"${workspaceFolder}/config/custom_components/plum_ecomax\"",
+            "presentation": {
+                "reveal": "never",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Run Home Assistant Core",
+            "type": "shell",
+            "command": "bash scripts/develop",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Run Tests (pytest)",
+            "type": "shell",
+            "command": "uv run pytest",
+            "group": "test",
+            "presentation": {
+                "reveal": "always"
+            }
+        },
+        {
+            "label": "Run Lint (prek)",
+            "type": "shell",
+            "command": "uv run prek run --all-files",
+            "presentation": {
+                "reveal": "always"
+            }
+        },
+        {
+            "label": "Run Type Check (mypy)",
+            "type": "shell",
+            "command": "uv run mypy custom_components/plum_ecomax tests scripts",
+            "presentation": {
+                "reveal": "always"
+            }
+        },
+        {
+            "label": "Sync Translations",
+            "type": "shell",
+            "command": "uv run python scripts/sync_translations.py",
+            "presentation": {
+                "reveal": "always"
+            }
+        },
+        {
+            "label": "Sync Manifest",
+            "type": "shell",
+            "command": "uv run python scripts/sync_manifest.py",
+            "presentation": {
+                "reveal": "always"
+            }
+        }
+    ]
+}

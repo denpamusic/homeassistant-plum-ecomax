@@ -1,0 +1,37 @@
+---
+name: typecheck
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  SETUPTOOLS_SCM_PRETEND_VERSION_FOR_PYPLUMIO: "0.6.8"
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+
+      - name: Fetch submodule tags
+        run: git -C PyPlumIO fetch --tags
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.3.0
+        with:
+          enable-cache: true
+
+      - name: Set up Python 3.14
+        run: uv python install 3.14
+
+      - name: Run type checking with mypy
+        run: uv run --locked --python 3.14 mypy custom_components/plum_ecomax tests scripts

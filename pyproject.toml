@@ -1,15 +1,42 @@
-# https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
-
 [project]
 name = "homeassistant-plum-ecomax"
+version = "0.5.0"
+description = "Plum ecoMAX boiler controller integration for Home Assistant."
+readme = "README.md"
+requires-python = ">=3.14.2"
 authors = [
     {name = "Denis Paavilainen", email = "denpa@denpa.pro"}
 ]
-description = "Plum ecoMAX boiler controller integration for Home Assistant."
-license = {text = "MIT License"}
+license = "MIT"
+dependencies = [
+    "homeassistant>=2026.9.4",
+    "pyplumio==0.6.8",
+]
+
+[dependency-groups]
+dev = [
+    "codespell==2.4.3",
+    "complexipy>=8.0.1",
+    "mypy==2.4.0",
+    "packaging>=24.2",
+    "prek==0.5.5",
+    "pytest-cov>=7.1.0",
+    "pytest-homeassistant-custom-component==0.13.373",
+    "pytest-xdist>=3.8.0",
+    "ruff==0.17.1",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+pyplumio = { path = "PyPlumIO" }
+
+[tool.complexipy]
+max-complexity-allowed = 15
 
 [tool.codespell]
-skip = ".git,.mypy_cache,.pytest_cache,.ruff_cache,.tox,.vscode,build,*/translations/*.json"
+skip = ".git,.mypy_cache,.pytest_cache,.ruff_cache,.venv,.vscode,build,PyPlumIO,*/translations/*.json"
 ignore-words-list = "hass"
 
 [tool.mypy]
@@ -49,8 +76,9 @@ exclude = [
     ".mypy_cache",
     ".pytest_cache",
     ".ruff_cache",
-    ".tox",
-    ".vscode"
+    ".venv",
+    ".vscode",
+    "PyPlumIO"
 ]
 
 [[tool.mypy.overrides]]
@@ -58,9 +86,23 @@ module = "tests.*"
 disallow_incomplete_defs = false
 disallow_untyped_defs = false
 
+[tool.coverage.run]
+source = ["custom_components/plum_ecomax"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "@overload",
+    "if __name__ == .__main__.:",
+]
+
 [tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = [".git", "PyPlumIO", ".venv"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+addopts = "--cov=custom_components/plum_ecomax --cov-report=term-missing --cov-fail-under=100"
 
 [tool.ruff]
 exclude = [
@@ -69,12 +111,14 @@ exclude = [
     ".mypy_cache",
     ".pytest_cache",
     ".ruff_cache",
-    ".tox",
-    ".vscode"
+    ".venv",
+    ".vscode",
+    "PyPlumIO"
 ]
 line-length = 88
 indent-width = 4
 target-version = "py314"
+src = ["custom_components", "tests", "scripts"]
 
 [tool.ruff.lint]
 select = [
@@ -168,7 +212,6 @@ ignore = [
 ]
 
 [tool.ruff.lint.flake8-import-conventions.extend-aliases]
-voluptuous = "vol"
 "homeassistant.helpers.area_registry" = "ar"
 "homeassistant.helpers.config_validation" = "cv"
 "homeassistant.helpers.device_registry" = "dr"
@@ -188,64 +231,11 @@ force-sort-within-sections = true
 known-first-party = [
     "custom_components.plum_ecomax",
 ]
+known-third-party = [
+    "pyplumio",
+]
 combine-as-imports = true
 split-on-trailing-comma = false
 
 [tool.ruff.lint.mccabe]
 max-complexity = 25
-
-[tool.coverage.report]
-exclude_lines = [
-    "if TYPE_CHECKING:",
-    "@overload",
-    "if __name__ == .__main__.:"
-]
-
-[tool.tox]
-legacy_tox_ini = """
-    [tox]
-    envlist = py314, lint, type
-    isolated_build = True
-    skip_missing_interpreters = True
-    ignore_basepython_conflict = True
-    no_package = True
-
-    [gh-actions]
-    python =
-        3.14: py314, lint, type
-
-    [testenv]
-    deps =
-        -r{toxinidir}/requirements.txt
-        -r{toxinidir}/requirements_test.txt
-
-    commands =
-        coverage run --source=custom_components/plum_ecomax,scripts -m pytest tests/
-        coverage report -m
-
-    [testenv:lint]
-    deps =
-        -r{toxinidir}/requirements.txt
-        -r{toxinidir}/requirements_test.txt
-
-    commands =
-        prek run codespell --all-files
-        prek run ruff-check --all-files
-        prek run check-json --all-files
-
-    [testenv:test]
-    deps =
-        -r{toxinidir}/requirements.txt
-        -r{toxinidir}/requirements_test.txt
-
-    commands =
-        pytest
-
-    [testenv:type]
-    deps =
-        -r{toxinidir}/requirements.txt
-        -r{toxinidir}/requirements_test.txt
-
-    commands =
-        mypy .
-"""

@@ -290,9 +290,7 @@ def main(argv: list[str] | None = None) -> int:
             sort_keys=args.sort,
         )
 
-    summary_title = (
-        "[CHECK] Summary of changes:" if args.check else "Summary:"
-    )
+    summary_title = "[CHECK] Summary of changes:" if args.check else "Summary:"
     sys.stdout.write(f"{summary_title}\n")
     if args.sort:
         if strings_changed:

@@ -1,0 +1,46 @@
+---
+name: test
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  SETUPTOOLS_SCM_PRETEND_VERSION_FOR_PYPLUMIO: "0.6.8"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+
+      - name: Fetch submodule tags
+        run: git -C PyPlumIO fetch --tags
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.3.0
+        with:
+          enable-cache: true
+
+      - name: Set up Python 3.14
+        run: uv python install 3.14
+
+      - name: Verify pyplumio version
+        run: uv run python -c "import pyplumio; assert pyplumio.__version__ == '0.6.8', f'Expected 0.6.8, got {pyplumio.__version__}'"
+
+      - name: Run tests with pytest
+        run: uv run --locked --python 3.14 pytest -n auto --cov-report=lcov:coverage.lcov
+
+      - if: github.event_name == 'push'
+        uses: qltysh/qlty-action/coverage@v2
+        with:
+          token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+          files: coverage.lcov

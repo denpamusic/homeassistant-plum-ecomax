@@ -41,12 +41,14 @@ htmlcov/
 .nox/
 .coverage
 .coverage.*
+coverage.lcov
 .cache
 nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+.complexipy_cache/
 
 # Translations
 *.mo
@@ -112,3 +114,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Home Assistant local development instance
+config/

@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 
 import pytest
-
 from scripts.sync_translations import (
     get_all_keys,
     main,

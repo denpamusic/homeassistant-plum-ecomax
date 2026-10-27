@@ -43,6 +43,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er, selector
 import homeassistant.helpers.config_validation as cv
+import probatio
 from pyplumio.connection import Connection
 from pyplumio.const import ProductType
 from pyplumio.devices import LogicalDevice, PhysicalDevice
@@ -50,7 +51,6 @@ from pyplumio.exceptions import ConnectionFailedError
 from pyplumio.parameters import Number, Numeric, State, Switch, UnitOfMeasurement
 from pyplumio.structures.product_info import ProductInfo
 from pyplumio.structures.sensor_data import ConnectedModules
-import voluptuous as vol
 
 from .connection import (
     DEFAULT_TIMEOUT,
@@ -93,17 +93,19 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-STEP_TCP_DATA_SCHEMA = vol.Schema(
+STEP_TCP_DATA_SCHEMA = probatio.Schema(
     {
-        vol.Required(CONF_HOST): cv.string,
-        vol.Optional(CONF_PORT, default=DEFAULT_PORT): cv.port,
+        probatio.Required(CONF_HOST): cv.string,
+        probatio.Optional(CONF_PORT, default=DEFAULT_PORT): cv.port,
     }
 )
 
-STEP_SERIAL_DATA_SCHEMA = vol.Schema(
+STEP_SERIAL_DATA_SCHEMA = probatio.Schema(
     {
-        vol.Required(CONF_DEVICE, default=DEFAULT_DEVICE): cv.string,
-        vol.Optional(CONF_BAUDRATE, default=DEFAULT_BAUDRATE): vol.In(BAUDRATES),
+        probatio.Required(CONF_DEVICE, default=DEFAULT_DEVICE): cv.string,
+        probatio.Optional(CONF_BAUDRATE, default=DEFAULT_BAUDRATE): probatio.In(
+            BAUDRATES
+        ),
     }
 )
 
@@ -400,7 +402,7 @@ def _validate_unit(data: dict[str, Any], platform: Platform) -> None:
         else:
             units_string = f"one of {', '.join(sorted_units)}"
 
-        raise vol.Invalid(
+        raise probatio.Invalid(
             f"'{unit}' is not a valid unit for device class '{device_class}'; "
             f"expected {units_string}"
         )
@@ -441,7 +443,7 @@ def _validate_state_class(data: dict[str, Any]) -> None:
         else:
             state_classes_string = f"one of {', '.join(sorted_state_classes)}"
 
-        raise vol.Invalid(
+        raise probatio.Invalid(
             f"'{state_class}' is not a valid state class for device class "
             f"'{device_class}'; expected {state_classes_string}"
         )
@@ -456,13 +458,13 @@ def _validate_entity_details(
     if platform in PLATFORM_UNITS:
         try:
             _validate_unit(entity, platform=platform)
-        except vol.Invalid as e:
+        except probatio.Invalid as e:
             errors[CONF_UNIT_OF_MEASUREMENT] = str(e.msg)
 
     if platform is Platform.SENSOR:
         try:
             _validate_state_class(entity)
-        except vol.Invalid as e:
+        except probatio.Invalid as e:
             errors[CONF_STATE_CLASS] = str(e.msg)
 
     return errors
@@ -537,15 +539,15 @@ def _format_source_value(
     return value
 
 
-def generate_select_schema(entities: dict[str, Any]) -> vol.Schema | None:
+def generate_select_schema(entities: dict[str, Any]) -> probatio.Schema | None:
     """Generate schema for editing or deleting an entity."""
 
     if not (options := _custom_entity_options(entities)):
         return None
 
-    return vol.Schema(
+    return probatio.Schema(
         {
-            vol.Required("entity_id"): selector.SelectSelector(
+            probatio.Required("entity_id"): selector.SelectSelector(
                 selector.SelectSelectorConfig(options=options)
             )
         }
@@ -556,15 +558,15 @@ def generate_edit_schema(
     platform: Platform,
     source_options: list[selector.SelectOptionDict],
     entity: dict[str, Any],
-) -> vol.Schema:
+) -> probatio.Schema:
     """Generate schema."""
 
-    schema: dict[vol.Marker, Any] = {
-        vol.Required(
-            CONF_NAME, default=entity.get(CONF_NAME, vol.UNDEFINED)
+    schema: dict[probatio.Marker, Any] = {
+        probatio.Required(
+            CONF_NAME, default=entity.get(CONF_NAME, probatio.UNDEFINED)
         ): selector.TextSelector(),
-        vol.Required(
-            CONF_KEY, default=entity.get(CONF_KEY, vol.UNDEFINED)
+        probatio.Required(
+            CONF_KEY, default=entity.get(CONF_KEY, probatio.UNDEFINED)
         ): selector.SelectSelector(
             selector.SelectSelectorConfig(options=source_options)
         ),
@@ -572,9 +574,9 @@ def generate_edit_schema(
 
     if platform is Platform.SENSOR:
         schema |= {
-            vol.Optional(
+            probatio.Optional(
                 CONF_UNIT_OF_MEASUREMENT,
-                default=entity.get(CONF_UNIT_OF_MEASUREMENT, vol.UNDEFINED),
+                default=entity.get(CONF_UNIT_OF_MEASUREMENT, probatio.UNDEFINED),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=list(
@@ -591,9 +593,9 @@ def generate_edit_schema(
                     sort=True,
                 ),
             ),
-            vol.Optional(
+            probatio.Optional(
                 CONF_DEVICE_CLASS,
-                default=entity.get(CONF_DEVICE_CLASS, vol.UNDEFINED),
+                default=entity.get(CONF_DEVICE_CLASS, probatio.UNDEFINED),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=[
@@ -606,9 +608,9 @@ def generate_edit_schema(
                     sort=True,
                 ),
             ),
-            vol.Optional(
+            probatio.Optional(
                 CONF_STATE_CLASS,
-                default=entity.get(CONF_STATE_CLASS, vol.UNDEFINED),
+                default=entity.get(CONF_STATE_CLASS, probatio.UNDEFINED),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=[cls.value for cls in SensorStateClass],
@@ -617,7 +619,7 @@ def generate_edit_schema(
                     sort=True,
                 ),
             ),
-            vol.Optional(
+            probatio.Optional(
                 CONF_UPDATE_INTERVAL, default=entity.get(CONF_UPDATE_INTERVAL, 10)
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
@@ -632,9 +634,9 @@ def generate_edit_schema(
 
     elif platform is Platform.BINARY_SENSOR:
         schema |= {
-            vol.Optional(
+            probatio.Optional(
                 CONF_DEVICE_CLASS,
-                default=entity.get(CONF_DEVICE_CLASS, vol.UNDEFINED),
+                default=entity.get(CONF_DEVICE_CLASS, probatio.UNDEFINED),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=[cls.value for cls in BinarySensorDeviceClass],
@@ -647,17 +649,17 @@ def generate_edit_schema(
 
     elif platform is Platform.NUMBER:
         schema |= {
-            vol.Required(
-                CONF_MODE, default=entity.get(CONF_MODE, vol.UNDEFINED)
+            probatio.Required(
+                CONF_MODE, default=entity.get(CONF_MODE, probatio.UNDEFINED)
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=[NumberMode.AUTO, NumberMode.BOX, NumberMode.SLIDER],
                     translation_key="number_mode",
                 )
             ),
-            vol.Optional(
+            probatio.Optional(
                 CONF_UNIT_OF_MEASUREMENT,
-                default=entity.get(CONF_UNIT_OF_MEASUREMENT, vol.UNDEFINED),
+                default=entity.get(CONF_UNIT_OF_MEASUREMENT, probatio.UNDEFINED),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=list(
@@ -674,9 +676,9 @@ def generate_edit_schema(
                     sort=True,
                 ),
             ),
-            vol.Optional(
+            probatio.Optional(
                 CONF_DEVICE_CLASS,
-                default=entity.get(CONF_DEVICE_CLASS, vol.UNDEFINED),
+                default=entity.get(CONF_DEVICE_CLASS, probatio.UNDEFINED),
             ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=[cls.value for cls in NumberDeviceClass],
@@ -687,7 +689,7 @@ def generate_edit_schema(
             ),
         }
 
-    return vol.Schema(schema)
+    return probatio.Schema(schema)
 
 
 class OptionsFlowHandler(OptionsFlowWithReload):
@@ -725,9 +727,9 @@ class OptionsFlowHandler(OptionsFlowWithReload):
 
         return self.async_show_form(
             step_id="add_entity",
-            data_schema=vol.Schema(
+            data_schema=probatio.Schema(
                 {
-                    vol.Required(CONF_SOURCE_DEVICE): selector.SelectSelector(
+                    probatio.Required(CONF_SOURCE_DEVICE): selector.SelectSelector(
                         selector.SelectSelectorConfig(
                             options=self._source_device_select_options()
                         )

@@ -1,0 +1,55 @@
+---
+name: lint
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  SETUPTOOLS_SCM_PRETEND_VERSION_FOR_PYPLUMIO: "0.6.8"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+
+      - name: Fetch submodule tags
+        run: git -C PyPlumIO fetch --tags
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.3.0
+        with:
+          enable-cache: true
+
+      - name: Set up Python 3.14
+        run: uv python install 3.14
+
+      - name: Check JSON
+        run: uv run --locked prek run check-json --all-files
+
+      - name: Run spell check
+        run: uv run --locked --python 3.14 codespell
+
+      - name: Run ruff check
+        run: uv run --locked --python 3.14 ruff check .
+
+      - name: Run ruff format check
+        run: uv run --locked --python 3.14 ruff format --check .
+
+      - name: Run complexipy
+        run: uv run --locked --python 3.14 complexipy custom_components tests --max-complexity-allowed 15
+
+      - name: Check translations
+        run: uv run --locked --python 3.14 python scripts/sync_translations.py --check
+
+      - name: Check manifest and hacs sync
+        run: uv run --locked --python 3.14 python scripts/sync_manifest.py --check

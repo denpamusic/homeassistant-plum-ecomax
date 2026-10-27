@@ -30,12 +30,12 @@ from homeassistant.helpers import (
     device_registry as dr,
     service,
 )
+import probatio
 from pyplumio.const import State, UnitOfMeasurement
 from pyplumio.devices import Device, LogicalDevice
 from pyplumio.parameters import Number, Numeric, Parameter
 from pyplumio.structures.product_info import ProductInfo
 from pyplumio.structures.schedules import Schedule, ScheduleDay
-import voluptuous as vol
 
 from .connection import DEFAULT_TIMEOUT, EcomaxConnection
 from .const import ATTR_PRODUCT, ATTR_VALUE, DOMAIN, WEEKDAYS
@@ -57,40 +57,48 @@ PRESETS = (PRESET_DAY, PRESET_NIGHT)
 SCHEDULES: Final = ("heating", "water_heater", "circulation_pump", "boiler_work")
 
 SERVICE_GET_PARAMETER = "get_parameter"
-SERVICE_GET_PARAMETER_SCHEMA = vol.Schema(
+SERVICE_GET_PARAMETER_SCHEMA = probatio.Schema(
     {
-        vol.Required(ATTR_DEVICE_ID): str,
-        vol.Required(ATTR_NAME): cv.string,
+        probatio.Required(ATTR_DEVICE_ID): str,
+        probatio.Required(ATTR_NAME): cv.string,
     }
 )
 
 SERVICE_SET_PARAMETER = "set_parameter"
-SERVICE_SET_PARAMETER_SCHEMA = vol.Schema(
+SERVICE_SET_PARAMETER_SCHEMA = probatio.Schema(
     {
-        vol.Required(ATTR_DEVICE_ID): str,
-        vol.Required(ATTR_NAME): cv.string,
-        vol.Required(ATTR_VALUE): vol.Any(cv.positive_float, STATE_ON, STATE_OFF),
+        probatio.Required(ATTR_DEVICE_ID): str,
+        probatio.Required(ATTR_NAME): cv.string,
+        probatio.Required(ATTR_VALUE): probatio.Any(
+            cv.positive_float, STATE_ON, STATE_OFF
+        ),
     }
 )
 
 SERVICE_GET_SCHEDULE = "get_schedule"
-SERVICE_GET_SCHEDULE_SCHEMA = vol.Schema(
+SERVICE_GET_SCHEDULE_SCHEMA = probatio.Schema(
     {
-        vol.Required(ATTR_DEVICE_ID): str,
-        vol.Required(ATTR_TYPE): vol.All(str, vol.In(SCHEDULES)),
-        vol.Required(ATTR_WEEKDAYS): vol.All(cv.ensure_list, [vol.In(WEEKDAYS)]),
+        probatio.Required(ATTR_DEVICE_ID): str,
+        probatio.Required(ATTR_TYPE): probatio.All(str, probatio.In(SCHEDULES)),
+        probatio.Required(ATTR_WEEKDAYS): probatio.All(
+            cv.ensure_list, [probatio.In(WEEKDAYS)]
+        ),
     }
 )
 
 SERVICE_SET_SCHEDULE = "set_schedule"
-SERVICE_SET_SCHEDULE_SCHEMA = vol.Schema(
+SERVICE_SET_SCHEDULE_SCHEMA = probatio.Schema(
     {
-        vol.Required(ATTR_DEVICE_ID): str,
-        vol.Required(ATTR_TYPE): vol.All(str, vol.In(SCHEDULES)),
-        vol.Required(ATTR_WEEKDAYS): vol.All(cv.ensure_list, [vol.In(WEEKDAYS)]),
-        vol.Required(ATTR_PRESET): vol.All(str, vol.In(PRESETS)),
-        vol.Optional(ATTR_START, default="00:00:00"): vol.Datetime("%H:%M:%S"),
-        vol.Optional(ATTR_END, default="00:00:00"): vol.Datetime("%H:%M:%S"),
+        probatio.Required(ATTR_DEVICE_ID): str,
+        probatio.Required(ATTR_TYPE): probatio.All(str, probatio.In(SCHEDULES)),
+        probatio.Required(ATTR_WEEKDAYS): probatio.All(
+            cv.ensure_list, [probatio.In(WEEKDAYS)]
+        ),
+        probatio.Required(ATTR_PRESET): probatio.All(str, probatio.In(PRESETS)),
+        probatio.Optional(ATTR_START, default="00:00:00"): probatio.Datetime(
+            "%H:%M:%S"
+        ),
+        probatio.Optional(ATTR_END, default="00:00:00"): probatio.Datetime("%H:%M:%S"),
     }
 )
 
@@ -496,7 +504,7 @@ def async_setup_services(hass: HomeAssistant) -> bool:
         SERVICE_CALIBRATE_METER,
         entity_domain=SENSOR_DOMAIN,
         func="async_calibrate_meter",
-        schema={vol.Required(ATTR_VALUE): cv.positive_float},
+        schema={probatio.Required(ATTR_VALUE): cv.positive_float},
     )
 
     return True
