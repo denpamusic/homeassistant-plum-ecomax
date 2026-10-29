@@ -1414,7 +1414,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "homeassistant", specifier = ">=2026.9.4" },
-    { name = "pyplumio", directory = "PyPlumIO" },
+    { name = "pyplumio", editable = "PyPlumIO" },
 ]
 
 [package.metadata.requires-dev]
@@ -2613,33 +2613,48 @@ wheels = [
 
 [[package]]
 name = "pyplumio"
-source = { directory = "PyPlumIO" }
+version = "0.7.0"
+source = { editable = "PyPlumIO" }
 dependencies = [
-    { name = "pyserial-asyncio-fast" },
+    { name = "serialx" },
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "codespell", marker = "extra == 'test'", specifier = "==2.4.1" },
-    { name = "coverage", marker = "extra == 'test'", specifier = "==7.13.0" },
-    { name = "freezegun", marker = "extra == 'test'", specifier = "==1.5.5" },
-    { name = "mypy", marker = "extra == 'test'", specifier = "==1.19.1" },
-    { name = "numpy", marker = "extra == 'test'", specifier = ">=2.0.0,<3.0.0" },
-    { name = "pre-commit", marker = "extra == 'dev'", specifier = "==4.5.1" },
-    { name = "pyplumio", extras = ["docs", "test"], marker = "extra == 'dev'" },
-    { name = "pyserial-asyncio-fast", specifier = "==0.16" },
-    { name = "pyserial-asyncio-fast", marker = "extra == 'test'", specifier = "==0.16" },
-    { name = "pytest", marker = "extra == 'test'", specifier = "==9.0.2" },
-    { name = "pytest-asyncio", marker = "extra == 'test'", specifier = "==1.3.0" },
-    { name = "readthedocs-sphinx-search", marker = "extra == 'docs'", specifier = "==0.3.2" },
-    { name = "ruff", marker = "extra == 'test'", specifier = "==0.14.10" },
-    { name = "sphinx", marker = "extra == 'docs'", specifier = "==8.1.3" },
-    { name = "sphinx-rtd-theme", marker = "extra == 'docs'", specifier = "==3.0.2" },
-    { name = "tomli", marker = "extra == 'dev'", specifier = "==2.3.0" },
-    { name = "tox", marker = "extra == 'test'", specifier = "==4.32.0" },
-    { name = "types-pyserial", marker = "extra == 'test'", specifier = "==3.5.0.20251001" },
+requires-dist = [{ name = "serialx", specifier = ">=1.14.0" }]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "codespell", specifier = ">=2.4.3" },
+    { name = "complexipy", specifier = ">=8.0.1" },
+    { name = "freezegun", specifier = ">=1.5.5" },
+    { name = "mypy", specifier = ">=1.19.1,<=2.4.0" },
+    { name = "numpy", specifier = ">=2.0.0,<2.5.0" },
+    { name = "pytest", specifier = ">=9.1.1" },
+    { name = "pytest-asyncio", specifier = ">=1.3.0" },
+    { name = "pytest-cov", specifier = ">=6.0.0" },
+    { name = "readthedocs-sphinx-search", specifier = ">=0.3.2" },
+    { name = "ruff", specifier = ">=0.17.0" },
+    { name = "sphinx", specifier = ">=8.1.3" },
+    { name = "sphinx-rtd-theme", specifier = ">=3.1.0" },
 ]
-provides-extras = ["test", "docs", "dev"]
+docs = [
+    { name = "readthedocs-sphinx-search", specifier = ">=0.3.2" },
+    { name = "sphinx", specifier = ">=8.1.3" },
+    { name = "sphinx-rtd-theme", specifier = ">=3.1.0" },
+]
+lint = [
+    { name = "codespell", specifier = ">=2.4.3" },
+    { name = "complexipy", specifier = ">=8.0.1" },
+    { name = "ruff", specifier = ">=0.17.0" },
+]
+test = [
+    { name = "freezegun", specifier = ">=1.5.5" },
+    { name = "numpy", specifier = ">=2.0.0,<2.5.0" },
+    { name = "pytest", specifier = ">=9.1.1" },
+    { name = "pytest-asyncio", specifier = ">=1.3.0" },
+    { name = "pytest-cov", specifier = ">=6.0.0" },
+]
+typing = [{ name = "mypy", specifier = ">=1.19.1,<=2.4.0" }]
 
 [[package]]
 name = "pyproject-hooks"
@@ -2664,27 +2679,6 @@ name = "pyric"
 version = "0.1.6.3"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/08/64/a99f27d3b4347486c7bfc0aa516016c46dc4c0f380ffccbd742a61af1eda/PyRIC-0.1.6.3.tar.gz", hash = "sha256:b539b01cafebd2406c00097f94525ea0f8ecd1dd92f7731f43eac0ef16c2ccc9", size = 870401, upload-time = "2016-12-04T07:54:48.374Z" }
-
-[[package]]
-name = "pyserial"
-version = "3.5"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/1e/7d/ae3f0a63f41e4d2f6cb66a5b57197850f919f59e558159a4dd3a818f5082/pyserial-3.5.tar.gz", hash = "sha256:3c77e014170dfffbd816e6ffc205e9842efb10be9f58ec16d3e8675b4925cddb", size = 159125, upload-time = "2020-11-23T03:59:15.045Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/07/bc/587a445451b253b285629263eb51c2d8e9bcea4fc97826266d186f96f558/pyserial-3.5-py2.py3-none-any.whl", hash = "sha256:c4451db6ba391ca6ca299fb3ec7bae67a5c55dde170964c7a14ceefec02f2cf0", size = 90585, upload-time = "2020-11-23T03:59:13.41Z" },
-]
-
-[[package]]
-name = "pyserial-asyncio-fast"
-version = "0.16"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pyserial" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/74/d1/6c444e0f6b886345a7993d358c6734ccc440521cdca4999601e86f111708/pyserial_asyncio_fast-0.16.tar.gz", hash = "sha256:fd52643380406739d777014b0aea0873d756b542eb62f7556567239cec007115", size = 32696, upload-time = "2025-03-27T02:35:20.624Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/1b/19/f76987bad313bb2dabf21914c1ec7441a1e846f05764f9948f1ccc2640a8/pyserial_asyncio_fast-0.16-py3-none-any.whl", hash = "sha256:88939d94e341a04c0c8bc3c1ed4e874439cb5a1e21ccfb0fd7315a8e45df1687", size = 9729, upload-time = "2025-03-27T02:35:19.062Z" },
-]
 
 [[package]]
 name = "pytest"
@@ -2928,6 +2922,19 @@ wheels = [
 ]
 
 [[package]]
+name = "pywin32"
+version = "312"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fc/2b/1f3cded5822fd49c02f40544cbb5f58c7cfd6b1694869fd476cb6170ee97/pywin32-312-cp314-cp314-win32.whl", hash = "sha256:a77a90fbb6881238d2ca9c6fd797b25817f3768fe78d214a90137ff055a75f5b", size = 6468928, upload-time = "2026-06-04T07:49:43.188Z" },
+    { url = "https://files.pythonhosted.org/packages/21/82/3bf86d2e2808902013132e1ce905a7da0da53790f3836c64bf44d55e24f3/pywin32-312-cp314-cp314-win_amd64.whl", hash = "sha256:a4dd3a848290ef724347b19f301045831d8e802fa4464f491b98b1e0a081432e", size = 7024157, upload-time = "2026-06-04T07:49:45.34Z" },
+    { url = "https://files.pythonhosted.org/packages/a4/0e/73f6d6800b4f27655abd9e9f6aaeaefcddb2b946e4674efa2bab184a7f7b/pywin32-312-cp314-cp314-win_arm64.whl", hash = "sha256:9fce94568364e0155e6dfb781ac5d95903be8baf28670632beab1b523f300daa", size = 6839598, upload-time = "2026-06-04T07:49:47.613Z" },
+    { url = "https://files.pythonhosted.org/packages/eb/61/caa39686032d2ebdd04ff0ab5cbe163126c0066d98e00c9018646e42393b/pywin32-312-cp315-cp315-win32.whl", hash = "sha256:5c1fbe4a937a73ae9297384a3da38518cbc694c68ad8a809b2e19acd350f03ed", size = 6471159, upload-time = "2026-06-04T07:49:50.035Z" },
+    { url = "https://files.pythonhosted.org/packages/0f/cd/7e1de64a4a6f69c04214169657ccab0d93a670ea50e35eb8f489d7378249/pywin32-312-cp315-cp315-win_amd64.whl", hash = "sha256:c2f03a0f73f804a13c2735b99392b0cd426bb4f2c4d0178e5ac966a0f21618d5", size = 7025293, upload-time = "2026-06-04T07:49:54.857Z" },
+    { url = "https://files.pythonhosted.org/packages/23/ed/4532e9388e65fa16b46776ef47ad631a64eda1631884488af707666350ed/pywin32-312-cp315-cp315-win_arm64.whl", hash = "sha256:a8597d28f267b39074aef51fa593530082b39cbe5a074226096857b1fed2dfb9", size = 6840337, upload-time = "2026-06-04T07:49:57.531Z" },
+]
+
+[[package]]
 name = "pyyaml"
 version = "6.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -3137,6 +3144,24 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/a8/69/f3d048692aac843f41102507f6257138392ec841c16718f0618d27051caf/sentence_stream-1.3.0.tar.gz", hash = "sha256:b06261d35729de97df9002a1cc708f9a888f662b80d5d6d008ee69c51f36041b", size = 10049, upload-time = "2026-01-08T16:25:06.873Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/48/b6/48339c109bab6f54ff608800773b9425464c6cbf7fd3f2ba01294d78be3d/sentence_stream-1.3.0-py3-none-any.whl", hash = "sha256:7448d131315b85eefdf238e5edd9caa62899acf609145d5e0e10c09812eb8a1d", size = 8707, upload-time = "2026-01-08T16:25:05.918Z" },
+]
+
+[[package]]
+name = "serialx"
+version = "1.15.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pywin32", marker = "sys_platform == 'win32'" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/93/80/20ddfe87f1f62f604112def5bfc65673bd6013496201a6dfd8cc56f40366/serialx-1.15.1.tar.gz", hash = "sha256:689dfbaf55f5f87ea0b6bcdcab135577ce1e70f98d490650b02a8b86eb0b0281", size = 393972, upload-time = "2026-10-27T00:09:52.576Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7b/c2/3537e472f466cd96040f139aef60ef85cbba1e8dfcf5e80e7a294f96fc00/serialx-1.15.1-cp310-abi3-macosx_10_12_x86_64.whl", hash = "sha256:d011884e9440c6495e2b46fa0454db15a6a8600a96e42a21f1d8cee41d3b6cc4", size = 306558, upload-time = "2026-10-27T00:09:43.514Z" },
+    { url = "https://files.pythonhosted.org/packages/91/71/f3c5a6f464e2dc23ba057f3a3d3bca2839c331b7a0605e9acd133320b534/serialx-1.15.1-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:f4b548c1bfcd714b1f58ce8e89a6ffd6b366a85594e51a1a30ffc1056125965c", size = 302536, upload-time = "2026-10-27T00:09:45.454Z" },
+    { url = "https://files.pythonhosted.org/packages/4e/cd/9e5e2f13dcefc1c78017643667164b7aa36f26280af1d22307387e58c539/serialx-1.15.1-cp310-abi3-win32.whl", hash = "sha256:6b7e269649b5064216e87241654687237bffbfe90bb48e6dd1fca38877c139bc", size = 205599, upload-time = "2026-10-27T00:09:46.983Z" },
+    { url = "https://files.pythonhosted.org/packages/c9/ef/901b27441c6d36463643fa5a511415448de517f87f9e413e7365284e0569/serialx-1.15.1-cp310-abi3-win_amd64.whl", hash = "sha256:78cbfa9e8ddfccf52227064f26ca70d8a6426b8134ec4e53d5c8469ef8690f80", size = 212927, upload-time = "2026-10-27T00:09:48.451Z" },
+    { url = "https://files.pythonhosted.org/packages/09/91/0058592165914dc0a9eab21447a054242857a1cbff0278ade56af27fff60/serialx-1.15.1-cp310-abi3-win_arm64.whl", hash = "sha256:7c6ec682dd5cbc9ebba8f917bde3f133794c7ef45d2de93e6ddce09583ddb799", size = 209560, upload-time = "2026-10-27T00:09:49.886Z" },
+    { url = "https://files.pythonhosted.org/packages/4f/bb/e5a6e65340a1a0c97ed088aabed6e24e0bb4abcb40e2bacf0617d43f1ce6/serialx-1.15.1-py3-none-any.whl", hash = "sha256:3361542c5b85a56bf9f3ca45d0d29e92a7c63aaf7c561e2b195c3cd0dfc909b1", size = 87883, upload-time = "2026-10-27T00:09:51.255Z" },
 ]
 
 [[package]]

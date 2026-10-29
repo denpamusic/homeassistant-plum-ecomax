@@ -29,7 +29,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType, InvalidData
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
-from pyplumio.connection import SerialConnection, TcpConnection
+from pyplumio.connection import Connection, SerialConnection
 from pyplumio.const import ProductType
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.exceptions import ConnectionFailedError
@@ -58,7 +58,6 @@ from custom_components.plum_ecomax.const import (
     CONNECTION_TYPE_SERIAL,
     CONNECTION_TYPE_TCP,
     DEFAULT_BAUDRATE,
-    DEFAULT_DEVICE,
     DEFAULT_PORT,
     DOMAIN,
 )
@@ -145,7 +144,7 @@ async def test_form_tcp(
     assert result3["errors"] == {CONF_BASE: "unknown"}
 
     # Create the PyPlumIO connection mock.
-    mock_connection = Mock(spec=TcpConnection)
+    mock_connection = Mock(spec=Connection)
     mock_connection.device.return_value.__aenter__ = AsyncMock(return_value=ecomax_p)
     mock_connection.device.return_value.__aexit__ = AsyncMock()
 
@@ -274,7 +273,7 @@ async def test_form_serial(
     assert result5["type"] is FlowResultType.CREATE_ENTRY
     assert result5["title"] == "ecoMAX 850P2-C"
     assert result5["data"] == {
-        CONF_DEVICE: DEFAULT_DEVICE,
+        CONF_DEVICE: "/dev/ttyUSB0",
         CONF_BAUDRATE: DEFAULT_BAUDRATE,
         CONF_CONNECTION_TYPE: CONNECTION_TYPE_SERIAL,
         CONF_UID: "TEST",
@@ -310,7 +309,7 @@ async def test_abort_device_not_found(
     assert result2["errors"] is None
 
     # Create the PyPlumIO connection mock.
-    mock_connection = Mock(spec=TcpConnection)
+    mock_connection = Mock(spec=Connection)
     mock_connection.device.return_value.__aenter__ = AsyncMock(side_effect=TimeoutError)
     mock_connection.device.return_value.__aexit__ = AsyncMock()
 
@@ -350,7 +349,7 @@ async def test_abort_unsupported_product(
     assert result2["errors"] is None
 
     # Create the PyPlumIO connection mock.
-    mock_connection = Mock(spec=TcpConnection)
+    mock_connection = Mock(spec=Connection)
     mock_connection.device.return_value.__aenter__ = AsyncMock(return_value=ecomax_p)
     mock_connection.device.return_value.__aexit__ = AsyncMock()
 
@@ -394,7 +393,7 @@ async def test_abort_discovery_failed(
     assert result2["errors"] is None
 
     # Create the PyPlumIO connection mock.
-    mock_connection = Mock(spec=TcpConnection)
+    mock_connection = Mock(spec=Connection)
     mock_connection.device.return_value.__aenter__ = AsyncMock(return_value=ecomax_p)
     mock_connection.device.return_value.__aexit__ = AsyncMock()
 
@@ -442,7 +441,7 @@ async def test_abort_already_configured(
     assert result2["errors"] is None
 
     # Create the PyPlumIO connection mock.
-    mock_connection = Mock(spec=TcpConnection)
+    mock_connection = Mock(spec=Connection)
     mock_connection.device.return_value.__aenter__ = AsyncMock(return_value=ecomax_p)
     mock_connection.device.return_value.__aexit__ = AsyncMock()
 

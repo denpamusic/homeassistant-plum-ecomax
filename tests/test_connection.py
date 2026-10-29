@@ -9,7 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from pyplumio import RequestError
-from pyplumio.connection import Connection, SerialConnection, TcpConnection
+from pyplumio.connection import Connection, SerialConnection
 from pyplumio.const import FrameType
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.structures.mixer_parameters import ATTR_MIXER_PARAMETERS
@@ -30,8 +30,10 @@ from custom_components.plum_ecomax.const import (
     ATTR_REGDATA,
     ATTR_THERMOSTATS,
     ATTR_WATER_HEATER,
+    CONF_DEVICE,
     CONF_HOST,
     CONF_MODEL,
+    CONF_PORT,
     CONF_PRODUCT_ID,
     CONF_PRODUCT_TYPE,
     CONF_SOFTWARE,
@@ -61,15 +63,11 @@ async def test_async_resolve_host_name(
 
 
 @pytest.mark.parametrize(
-    ("connection_type", "connection_cls"),
-    (
-        (CONNECTION_TYPE_TCP, TcpConnection),
-        (CONNECTION_TYPE_SERIAL, SerialConnection),
-    ),
+    "connection_type",
+    (CONNECTION_TYPE_TCP, CONNECTION_TYPE_SERIAL),
 )
 async def test_async_get_connection_handler(
     connection_type: str,
-    connection_cls: type[Connection],
     tcp_config_data: dict[str, Any],
     serial_config_data: dict[str, Any],
 ) -> None:
@@ -77,10 +75,15 @@ async def test_async_get_connection_handler(
     connection_partial = partial(async_get_connection_handler, connection_type)
     if connection_type == CONNECTION_TYPE_TCP:
         connection = await connection_partial(tcp_config_data)
+        expected_url = (
+            f"socket://{tcp_config_data[CONF_HOST]}:{tcp_config_data[CONF_PORT]}"
+        )
     else:
         connection = await connection_partial(serial_config_data)
+        expected_url = serial_config_data[CONF_DEVICE]
 
-    assert isinstance(connection, connection_cls)
+    assert isinstance(connection, SerialConnection)
+    assert connection.url == expected_url
 
 
 @pytest.mark.usefixtures("mixers", "thermostats", "water_heater")
@@ -107,8 +110,8 @@ async def test_async_setup(
     """Test connection setup."""
     mock_ecomax = AsyncMock(spec=EcoMAX)
     mock_ecomax.wait_for = AsyncMock(side_effect=(True, True, True, TimeoutError))
-    mock_connection = Mock(spec=TcpConnection)
-    mock_connection.configure_mock(host=tcp_config_data.get(CONF_HOST))
+    mock_connection = Mock(spec=SerialConnection)
+    mock_connection.configure_mock(url=tcp_config_data.get(CONF_HOST))
     mock_connection.device.return_value.__aenter__ = AsyncMock(
         side_effect=(mock_ecomax, TimeoutError)
     )
@@ -129,7 +132,7 @@ async def test_async_setup(
 
     # Check connection class properties for tcp connection.
     assert not hasattr(connection, "nonexistent")
-    assert connection.host == tcp_config_data.get(CONF_HOST)
+    assert connection.url == tcp_config_data.get(CONF_HOST)
     assert connection.model == tcp_config_data.get(CONF_MODEL)
     assert connection.uid == tcp_config_data.get(CONF_UID)
     assert connection.software == tcp_config_data.get(CONF_SOFTWARE)
@@ -166,7 +169,7 @@ async def test_async_setup_thermostats(
     caplog,
 ) -> None:
     """Test setup thermostats with cache."""
-    connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=TcpConnection))
+    connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=Connection))
     mock_device.request = AsyncMock(side_effect=(request_result,))
     assert await connection.async_setup_thermostats() is expected_result
     assert await connection.async_setup_thermostats() is expected_result
@@ -203,7 +206,7 @@ async def test_async_setup_mixers(
     caplog,
 ) -> None:
     """Test setup mixers with cache."""
-    connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=TcpConnection))
+    connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=Connection))
     mock_device.request = AsyncMock(side_effect=(request_result,))
     assert await connection.async_setup_mixers() is expected_result
     assert await connection.async_setup_mixers() is expected_result
@@ -240,7 +243,7 @@ async def test_async_setup_regdata(
     caplog,
 ) -> None:
     """Test setup regdata with cache."""
-    connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=TcpConnection))
+    connection = EcomaxConnection(hass, config_entry, AsyncMock(spec=Connection))
     mock_device.request = AsyncMock(side_effect=(request_result,))
     assert await connection.async_setup_regdata() is expected_result
     assert await connection.async_setup_regdata() is expected_result

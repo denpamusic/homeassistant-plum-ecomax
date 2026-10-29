@@ -54,7 +54,6 @@ from custom_components.plum_ecomax.const import (
     CONNECTION_TYPE_SERIAL,
     CONNECTION_TYPE_TCP,
     DEFAULT_BAUDRATE,
-    DEFAULT_DEVICE,
     DEFAULT_PORT,
     DOMAIN,
 )
@@ -104,7 +103,7 @@ def fixture_tcp_user_input() -> dict[str, Any]:
 def fixture_serial_user_input() -> dict[str, Any]:
     """Get the serial config data."""
     return {
-        CONF_DEVICE: DEFAULT_DEVICE,
+        CONF_DEVICE: "/dev/ttyUSB0",
         CONF_BAUDRATE: DEFAULT_BAUDRATE,
     }
 

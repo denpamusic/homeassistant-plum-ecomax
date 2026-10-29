@@ -43,6 +43,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er, selector
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.selector import SerialPortSelector
 import probatio
 from pyplumio.connection import Connection
 from pyplumio.const import ProductType
@@ -84,7 +85,6 @@ from .const import (
     CONNECTION_TYPE_SERIAL,
     CONNECTION_TYPE_TCP,
     DEFAULT_BAUDRATE,
-    DEFAULT_DEVICE,
     DEFAULT_PORT,
     DOMAIN,
     LOGICAL_DEVICES,
@@ -102,7 +102,7 @@ STEP_TCP_DATA_SCHEMA = probatio.Schema(
 
 STEP_SERIAL_DATA_SCHEMA = probatio.Schema(
     {
-        probatio.Required(CONF_DEVICE, default=DEFAULT_DEVICE): cv.string,
+        probatio.Required(CONF_DEVICE): SerialPortSelector(),
         probatio.Optional(CONF_BAUDRATE, default=DEFAULT_BAUDRATE): probatio.In(
             BAUDRATES
         ),

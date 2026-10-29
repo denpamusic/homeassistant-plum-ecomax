@@ -10,7 +10,7 @@ authors = [
 license = "MIT"
 dependencies = [
     "homeassistant>=2026.9.4",
-    "pyplumio==0.6.8",
+    "pyplumio==0.7.0",
 ]
 
 [dependency-groups]
@@ -30,7 +30,7 @@ dev = [
 package = false
 
 [tool.uv.sources]
-pyplumio = { path = "PyPlumIO" }
+pyplumio = { path = "PyPlumIO", editable = true }
 
 [tool.complexipy]
 max-complexity-allowed = 15

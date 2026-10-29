@@ -10,9 +10,6 @@ on:
       - main
   pull_request:
 
-env:
-  SETUPTOOLS_SCM_PRETEND_VERSION_FOR_PYPLUMIO: "0.6.8"
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -32,9 +29,6 @@ jobs:
 
       - name: Set up Python 3.14
         run: uv python install 3.14
-
-      - name: Verify pyplumio version
-        run: uv run python -c "import pyplumio; assert pyplumio.__version__ == '0.6.8', f'Expected 0.6.8, got {pyplumio.__version__}'"
 
       - name: Run tests with pytest
         run: uv run --locked --python 3.14 pytest -n auto --cov-report=lcov:coverage.lcov

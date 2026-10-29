@@ -43,7 +43,6 @@ from .const import (
     CONF_UID,
     CONNECTION_TYPE_TCP,
     DEFAULT_BAUDRATE,
-    DEFAULT_DEVICE,
     DEFAULT_PORT,
     DOMAIN,
     DeviceType,
@@ -79,13 +78,14 @@ async def async_get_connection_handler(
     """Return the connection handler."""
     _LOGGER.debug("Getting connection handler for type: %s...", connection_type)
     if connection_type == CONNECTION_TYPE_TCP:
-        return pyplumio.TcpConnection(
-            data[CONF_HOST], data.get(CONF_PORT, DEFAULT_PORT)
-        )
+        host = data[CONF_HOST]
+        port = data.get(CONF_PORT, DEFAULT_PORT)
+        url = f"socket://{host}:{port}"
+    else:
+        url = str(data[CONF_DEVICE])
 
     return pyplumio.SerialConnection(
-        data.get(CONF_DEVICE, DEFAULT_DEVICE),
-        int(data.get(CONF_BAUDRATE, DEFAULT_BAUDRATE)),
+        url=url, baudrate=data.get(CONF_BAUDRATE, DEFAULT_BAUDRATE)
     )
 
 

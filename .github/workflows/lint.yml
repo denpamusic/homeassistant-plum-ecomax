@@ -10,9 +10,6 @@ on:
       - main
   pull_request:
 
-env:
-  SETUPTOOLS_SCM_PRETEND_VERSION_FOR_PYPLUMIO: "0.6.8"
-
 jobs:
   lint:
     runs-on: ubuntu-latest
