@@ -88,7 +88,7 @@ from .const import (
     DEFAULT_PORT,
     DOMAIN,
     LOGICAL_DEVICES,
-    DeviceType,
+    DeviceTypes,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -300,7 +300,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
         # Tell mypy that once we here, connection is not None
         connection = cast(Connection, self.connection)
         async with connection.device(
-            DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT
+            DeviceTypes.ECOMAX, timeout=DEFAULT_TIMEOUT
         ) as device:
             product = cast(
                 ProductInfo, await device.get(ATTR_PRODUCT, timeout=DEFAULT_TIMEOUT)
@@ -925,7 +925,7 @@ class OptionsFlowHandler(OptionsFlowWithReload):
     ) -> dict[str, Any]:
         """Return source candidates for logical device."""
         device_type, device_id = self.source_device.split("_", 1)
-        device = self._get_logical_device(DeviceType(device_type), int(device_id))
+        device = self._get_logical_device(DeviceTypes(device_type), int(device_id))
         existing_keys = [
             key for key in entity_keys if key.startswith(f"{device_type}-{device_id}")
         ]
@@ -941,7 +941,7 @@ class OptionsFlowHandler(OptionsFlowWithReload):
         """Return custom entity source candidates."""
         entity_keys = _entity_keys_for_config_entry(self.hass, self.config_entry)
 
-        if self.source_device == DeviceType.ECOMAX:
+        if self.source_device == DeviceTypes.ECOMAX:
             return self._ecomax_source_candidates(entity_keys, selected)
 
         elif self.source_device == ATTR_REGDATA:
@@ -957,7 +957,7 @@ class OptionsFlowHandler(OptionsFlowWithReload):
 
     @cache
     def _get_logical_device(
-        self, device_type: DeviceType, device_id: int
+        self, device_type: DeviceTypes, device_id: int
     ) -> LogicalDevice:
         """Get the logical device by device type and id."""
         device = self.connection.device
@@ -992,19 +992,19 @@ class OptionsFlowHandler(OptionsFlowWithReload):
         """Return source device options."""
         model = self.connection.model
         device = self.connection.device
-        sources = {DeviceType.ECOMAX.value: f"Common ({model})"}
+        sources = {DeviceTypes.ECOMAX.value: f"Common ({model})"}
 
         if device.get_nowait(ATTR_REGDATA, None):
             sources[ATTR_REGDATA] = f"Extended ({model})"
 
         if mixers := device.get_nowait(ATTR_MIXERS, None):
             sources |= {
-                f"{DeviceType.MIXER}_{mixer}": f"Mixer {mixer + 1}" for mixer in mixers
+                f"{DeviceTypes.MIXER}_{mixer}": f"Mixer {mixer + 1}" for mixer in mixers
             }
 
         if thermostats := device.get_nowait(ATTR_THERMOSTATS, None):
             sources |= {
-                f"{DeviceType.THERMOSTAT}_{thermostat}": f"Thermostat {thermostat + 1}"
+                f"{DeviceTypes.THERMOSTAT}_{thermostat}": f"Thermostat {thermostat + 1}"
                 for thermostat in thermostats
             }
 
@@ -1015,13 +1015,13 @@ class OptionsFlowHandler(OptionsFlowWithReload):
         device = self.connection.device
 
         number = None
-        if self.source_device == DeviceType.ECOMAX:
+        if self.source_device == DeviceTypes.ECOMAX:
             number = device.get_nowait(key, None)
 
         elif self.source_device.startswith(LOGICAL_DEVICES):
             device_type, device_id = self.source_device.split("_", 1)
             logical_device = self._get_logical_device(
-                DeviceType(device_type), int(device_id)
+                DeviceTypes(device_type), int(device_id)
             )
             number = logical_device.get_nowait(key, None)
 

@@ -45,7 +45,7 @@ from .const import (
     DEFAULT_BAUDRATE,
     DEFAULT_PORT,
     DOMAIN,
-    DeviceType,
+    DeviceTypes,
 )
 
 ATTR_SETUP: Final = "setup"
@@ -155,7 +155,7 @@ class EcomaxConnection:
         """Set up ecoMAX connection."""
         await self._connection.connect()
         async with self._connection.device(
-            DeviceType.ECOMAX, timeout=WAIT_FOR_DEVICE_SECONDS
+            DeviceTypes.ECOMAX, timeout=WAIT_FOR_DEVICE_SECONDS
         ) as device:
             await device.wait_for(ATTR_SETUP, timeout=WAIT_FOR_SETUP_SECONDS)
             self._device = device

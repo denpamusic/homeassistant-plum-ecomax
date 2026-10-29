@@ -49,8 +49,8 @@ from .const import (
     DOMAIN,
     EVENT_PLUM_ECOMAX_ALERT,
     MANUFACTURER,
-    DeviceType,
-    ModuleType,
+    DeviceTypes,
+    ModuleTypes,
 )
 from .services import async_setup_services
 
@@ -150,7 +150,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: PlumEcomaxConfigEntry) -
         model=connection.model,
         name=connection.name,
         serial_number=connection.uid,
-        sw_version=connection.software.get(ModuleType.A),
+        sw_version=connection.software.get(ModuleTypes.A),
     )
 
     async_setup_events(hass, connection)
@@ -211,7 +211,7 @@ async def async_migrate_entry(
     data = dict(entry.data)
 
     try:
-        device = await connection.get(DeviceType.ECOMAX, timeout=DEFAULT_TIMEOUT)
+        device = await connection.get(DeviceTypes.ECOMAX, timeout=DEFAULT_TIMEOUT)
 
         if entry.version < 3:
             # Product type was added in version 3.

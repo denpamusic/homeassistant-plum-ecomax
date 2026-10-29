@@ -61,7 +61,7 @@ from custom_components.plum_ecomax.const import (
     ATTR_REGDATA,
     ATTR_VALUE,
     DOMAIN,
-    ModuleType,
+    ModuleTypes,
 )
 from custom_components.plum_ecomax.sensor import (
     ATTR_BURNED_SINCE_LAST_UPDATE,
@@ -411,9 +411,9 @@ async def test_connected_modules_sensor(
     assert isinstance(state, State)
     assert state.state == "3"
     assert state.attributes[ATTR_FRIENDLY_NAME] == "ecoMAX Connected modules"
-    assert state.attributes[ModuleType.A] == "6.10.32.K1"
-    assert state.attributes[ModuleType.ECOLAMBDA] == "0.8.0"
-    assert state.attributes[ModuleType.PANEL] == "6.30.36"
+    assert state.attributes[ModuleTypes.A] == "6.10.32.K1"
+    assert state.attributes[ModuleTypes.ECOLAMBDA] == "0.8.0"
+    assert state.attributes[ModuleTypes.PANEL] == "6.30.36"
 
     # Dispatch new value.
     await dispatch_value(
@@ -422,7 +422,7 @@ async def test_connected_modules_sensor(
     state = hass.states.get(connected_modules_entity_id)
     assert isinstance(state, State)
     assert state.state == "1"
-    assert state.attributes[ModuleType.A] == "1.0.0.T0"
+    assert state.attributes[ModuleTypes.A] == "1.0.0.T0"
 
 
 @pytest.mark.usefixtures("ecomax_p")

@@ -21,7 +21,7 @@ from pyplumio.const import ProductType
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import DeviceType
+from .const import DeviceTypes
 from .entity import (
     EcomaxEntity,
     EcomaxEntityDescription,
@@ -161,7 +161,7 @@ def async_setup_custom_ecomax_binary_sensors(
         EcomaxBinarySensor(connection, description)
         for description in async_get_custom_entities(
             platform=Platform.BINARY_SENSOR,
-            source_device=DeviceType.ECOMAX,
+            source_device=DeviceTypes.ECOMAX,
             config_entry=config_entry,
             description_factory=description_partial,
         )
@@ -236,7 +236,7 @@ def async_setup_custom_mixer_binary_sensors(
         MixerBinarySensor(connection, description, index)
         for description, index in async_get_custom_entities(
             platform=Platform.BINARY_SENSOR,
-            source_device=DeviceType.MIXER,
+            source_device=DeviceTypes.MIXER,
             config_entry=config_entry,
             description_factory=description_partial,
         )
@@ -311,7 +311,7 @@ def async_setup_custom_thermostat_binary_sensors(
         ThermostatBinarySensor(connection, description, index)
         for description, index in async_get_custom_entities(
             platform=Platform.BINARY_SENSOR,
-            source_device=DeviceType.THERMOSTAT,
+            source_device=DeviceTypes.THERMOSTAT,
             config_entry=config_entry,
             description_factory=description_partial,
         )

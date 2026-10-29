@@ -40,7 +40,7 @@ from custom_components.plum_ecomax.const import (
     CONF_UID,
     CONNECTION_TYPE_SERIAL,
     CONNECTION_TYPE_TCP,
-    DeviceType,
+    DeviceTypes,
 )
 
 
@@ -127,7 +127,7 @@ async def test_async_setup(
     await connection.async_setup()
     mock_connection.connect.assert_awaited_once()
     mock_connection.device.assert_called_once_with(
-        DeviceType.ECOMAX, timeout=WAIT_FOR_DEVICE_SECONDS
+        DeviceTypes.ECOMAX, timeout=WAIT_FOR_DEVICE_SECONDS
     )
 
     # Check connection class properties for tcp connection.

@@ -31,17 +31,6 @@ BAUDRATES: Final[tuple[str, ...]] = (
     "115200",
 )
 
-# Weekdays.
-WEEKDAYS: Final[tuple[str, ...]] = (
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday",
-    "sunday",
-)
-
 # Configuration flow.
 CONF_BAUDRATE: Final = "baudrate"
 CONF_CAPABILITIES: Final = "capabilities"
@@ -74,8 +63,40 @@ DEFAULT_TOLERANCE: Final = 0.1
 EVENT_PLUM_ECOMAX_ALERT: Final = "plum_ecomax_alert"
 
 
+# Enums
 @unique
-class DeviceType(StrEnum):
+class Weekdays(StrEnum):
+    """Contains weekdays."""
+
+    MONDAY = "monday"
+    TUESDAY = "tuesday"
+    WEDNESDAY = "wednesday"
+    THURSDAY = "thursday"
+    FRIDAY = "friday"
+    SATURDAY = "saturday"
+    SUNDAY = "sunday"
+
+
+@unique
+class Presets(StrEnum):
+    """Contains a schedule presets."""
+
+    DAY = "day"
+    NIGHT = "night"
+
+
+@unique
+class Schedules(StrEnum):
+    """Contains a list of schedules."""
+
+    HEATING = "heating"
+    WATER_HEATER = "water_heater"
+    CIRCULATION_PUMP = "circulation_pump"
+    BOILER_WORK = "boiler_work"
+
+
+@unique
+class DeviceTypes(StrEnum):
     """Known devices, represented by PyPlumIO's Device class."""
 
     ECOMAX = "ecomax"
@@ -83,11 +104,11 @@ class DeviceType(StrEnum):
     THERMOSTAT = "thermostat"
 
 
-LOGICAL_DEVICES: Final = (DeviceType.MIXER, DeviceType.THERMOSTAT)
+LOGICAL_DEVICES: Final = (DeviceTypes.MIXER, DeviceTypes.THERMOSTAT)
 
 
 @unique
-class ModuleType(StrEnum):
+class ModuleTypes(StrEnum):
     """Known ecoMAX modules."""
 
     A = "module_a"

@@ -5,15 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import difflib
 import logging
-from typing import (
-    TYPE_CHECKING,
-    Annotated,
-    Final,
-    Literal,
-    NotRequired,
-    TypedDict,
-    cast,
-)
+from typing import TYPE_CHECKING, Annotated, Final, NotRequired, TypedDict, cast
 
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.const import ATTR_DEVICE_ID, ATTR_NAME, STATE_OFF, STATE_ON
@@ -38,7 +30,7 @@ from pyplumio.structures.product_info import ProductInfo
 from pyplumio.structures.schedules import Schedule, ScheduleDay
 
 from .connection import DEFAULT_TIMEOUT, EcomaxConnection
-from .const import ATTR_PRODUCT, ATTR_VALUE, DOMAIN, WEEKDAYS
+from .const import ATTR_PRODUCT, ATTR_VALUE, DOMAIN, Presets, Schedules, Weekdays
 
 if TYPE_CHECKING:
     from . import PlumEcomaxConfigEntry
@@ -49,12 +41,6 @@ ATTR_PRESET: Final = "preset"
 ATTR_SCHEDULES: Final = "schedules"
 ATTR_TYPE: Final = "type"
 ATTR_WEEKDAYS: Final = "weekdays"
-
-PRESET_DAY: Final = "day"
-PRESET_NIGHT: Final = "night"
-PRESETS = (PRESET_DAY, PRESET_NIGHT)
-
-SCHEDULES: Final = ("heating", "water_heater", "circulation_pump", "boiler_work")
 
 SERVICE_GET_PARAMETER = "get_parameter"
 SERVICE_GET_PARAMETER_SCHEMA = probatio.Schema(
@@ -79,9 +65,9 @@ SERVICE_GET_SCHEDULE = "get_schedule"
 SERVICE_GET_SCHEDULE_SCHEMA = probatio.Schema(
     {
         probatio.Required(ATTR_DEVICE_ID): str,
-        probatio.Required(ATTR_TYPE): probatio.All(str, probatio.In(SCHEDULES)),
+        probatio.Required(ATTR_TYPE): probatio.All(str, probatio.In(Schedules)),
         probatio.Required(ATTR_WEEKDAYS): probatio.All(
-            cv.ensure_list, [probatio.In(WEEKDAYS)]
+            cv.ensure_list, [probatio.In(Weekdays)]
         ),
     }
 )
@@ -90,11 +76,11 @@ SERVICE_SET_SCHEDULE = "set_schedule"
 SERVICE_SET_SCHEDULE_SCHEMA = probatio.Schema(
     {
         probatio.Required(ATTR_DEVICE_ID): str,
-        probatio.Required(ATTR_TYPE): probatio.All(str, probatio.In(SCHEDULES)),
+        probatio.Required(ATTR_TYPE): probatio.All(str, probatio.In(Schedules)),
         probatio.Required(ATTR_WEEKDAYS): probatio.All(
-            cv.ensure_list, [probatio.In(WEEKDAYS)]
+            cv.ensure_list, [probatio.In(Weekdays)]
         ),
-        probatio.Required(ATTR_PRESET): probatio.All(str, probatio.In(PRESETS)),
+        probatio.Required(ATTR_PRESET): probatio.All(str, probatio.In(Presets)),
         probatio.Optional(ATTR_START, default="00:00:00"): probatio.Datetime(
             "%H:%M:%S"
         ),
@@ -368,7 +354,7 @@ class ScheduleResponse(TypedDict):
     """Represents a response from get schedule service."""
 
     name: str
-    schedule: dict[str, dict[Time, Literal["day", "night"]]]
+    schedule: dict[str, dict[Time, Presets]]
     product: NotRequired[ProductId]
 
 
@@ -398,7 +384,7 @@ def async_make_schedule_response(
         "name": schedule.name,
         "schedule": {
             weekday: {
-                interval: PRESET_DAY if state == STATE_ON else PRESET_NIGHT
+                interval: Presets.DAY if state == STATE_ON else Presets.NIGHT
                 for interval, state in getattr(schedule, weekday).items()
             }
             for weekday in weekdays
@@ -446,7 +432,7 @@ async def async_set_device_schedule(device: Device, service_call: ServiceCall) -
         schedule_day: ScheduleDay = getattr(schedule, weekday)
         try:
             schedule_day.set_state(
-                True if preset == PRESET_DAY else False, start_time[:-3], end_time[:-3]
+                True if preset == Presets.DAY else False, start_time[:-3], end_time[:-3]
             )
         except ValueError as e:
             raise ServiceValidationError(

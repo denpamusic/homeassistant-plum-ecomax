@@ -10,7 +10,7 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import DOMAIN, ModuleType
+from custom_components.plum_ecomax.const import DOMAIN, ModuleTypes
 from custom_components.plum_ecomax.entity import (
     MANUFACTURER,
     EcomaxEntity,
@@ -23,7 +23,7 @@ async def test_base_entity(ecomax_p: EcoMAX, config_entry: MockConfigEntry) -> N
     mock_connection = Mock(spec=EcomaxConnection)
     mock_connection.device = ecomax_p
     mock_connection.entry = config_entry
-    mock_connection.software = {ModuleType.A: "6.10.32.K1"}
+    mock_connection.software = {ModuleTypes.A: "6.10.32.K1"}
     mock_filter = AsyncMock(spec=Filter)
     entity = EcomaxEntity(
         connection=mock_connection,
@@ -64,7 +64,7 @@ async def test_base_entity(ecomax_p: EcoMAX, config_entry: MockConfigEntry) -> N
         model=mock_connection.model,
         name=mock_connection.name,
         serial_number=mock_connection.uid,
-        sw_version=mock_connection.software[ModuleType.A],
+        sw_version=mock_connection.software[ModuleTypes.A],
     )
 
     # Test unique id property.

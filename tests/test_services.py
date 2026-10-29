@@ -15,16 +15,19 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import ATTR_VALUE, DOMAIN, WEEKDAYS
+from custom_components.plum_ecomax.const import (
+    ATTR_VALUE,
+    DOMAIN,
+    Presets,
+    Schedules,
+    Weekdays,
+)
 from custom_components.plum_ecomax.services import (
     ATTR_END,
     ATTR_PRESET,
     ATTR_START,
     ATTR_TYPE,
     ATTR_WEEKDAYS,
-    PRESET_DAY,
-    PRESET_NIGHT,
-    SCHEDULES,
     SERVICE_GET_PARAMETER,
     SERVICE_GET_SCHEDULE,
     SERVICE_SET_PARAMETER,
@@ -497,8 +500,8 @@ async def test_get_schedule_service(
         SERVICE_GET_SCHEDULE,
         {
             ATTR_DEVICE_ID: device_entries[0].id,
-            ATTR_TYPE: SCHEDULES[0],
-            ATTR_WEEKDAYS: [WEEKDAYS[0], WEEKDAYS[1]],
+            ATTR_TYPE: Schedules.HEATING,
+            ATTR_WEEKDAYS: [Weekdays.MONDAY, Weekdays.TUESDAY],
         },
         blocking=True,
         return_response=True,
@@ -509,16 +512,16 @@ async def test_get_schedule_service(
         "name": "heating",
         "schedule": {
             "monday": {
-                "00:00": PRESET_DAY,
-                "00:30": PRESET_DAY,
-                "01:00": PRESET_NIGHT,
-                "01:30": PRESET_DAY,
+                "00:00": Presets.DAY,
+                "00:30": Presets.DAY,
+                "01:00": Presets.NIGHT,
+                "01:30": Presets.DAY,
             },
             "tuesday": {
-                "00:00": PRESET_DAY,
-                "00:30": PRESET_DAY,
-                "01:00": PRESET_DAY,
-                "01:30": PRESET_DAY,
+                "00:00": Presets.DAY,
+                "00:30": Presets.DAY,
+                "01:00": Presets.DAY,
+                "01:30": Presets.DAY,
             },
         },
         "product": ProductId(
@@ -534,8 +537,8 @@ async def test_get_schedule_service(
             SERVICE_GET_SCHEDULE,
             {
                 ATTR_DEVICE_ID: device_entries[0].id,
-                ATTR_TYPE: SCHEDULES[1],
-                ATTR_WEEKDAYS: WEEKDAYS[0],
+                ATTR_TYPE: Schedules.WATER_HEATER,
+                ATTR_WEEKDAYS: Weekdays.MONDAY,
             },
             blocking=True,
             return_response=True,
@@ -562,7 +565,7 @@ async def test_set_schedule_service(
     mock_schedule.tuesday = Mock(spec=ScheduleDay)
     mock_schedule.tuesday.set_state = Mock()
     mock_schedule.commit = AsyncMock()
-    schedules = {SCHEDULES[0]: mock_schedule}
+    schedules = {Schedules.HEATING: mock_schedule}
 
     # Test setting schedule for EM device.
     with patch("pyplumio.devices.Device.get_nowait", return_value=schedules):
@@ -571,9 +574,9 @@ async def test_set_schedule_service(
             SERVICE_SET_SCHEDULE,
             {
                 ATTR_DEVICE_ID: device_entries[0].id,
-                ATTR_TYPE: SCHEDULES[0],
-                ATTR_WEEKDAYS: [WEEKDAYS[0], WEEKDAYS[1]],
-                ATTR_PRESET: PRESET_DAY,
+                ATTR_TYPE: Schedules.HEATING,
+                ATTR_WEEKDAYS: [Weekdays.MONDAY, Weekdays.TUESDAY],
+                ATTR_PRESET: Presets.DAY,
                 ATTR_START: "00:00:00",
                 ATTR_END: "10:00:00",
             },
@@ -596,9 +599,9 @@ async def test_set_schedule_service(
             SERVICE_SET_SCHEDULE,
             {
                 ATTR_DEVICE_ID: device_entries[0].id,
-                ATTR_TYPE: SCHEDULES[0],
-                ATTR_WEEKDAYS: WEEKDAYS[0],
-                ATTR_PRESET: PRESET_DAY,
+                ATTR_TYPE: Schedules.HEATING,
+                ATTR_WEEKDAYS: Weekdays.MONDAY,
+                ATTR_PRESET: Presets.DAY,
                 ATTR_START: "00:00:00",
                 ATTR_END: "10:00:00",
             },
@@ -622,9 +625,9 @@ async def test_set_schedule_service(
             SERVICE_SET_SCHEDULE,
             {
                 ATTR_DEVICE_ID: device_entries[0].id,
-                ATTR_TYPE: SCHEDULES[1],
-                ATTR_WEEKDAYS: WEEKDAYS[0],
-                ATTR_PRESET: PRESET_DAY,
+                ATTR_TYPE: Schedules.WATER_HEATER,
+                ATTR_WEEKDAYS: Weekdays.MONDAY,
+                ATTR_PRESET: Presets.DAY,
                 ATTR_START: "00:00:00",
                 ATTR_END: "10:00:00",
             },
