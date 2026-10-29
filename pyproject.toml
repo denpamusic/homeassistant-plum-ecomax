@@ -10,7 +10,7 @@ authors = [
 license = "MIT"
 dependencies = [
     "homeassistant>=2026.9.4",
-    "pyplumio==0.7.0",
+    "pyplumio==0.7.1",
 ]
 
 [dependency-groups]
