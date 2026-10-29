@@ -82,11 +82,10 @@ async def async_get_connection_handler(
         port = data.get(CONF_PORT, DEFAULT_PORT)
         url = f"socket://{host}:{port}"
     else:
-        url = str(data[CONF_DEVICE])
+        url = cast(str, data[CONF_DEVICE])
 
-    return pyplumio.SerialConnection(
-        url=url, baudrate=data.get(CONF_BAUDRATE, DEFAULT_BAUDRATE)
-    )
+    baudrate = cast(int, data.get(CONF_BAUDRATE, DEFAULT_BAUDRATE))
+    return pyplumio.SerialConnection(url=url, baudrate=baudrate)
 
 
 async def async_get_sub_devices(device: PhysicalDevice) -> list[str]:

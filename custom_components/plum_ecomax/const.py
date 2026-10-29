@@ -21,14 +21,13 @@ ATTR_WATER_HEATER: Final = "water_heater"
 ATTR_WEEKDAYS: Final = "weekdays"
 
 # Baudrates.
-# (should be listed as strings due to the visual bug in hass selectors)
-BAUDRATES: Final[tuple[str, ...]] = (
-    "9600",
-    "14400",
-    "19200",
-    "38400",
-    "57600",
-    "115200",
+BAUDRATES: Final[tuple[int, ...]] = (
+    9600,
+    14400,
+    19200,
+    38400,
+    57600,
+    115200,
 )
 
 # Configuration flow.
@@ -63,7 +62,7 @@ DEFAULT_TOLERANCE: Final = 0.1
 EVENT_PLUM_ECOMAX_ALERT: Final = "plum_ecomax_alert"
 
 
-# Enums
+# Enums.
 @unique
 class Weekdays(StrEnum):
     """Contains weekdays."""
