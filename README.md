@@ -1,6 +1,5 @@
 # Plum ecoMAX boiler controller integration for Home Assistant
 
-[![ci](https://github.com/denpamusic/homeassistant-plum-ecomax/actions/workflows/ci.yml/badge.svg)](https://github.com/denpamusic/homeassistant-plum-ecomax/actions/workflows/ci.yml)
 [![Code Coverage](https://qlty.sh/gh/denpamusic/projects/homeassistant-plum-ecomax/coverage.svg)](https://qlty.sh/gh/denpamusic/projects/homeassistant-plum-ecomax)
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg)](https://github.com/hacs/integration)
 [![stability-release-candidate](https://img.shields.io/badge/stability-pre--release-48c9b0.svg)](https://guidelines.denpa.pro/stability#release-candidate)
