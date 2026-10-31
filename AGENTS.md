@@ -41,11 +41,7 @@ Manual for AI agents working on `homeassistant-plum-ecomax`. Read fully before c
 
 ## 4. Git & Commit Conventions
 
-4.1. Commit message format:
-- Subject prefixed with `[ai] ` for autonomous changes or `[human+ai] ` for collaborative changes.
-- At most 50 characters long (including prefix).
-- End in a full stop (`.`).
-- An extended body is allowed.
+4.1. Commits by AI agents: subject at most 50 characters, in imperative mood, ending with a period (no `[ai]` prefix). Commits must include Git trailers in the final paragraph separated by a blank line: `AI-Model: <model-id>` and `Co-Authored-By: <agent> <email>` (e.g. `Co-Authored-By: Antigravity <antigravity@denpa.pro>`). An extended body between the subject and trailers is encouraged.
 
 4.2. Verify all checks pass before committing:
 - `uv run prek run --all-files`
