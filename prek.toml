@@ -1,60 +1,23 @@
+# See https://github.com/j178/prek for more information
+#
+# All hooks run through uv, so tool versions come from uv.lock, the same
+# versions CI uses. Update them with `uv lock --upgrade-package <name>`.
+
 [[repos]]
 repo = "builtin"
-
-[[repos.hooks]]
-id = "check-json"
-exclude = '(.vscode|tests/)'
+hooks = [
+    { id = "check-json", exclude = '(.vscode|tests/)' },
+]
 
 [[repos]]
 repo = "local"
-
-[[repos.hooks]]
-id = "ruff-check"
-name = "ruff check"
-entry = "uv run ruff check --fix"
-language = "system"
-types = ["python"]
-
-[[repos.hooks]]
-id = "ruff-format"
-name = "ruff format"
-entry = "uv run ruff format"
-language = "system"
-types = ["python"]
-
-[[repos.hooks]]
-id = "codespell"
-name = "codespell"
-entry = "uv run codespell"
-language = "system"
-types = ["text"]
-
-[[repos.hooks]]
-id = "complexipy"
-name = "complexipy"
-entry = "uv run complexipy custom_components tests --max-complexity-allowed 15"
-language = "system"
-pass_filenames = false
-
-[[repos.hooks]]
-id = "mypy"
-name = "mypy"
-entry = "uv run mypy custom_components/plum_ecomax tests scripts"
-language = "system"
-pass_filenames = false
-
-[[repos.hooks]]
-id = "sync-translations"
-name = "sync translations"
-entry = "uv run python scripts/sync_translations.py --sort"
-language = "system"
-pass_filenames = false
-files = '^custom_components/plum_ecomax/(strings\.json|translations/.*\.json)$'
-
-[[repos.hooks]]
-id = "sync-manifest"
-name = "sync manifest"
-entry = "uv run python scripts/sync_manifest.py"
-language = "system"
-pass_filenames = false
-files = '^(pyproject\.toml|custom_components/plum_ecomax/manifest\.json|hacs\.json)$'
+hooks = [
+    { id = "uv-sync", name = "uv sync", entry = "uv sync", language = "system", files = "^pyproject\\.toml$", pass_filenames = false },
+    { id = "ruff-check", name = "ruff check", entry = "uv run --frozen ruff check --fix --force-exclude", language = "system", types_or = ["python", "pyi"] },
+    { id = "ruff-format", name = "ruff format", entry = "uv run --frozen ruff format --force-exclude", language = "system", types_or = ["python", "pyi"] },
+    { id = "codespell", name = "codespell", entry = "uv run --frozen codespell", language = "system", types = ["text"] },
+    { id = "mypy", name = "mypy", entry = "uv run --frozen mypy custom_components/plum_ecomax tests scripts", language = "system", types_or = ["python", "pyi"], pass_filenames = false },
+    { id = "complexipy", name = "complexipy", entry = "uv run --frozen complexipy", language = "system", types = ["python"], exclude = "^scripts/" },
+    { id = "sync-translations", name = "sync translations", entry = "uv run --frozen python scripts/sync_translations.py --sort", language = "system", files = "^custom_components/plum_ecomax/(strings\\.json|translations/.*\\.json)$", pass_filenames = false },
+    { id = "sync-manifest", name = "sync manifest", entry = "uv run --frozen python scripts/sync_manifest.py", language = "system", files = "^(pyproject\\.toml|custom_components/plum_ecomax/manifest\\.json|hacs\\.json)$", pass_filenames = false },
+]

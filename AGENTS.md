@@ -18,7 +18,7 @@ Manual for AI agents working on `homeassistant-plum-ecomax`. Read fully before c
 
 2.2. Common commands:
 - `uv sync`: Sync virtual environment with `uv.lock`.
-- `uv run prek run --all-files`: Run all git hooks (ruff check, ruff format, codespell, complexipy, mypy, sync translations, sync manifest).
+- `uv run prek run --all-files`: Run all git hooks (check json, uv sync, ruff check, ruff format, codespell, mypy, complexipy, sync translations, sync manifest).
 - `uv run pytest`: Run test suite (coverage is enforced automatically at 100% via `pytest-cov`). For fast parallel execution, use `uv run pytest -n auto`.
 - `uv run python scripts/sync_translations.py --sort`: Sync and sort translations after editing `strings.json`.
 - `uv run python scripts/sync_manifest.py`: Synchronize `manifest.json` and `hacs.json` from `pyproject.toml`.
