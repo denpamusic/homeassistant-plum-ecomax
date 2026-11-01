@@ -2613,7 +2613,7 @@ wheels = [
 
 [[package]]
 name = "pyplumio"
-version = "0.7.2"
+version = "0.7.3"
 source = { editable = "PyPlumIO" }
 dependencies = [
     { name = "serialx" },
