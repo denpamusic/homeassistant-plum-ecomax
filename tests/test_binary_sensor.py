@@ -28,6 +28,7 @@ from pyplumio.structures.sensor_data import (
     ATTR_WATER_HEATER_PUMP,
 )
 import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import ATTR_ENTITIES, ATTR_REGDATA
@@ -248,7 +249,10 @@ async def test_exhaust_fan_binary_sensor(
 
 @pytest.mark.usefixtures("ecomax_p")
 async def test_feeder_binary_sensor(
-    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_config_entry,
 ) -> None:
     """Test feeder binary sensor."""
     await setup_config_entry()
@@ -259,6 +263,13 @@ async def test_feeder_binary_sensor(
     entry = entity_registry.async_get(feeder_entity_id)
     assert entry
     assert entry.translation_key == "feeder"
+    assert entry.disabled_by == er.RegistryEntryDisabler.INTEGRATION
+    assert hass.states.get(feeder_entity_id) is None
+
+    # Enable entity.
+    entry = entity_registry.async_update_entity(entry.entity_id, disabled_by=None)
+    await hass.config_entries.async_reload(config_entry.entry_id)
+    await hass.async_block_till_done()
 
     # Get initial value.
     state = hass.states.get(feeder_entity_id)

@@ -73,10 +73,7 @@ class EcomaxClimateEntityDescription(EcomaxEntityDescription, ClimateEntityDescr
 
 
 ENTITY_DESCRIPTION = EcomaxClimateEntityDescription(
-    key="thermostat",
-    always_available=True,
-    entity_registry_enabled_default=True,
-    translation_key="thermostat",
+    key="thermostat", always_available=True, translation_key="thermostat"
 )
 
 

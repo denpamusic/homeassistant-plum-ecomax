@@ -48,10 +48,7 @@ class EcomaxWaterHeaterEntityDescription(
 
 
 ENTITY_DESCRIPTION = EcomaxWaterHeaterEntityDescription(
-    key="water_heater",
-    always_available=True,
-    entity_registry_enabled_default=True,
-    translation_key="indirect_water_heater",
+    key="water_heater", always_available=True, translation_key="indirect_water_heater"
 )
 
 

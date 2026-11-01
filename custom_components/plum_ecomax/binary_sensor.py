@@ -99,6 +99,7 @@ BINARY_SENSOR_TYPES: tuple[EcomaxBinarySensorEntityDescription, ...] = (
         product_types={ProductType.ECOMAX_P},
         translation_key="feeder",
         value_fn=lambda x: x,
+        entity_registry_enabled_default=False,
     ),
     EcomaxBinarySensorEntityDescription(
         key="lighter",

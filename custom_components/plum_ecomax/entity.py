@@ -45,7 +45,6 @@ class EcomaxEntityDescription(EntityDescription):
     """Describes an ecoMAX entity."""
 
     always_available: bool = False
-    entity_registry_enabled_default: bool = False
     filter_fn: Callable[[Any], Filter] = on_change
     module: ModuleTypes = ModuleTypes.A
     product_types: set[ProductType] | Literal["all"] = ALL
@@ -207,10 +206,13 @@ class EcomaxEntity(Entity):
 
         This only applies when fist added to the entity registry.
         """
-        if self.entity_description.entity_registry_enabled_default:
+        if self.entity_description.always_available:
             return True
 
-        return self.entity_description.key in self.device.data
+        if self.entity_description.key in self.device.data:
+            return self.entity_description.entity_registry_enabled_default
+
+        return False
 
     @cached_property
     @override
@@ -391,6 +393,7 @@ class RegdataEntity(EcomaxEntity):
         """Unsubscribe from regdata event."""
         self.device.unsubscribe(ATTR_REGDATA, self.async_update)
 
+    @override
     @property
     def entity_registry_enabled_default(self) -> bool:
         """Return if the entity should be enabled when first added.
