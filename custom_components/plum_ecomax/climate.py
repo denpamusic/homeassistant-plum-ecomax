@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import Any, Final, cast
+from typing import Any, Final, cast, override
 
 from homeassistant.components.climate import (
     PRESET_AWAY,
@@ -113,6 +113,7 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
         self.index = index
         super().__init__(connection, description)
 
+    @override
     async def async_set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
         temperature = round(kwargs[ATTR_TEMPERATURE], 1)
@@ -121,6 +122,7 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
         self._attr_target_temperature = temperature
         self.async_write_ha_state()
 
+    @override
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         """Set new preset mode."""
         mode = HA_TO_EM_MODE[preset_mode]
@@ -129,10 +131,26 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
         await self._async_update_target_temperature_attributes()
         self.async_write_ha_state()
 
+    @override
     async def async_update(self, value: float) -> None:
         """Update entity state."""
         self._attr_current_temperature = value
         self.async_write_ha_state()
+
+    @override
+    async def async_added_to_hass(self) -> None:
+        """Subscribe to thermostat events."""
+        for name, handler in self._callbacks.items():
+            if name in self.device.data:
+                await handler(self.device.data[name])
+
+            self.device.subscribe(name, handler)
+
+    @override
+    async def async_will_remove_from_hass(self) -> None:
+        """Unsubscribe from thermostat events."""
+        for name, handler in self._callbacks.items():
+            self.device.unsubscribe(name, handler)
 
     async def async_update_target_temperature(self, value: float) -> None:
         """Update target temperature."""
@@ -160,19 +178,6 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
         """Update HVAC action."""
         self._attr_hvac_action = HVACAction.HEATING if value else HVACAction.IDLE
         self.async_write_ha_state()
-
-    async def async_added_to_hass(self) -> None:
-        """Subscribe to thermostat events."""
-        for name, handler in self._callbacks.items():
-            if name in self.device.data:
-                await handler(self.device.data[name])
-
-            self.device.subscribe(name, handler)
-
-    async def async_will_remove_from_hass(self) -> None:
-        """Unsubscribe from thermostat events."""
-        for name, handler in self._callbacks.items():
-            self.device.unsubscribe(name, handler)
 
     async def _async_update_target_temperature_attributes(
         self, target_temp: float | None = None

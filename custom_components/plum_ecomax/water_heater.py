@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import Any, Final
+from typing import Any, Final, override
 
 from homeassistant.components.climate import ATTR_TARGET_TEMP_STEP
 from homeassistant.components.water_heater import (
@@ -84,6 +84,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         }
         super().__init__(connection, description)
 
+    @override
     async def async_set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
         temperature = kwargs[ATTR_TEMPERATURE]
@@ -93,6 +94,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         self._attr_target_temperature = temperature
         self.async_write_ha_state()
 
+    @override
     async def async_set_operation_mode(self, operation_mode: str) -> None:
         """Set new target operation mode."""
         self.device.set_nowait(
@@ -100,6 +102,27 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         )
         self._attr_current_operation = operation_mode
         self.async_write_ha_state()
+
+    @override
+    async def async_update(self, value: float) -> None:
+        """Update entity state."""
+        self._attr_current_temperature = value
+        self.async_write_ha_state()
+
+    @override
+    async def async_added_to_hass(self) -> None:
+        """Subscribe to water heater events."""
+        for name, handler in self._callbacks.items():
+            if name in self.device.data:
+                await handler(self.device.data[name])
+
+            self.device.subscribe(name, handler)
+
+    @override
+    async def async_will_remove_from_hass(self) -> None:
+        """Unsubscribe to water heater events."""
+        for name, handler in self._callbacks.items():
+            self.device.unsubscribe(name, handler)
 
     async def async_update_target_temp(self, value: Parameter) -> None:
         """Update target temperature."""
@@ -124,24 +147,6 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         """Update current operation."""
         self._attr_current_operation = EM_TO_HA_STATE[int(value.value)]
         self.async_write_ha_state()
-
-    async def async_update(self, value: float) -> None:
-        """Update entity state."""
-        self._attr_current_temperature = value
-        self.async_write_ha_state()
-
-    async def async_added_to_hass(self) -> None:
-        """Subscribe to water heater events."""
-        for name, handler in self._callbacks.items():
-            if name in self.device.data:
-                await handler(self.device.data[name])
-
-            self.device.subscribe(name, handler)
-
-    async def async_will_remove_from_hass(self) -> None:
-        """Unsubscribe to water heater events."""
-        for name, handler in self._callbacks.items():
-            self.device.unsubscribe(name, handler)
 
     @property
     def hysteresis(self) -> int:

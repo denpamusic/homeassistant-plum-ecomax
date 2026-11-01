@@ -6,7 +6,7 @@ from collections.abc import Callable
 from dataclasses import asdict, astuple, dataclass
 from functools import partial
 import logging
-from typing import Any, Final, cast
+from typing import Any, Final, cast, override
 
 from homeassistant.components.sensor import (
     RestoreSensor,
@@ -349,6 +349,7 @@ class EcomaxSensor(EcomaxEntity, SensorEntity):
 
     entity_description: EcomaxSensorEntityDescription
 
+    @override
     async def async_update(self, value: Any) -> None:
         """Update entity state."""
         self._attr_native_value = self.entity_description.value_fn(value)
@@ -532,6 +533,7 @@ class EcomaxMeter(EcomaxSensor, RestoreSensor):
         super().__init__(connection, description)
         self._attr_native_value = 0.0
 
+    @override
     async def async_added_to_hass(self) -> None:
         """Restore native value."""
         await super().async_added_to_hass()
@@ -540,6 +542,17 @@ class EcomaxMeter(EcomaxSensor, RestoreSensor):
             self._attr_native_unit_of_measurement = (
                 last_sensor_data.native_unit_of_measurement
             )
+
+    @override
+    async def async_update(self, value: float | None = None) -> None:
+        """Update meter state."""
+        if value is not None:
+            self._attr_extra_state_attributes = {
+                ATTR_BURNED_SINCE_LAST_UPDATE: value * 1000
+            }
+            self._attr_native_value += value  # type: ignore[operator]
+
+        self.async_write_ha_state()
 
     async def async_calibrate_meter(self, value: float) -> None:
         """Calibrate meter state."""
@@ -551,16 +564,7 @@ class EcomaxMeter(EcomaxSensor, RestoreSensor):
         self._attr_native_value = 0.0
         self.async_write_ha_state()
 
-    async def async_update(self, value: float | None = None) -> None:
-        """Update meter state."""
-        if value is not None:
-            self._attr_extra_state_attributes = {
-                ATTR_BURNED_SINCE_LAST_UPDATE: value * 1000
-            }
-            self._attr_native_value += value  # type: ignore[operator]
-
-        self.async_write_ha_state()
-
+    @override
     @property
     def native_value(self) -> StateType:
         """Return the value reported by the sensor."""
@@ -587,6 +591,7 @@ class RegdataSensorEntityDescription(EcomaxSensorEntityDescription):
 class RegdataSensor(RegdataEntity, EcomaxSensor):
     """Represents a regulator data sensor."""
 
+    @override
     async def async_update(self, regdata: dict[int, Any]) -> None:
         """Update entity state."""
         self._attr_native_value = self.entity_description.value_fn(

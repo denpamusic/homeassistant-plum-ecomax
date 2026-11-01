@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import logging
-from typing import Any, cast
+from typing import Any, cast, override
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.const import STATE_OFF, STATE_ON, Platform
@@ -85,6 +85,7 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
     _attr_is_on: bool | None = None
     entity_description: EcomaxSwitchEntityDescription
 
+    @override
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on."""
         self.device.set_nowait(
@@ -93,6 +94,7 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
         self._attr_is_on = True
         self.async_write_ha_state()
 
+    @override
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the switch off."""
         self.device.set_nowait(
@@ -101,6 +103,7 @@ class EcomaxSwitch(EcomaxEntity, SwitchEntity):
         self._attr_is_on = False
         self.async_write_ha_state()
 
+    @override
     async def async_update(self, value: Parameter) -> None:
         """Update entity state."""
         states = {

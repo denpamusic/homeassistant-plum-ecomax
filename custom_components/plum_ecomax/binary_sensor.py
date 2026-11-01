@@ -6,7 +6,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
 import logging
-from typing import Any
+from typing import Any, override
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -130,6 +130,7 @@ class EcomaxBinarySensor(EcomaxEntity, BinarySensorEntity):
 
     entity_description: EcomaxBinarySensorEntityDescription
 
+    @override
     async def async_update(self, value: Any) -> None:
         """Update entity state."""
         self._attr_is_on = self.entity_description.value_fn(value)
@@ -252,6 +253,7 @@ class RegdataBinarySensorEntityDescription(EcomaxBinarySensorEntityDescription):
 class RegdataBinarySensor(RegdataEntity, EcomaxBinarySensor):
     """Represents a regulator data binary sensor."""
 
+    @override
     async def async_update(self, regdata: dict[int, Any]) -> None:
         """Update entity state."""
         self._attr_is_on = self.entity_description.value_fn(

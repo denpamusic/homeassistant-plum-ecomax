@@ -168,6 +168,7 @@ class EcomaxEntity(Entity):
         self.connection = connection
         self.entity_description = description
 
+    @override
     async def async_added_to_hass(self) -> None:
         """Subscribe to events."""
         description = self.entity_description
@@ -186,6 +187,7 @@ class EcomaxEntity(Entity):
 
         self.device.subscribe(description.key, handler)
 
+    @override
     async def async_will_remove_from_hass(self) -> None:
         """Unsubscribe from events."""
         self.device.unsubscribe(self.entity_description.key, self.async_update)
@@ -372,6 +374,7 @@ class RegdataEntity(EcomaxEntity):
         self._regdata_key = int(description.key)
         super().__init__(connection, description)
 
+    @override
     async def async_added_to_hass(self) -> None:
         """Subscribe to regdata event."""
         description = self.entity_description
@@ -389,6 +392,7 @@ class RegdataEntity(EcomaxEntity):
         self.device.subscribe_once(ATTR_REGDATA, async_set_available)
         self.device.subscribe(ATTR_REGDATA, handler)
 
+    @override
     async def async_will_remove_from_hass(self) -> None:
         """Unsubscribe from regdata event."""
         self.device.unsubscribe(ATTR_REGDATA, self.async_update)

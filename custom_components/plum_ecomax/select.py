@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import Any, Final, cast
+from typing import Any, Final, cast, override
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.const import STATE_OFF
@@ -53,6 +53,7 @@ class EcomaxSelect(EcomaxEntity, SelectEntity):
 
     entity_description: EcomaxSelectEntityDescription
 
+    @override
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
         if options := self.entity_description.options:
@@ -60,6 +61,7 @@ class EcomaxSelect(EcomaxEntity, SelectEntity):
             self._attr_current_option = option
             self.async_write_ha_state()
 
+    @override
     async def async_update(self, value: Any) -> None:
         """Update entity state."""
         if self.entity_description.options:

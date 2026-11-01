@@ -9,7 +9,7 @@ from dataclasses import asdict
 from functools import cache
 import logging
 import math
-from typing import Any, cast, overload
+from typing import Any, cast, overload, override
 
 from homeassistant.components.number.const import (
     DEVICE_CLASS_UNITS as NUMBER_DEVICE_CLASS_UNITS,
@@ -155,6 +155,7 @@ class PlumEcomaxFlowHandler(ConfigFlow, domain=DOMAIN):
         self.identify_task: asyncio.Task | None = None
         self._data: dict[str, Any] = {}
 
+    @override
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:

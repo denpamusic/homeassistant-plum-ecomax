@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import Any, cast
+from typing import Any, cast, override
 
 from homeassistant.components.number import (
     NumberDeviceClass,
@@ -103,12 +103,14 @@ class EcomaxNumber(EcomaxEntity, NumberEntity):
 
     entity_description: EcomaxNumberEntityDescription
 
+    @override
     async def async_set_native_value(self, value: float) -> None:
         """Update current value."""
         self.device.set_nowait(self.entity_description.key, value)
         self._attr_native_value = value
         self.async_write_ha_state()
 
+    @override
     async def async_update(self, value: Parameter) -> None:
         """Update entity state."""
         self._attr_native_value = cast(float, value.value)
