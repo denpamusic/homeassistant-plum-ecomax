@@ -6,7 +6,7 @@ Manual for AI agents working on `homeassistant-plum-ecomax`. Read fully before c
 
 1.1. `homeassistant-plum-ecomax` is a Home Assistant custom component integration for Plum ecoMAX boiler controllers and ecoSTER thermostats over serial (RS-485) or TCP bridge.
 
-1.2. Protocol details, frame decoding, device models, and communication logic belong strictly in the underlying `PyPlumIO` library (submodule `PyPlumIO/`). The integration serves strictly as the glue layer between Home Assistant and `PyPlumIO`.
+1.2. Protocol details, frame decoding, device models, and communication logic belong strictly in the underlying `PyPlumIO` library (https://github.com/denpamusic/PyPlumIO). The integration serves strictly as the glue layer between Home Assistant and `PyPlumIO`.
 
 1.3. Minimum Python is 3.14.2 (`requires-python = ">=3.14.2"`). All tools target Python 3.14.
 

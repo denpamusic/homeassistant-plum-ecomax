@@ -1414,7 +1414,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "homeassistant", specifier = ">=2026.10.0" },
-    { name = "pyplumio", editable = "PyPlumIO" },
+    { name = "pyplumio", specifier = "==0.7.4" },
 ]
 
 [package.metadata.requires-dev]
@@ -2614,47 +2614,14 @@ wheels = [
 [[package]]
 name = "pyplumio"
 version = "0.7.4"
-source = { editable = "PyPlumIO" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "serialx" },
 ]
-
-[package.metadata]
-requires-dist = [{ name = "serialx", specifier = ">=1.10.0" }]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "codespell", specifier = ">=2.4.3" },
-    { name = "complexipy", specifier = ">=8.0.1" },
-    { name = "freezegun", specifier = ">=1.5.5" },
-    { name = "mypy", specifier = ">=1.19.1,<=2.4.0" },
-    { name = "numpy", specifier = ">=2.0.0,<2.5.0" },
-    { name = "pytest", specifier = ">=9.1.1" },
-    { name = "pytest-asyncio", specifier = ">=1.3.0" },
-    { name = "pytest-cov", specifier = ">=6.0.0" },
-    { name = "readthedocs-sphinx-search", specifier = ">=0.3.2" },
-    { name = "ruff", specifier = ">=0.17.0" },
-    { name = "sphinx", specifier = ">=8.1.3" },
-    { name = "sphinx-rtd-theme", specifier = ">=3.1.0" },
+sdist = { url = "https://files.pythonhosted.org/packages/b4/bb/ffa7c6ae974999239cebd0703f930e83424cb504103682091b4b47f71f59/pyplumio-0.7.4.tar.gz", hash = "sha256:e2cbc4e1c9a8ca0622b0777c3b854f7dfb8acb6a13dfc5591c41b0cc954aa02a", size = 117238, upload-time = "2026-11-01T23:38:10.828Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/df/b7/6fad026f68a269a30cf2bd7bd0a532d61c8ef1abe9aa8c9efcd7fdae7a67/pyplumio-0.7.4-py3-none-any.whl", hash = "sha256:ceca40cd48421c193757d1943c8f844c5f0d328f6e669b9d63f3d2ca9cf7264c", size = 75808, upload-time = "2026-11-01T23:38:09.607Z" },
 ]
-docs = [
-    { name = "readthedocs-sphinx-search", specifier = ">=0.3.2" },
-    { name = "sphinx", specifier = ">=8.1.3" },
-    { name = "sphinx-rtd-theme", specifier = ">=3.1.0" },
-]
-lint = [
-    { name = "codespell", specifier = ">=2.4.3" },
-    { name = "complexipy", specifier = ">=8.0.1" },
-    { name = "ruff", specifier = ">=0.17.0" },
-]
-test = [
-    { name = "freezegun", specifier = ">=1.5.5" },
-    { name = "numpy", specifier = ">=2.0.0,<2.5.0" },
-    { name = "pytest", specifier = ">=9.1.1" },
-    { name = "pytest-asyncio", specifier = ">=1.3.0" },
-    { name = "pytest-cov", specifier = ">=6.0.0" },
-]
-typing = [{ name = "mypy", specifier = ">=1.19.1,<=2.4.0" }]
 
 [[package]]
 name = "pyproject-hooks"

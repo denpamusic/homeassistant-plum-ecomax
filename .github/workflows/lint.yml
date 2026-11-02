@@ -16,11 +16,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
-        with:
-          submodules: true
-
-      - name: Fetch submodule tags
-        run: git -C PyPlumIO fetch --tags
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v10.3.3

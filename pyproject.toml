@@ -29,14 +29,11 @@ dev = [
 [tool.uv]
 package = false
 
-[tool.uv.sources]
-pyplumio = { path = "PyPlumIO", editable = true }
-
 [tool.complexipy]
 max-complexity-allowed = 15
 
 [tool.codespell]
-skip = ".git,.mypy_cache,.pytest_cache,.ruff_cache,.venv,.vscode,build,PyPlumIO,*/translations/*.json"
+skip = ".git,.mypy_cache,.pytest_cache,.ruff_cache,.venv,.vscode,build,*/translations/*.json"
 ignore-words-list = "hass"
 
 [tool.mypy]
@@ -78,7 +75,6 @@ exclude = [
     ".ruff_cache",
     ".venv",
     ".vscode",
-    "PyPlumIO"
 ]
 
 [[tool.mypy.overrides]]
@@ -99,7 +95,7 @@ exclude_lines = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-norecursedirs = [".git", "PyPlumIO", ".venv"]
+norecursedirs = [".git", ".venv"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 addopts = "--cov=custom_components/plum_ecomax --cov-report=term-missing --cov-fail-under=100"
@@ -113,7 +109,6 @@ exclude = [
     ".ruff_cache",
     ".venv",
     ".vscode",
-    "PyPlumIO"
 ]
 line-length = 88
 indent-width = 4
