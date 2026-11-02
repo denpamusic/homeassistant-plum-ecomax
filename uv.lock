@@ -1391,7 +1391,7 @@ wheels = [
 
 [[package]]
 name = "homeassistant-plum-ecomax"
-version = "0.5.0"
+version = "0.5.1b1"
 source = { virtual = "." }
 dependencies = [
     { name = "homeassistant" },

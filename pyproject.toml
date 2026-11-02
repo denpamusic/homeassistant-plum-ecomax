@@ -1,6 +1,6 @@
 [project]
 name = "homeassistant-plum-ecomax"
-version = "0.5.0"
+version = "0.5.1-beta.1"
 description = "Plum ecoMAX boiler controller integration for Home Assistant."
 readme = "README.md"
 requires-python = ">=3.14.2"
