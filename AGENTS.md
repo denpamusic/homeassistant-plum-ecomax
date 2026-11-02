@@ -37,7 +37,7 @@ Manual for AI agents working on `homeassistant-plum-ecomax`. Read fully before c
 
 3.5. Coverage must stay at 100% (`--cov-fail-under=100`). `if TYPE_CHECKING:` and `@overload` are excluded. Use `# pragma: no cover` only when coverage is truly impossible.
 
-3.6. Enum naming: all enum classes must have plural names (e.g., `DeviceTypes` instead of `DeviceType`, `Weekdays` instead of `Weekday`).
+3.6. Enum naming: all enum classes must have singular names (e.g., `DeviceType` instead of `DeviceTypes`, `Weekday` instead of `Weekdays`).
 
 ## 4. Git & Commit Conventions
 

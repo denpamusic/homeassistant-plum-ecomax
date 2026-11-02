@@ -33,8 +33,8 @@ from .const import (
     DOMAIN,
     LOGICAL_DEVICES,
     MANUFACTURER,
-    DeviceTypes,
-    ModuleTypes,
+    DeviceType,
+    ModuleType,
 )
 
 ALL: Final = "all"
@@ -46,7 +46,7 @@ class EcomaxEntityDescription(EntityDescription):
 
     always_available: bool = False
     filter_fn: Callable[[Any], Filter] = on_change
-    module: ModuleTypes = ModuleTypes.A
+    module: ModuleType = ModuleType.A
     product_types: set[ProductType] | Literal["all"] = ALL
 
 
@@ -111,7 +111,7 @@ def async_make_description_for_custom_entity[DescriptorT: EcomaxEntityDescriptio
 def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
     platform: Platform,
     config_entry: PlumEcomaxConfigEntry,
-    source_device: Literal[DeviceTypes.MIXER, DeviceTypes.THERMOSTAT],
+    source_device: Literal[DeviceType.MIXER, DeviceType.THERMOSTAT],
     description_factory: Callable[..., DescriptorT],
 ) -> Generator[tuple[DescriptorT, int]]: ...
 
@@ -120,7 +120,7 @@ def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
 def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
     platform: Platform,
     config_entry: PlumEcomaxConfigEntry,
-    source_device: Literal[DeviceTypes.ECOMAX, "regdata"],
+    source_device: Literal[DeviceType.ECOMAX, "regdata"],
     description_factory: Callable[..., DescriptorT],
 ) -> Generator[DescriptorT]: ...
 
@@ -129,7 +129,7 @@ def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
 def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
     platform: Platform,
     config_entry: PlumEcomaxConfigEntry,
-    source_device: DeviceTypes | Literal["regdata"],
+    source_device: DeviceType | Literal["regdata"],
     description_factory: Callable[..., DescriptorT],
 ) -> Generator[tuple[DescriptorT, int] | DescriptorT]:
     """Return a list of custom entities."""
@@ -238,7 +238,7 @@ class EcomaxEntity(Entity):
             model=self.connection.model,
             name=self.connection.name,
             serial_number=self.connection.uid,
-            sw_version=self.connection.software[ModuleTypes.A],
+            sw_version=self.connection.software[ModuleType.A],
         )
 
     @cached_property
@@ -279,7 +279,7 @@ class ThermostatEntity(EcomaxEntity):
     def unique_id(self) -> str:
         """Return the unique ID."""
         return (
-            f"{self.connection.uid}-{DeviceTypes.THERMOSTAT}-"
+            f"{self.connection.uid}-{DeviceType.THERMOSTAT}-"
             + f"{self.index}-{self.entity_description.key}"
         )
 
@@ -294,10 +294,10 @@ class ThermostatEntity(EcomaxEntity):
                 "thermostat_number": str(self.index + 1),
             },
             identifiers={
-                (DOMAIN, f"{self.connection.uid}-{DeviceTypes.THERMOSTAT}-{self.index}")
+                (DOMAIN, f"{self.connection.uid}-{DeviceType.THERMOSTAT}-{self.index}")
             },
             manufacturer=MANUFACTURER,
-            sw_version=self.connection.software[ModuleTypes.ECOSTER],
+            sw_version=self.connection.software[ModuleType.ECOSTER],
             via_device_id=dr.async_get_device_id_by_identifier(
                 self.hass,
                 identifier=(DOMAIN, self.connection.uid),
@@ -324,7 +324,7 @@ class MixerEntity(EcomaxEntity):
     def unique_id(self) -> str:
         """Return a unique ID."""
         return (
-            f"{self.connection.uid}-{DeviceTypes.MIXER}-"
+            f"{self.connection.uid}-{DeviceType.MIXER}-"
             + f"{self.index}-{self.entity_description.key}"
         )
 
@@ -343,7 +343,7 @@ class MixerEntity(EcomaxEntity):
                 "mixer_number": str(self.index + 1),
             },
             identifiers={
-                (DOMAIN, f"{self.connection.uid}-{DeviceTypes.MIXER}-{self.index}")
+                (DOMAIN, f"{self.connection.uid}-{DeviceType.MIXER}-{self.index}")
             },
             manufacturer=MANUFACTURER,
             via_device_id=dr.async_get_device_id_by_identifier(

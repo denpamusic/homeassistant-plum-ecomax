@@ -20,7 +20,7 @@ from pyplumio.parameters import Parameter
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import DeviceTypes
+from .const import DeviceType
 from .entity import (
     EcomaxEntity,
     EcomaxEntityDescription,
@@ -140,7 +140,7 @@ def async_setup_custom_ecomax_numbers(
         EcomaxNumber(connection, description)
         for description in async_get_custom_entities(
             platform=Platform.NUMBER,
-            source_device=DeviceTypes.ECOMAX,
+            source_device=DeviceType.ECOMAX,
             config_entry=config_entry,
             description_factory=EcomaxNumberEntityDescription,
         )
@@ -267,7 +267,7 @@ def async_setup_custom_mixer_numbers(
         MixerNumber(connection, description, index)
         for description, index in async_get_custom_entities(
             platform=Platform.NUMBER,
-            source_device=DeviceTypes.MIXER,
+            source_device=DeviceType.MIXER,
             config_entry=config_entry,
             description_factory=MixerNumberEntityDescription,
         )
@@ -306,7 +306,7 @@ def async_setup_custom_thermostat_numbers(
         ThermostatNumber(connection, description, index)
         for description, index in async_get_custom_entities(
             platform=Platform.NUMBER,
-            source_device=DeviceTypes.THERMOSTAT,
+            source_device=DeviceType.THERMOSTAT,
             config_entry=config_entry,
             description_factory=ThermostatNumberEntityDescription,
         )

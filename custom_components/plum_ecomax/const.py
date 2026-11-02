@@ -64,7 +64,7 @@ EVENT_PLUM_ECOMAX_ALERT: Final = "plum_ecomax_alert"
 
 # Enums.
 @unique
-class Weekdays(StrEnum):
+class Weekday(StrEnum):
     """Contains weekdays."""
 
     MONDAY = "monday"
@@ -77,7 +77,7 @@ class Weekdays(StrEnum):
 
 
 @unique
-class Presets(StrEnum):
+class Preset(StrEnum):
     """Contains a schedule presets."""
 
     DAY = "day"
@@ -85,7 +85,7 @@ class Presets(StrEnum):
 
 
 @unique
-class Schedules(StrEnum):
+class ScheduleType(StrEnum):
     """Contains a list of schedules."""
 
     HEATING = "heating"
@@ -95,7 +95,7 @@ class Schedules(StrEnum):
 
 
 @unique
-class DeviceTypes(StrEnum):
+class DeviceType(StrEnum):
     """Known devices, represented by PyPlumIO's Device class."""
 
     ECOMAX = "ecomax"
@@ -103,11 +103,11 @@ class DeviceTypes(StrEnum):
     THERMOSTAT = "thermostat"
 
 
-LOGICAL_DEVICES: Final = (DeviceTypes.MIXER, DeviceTypes.THERMOSTAT)
+LOGICAL_DEVICES: Final = (DeviceType.MIXER, DeviceType.THERMOSTAT)
 
 
 @unique
-class ModuleTypes(StrEnum):
+class ModuleType(StrEnum):
     """Known ecoMAX modules."""
 
     A = "module_a"

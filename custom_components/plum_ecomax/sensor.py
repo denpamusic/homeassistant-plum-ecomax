@@ -36,7 +36,7 @@ from pyplumio.structures.sensor_data import ConnectedModules
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import DEFAULT_TOLERANCE, DeviceTypes, ModuleTypes
+from .const import DEFAULT_TOLERANCE, DeviceType, ModuleType
 from .entity import (
     EcomaxEntity,
     EcomaxEntityDescription,
@@ -162,7 +162,7 @@ SENSOR_TYPES: tuple[EcomaxSensorEntityDescription, ...] = (
         filter_fn=lambda x: throttle(
             deadband(x, tolerance=DEFAULT_TOLERANCE), seconds=UPDATE_INTERVAL
         ),
-        module=ModuleTypes.ECOLAMBDA,
+        module=ModuleType.ECOLAMBDA,
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=1,
@@ -389,7 +389,7 @@ def async_setup_custom_ecomax_sensors(
         EcomaxSensor(connection, description)
         for description in async_get_custom_entities(
             platform=Platform.SENSOR,
-            source_device=DeviceTypes.ECOMAX,
+            source_device=DeviceType.ECOMAX,
             config_entry=config_entry,
             description_factory=description_partial,
         )
@@ -492,7 +492,7 @@ def async_setup_custom_mixer_sensors(
         MixerSensor(connection, description, index)
         for description, index in async_get_custom_entities(
             platform=Platform.SENSOR,
-            source_device=DeviceTypes.MIXER,
+            source_device=DeviceType.MIXER,
             config_entry=config_entry,
             description_factory=description_partial,
         )
@@ -650,7 +650,7 @@ def async_setup_custom_thermostat_sensors(
         ThermostatSensor(connection, description, index)
         for description, index in async_get_custom_entities(
             platform=Platform.SENSOR,
-            source_device=DeviceTypes.THERMOSTAT,
+            source_device=DeviceType.THERMOSTAT,
             config_entry=config_entry,
             description_factory=description_partial,
         )

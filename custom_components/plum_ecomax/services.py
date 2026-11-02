@@ -30,7 +30,7 @@ from pyplumio.structures.product_info import ProductInfo
 from pyplumio.structures.schedules import Schedule, ScheduleDay
 
 from .connection import DEFAULT_TIMEOUT, EcomaxConnection
-from .const import ATTR_PRODUCT, ATTR_VALUE, DOMAIN, Presets, Schedules, Weekdays
+from .const import ATTR_PRODUCT, ATTR_VALUE, DOMAIN, Preset, ScheduleType, Weekday
 
 if TYPE_CHECKING:
     from . import PlumEcomaxConfigEntry
@@ -65,9 +65,9 @@ SERVICE_GET_SCHEDULE = "get_schedule"
 SERVICE_GET_SCHEDULE_SCHEMA = probatio.Schema(
     {
         probatio.Required(ATTR_DEVICE_ID): str,
-        probatio.Required(ATTR_TYPE): probatio.All(str, probatio.In(Schedules)),
+        probatio.Required(ATTR_TYPE): probatio.All(str, probatio.In(ScheduleType)),
         probatio.Required(ATTR_WEEKDAYS): probatio.All(
-            cv.ensure_list, [probatio.In(Weekdays)]
+            cv.ensure_list, [probatio.In(Weekday)]
         ),
     }
 )
@@ -76,11 +76,11 @@ SERVICE_SET_SCHEDULE = "set_schedule"
 SERVICE_SET_SCHEDULE_SCHEMA = probatio.Schema(
     {
         probatio.Required(ATTR_DEVICE_ID): str,
-        probatio.Required(ATTR_TYPE): probatio.All(str, probatio.In(Schedules)),
+        probatio.Required(ATTR_TYPE): probatio.All(str, probatio.In(ScheduleType)),
         probatio.Required(ATTR_WEEKDAYS): probatio.All(
-            cv.ensure_list, [probatio.In(Weekdays)]
+            cv.ensure_list, [probatio.In(Weekday)]
         ),
-        probatio.Required(ATTR_PRESET): probatio.All(str, probatio.In(Presets)),
+        probatio.Required(ATTR_PRESET): probatio.All(str, probatio.In(Preset)),
         probatio.Optional(ATTR_START, default="00:00:00"): probatio.Datetime(
             "%H:%M:%S"
         ),
@@ -354,7 +354,7 @@ class ScheduleResponse(TypedDict):
     """Represents a response from get schedule service."""
 
     name: str
-    schedule: dict[str, dict[Time, Presets]]
+    schedule: dict[str, dict[Time, Preset]]
     product: NotRequired[ProductId]
 
 
@@ -384,7 +384,7 @@ def async_make_schedule_response(
         "name": schedule.name,
         "schedule": {
             weekday: {
-                interval: Presets.DAY if state == STATE_ON else Presets.NIGHT
+                interval: Preset.DAY if state == STATE_ON else Preset.NIGHT
                 for interval, state in getattr(schedule, weekday).items()
             }
             for weekday in weekdays
@@ -432,7 +432,7 @@ async def async_set_device_schedule(device: Device, service_call: ServiceCall) -
         schedule_day: ScheduleDay = getattr(schedule, weekday)
         try:
             schedule_day.set_state(
-                True if preset == Presets.DAY else False, start_time[:-3], end_time[:-3]
+                True if preset == Preset.DAY else False, start_time[:-3], end_time[:-3]
             )
         except ValueError as e:
             raise ServiceValidationError(
