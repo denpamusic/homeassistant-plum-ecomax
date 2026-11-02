@@ -17,7 +17,7 @@ dependencies = [
 dev = [
     "codespell==2.4.3",
     "complexipy>=8.0.1",
-    "mypy==2.4.0",
+    "mypy==2.4.1",
     "packaging>=24.2",
     "prek==0.5.7",
     "pytest-cov>=7.1.0",
