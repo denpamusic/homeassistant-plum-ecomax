@@ -99,6 +99,10 @@ norecursedirs = [".git", ".venv"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 addopts = "--cov=custom_components/plum_ecomax --cov-report=term-missing --cov-fail-under=100"
+filterwarnings = [
+    "ignore:Inheritance class HomeAssistantApplication from web.Application is discouraged:DeprecationWarning",
+    "ignore:'asyncio.iscoroutinefunction' is deprecated and slated for removal in Python 3.16:DeprecationWarning:(backoff._decorator|backoff._async)",
+]
 
 [tool.ruff]
 exclude = [
