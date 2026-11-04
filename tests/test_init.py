@@ -20,7 +20,7 @@ from pyplumio.const import AlertType
 from pyplumio.structures.alerts import ATTR_ALERTS, Alert
 from pyplumio.structures.network_info import NetworkInfo
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.plum_ecomax import (
     PlumEcomaxData,

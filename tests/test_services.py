@@ -12,7 +12,7 @@ from pyplumio.devices.mixer import Mixer
 from pyplumio.parameters import Parameter
 from pyplumio.structures.schedules import Schedule, ScheduleDay
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
@@ -175,7 +175,8 @@ RAISES: Final = "raises"
         ("grat_heating_temp", RAISES, HomeAssistantError, "parameter_not_found"),
     ],
 )
-def test_async_validate_device_parameter(
+async def test_async_validate_device_parameter(
+    hass: HomeAssistant,
     ecomax_p: EcoMAX,
     name: str,
     expected_result: str | Literal["raises"],

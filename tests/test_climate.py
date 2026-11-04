@@ -29,7 +29,7 @@ from homeassistant.helpers import entity_registry as er
 from pyplumio.parameters import ParameterValues
 from pyplumio.parameters.thermostat import ThermostatNumber, ThermostatNumberDescription
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.plum_ecomax.climate import (
     HA_PRESET_TO_EM_TEMP,

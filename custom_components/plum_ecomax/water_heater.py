@@ -63,7 +63,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         WaterHeaterEntityFeature.TARGET_TEMPERATURE
         | WaterHeaterEntityFeature.OPERATION_MODE
     )
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _callbacks: dict[str, Filter]
     entity_description: EcomaxWaterHeaterEntityDescription
 
@@ -91,7 +91,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         self.device.set_nowait(
             f"{self.entity_description.key}_target_temp", int(temperature)
         )
-        self._attr_target_temperature = temperature
+        self._attr_native_target_temperature = temperature
         self.async_write_ha_state()
 
     @override
@@ -106,7 +106,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     @override
     async def async_update(self, value: float) -> None:
         """Update entity state."""
-        self._attr_current_temperature = value
+        self._attr_native_current_temperature = value
         self.async_write_ha_state()
 
     @override
@@ -129,16 +129,16 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         self._attr_min_temp = float(value.min_value)
         self._attr_max_temp = float(value.max_value)
         target_temperature = float(value.value)
-        self._attr_target_temperature = target_temperature
-        self._attr_target_temperature_high = target_temperature
-        self._attr_target_temperature_low = target_temperature - self.hysteresis
+        self._attr_native_target_temperature = target_temperature
+        self._attr_native_target_temperature_high = target_temperature
+        self._attr_native_target_temperature_low = target_temperature - self.hysteresis
         self.async_write_ha_state()
 
     async def async_update_hysteresis(self, value: Parameter) -> None:
         """Update lower target temperature bound."""
         self._attr_hysteresis = int(value.value)
         if self.target_temperature is not None:
-            self._attr_target_temperature_low = (
+            self._attr_native_target_temperature_low = (
                 int(self.target_temperature) - self.hysteresis
             )
             self.async_write_ha_state()

@@ -89,7 +89,7 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
     )
     _attr_target_temperature_name: str | None = None
     _attr_target_temperature_step = TEMPERATURE_STEP
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _callbacks: dict[str, Filter]
     entity_description: EcomaxClimateEntityDescription
 
@@ -119,7 +119,7 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
         temperature = round(kwargs[ATTR_TEMPERATURE], 1)
         target_temperature_name = cast(str, self.target_temperature_name)
         self.device.set_nowait(target_temperature_name, temperature)
-        self._attr_target_temperature = temperature
+        self._attr_native_target_temperature = temperature
         self.async_write_ha_state()
 
     @override
@@ -134,7 +134,7 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
     @override
     async def async_update(self, value: float) -> None:
         """Update entity state."""
-        self._attr_current_temperature = value
+        self._attr_native_current_temperature = value
         self.async_write_ha_state()
 
     @override
@@ -154,7 +154,7 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
 
     async def async_update_target_temperature(self, value: float) -> None:
         """Update target temperature."""
-        self._attr_target_temperature = value
+        self._attr_native_target_temperature = value
         await self._async_update_target_temperature_attributes(value)
         self.async_write_ha_state()
 

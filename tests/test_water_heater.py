@@ -27,7 +27,7 @@ from homeassistant.helpers.entity_registry import RegistryEntry
 from pyplumio.parameters import ParameterValues
 from pyplumio.parameters.ecomax import EcomaxNumber, EcomaxNumberDescription
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.water_heater import HA_TO_EM_STATE

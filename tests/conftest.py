@@ -32,7 +32,7 @@ from pyplumio.structures.network_info import NetworkInfo
 from pyplumio.structures.product_info import ProductInfo
 from pyplumio.structures.sensor_data import ConnectedModules
 import pytest
-from pytest_homeassistant_custom_component.common import MockConfigEntry, load_fixture
+from pytest_homeassistant.common import MockConfigEntry, load_fixture
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
@@ -72,12 +72,6 @@ def keys_to_int(data: dict[str, Any]) -> dict[int, Any]:
 def load_regdata_fixture(filename: str):
     """Load regdata fixture."""
     return json.loads(load_fixture(filename), object_hook=keys_to_int)
-
-
-@pytest.fixture(autouse=True)
-def auto_enable_custom_integrations(enable_custom_integrations):
-    """Enable custom integrations for hass."""
-    yield
 
 
 @pytest.fixture(autouse=True)
