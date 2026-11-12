@@ -3,6 +3,11 @@
   "name": "Plum ecoMAX",
   "codeowners": ["@denpamusic"],
   "config_flow": true,
+  "categories": [
+    "climate.thermostats_heating",
+    "climate.water_heaters",
+    "sensors.temperature_humidity"
+  ],
   "dependencies": ["network"],
   "documentation": "https://github.com/denpamusic/homeassistant-plum-ecomax",
   "integration_type": "hub",
