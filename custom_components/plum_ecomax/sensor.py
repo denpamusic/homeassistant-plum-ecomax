@@ -36,7 +36,13 @@ from pyplumio.structures.sensor_data import ConnectedModules
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import DEFAULT_TOLERANCE, DeviceType, ModuleType
+from .const import (
+    ATTR_MIXERS,
+    ATTR_THERMOSTATS,
+    DEFAULT_TOLERANCE,
+    DeviceType,
+    ModuleType,
+)
 from .entity import (
     EcomaxEntity,
     EcomaxEntityDescription,
@@ -46,6 +52,7 @@ from .entity import (
     async_get_by_modules,
     async_get_by_product_type,
     async_get_custom_entities,
+    async_register_entities,
 )
 
 UPDATE_INTERVAL: Final = 10
@@ -668,27 +675,30 @@ async def async_setup_entry(
     connection = entry.runtime_data.connection
     entities = async_setup_ecomax_sensors(connection)
 
-    # Add custom ecoMAX sensors.
-    entities += async_setup_custom_ecomax_sensors(connection, entry)
-
-    # Add custom regulator data (device-specific) sensors.
-    if (
-        regdata_entities := async_setup_custom_regdata_sensors(connection, entry)
-    ) and await connection.async_setup_regdata():
-        entities += regdata_entities
+    # Add custom ecoMAX and regulator data sensors immediately.
+    immediate_entities: list[EcomaxSensor] = async_setup_custom_ecomax_sensors(
+        connection, entry
+    )
+    immediate_entities += async_setup_custom_regdata_sensors(connection, entry)
 
     # Add mixer/circuit sensors.
-    if connection.has_mixers and await connection.async_setup_mixers():
+    if connection.has_mixers and ATTR_MIXERS in connection.device.data:
         entities += async_setup_mixer_sensors(connection)
-        entities += async_setup_custom_mixer_sensors(connection, entry)
+        immediate_entities += async_setup_custom_mixer_sensors(connection, entry)
 
     # Add thermostat sensors.
-    if connection.has_thermostats and await connection.async_setup_thermostats():
-        entities += async_setup_custom_thermostat_sensors(connection, entry)
+    if connection.has_thermostats and ATTR_THERMOSTATS in connection.device.data:
+        immediate_entities += async_setup_custom_thermostat_sensors(connection, entry)
 
     # Add ecoMAX meters.
     if meters := async_setup_ecomax_meters(connection):
         entities += meters
 
-    async_add_entities(entities)
+    async_register_entities(
+        hass,
+        entry,
+        entities,
+        async_add_entities,
+        immediate_entities=immediate_entities,
+    )
     return True

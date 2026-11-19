@@ -162,22 +162,28 @@ async def test_heating_temperature_sensor(
 
 
 @pytest.mark.usefixtures("ecomax_p")
-async def test_heating_temperature_sensor_disabled(
-    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry
+async def test_heating_temperature_sensor_deferred(
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry, frozen_time
 ) -> None:
-    """Test that heating sensor is disabled if unavailable."""
-    ecomax_data = dict(connection.device.data)
-    del ecomax_data[ATTR_HEATING_TEMP]
-    with patch("pyplumio.devices.ecomax.EcoMAX.data", ecomax_data):
-        await setup_config_entry()
+    """Test that heating sensor is deferred until its key arrives."""
+    del connection.device._data[ATTR_HEATING_TEMP]
+    await setup_config_entry()
 
     heating_temperature_entity_id = "sensor.ecomax_heating_temperature"
     entity_registry = er.async_get(hass)
+    assert entity_registry.async_get(heating_temperature_entity_id) is None
+    assert hass.states.get(heating_temperature_entity_id) is None
+
+    # Dispatching the missing key registers the deferred entity.
+    frozen_time.move_to("12:00:10")
+    await dispatch_value(connection.device, ATTR_HEATING_TEMP, 65)
+    await hass.async_block_till_done()
     entry = entity_registry.async_get(heating_temperature_entity_id)
     assert isinstance(entry, RegistryEntry)
-    assert entry.disabled_by == er.RegistryEntryDisabler.INTEGRATION
+    assert not entry.disabled_by
     state = hass.states.get(heating_temperature_entity_id)
-    assert state is None
+    assert isinstance(state, State)
+    assert state.state == "65"
 
 
 @pytest.mark.usefixtures("ecomax_p", "water_heater")
@@ -215,18 +221,15 @@ async def test_water_heater_temperature_sensor(
 
 
 @pytest.mark.usefixtures("ecomax_p", "connection")
-async def test_water_heater_temperature_sensor_disabled(
+async def test_water_heater_temperature_sensor_deferred(
     hass: HomeAssistant, setup_config_entry
 ) -> None:
-    """Test that water heater sensor is disabled if unavailable."""
+    """Test that water heater sensor is deferred when unavailable."""
     await setup_config_entry()
     water_heater_temperature_entity_id = "sensor.ecomax_water_heater_temperature"
     entity_registry = er.async_get(hass)
-    entry = entity_registry.async_get(water_heater_temperature_entity_id)
-    assert isinstance(entry, RegistryEntry)
-    assert entry.disabled_by == er.RegistryEntryDisabler.INTEGRATION
-    state = hass.states.get(water_heater_temperature_entity_id)
-    assert state is None
+    assert entity_registry.async_get(water_heater_temperature_entity_id) is None
+    assert hass.states.get(water_heater_temperature_entity_id) is None
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -1309,6 +1312,39 @@ async def test_custom_regdata_sensors(
     assert state.attributes[ATTR_STATE_CLASS] == SensorStateClass.MEASUREMENT
 
     # Dispatch new value.
+    await dispatch_value(connection.device, ATTR_REGDATA, {9001: 45.0})
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert state.state == "45.0"
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_custom_regdata_sensors_before_regdata_arrives(
+    hass: HomeAssistant, connection: EcomaxConnection, setup_config_entry
+) -> None:
+    """Test custom regdata sensors register immediately before regdata arrives."""
+    await setup_config_entry(
+        {
+            ATTR_ENTITIES: {
+                Platform.SENSOR: {
+                    "9001": {
+                        "name": "Test custom regdata sensor",
+                        "key": "9001",
+                        "source_device": ATTR_REGDATA,
+                        "unit_of_measurement": UnitOfTemperature.CELSIUS,
+                        "device_class": SensorDeviceClass.TEMPERATURE,
+                        "state_class": SensorStateClass.MEASUREMENT,
+                    }
+                }
+            }
+        },
+    )
+
+    entity_id = "sensor.ecomax_test_custom_regdata_sensor"
+    state = hass.states.get(entity_id)
+    assert isinstance(state, State)
+    assert state.state == "unavailable"
+
     await dispatch_value(connection.device, ATTR_REGDATA, {9001: 45.0})
     state = hass.states.get(entity_id)
     assert isinstance(state, State)

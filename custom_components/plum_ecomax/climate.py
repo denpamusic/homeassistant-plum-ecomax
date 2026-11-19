@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
-from typing import Any, Final, cast, override
+from typing import Any, Final, override
 
 from homeassistant.components.climate import (
     PRESET_AWAY,
@@ -26,10 +26,11 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.filters import Filter, deadband, on_change, throttle
 from pyplumio.parameters.thermostat import ThermostatNumber
+from pyplumio.structures.thermostat_parameters import ATTR_THERMOSTAT_PARAMETERS
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import DEFAULT_TOLERANCE
+from .const import ATTR_THERMOSTATS, DEFAULT_TOLERANCE
 from .entity import EcomaxEntityDescription, ThermostatEntity
 
 UPDATE_INTERVAL: Final = 10
@@ -109,6 +110,9 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
                 seconds=UPDATE_INTERVAL,
             ),
             "target_temp": on_change(self.async_update_target_temperature),
+            ATTR_THERMOSTAT_PARAMETERS: on_change(
+                self.async_update_thermostat_parameters
+            ),
         }
         self.index = index
         super().__init__(connection, description)
@@ -116,9 +120,14 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
     @override
     async def async_set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
+        if self.target_temperature_name is None:
+            _LOGGER.warning(
+                "Cannot set target temperature before thermostat parameters are loaded"
+            )
+            return
+
         temperature = round(kwargs[ATTR_TEMPERATURE], 1)
-        target_temperature_name = cast(str, self.target_temperature_name)
-        self.device.set_nowait(target_temperature_name, temperature)
+        self.device.set_nowait(self.target_temperature_name, temperature)
         self._attr_native_target_temperature = temperature
         self.async_write_ha_state()
 
@@ -179,6 +188,11 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
         self._attr_hvac_action = HVACAction.HEATING if value else HVACAction.IDLE
         self.async_write_ha_state()
 
+    async def async_update_thermostat_parameters(self, _: Any) -> None:
+        """Update target temperature attributes when parameters arrive."""
+        await self._async_update_target_temperature_attributes()
+        self.async_write_ha_state()
+
     async def _async_update_target_temperature_attributes(
         self, target_temp: float | None = None
     ) -> None:
@@ -198,9 +212,12 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
             # Target temperature parameter name is unchanged.
             return
 
-        target_temperature_parameter: ThermostatNumber = await self.device.get(
-            target_temperature_name
+        target_temperature_parameter: ThermostatNumber | None = self.device.get_nowait(
+            target_temperature_name, None
         )
+        if target_temperature_parameter is None:
+            return
+
         self._attr_target_temperature_name = target_temperature_name
         self._attr_max_temp = float(target_temperature_parameter.max_value)
         self._attr_min_temp = float(target_temperature_parameter.min_value)
@@ -210,14 +227,16 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
     ) -> str:
         """Get current preset for the schedule mode."""
         if target_temp is None:
-            target_temp = await self.device.get("target_temp")
+            target_temp = self.device.get_nowait("target_temp", None)
 
-        comfort_temp: ThermostatNumber = await self.device.get(
-            HA_PRESET_TO_EM_TEMP[PRESET_COMFORT]
+        comfort_temp: ThermostatNumber | None = self.device.get_nowait(
+            HA_PRESET_TO_EM_TEMP[PRESET_COMFORT], None
         )
-        eco_temp: ThermostatNumber = await self.device.get(
-            HA_PRESET_TO_EM_TEMP[PRESET_ECO]
+        eco_temp: ThermostatNumber | None = self.device.get_nowait(
+            HA_PRESET_TO_EM_TEMP[PRESET_ECO], None
         )
+        if target_temp is None or comfort_temp is None or eco_temp is None:
+            return PRESET_UNKNOWN
 
         schedule_preset = PRESET_UNKNOWN
         if target_temp == comfort_temp.value and target_temp != eco_temp.value:
@@ -244,7 +263,7 @@ async def async_setup_entry(
 
     connection = entry.runtime_data.connection
 
-    if connection.has_thermostats and await connection.async_setup_thermostats():
+    if connection.has_thermostats and ATTR_THERMOSTATS in connection.device.data:
         async_add_entities(
             EcomaxClimate(connection, description=ENTITY_DESCRIPTION, index=index)
             for index in connection.device.thermostats
