@@ -117,3 +117,6 @@ dmypy.json
 
 # Home Assistant local development instance
 config/
+
+# AI agent workspace and reports
+.agents/

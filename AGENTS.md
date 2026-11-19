@@ -46,3 +46,5 @@ Manual for AI agents working on `homeassistant-plum-ecomax`. Read fully before c
 4.2. Verify all checks pass before committing:
 - `uv run prek run --all-files`
 - `uv run pytest` (100% coverage required)
+
+4.3. Branch naming: use the `feature/` prefix for feature branches (e.g., `feature/non-blocking-setup`) and the `fix/` prefix for bug fixes (e.g., `fix/duplicate-error-message`).
