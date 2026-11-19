@@ -218,3 +218,34 @@ async def test_indirect_water_heater(
     entity_registry = er.async_get(hass)
     entry = entity_registry.async_get(indirect_water_heater_entity_id)
     assert not entry
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_water_heater_guards_before_parameters_arrive(
+    hass: HomeAssistant,
+    setup_config_entry,
+    async_set_operation_mode,
+    async_set_temperature,
+    caplog,
+) -> None:
+    """Test water heater set calls warn and skip before parameters load."""
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.has_water_heater",
+        True,
+    ):
+        await setup_config_entry()
+
+    indirect_water_heater_entity_id = "water_heater.ecomax_indirect_water_heater"
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        await async_set_temperature(hass, indirect_water_heater_entity_id, 55)
+        await async_set_operation_mode(hass, indirect_water_heater_entity_id, STATE_ECO)
+
+    mock_set_nowait.assert_not_called()
+    assert (
+        "Cannot set target temperature before water heater parameters are loaded"
+        in caplog.text
+    )
+    assert (
+        "Cannot set operation mode before water heater parameters are loaded"
+        in caplog.text
+    )

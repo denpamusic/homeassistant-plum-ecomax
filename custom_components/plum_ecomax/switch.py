@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from functools import partial
 import logging
 from typing import Any, cast, override
 
@@ -27,6 +28,7 @@ from .entity import (
     async_get_by_product_type,
     async_get_custom_entities,
     async_register_entities,
+    async_register_sub_device_entities,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -281,15 +283,6 @@ async def async_setup_entry(
         connection, entry
     )
 
-    # Add mixer/circuit switches.
-    if connection.has_mixers and ATTR_MIXERS in connection.device.data:
-        entities += async_setup_mixer_switches(connection)
-        immediate_entities += async_setup_custom_mixer_switches(connection, entry)
-
-    # Add thermostat switches.
-    if connection.has_thermostats and ATTR_THERMOSTATS in connection.device.data:
-        immediate_entities += async_setup_custom_thermostat_switches(connection, entry)
-
     async_register_entities(
         hass,
         entry,
@@ -297,4 +290,32 @@ async def async_setup_entry(
         async_add_entities,
         immediate_entities=immediate_entities,
     )
+
+    # Add mixer/circuit switches.
+    if connection.has_mixers:
+        async_register_sub_device_entities(
+            hass,
+            entry,
+            connection,
+            ATTR_MIXERS,
+            async_add_entities,
+            entities_fn=partial(async_setup_mixer_switches, connection),
+            custom_entities_fn=partial(
+                async_setup_custom_mixer_switches, connection, entry
+            ),
+        )
+
+    # Add thermostat switches.
+    if connection.has_thermostats:
+        async_register_sub_device_entities(
+            hass,
+            entry,
+            connection,
+            ATTR_THERMOSTATS,
+            async_add_entities,
+            custom_entities_fn=partial(
+                async_setup_custom_thermostat_switches, connection, entry
+            ),
+        )
+
     return True

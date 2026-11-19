@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import partial
 import logging
 from typing import Any, Final, cast, override
 
@@ -24,6 +25,7 @@ from .entity import (
     async_get_by_modules,
     async_get_by_product_type,
     async_register_entities,
+    async_register_sub_device_entities,
 )
 
 STATE_SUMMER: Final = "summer"
@@ -150,9 +152,17 @@ async def async_setup_entry(
     connection = entry.runtime_data.connection
     entities = async_setup_ecomax_selects(connection)
 
-    # Add mixer/circuit selects.
-    if connection.has_mixers and ATTR_MIXERS in connection.device.data:
-        entities += async_setup_mixer_selects(connection)
-
     async_register_entities(hass, entry, entities, async_add_entities)
+
+    # Add mixer/circuit selects.
+    if connection.has_mixers:
+        async_register_sub_device_entities(
+            hass,
+            entry,
+            connection,
+            ATTR_MIXERS,
+            async_add_entities,
+            entities_fn=partial(async_setup_mixer_selects, connection),
+        )
+
     return True

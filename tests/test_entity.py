@@ -6,21 +6,33 @@ from typing import Any
 from unittest.mock import AsyncMock, Mock, call, patch
 
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import entity_platform, entity_registry as er
 from homeassistant.helpers.entity import DeviceInfo
 from pyplumio.devices.ecomax import EcoMAX
+from pyplumio.devices.mixer import Mixer
+from pyplumio.devices.thermostat import Thermostat
 from pyplumio.filters import Filter
 from pyplumio.structures.sensor_data import ATTR_HEATING_TEMP
 import pytest
 from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
-from custom_components.plum_ecomax.const import DOMAIN, ModuleType
+from custom_components.plum_ecomax.const import (
+    ATTR_MIXERS,
+    ATTR_REGDATA,
+    ATTR_THERMOSTATS,
+    DOMAIN,
+    ModuleType,
+)
 from custom_components.plum_ecomax.entity import (
     MANUFACTURER,
     EcomaxEntity,
     EcomaxEntityDescription,
+    MixerEntity,
+    RegdataEntity,
+    ThermostatEntity,
     async_register_entities,
+    async_register_sub_device_entities,
 )
 
 
@@ -260,41 +272,27 @@ async def test_async_register_entities_deferred_unload_cleanup(
     mock_add_entities.assert_not_called()
 
 
-async def test_async_register_entities_cancels_scheduled_add_on_unload(
-    hass: HomeAssistant, ecomax_p: EcoMAX, config_entry: MockConfigEntry
+@pytest.mark.usefixtures("ecomax_p")
+async def test_async_register_entities_cancels_background_task_on_unload(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_config_entry,
 ) -> None:
-    """Test scheduled deferred add handle is cancelled on unload before next tick."""
-    mock_connection = Mock(spec=EcomaxConnection)
-    mock_connection.device = ecomax_p
-    mock_connection.entry = config_entry
-    mock_connection.uid = "TEST"
-
-    deferred_entity = EcomaxEntity(
-        connection=mock_connection,
-        description=EcomaxEntityDescription(
-            key="race_key",
-            name="Race key",
-        ),
-    )
-
-    unload_callbacks: list[Callable[[], Any]] = []
-    with patch.object(
-        config_entry,
-        "async_on_unload",
-        side_effect=unload_callbacks.append,
+    """Test scheduled deferred add background task is cancelled on unload."""
+    del connection.device._data[ATTR_HEATING_TEMP]
+    with (
+        patch("custom_components.plum_ecomax.connection.EcomaxConnection.async_setup"),
+        patch("custom_components.plum_ecomax.async_migrate_entry", return_value=True),
     ):
-        mock_add_entities = Mock()
-        async_register_entities(
-            hass,
-            config_entry,
-            (deferred_entity,),
-            mock_add_entities,
-        )
+        await setup_config_entry()
 
-    await ecomax_p.dispatch("race_key", 1)
-    unload_callbacks[0]()
+    await connection.device.dispatch(ATTR_HEATING_TEMP, 55.0)
+    assert await hass.config_entries.async_unload(config_entry.entry_id)
     await hass.async_block_till_done()
-    mock_add_entities.assert_not_called()
+
+    entity_registry = er.async_get(hass)
+    assert entity_registry.async_get("sensor.ecomax_heating_temperature") is None
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -321,3 +319,429 @@ async def test_config_entry_unload_cleans_pending_registrations(
     await connection.device.dispatch(ATTR_HEATING_TEMP, 55.0)
     await hass.async_block_till_done()
     assert entity_registry.async_get("sensor.ecomax_heating_temperature") is None
+
+
+async def test_entity_unsubscribes_startup_callback_on_remove(
+    ecomax_p: EcoMAX, config_entry: MockConfigEntry
+) -> None:
+    """Test EcomaxEntity and RegdataEntity unsubscribe startup callbacks on remove."""
+    mock_connection = Mock(spec=EcomaxConnection)
+    mock_connection.device = ecomax_p
+    mock_connection.entry = config_entry
+    mock_connection.connected = Mock(spec=asyncio.Event)
+    mock_connection.connected.is_set.return_value = True
+
+    entity = EcomaxEntity(
+        connection=mock_connection,
+        description=EcomaxEntityDescription(key="missing_sensor", name="Missing"),
+    )
+    await entity.async_added_to_hass()
+    startup_callback = entity._startup_callback
+    assert startup_callback is not None
+
+    with patch.object(
+        ecomax_p, "unsubscribe", wraps=ecomax_p.unsubscribe
+    ) as mock_unsubscribe:
+        await entity.async_will_remove_from_hass()
+
+    assert entity._startup_callback is None
+    mock_unsubscribe.assert_any_call("missing_sensor", startup_callback)
+    await ecomax_p.dispatch("missing_sensor", 123)
+    assert not entity.available
+
+    regdata_entity = RegdataEntity(
+        connection=mock_connection,
+        description=EcomaxEntityDescription(key="9001", name="Regdata 9001"),
+    )
+    await regdata_entity.async_added_to_hass()
+    regdata_startup_callback = regdata_entity._startup_callback
+    assert regdata_startup_callback is not None
+
+    with patch.object(
+        ecomax_p, "unsubscribe", wraps=ecomax_p.unsubscribe
+    ) as mock_unsubscribe:
+        await regdata_entity.async_will_remove_from_hass()
+
+    assert regdata_entity._startup_callback is None
+    mock_unsubscribe.assert_any_call(ATTR_REGDATA, regdata_startup_callback)
+    await ecomax_p.dispatch(ATTR_REGDATA, {9001: 42})
+    assert not regdata_entity.available
+
+
+async def test_async_register_entities_domain_scoped_registry_lookup(
+    hass: HomeAssistant, ecomax_p: EcoMAX, config_entry: MockConfigEntry
+) -> None:
+    """Test registry lookup scopes by current platform domain."""
+    mock_connection = Mock(spec=EcomaxConnection)
+    mock_connection.device = ecomax_p
+    mock_connection.entry = config_entry
+    mock_connection.uid = "TEST"
+
+    entity_registry = er.async_get(hass)
+    entity_registry.async_get_or_create(
+        "binary_sensor",
+        DOMAIN,
+        "TEST-cross_domain_key",
+        config_entry=config_entry,
+    )
+    entity_registry.async_get_or_create(
+        "sensor",
+        DOMAIN,
+        "TEST-same_domain_key",
+        config_entry=config_entry,
+    )
+
+    cross_domain_entity = EcomaxEntity(
+        connection=mock_connection,
+        description=EcomaxEntityDescription(
+            key="cross_domain_key",
+            name="Cross domain",
+        ),
+    )
+    same_domain_entity = EcomaxEntity(
+        connection=mock_connection,
+        description=EcomaxEntityDescription(
+            key="same_domain_key",
+            name="Same domain",
+        ),
+    )
+
+    mock_add_entities = Mock()
+    with patch.object(
+        entity_platform,
+        "async_get_current_platform",
+        return_value=Mock(domain="sensor"),
+    ):
+        async_register_entities(
+            hass,
+            config_entry,
+            (cross_domain_entity, same_domain_entity),
+            mock_add_entities,
+        )
+
+    mock_add_entities.assert_called_once_with([same_domain_entity])
+
+    mock_add_entities.reset_mock()
+    await ecomax_p.dispatch("cross_domain_key", 1)
+    await hass.async_block_till_done()
+    mock_add_entities.assert_called_once_with([cross_domain_entity])
+
+
+async def test_async_register_entities_waits_for_store_when_subscriber_yields(
+    hass: HomeAssistant, ecomax_p: EcoMAX, config_entry: MockConfigEntry
+) -> None:
+    """Test deferred registration awaits wait_for(key) if another subscriber yields."""
+    mock_connection = Mock(spec=EcomaxConnection)
+    mock_connection.device = ecomax_p
+    mock_connection.entry = config_entry
+    mock_connection.uid = "TEST"
+
+    deferred_entity = EcomaxEntity(
+        connection=mock_connection,
+        description=EcomaxEntityDescription(
+            key="yielding_key",
+            name="Yielding key",
+        ),
+    )
+
+    saw_key_in_data: list[bool] = []
+
+    def _record_add(entities: list[EcomaxEntity]) -> None:
+        saw_key_in_data.append("yielding_key" in ecomax_p.data)
+
+    mock_add_entities = Mock(side_effect=_record_add)
+    async_register_entities(
+        hass,
+        config_entry,
+        (deferred_entity,),
+        mock_add_entities,
+    )
+
+    subscriber_started = asyncio.Event()
+    release_subscriber = asyncio.Event()
+
+    async def _yielding_subscriber(_value: Any) -> None:
+        subscriber_started.set()
+        await release_subscriber.wait()
+
+    ecomax_p.subscribe("yielding_key", _yielding_subscriber)
+
+    with patch.object(ecomax_p, "wait_for", wraps=ecomax_p.wait_for) as mock_wait_for:
+        dispatch_task = hass.async_create_background_task(
+            ecomax_p.dispatch("yielding_key", 99),
+            name="test_yielding_dispatch",
+        )
+        await subscriber_started.wait()
+        await hass.async_block_till_done()
+        mock_add_entities.assert_not_called()
+
+        release_subscriber.set()
+        await dispatch_task
+        await hass.async_block_till_done(wait_background_tasks=True)
+
+    mock_wait_for.assert_awaited_once_with("yielding_key")
+    mock_add_entities.assert_called_once_with([deferred_entity])
+    assert saw_key_in_data == [True]
+
+
+async def test_async_register_sub_device_entities(
+    hass: HomeAssistant, ecomax_p: EcoMAX, config_entry: MockConfigEntry
+) -> None:
+    """Test reactive sub-device registration, deduplication, and unload cleanup."""
+    mock_connection = Mock(spec=EcomaxConnection)
+    mock_connection.device = ecomax_p
+    mock_connection.entry = config_entry
+    mock_connection.uid = "TEST"
+
+    class _TestMixerEntity(MixerEntity):
+        def __init__(
+            self,
+            connection: EcomaxConnection,
+            description: EcomaxEntityDescription,
+            index: int,
+        ) -> None:
+            self.index = index
+            super().__init__(connection, description)
+
+    class _TestThermostatEntity(ThermostatEntity):
+        def __init__(
+            self,
+            connection: EcomaxConnection,
+            description: EcomaxEntityDescription,
+            index: int,
+        ) -> None:
+            self.index = index
+            super().__init__(connection, description)
+
+    mixer_0 = Mixer(write_queue=Mock(spec=asyncio.Queue), parent=ecomax_p, index=0)
+    await mixer_0.load({"pump": True})
+    mixer_1 = Mixer(write_queue=Mock(spec=asyncio.Queue), parent=ecomax_p, index=1)
+    await mixer_1.load({"pump": False})
+    mixer_2 = Mixer(write_queue=Mock(spec=asyncio.Queue), parent=ecomax_p, index=2)
+    await mixer_2.load({"pump": True})
+    await ecomax_p.load({ATTR_MIXERS: {0: mixer_0}})
+
+    def _build_mixers() -> list[MixerEntity]:
+        return [
+            _TestMixerEntity(
+                mock_connection,
+                EcomaxEntityDescription(key="pump", name=f"Mixer {index} pump"),
+                index,
+            )
+            for index in ecomax_p.mixers
+        ]
+
+    unload_callbacks: list[Callable[[], Any]] = []
+    mock_add_entities = Mock()
+    with patch.object(
+        config_entry, "async_on_unload", side_effect=unload_callbacks.append
+    ):
+        async_register_sub_device_entities(
+            hass,
+            config_entry,
+            mock_connection,
+            ATTR_MIXERS,
+            mock_add_entities,
+            entities_fn=_build_mixers,
+        )
+
+    # Initial mixer 0 registered immediately.
+    assert mock_add_entities.call_count == 1
+    added_initial = mock_add_entities.call_args[0][0]
+    assert [entity.index for entity in added_initial] == [0]
+
+    # Duplicate dispatch for already-seen index 0 does nothing.
+    mock_add_entities.reset_mock()
+    await ecomax_p.dispatch(ATTR_MIXERS, {0: mixer_0})
+    await hass.async_block_till_done()
+    mock_add_entities.assert_not_called()
+
+    # Dispatching new index 1 registers only index 1.
+    ecomax_p.mixers[1] = mixer_1
+    await ecomax_p.dispatch(ATTR_MIXERS, ecomax_p.mixers)
+    await hass.async_block_till_done()
+    assert mock_add_entities.call_count == 1
+    added_dynamic = mock_add_entities.call_args[0][0]
+    assert [entity.index for entity in added_dynamic] == [1]
+
+    # Unloading unsubscribes so index 2 is ignored.
+    mock_add_entities.reset_mock()
+    unload_callbacks[0]()
+    ecomax_p.mixers[2] = mixer_2
+    await ecomax_p.dispatch(ATTR_MIXERS, ecomax_p.mixers)
+    await hass.async_block_till_done()
+    mock_add_entities.assert_not_called()
+
+    # Also test deferred sub-device key when absent at setup and yielding subscriber
+    # holds EventManager.dispatch() open until wait_for completes, plus empty entities.
+    thermostat_0 = Thermostat(
+        write_queue=Mock(spec=asyncio.Queue), parent=ecomax_p, index=0
+    )
+    await thermostat_0.load({"current_temp": 21.0})
+
+    thermostat_add_entities = Mock()
+    async_register_sub_device_entities(
+        hass,
+        config_entry,
+        mock_connection,
+        ATTR_THERMOSTATS,
+        thermostat_add_entities,
+        custom_entities_fn=lambda: [
+            _TestThermostatEntity(
+                mock_connection,
+                EcomaxEntityDescription(key="custom_temp", name="Custom temp"),
+                index,
+            )
+            for index in ecomax_p.thermostats
+        ],
+    )
+    thermostat_add_entities.assert_not_called()
+
+    thermostat_subscriber_started = asyncio.Event()
+    release_thermostat_subscriber = asyncio.Event()
+
+    async def _yielding_thermostat_subscriber(_value: Any) -> None:
+        thermostat_subscriber_started.set()
+        await release_thermostat_subscriber.wait()
+
+    ecomax_p.subscribe(ATTR_THERMOSTATS, _yielding_thermostat_subscriber)
+
+    with patch.object(ecomax_p, "wait_for", wraps=ecomax_p.wait_for) as mock_wait_for:
+        dispatch_task = hass.async_create_background_task(
+            ecomax_p.dispatch(ATTR_THERMOSTATS, {0: thermostat_0}),
+            name="test_thermostat_dispatch",
+        )
+        await thermostat_subscriber_started.wait()
+        await hass.async_block_till_done()
+        thermostat_add_entities.assert_not_called()
+
+        release_thermostat_subscriber.set()
+        await dispatch_task
+        await hass.async_block_till_done(wait_background_tasks=True)
+
+    mock_wait_for.assert_awaited_once_with(ATTR_THERMOSTATS)
+    assert thermostat_add_entities.call_count == 1
+    assert [entity.index for entity in thermostat_add_entities.call_args[0][0]] == [0]
+
+    # Empty custom entities when new sub-device index arrives skips registration.
+    empty_add_entities = Mock()
+    async_register_sub_device_entities(
+        hass,
+        config_entry,
+        mock_connection,
+        ATTR_THERMOSTATS,
+        empty_add_entities,
+        custom_entities_fn=list,
+    )
+    empty_add_entities.assert_not_called()
+
+    # Empty sub-device dispatch is ignored.
+    await ecomax_p.dispatch(ATTR_THERMOSTATS, {})
+    await hass.async_block_till_done()
+    empty_add_entities.assert_not_called()
+
+
+async def test_async_register_sub_device_entities_preserves_domain_scope(
+    hass: HomeAssistant, ecomax_p: EcoMAX, config_entry: MockConfigEntry
+) -> None:
+    """Test platform_domain captured at setup is preserved on dynamic discovery."""
+    mock_connection = Mock(spec=EcomaxConnection)
+    mock_connection.device = ecomax_p
+    mock_connection.entry = config_entry
+    mock_connection.uid = "TEST"
+
+    class _TestMixerEntity(MixerEntity):
+        def __init__(
+            self,
+            connection: EcomaxConnection,
+            description: EcomaxEntityDescription,
+            index: int,
+        ) -> None:
+            self.index = index
+            super().__init__(connection, description)
+
+    mixer_0 = Mixer(write_queue=Mock(spec=asyncio.Queue), parent=ecomax_p, index=0)
+    await mixer_0.load({"pump": True})
+    mixer_1 = Mixer(write_queue=Mock(spec=asyncio.Queue), parent=ecomax_p, index=1)
+    await mixer_1.load({"pump": False})
+    await ecomax_p.load({ATTR_MIXERS: {0: mixer_0}})
+
+    entity_registry = er.async_get(hass)
+    # Cross-domain entry on binary_sensor must not mark a deferred sensor
+    # sub-device entity as ready outside platform context.
+    entity_registry.async_get_or_create(
+        "binary_sensor",
+        DOMAIN,
+        "TEST-mixer-1-deferred_key",
+        config_entry=config_entry,
+    )
+
+    built_in_seen: list[list[str]] = []
+    custom_devices: list[Mixer] = []
+
+    def _record_add(entities: list[_TestMixerEntity]) -> None:
+        built_in_seen.append(
+            [f"{entity.index}:{entity.entity_description.key}" for entity in entities]
+        )
+        for entity in entities:
+            if entity.entity_description.key == "custom_pump":
+                custom_devices.append(entity.device)
+
+    mock_add_entities = Mock(side_effect=_record_add)
+    with patch.object(
+        entity_platform,
+        "async_get_current_platform",
+        return_value=Mock(domain="sensor"),
+    ):
+        async_register_sub_device_entities(
+            hass,
+            config_entry,
+            mock_connection,
+            ATTR_MIXERS,
+            mock_add_entities,
+            entities_fn=lambda: [
+                entity
+                for index in ecomax_p.mixers
+                for entity in (
+                    _TestMixerEntity(
+                        mock_connection,
+                        EcomaxEntityDescription(key="pump", name=f"Mixer {index} pump"),
+                        index,
+                    ),
+                    _TestMixerEntity(
+                        mock_connection,
+                        EcomaxEntityDescription(
+                            key="deferred_key", name=f"Mixer {index} deferred"
+                        ),
+                        index,
+                    ),
+                )
+            ],
+            custom_entities_fn=lambda: [
+                _TestMixerEntity(
+                    mock_connection,
+                    EcomaxEntityDescription(
+                        key="custom_pump", name=f"Mixer {index} custom"
+                    ),
+                    index,
+                )
+                for index in ecomax_p.mixers
+            ],
+        )
+
+    assert built_in_seen == [["0:custom_pump", "0:pump"]]
+    built_in_seen.clear()
+    custom_devices.clear()
+
+    # Mutate in-place like PyPlumIO and dispatch outside any current_platform context.
+    ecomax_p.mixers[1] = mixer_1
+    await ecomax_p.dispatch(ATTR_MIXERS, ecomax_p.mixers)
+    await hass.async_block_till_done()
+
+    assert built_in_seen == [["1:custom_pump", "1:pump"]]
+    assert custom_devices == [mixer_1]
+
+    # Deferred key on mixer_1 arrives later and is registered then.
+    await mixer_1.dispatch("deferred_key", 123)
+    await hass.async_block_till_done()
+    assert built_in_seen == [["1:custom_pump", "1:pump"], ["1:deferred_key"]]

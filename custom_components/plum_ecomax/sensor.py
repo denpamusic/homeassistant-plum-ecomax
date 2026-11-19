@@ -53,6 +53,7 @@ from .entity import (
     async_get_by_product_type,
     async_get_custom_entities,
     async_register_entities,
+    async_register_sub_device_entities,
 )
 
 UPDATE_INTERVAL: Final = 10
@@ -673,26 +674,17 @@ async def async_setup_entry(
     _LOGGER.debug("Starting setup of sensor platform...")
 
     connection = entry.runtime_data.connection
-    entities = async_setup_ecomax_sensors(connection)
+    entities: list[EcomaxSensor] = async_setup_ecomax_sensors(connection)
+
+    # Add ecoMAX meters.
+    if meters := async_setup_ecomax_meters(connection):
+        entities += meters
 
     # Add custom ecoMAX and regulator data sensors immediately.
     immediate_entities: list[EcomaxSensor] = async_setup_custom_ecomax_sensors(
         connection, entry
     )
     immediate_entities += async_setup_custom_regdata_sensors(connection, entry)
-
-    # Add mixer/circuit sensors.
-    if connection.has_mixers and ATTR_MIXERS in connection.device.data:
-        entities += async_setup_mixer_sensors(connection)
-        immediate_entities += async_setup_custom_mixer_sensors(connection, entry)
-
-    # Add thermostat sensors.
-    if connection.has_thermostats and ATTR_THERMOSTATS in connection.device.data:
-        immediate_entities += async_setup_custom_thermostat_sensors(connection, entry)
-
-    # Add ecoMAX meters.
-    if meters := async_setup_ecomax_meters(connection):
-        entities += meters
 
     async_register_entities(
         hass,
@@ -701,4 +693,32 @@ async def async_setup_entry(
         async_add_entities,
         immediate_entities=immediate_entities,
     )
+
+    # Add mixer/circuit sensors.
+    if connection.has_mixers:
+        async_register_sub_device_entities(
+            hass,
+            entry,
+            connection,
+            ATTR_MIXERS,
+            async_add_entities,
+            entities_fn=partial(async_setup_mixer_sensors, connection),
+            custom_entities_fn=partial(
+                async_setup_custom_mixer_sensors, connection, entry
+            ),
+        )
+
+    # Add thermostat sensors.
+    if connection.has_thermostats:
+        async_register_sub_device_entities(
+            hass,
+            entry,
+            connection,
+            ATTR_THERMOSTATS,
+            async_add_entities,
+            custom_entities_fn=partial(
+                async_setup_custom_thermostat_sensors, connection, entry
+            ),
+        )
+
     return True

@@ -74,16 +74,6 @@ def load_regdata_fixture(filename: str):
     return json.loads(load_fixture(filename), object_hook=keys_to_int)
 
 
-@pytest.fixture(autouse=True)
-def bypass_pyplumio_events():
-    """Bypass pyplumio event system."""
-    with patch(
-        "pyplumio.helpers.event_manager.EventManager.create_event",
-        side_effect=TimeoutError,
-    ):
-        yield
-
-
 @pytest.fixture(name="tcp_user_input")
 def fixture_tcp_user_input() -> dict[str, Any]:
     """Get the TCP config data."""

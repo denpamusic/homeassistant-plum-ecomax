@@ -24,14 +24,19 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyplumio.filters import Filter, deadband, on_change, throttle
+from pyplumio.filters import deadband, on_change, throttle
+from pyplumio.helpers.event_manager import EventCallback
 from pyplumio.parameters.thermostat import ThermostatNumber
 from pyplumio.structures.thermostat_parameters import ATTR_THERMOSTAT_PARAMETERS
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
 from .const import ATTR_THERMOSTATS, DEFAULT_TOLERANCE
-from .entity import EcomaxEntityDescription, ThermostatEntity
+from .entity import (
+    EcomaxEntityDescription,
+    ThermostatEntity,
+    async_register_sub_device_entities,
+)
 
 UPDATE_INTERVAL: Final = 10
 
@@ -91,7 +96,7 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
     _attr_target_temperature_name: str | None = None
     _attr_target_temperature_step = TEMPERATURE_STEP
     _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
-    _callbacks: dict[str, Filter]
+    _callbacks: dict[str, EventCallback]
     entity_description: EcomaxClimateEntityDescription
 
     def __init__(
@@ -110,9 +115,7 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
                 seconds=UPDATE_INTERVAL,
             ),
             "target_temp": on_change(self.async_update_target_temperature),
-            ATTR_THERMOSTAT_PARAMETERS: on_change(
-                self.async_update_thermostat_parameters
-            ),
+            ATTR_THERMOSTAT_PARAMETERS: self.async_update_thermostat_parameters,
         }
         self.index = index
         super().__init__(connection, description)
@@ -134,6 +137,12 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
     @override
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         """Set new preset mode."""
+        if ATTR_MODE not in self.device.data:
+            _LOGGER.warning(
+                "Cannot set preset mode before thermostat parameters are loaded"
+            )
+            return
+
         mode = HA_TO_EM_MODE[preset_mode]
         self.device.set_nowait(ATTR_MODE, mode)
         self._attr_preset_mode = preset_mode
@@ -208,10 +217,6 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
             return
 
         target_temperature_name = HA_PRESET_TO_EM_TEMP[preset_mode]
-        if self.target_temperature_name == target_temperature_name:
-            # Target temperature parameter name is unchanged.
-            return
-
         target_temperature_parameter: ThermostatNumber | None = self.device.get_nowait(
             target_temperature_name, None
         )
@@ -263,10 +268,17 @@ async def async_setup_entry(
 
     connection = entry.runtime_data.connection
 
-    if connection.has_thermostats and ATTR_THERMOSTATS in connection.device.data:
-        async_add_entities(
-            EcomaxClimate(connection, description=ENTITY_DESCRIPTION, index=index)
-            for index in connection.device.thermostats
+    if connection.has_thermostats:
+        async_register_sub_device_entities(
+            hass,
+            entry,
+            connection,
+            ATTR_THERMOSTATS,
+            async_add_entities,
+            entities_fn=lambda: (
+                EcomaxClimate(connection, description=ENTITY_DESCRIPTION, index=index)
+                for index in connection.device.thermostats
+            ),
         )
         return True
 
