@@ -32,6 +32,7 @@ from .entity import (
     async_get_by_product_type,
     async_get_custom_entities,
     async_register_entities,
+    async_register_sub_device_entities,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -339,17 +340,6 @@ async def async_setup_entry(
     )
     immediate_entities += async_setup_custom_regdata_binary_sensors(connection, entry)
 
-    # Add mixer/circuit binary sensors.
-    if connection.has_mixers and ATTR_MIXERS in connection.device.data:
-        entities += async_setup_mixer_binary_sensors(connection)
-        immediate_entities += async_setup_custom_mixer_binary_sensors(connection, entry)
-
-    # Add thermostat binary sensors.
-    if connection.has_thermostats and ATTR_THERMOSTATS in connection.device.data:
-        immediate_entities += async_setup_custom_thermostat_binary_sensors(
-            connection, entry
-        )
-
     async_register_entities(
         hass,
         entry,
@@ -357,4 +347,32 @@ async def async_setup_entry(
         async_add_entities,
         immediate_entities=immediate_entities,
     )
+
+    # Add mixer/circuit binary sensors.
+    if connection.has_mixers:
+        async_register_sub_device_entities(
+            hass,
+            entry,
+            connection,
+            ATTR_MIXERS,
+            async_add_entities,
+            entities_fn=partial(async_setup_mixer_binary_sensors, connection),
+            custom_entities_fn=partial(
+                async_setup_custom_mixer_binary_sensors, connection, entry
+            ),
+        )
+
+    # Add thermostat binary sensors.
+    if connection.has_thermostats:
+        async_register_sub_device_entities(
+            hass,
+            entry,
+            connection,
+            ATTR_THERMOSTATS,
+            async_add_entities,
+            custom_entities_fn=partial(
+                async_setup_custom_thermostat_binary_sensors, connection, entry
+            ),
+        )
+
     return True

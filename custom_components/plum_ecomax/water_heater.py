@@ -87,19 +87,29 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     @override
     async def async_set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
+        target_temp_key = f"{self.entity_description.key}_target_temp"
+        if target_temp_key not in self.device.data:
+            _LOGGER.warning(
+                "Cannot set target temperature before water heater parameters are loaded"
+            )
+            return
+
         temperature = kwargs[ATTR_TEMPERATURE]
-        self.device.set_nowait(
-            f"{self.entity_description.key}_target_temp", int(temperature)
-        )
+        self.device.set_nowait(target_temp_key, int(temperature))
         self._attr_native_target_temperature = temperature
         self.async_write_ha_state()
 
     @override
     async def async_set_operation_mode(self, operation_mode: str) -> None:
         """Set new target operation mode."""
-        self.device.set_nowait(
-            f"{self.entity_description.key}_work_mode", HA_TO_EM_STATE[operation_mode]
-        )
+        work_mode_key = f"{self.entity_description.key}_work_mode"
+        if work_mode_key not in self.device.data:
+            _LOGGER.warning(
+                "Cannot set operation mode before water heater parameters are loaded"
+            )
+            return
+
+        self.device.set_nowait(work_mode_key, HA_TO_EM_STATE[operation_mode])
         self._attr_current_operation = operation_mode
         self.async_write_ha_state()
 

@@ -15,7 +15,7 @@ import pytest
 from custom_components.plum_ecomax.connection import (
     ATTR_SENSORS,
     WAIT_FOR_DEVICE_SECONDS,
-    WAIT_FOR_SETUP_SECONDS,
+    WAIT_FOR_SENSORS_SECONDS,
     EcomaxConnection,
     async_get_connection_handler,
     async_get_sub_devices,
@@ -125,7 +125,7 @@ async def test_async_setup(
         DeviceType.ECOMAX, timeout=WAIT_FOR_DEVICE_SECONDS
     )
     mock_ecomax.wait_for.assert_awaited_once_with(
-        ATTR_SENSORS, timeout=WAIT_FOR_SETUP_SECONDS
+        ATTR_SENSORS, timeout=WAIT_FOR_SENSORS_SECONDS
     )
 
     # Check connection class properties for tcp connection.

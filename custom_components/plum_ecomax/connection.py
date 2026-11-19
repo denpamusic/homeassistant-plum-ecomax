@@ -50,7 +50,7 @@ ATTR_SENSORS: Final = "sensors"
 DEFAULT_TIMEOUT: Final = 15
 
 WAIT_FOR_DEVICE_SECONDS: Final = 30
-WAIT_FOR_SETUP_SECONDS: Final = 15
+WAIT_FOR_SENSORS_SECONDS: Final = 15
 FORCE_CLOSE_AFTER_SECONDS: Final = 10
 
 _LOGGER = logging.getLogger(__name__)
@@ -145,7 +145,7 @@ class EcomaxConnection:
         async with self._connection.device(
             DeviceType.ECOMAX, timeout=WAIT_FOR_DEVICE_SECONDS
         ) as device:
-            await device.wait_for(ATTR_SENSORS, timeout=WAIT_FOR_SETUP_SECONDS)
+            await device.wait_for(ATTR_SENSORS, timeout=WAIT_FOR_SENSORS_SECONDS)
             self._device = device
 
     async def async_close(self) -> None:
