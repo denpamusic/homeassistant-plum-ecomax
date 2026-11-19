@@ -1,19 +1,22 @@
 """Contains base entity classes."""
 
+import asyncio
 from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass
-from functools import cached_property
+from functools import cached_property, partial
 from typing import Any, Final, Literal, cast, final, overload, override
 
 from homeassistant.const import CONF_UNIT_OF_MEASUREMENT, Platform
-from homeassistant.core import callback
-from homeassistant.helpers import device_registry as dr
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.const import ProductType
 from pyplumio.devices import Device
 from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
 from pyplumio.filters import Filter, on_change, throttle
+from pyplumio.helpers.event_manager import EventCallback
 from pyplumio.structures.sensor_data import ConnectedModules
 
 from custom_components.plum_ecomax import PlumEcomaxConfigEntry
@@ -201,21 +204,6 @@ class EcomaxEntity(Entity):
 
         return self.connection.connected.is_set() and self._attr_available
 
-    @property
-    @override
-    def entity_registry_enabled_default(self) -> bool:
-        """Return if the entity should be enabled when first added.
-
-        This only applies when fist added to the entity registry.
-        """
-        if self.entity_description.always_available:
-            return True
-
-        if self.entity_description.key in self.device.data:
-            return self.entity_description.entity_registry_enabled_default
-
-        return False
-
     @cached_property
     @override
     def unique_id(self) -> str:
@@ -397,11 +385,94 @@ class RegdataEntity(EcomaxEntity):
         """Unsubscribe from regdata event."""
         self.device.unsubscribe(ATTR_REGDATA, self.async_update)
 
-    @override
-    @property
-    def entity_registry_enabled_default(self) -> bool:
-        """Return if the entity should be enabled when first added.
 
-        This only applies when first added to the entity registry.
-        """
-        return self._regdata_key in self.device.data.get(ATTR_REGDATA, {})
+@callback
+def _is_entity_ready(entity: EcomaxEntity, existing_unique_ids: set[str]) -> bool:
+    """Return whether an entity should be registered immediately."""
+    description = entity.entity_description
+    return (
+        description.always_available
+        or description.key in entity.device.data
+        or entity.unique_id in existing_unique_ids
+    )
+
+
+@callback
+def _subscribe_entity_registration(
+    hass: HomeAssistant,
+    entity: EcomaxEntity,
+    async_add_entities: AddEntitiesCallback,
+    pending_handles: list[asyncio.Handle],
+) -> tuple[Device, str, EventCallback]:
+    """Subscribe a deferred entity to be registered on first key arrival."""
+
+    async def _async_add_entity(_value: Any) -> None:
+        """Register deferred entity once its backing key is dispatched."""
+        # EventManager.dispatch() writes self._data[key] after running callbacks,
+        # and HA's async_add_entities() starts tasks eagerly; defer by one loop
+        # tick so async_added_to_hass() sees the dispatched value in device.data.
+        pending_handles.append(hass.loop.call_soon(async_add_entities, [entity]))
+
+    key = entity.entity_description.key
+    callback_reference = entity.device.subscribe_once(key, _async_add_entity)
+    return (entity.device, key, callback_reference)
+
+
+@callback
+def _unsubscribe_pending_registrations(
+    pending_registrations: list[tuple[Device, str, EventCallback]],
+    pending_handles: list[asyncio.Handle],
+) -> None:
+    """Unsubscribe all pending entity registration callbacks."""
+    for device, key, callback_reference in pending_registrations:
+        device.unsubscribe(key, callback_reference)
+
+    for handle in pending_handles:
+        handle.cancel()
+
+    pending_registrations.clear()
+    pending_handles.clear()
+
+
+@callback
+def async_register_entities(
+    hass: HomeAssistant,
+    config_entry: PlumEcomaxConfigEntry,
+    entities: Iterable[EcomaxEntity],
+    async_add_entities: AddEntitiesCallback,
+    *,
+    immediate_entities: Iterable[EcomaxEntity] = (),
+) -> None:
+    """Register ready entities immediately and defer the rest until data arrives."""
+    entity_registry = er.async_get(hass)
+    existing_unique_ids = {
+        entry.unique_id
+        for entry in er.async_entries_for_config_entry(
+            entity_registry, config_entry.entry_id
+        )
+    }
+    ready_entities = list(immediate_entities)
+    pending_registrations: list[tuple[Device, str, EventCallback]] = []
+    pending_handles: list[asyncio.Handle] = []
+
+    for entity in entities:
+        if _is_entity_ready(entity, existing_unique_ids):
+            ready_entities.append(entity)
+        else:
+            pending_registrations.append(
+                _subscribe_entity_registration(
+                    hass, entity, async_add_entities, pending_handles
+                )
+            )
+
+    if ready_entities:
+        async_add_entities(ready_entities)
+
+    if pending_registrations:
+        config_entry.async_on_unload(
+            partial(
+                _unsubscribe_pending_registrations,
+                pending_registrations,
+                pending_handles,
+            )
+        )

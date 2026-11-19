@@ -14,6 +14,7 @@ from pyplumio.const import ProductType
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
+from .const import ATTR_MIXERS
 from .entity import (
     EcomaxEntity,
     EcomaxEntityDescription,
@@ -22,6 +23,7 @@ from .entity import (
     async_get_by_index,
     async_get_by_modules,
     async_get_by_product_type,
+    async_register_entities,
 )
 
 STATE_SUMMER: Final = "summer"
@@ -149,8 +151,8 @@ async def async_setup_entry(
     entities = async_setup_ecomax_selects(connection)
 
     # Add mixer/circuit selects.
-    if connection.has_mixers and await connection.async_setup_mixers():
+    if connection.has_mixers and ATTR_MIXERS in connection.device.data:
         entities += async_setup_mixer_selects(connection)
 
-    async_add_entities(entities)
+    async_register_entities(hass, entry, entities, async_add_entities)
     return True
