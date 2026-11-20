@@ -74,16 +74,6 @@ def load_regdata_fixture(filename: str):
     return json.loads(load_fixture(filename), object_hook=keys_to_int)
 
 
-@pytest.fixture(autouse=True)
-def bypass_pyplumio_events():
-    """Bypass pyplumio event system."""
-    with patch(
-        "pyplumio.helpers.event_manager.EventManager.create_event",
-        side_effect=TimeoutError,
-    ):
-        yield
-
-
 @pytest.fixture(name="tcp_user_input")
 def fixture_tcp_user_input() -> dict[str, Any]:
     """Get the TCP config data."""
@@ -374,15 +364,9 @@ async def fixture_ecomax_p(ecomax_common: EcoMAX) -> AsyncGenerator[EcoMAX]:
         }
     )
 
-    with (
-        patch(
-            "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
-            ProductType.ECOMAX_P,
-        ),
-        patch(
-            "custom_components.plum_ecomax.EcomaxConnection.async_setup_mixers",
-            return_value=False,
-        ),
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
+        ProductType.ECOMAX_P,
     ):
         yield ecomax_common
 
@@ -414,15 +398,9 @@ async def fixture_ecomax_i(ecomax_common: EcoMAX) -> AsyncGenerator[EcoMAX]:
         }
     )
 
-    with (
-        patch(
-            "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
-            ProductType.ECOMAX_I,
-        ),
-        patch(
-            "custom_components.plum_ecomax.EcomaxConnection.async_setup_mixers",
-            return_value=False,
-        ),
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.product_type",
+        ProductType.ECOMAX_I,
     ):
         yield ecomax_common
 
@@ -618,14 +596,8 @@ async def mixers(ecomax_common: EcoMAX) -> AsyncGenerator[EcoMAX]:
         }
     )
 
-    with (
-        patch(
-            "custom_components.plum_ecomax.connection.EcomaxConnection.has_mixers", True
-        ),
-        patch(
-            "custom_components.plum_ecomax.EcomaxConnection.async_setup_mixers",
-            return_value=True,
-        ),
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.has_mixers", True
     ):
         yield ecomax_common
 
@@ -723,13 +695,7 @@ async def thermostats(ecomax_common: EcoMAX) -> AsyncGenerator[EcoMAX]:
         }
     )
 
-    with (
-        patch("custom_components.plum_ecomax.EcomaxConnection.has_thermostats", True),
-        patch(
-            "custom_components.plum_ecomax.EcomaxConnection.async_setup_thermostats",
-            return_value=True,
-        ),
-    ):
+    with patch("custom_components.plum_ecomax.EcomaxConnection.has_thermostats", True):
         yield ecomax_common
 
 

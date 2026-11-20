@@ -21,7 +21,7 @@ from pyplumio.const import ProductType
 
 from . import PlumEcomaxConfigEntry
 from .connection import EcomaxConnection
-from .const import DeviceType
+from .const import ATTR_MIXERS, ATTR_THERMOSTATS, DeviceType
 from .entity import (
     EcomaxEntity,
     EcomaxEntityDescription,
@@ -31,6 +31,8 @@ from .entity import (
     async_get_by_modules,
     async_get_by_product_type,
     async_get_custom_entities,
+    async_register_entities,
+    async_register_sub_device_entities,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -332,23 +334,45 @@ async def async_setup_entry(
     connection = entry.runtime_data.connection
     entities = async_setup_ecomax_binary_sensors(connection)
 
-    # Add custom ecoMAX binary sensors.
-    entities += async_setup_custom_ecomax_binary_sensors(connection, entry)
+    # Add custom ecoMAX and regulator data binary sensors immediately.
+    immediate_entities: list[EcomaxBinarySensor] = (
+        async_setup_custom_ecomax_binary_sensors(connection, entry)
+    )
+    immediate_entities += async_setup_custom_regdata_binary_sensors(connection, entry)
 
-    # Add custom regulator data binary sensors.
-    if (
-        regdata_entities := async_setup_custom_regdata_binary_sensors(connection, entry)
-    ) and await connection.async_setup_regdata():
-        entities += regdata_entities
+    async_register_entities(
+        hass,
+        entry,
+        entities,
+        async_add_entities,
+        immediate_entities=immediate_entities,
+    )
 
     # Add mixer/circuit binary sensors.
-    if connection.has_mixers and await connection.async_setup_mixers():
-        entities += async_setup_mixer_binary_sensors(connection)
-        entities += async_setup_custom_mixer_binary_sensors(connection, entry)
+    if connection.has_mixers:
+        async_register_sub_device_entities(
+            hass,
+            entry,
+            connection,
+            ATTR_MIXERS,
+            async_add_entities,
+            entities_fn=partial(async_setup_mixer_binary_sensors, connection),
+            custom_entities_fn=partial(
+                async_setup_custom_mixer_binary_sensors, connection, entry
+            ),
+        )
 
     # Add thermostat binary sensors.
-    if connection.has_thermostats and await connection.async_setup_thermostats():
-        entities += async_setup_custom_thermostat_binary_sensors(connection, entry)
+    if connection.has_thermostats:
+        async_register_sub_device_entities(
+            hass,
+            entry,
+            connection,
+            ATTR_THERMOSTATS,
+            async_add_entities,
+            custom_entities_fn=partial(
+                async_setup_custom_thermostat_binary_sensors, connection, entry
+            ),
+        )
 
-    async_add_entities(entities)
     return True
