@@ -46,6 +46,8 @@ from .const import (
 
 ALL: Final = "all"
 
+type EntityRegistration = tuple[Device, str, EventCallback]
+
 
 @dataclass(frozen=True, kw_only=True)
 class EcomaxEntityDescription(EntityDescription):
@@ -444,9 +446,8 @@ def _is_entity_ready(entity: EcomaxEntity, existing_unique_ids: set[str]) -> boo
 
 @callback
 def _subscribe_entity_registration(
-    entity: EcomaxEntity,
-    async_add_entities: AddEntitiesCallback,
-) -> tuple[Device, str, EventCallback]:
+    entity: EcomaxEntity, async_add_entities: AddEntitiesCallback
+) -> EntityRegistration:
     """Subscribe a deferred entity to be registered on first key arrival."""
 
     async def _async_add_entity(_value: Any) -> None:
@@ -460,7 +461,7 @@ def _subscribe_entity_registration(
 
 @callback
 def _unsubscribe_pending_registrations(
-    pending_registrations: list[tuple[Device, str, EventCallback]],
+    pending_registrations: list[EntityRegistration],
 ) -> None:
     """Unsubscribe all pending entity registration callbacks."""
     for device, key, callback_reference in pending_registrations:
@@ -484,7 +485,7 @@ def async_register_entities(
         hass, config_entry, platform_domain=platform_domain
     )
     ready_entities = list(immediate_entities)
-    pending_registrations: list[tuple[Device, str, EventCallback]] = []
+    pending_registrations: list[EntityRegistration] = []
 
     for entity in entities:
         if _is_entity_ready(entity, existing_unique_ids):
