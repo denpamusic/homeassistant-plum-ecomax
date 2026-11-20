@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.14.2"
 resolution-markers = [
     "python_full_version >= '3.15'",
@@ -1383,7 +1383,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "homeassistant", specifier = ">=2026.11.0" },
-    { name = "pyplumio", specifier = "==0.7.9" },
+    { name = "pyplumio", specifier = "==0.7.10" },
 ]
 
 [package.metadata.requires-dev]
@@ -2346,14 +2346,14 @@ wheels = [
 
 [[package]]
 name = "pyplumio"
-version = "0.7.9"
+version = "0.7.10"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "serialx" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/17/dd/6db073e34370732d3451e28d90b0d9a72120708b125d78ed576b74ccdd92/pyplumio-0.7.9.tar.gz", hash = "sha256:2baeeb1e3c6d741520277150831412bab0696601c5f75b676e009694a5343906", size = 171270, upload-time = "2026-11-18T23:33:20.537Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6c/ac/4125e42b550975a1e6712beda3aa07d13314a2cf5604c427f797e4d16dd2/pyplumio-0.7.10.tar.gz", hash = "sha256:fdc602b0ac2fd92f17e535fcece4393f2a754a64d42e354e7cc6fa0d58d3e4a1", size = 174528, upload-time = "2026-11-20T00:16:25.845Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/09/a1/da5868143b46e216681412dc10538126ee684c360745f7220765cf1d7473/pyplumio-0.7.9-py3-none-any.whl", hash = "sha256:226eac51b637947d6d76f3f09dab7e31cda769b523411ecb8a07d81dbb9882f9", size = 99488, upload-time = "2026-11-18T23:33:19.276Z" },
+    { url = "https://files.pythonhosted.org/packages/89/02/c892014d041ef29910df944f03803b2f580b60b5b4bfde527db2d556d69d/pyplumio-0.7.10-py3-none-any.whl", hash = "sha256:577d37e0b6b354048ee83e534604d3dc2146a84fbaf770a53bcb07112165f315", size = 99932, upload-time = "2026-11-20T00:16:24.783Z" },
 ]
 
 [[package]]

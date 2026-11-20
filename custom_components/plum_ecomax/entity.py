@@ -165,7 +165,6 @@ class EcomaxEntity(Entity):
     _attr_available = False
     _attr_has_entity_name = True
     _attr_should_poll = False
-    _startup_callback: EventCallback | None = None
     connection: EcomaxConnection
     entity_description: EcomaxEntityDescription
 
@@ -175,6 +174,25 @@ class EcomaxEntity(Entity):
         """Initialize a new ecoMAX entity."""
         self.connection = connection
         self.entity_description = description
+
+    @callback
+    def _subscribe_with_cleanup(
+        self,
+        key: str,
+        callback_reference: EventCallback,
+        *,
+        once: bool = False,
+    ) -> None:
+        """Subscribe to a device event and register cleanup on removal."""
+        subscribe = self.device.subscribe_once if once else self.device.subscribe
+        registered_callback = subscribe(key, callback_reference)
+
+        @callback
+        def _unsubscribe() -> None:
+            """Unsubscribe callback on entity removal."""
+            self.device.unsubscribe(key, registered_callback)
+
+        self.async_on_remove(_unsubscribe)
 
     @override
     async def async_added_to_hass(self) -> None:
@@ -191,19 +209,11 @@ class EcomaxEntity(Entity):
             await _async_set_available(value)
             await handler(value)
         else:
-            self._startup_callback = self.device.subscribe_once(
-                description.key, _async_set_available
+            self._subscribe_with_cleanup(
+                description.key, _async_set_available, once=True
             )
 
-        self.device.subscribe(description.key, handler)
-
-    @override
-    async def async_will_remove_from_hass(self) -> None:
-        """Unsubscribe from events."""
-        self.device.unsubscribe(self.entity_description.key, self.async_update)
-        if self._startup_callback is not None:
-            self.device.unsubscribe(self.entity_description.key, self._startup_callback)
-            self._startup_callback = None
+        self._subscribe_with_cleanup(description.key, handler)
 
     @property
     @override
@@ -387,18 +397,8 @@ class RegdataEntity(EcomaxEntity):
             await async_set_available(self.device.data[ATTR_REGDATA])
             await handler(self.device.data[ATTR_REGDATA])
 
-        self._startup_callback = self.device.subscribe_once(
-            ATTR_REGDATA, async_set_available
-        )
-        self.device.subscribe(ATTR_REGDATA, handler)
-
-    @override
-    async def async_will_remove_from_hass(self) -> None:
-        """Unsubscribe from regdata event."""
-        self.device.unsubscribe(ATTR_REGDATA, self.async_update)
-        if self._startup_callback is not None:
-            self.device.unsubscribe(ATTR_REGDATA, self._startup_callback)
-            self._startup_callback = None
+        self._subscribe_with_cleanup(ATTR_REGDATA, async_set_available, once=True)
+        self._subscribe_with_cleanup(ATTR_REGDATA, handler)
 
 
 @callback
@@ -444,27 +444,16 @@ def _is_entity_ready(entity: EcomaxEntity, existing_unique_ids: set[str]) -> boo
 
 @callback
 def _subscribe_entity_registration(
-    hass: HomeAssistant,
-    config_entry: PlumEcomaxConfigEntry,
     entity: EcomaxEntity,
     async_add_entities: AddEntitiesCallback,
 ) -> tuple[Device, str, EventCallback]:
     """Subscribe a deferred entity to be registered on first key arrival."""
-    key = entity.entity_description.key
-
-    async def _async_add_when_stored() -> None:
-        """Wait until EventManager stores the key in device.data, then add."""
-        await entity.device.wait_for(key)
-        async_add_entities([entity])
 
     async def _async_add_entity(_value: Any) -> None:
-        """Schedule entity addition once its backing key is dispatched."""
-        config_entry.async_create_background_task(
-            hass,
-            _async_add_when_stored(),
-            name=f"{DOMAIN}_add_{entity.unique_id}",
-        )
+        """Register deferred entity once its backing key is stored."""
+        async_add_entities([entity])
 
+    key = entity.entity_description.key
     callback_reference = entity.device.subscribe_once(key, _async_add_entity)
     return (entity.device, key, callback_reference)
 
@@ -502,9 +491,7 @@ def async_register_entities(
             ready_entities.append(entity)
         else:
             pending_registrations.append(
-                _subscribe_entity_registration(
-                    hass, config_entry, entity, async_add_entities
-                )
+                _subscribe_entity_registration(entity, async_add_entities)
             )
 
     if ready_entities:
@@ -566,27 +553,12 @@ def async_register_sub_device_entities(
             platform_domain=platform_domain,
         )
 
-    async def _async_register_when_stored(
-        sub_devices: dict[int, Device],
-    ) -> None:
-        """Wait until sub-devices are stored in device.data, then register."""
-        await connection.device.wait_for(sub_device_key)
-        _register_new_sub_devices(sub_devices)
-
     async def _async_on_sub_devices(sub_devices: dict[int, Device]) -> None:
         """Handle sub-device discovery events."""
         if not sub_devices:
             return
 
-        if sub_device_key in connection.device.data:
-            _register_new_sub_devices(sub_devices)
-            return
-
-        config_entry.async_create_background_task(
-            hass,
-            _async_register_when_stored(sub_devices),
-            name=f"{DOMAIN}_sub_devices_{sub_device_key}",
-        )
+        _register_new_sub_devices(sub_devices)
 
     if sub_devices := connection.device.get_nowait(sub_device_key):
         _register_new_sub_devices(sub_devices)

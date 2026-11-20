@@ -5,7 +5,8 @@ from collections.abc import Callable
 from typing import Any
 from unittest.mock import AsyncMock, Mock, call, patch
 
-from homeassistant.core import HomeAssistant
+from homeassistant.const import Platform
+from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_platform, entity_registry as er
 from homeassistant.helpers.entity import DeviceInfo
 from pyplumio.devices.ecomax import EcoMAX
@@ -18,6 +19,7 @@ from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.plum_ecomax.connection import EcomaxConnection
 from custom_components.plum_ecomax.const import (
+    ATTR_ENTITIES,
     ATTR_MIXERS,
     ATTR_REGDATA,
     ATTR_THERMOSTATS,
@@ -36,7 +38,9 @@ from custom_components.plum_ecomax.entity import (
 )
 
 
-async def test_base_entity(ecomax_p: EcoMAX, config_entry: MockConfigEntry) -> None:
+async def test_base_entity(
+    hass: HomeAssistant, ecomax_p: EcoMAX, config_entry: MockConfigEntry
+) -> None:
     """Test base entity."""
     mock_connection = Mock(spec=EcomaxConnection)
     mock_connection.device = ecomax_p
@@ -52,24 +56,32 @@ async def test_base_entity(ecomax_p: EcoMAX, config_entry: MockConfigEntry) -> N
             filter_fn=Mock(return_value=mock_filter),
         ),
     )
+    entity.hass = hass
+    entity.entity_id = "sensor.test_heating_temp"
 
     # Test adding entity to hass.
     with patch.object(
-        mock_connection.device, "subscribe", create=True
+        mock_connection.device,
+        "subscribe",
+        wraps=mock_connection.device.subscribe,
     ) as mock_subscribe:
         await entity.async_added_to_hass()
 
     mock_filter.assert_called_once()
     mock_subscribe.assert_has_calls([call("heating_temp", mock_filter)])
 
-    # Test removing entity from the hass.
-    with (
-        patch.object(EcomaxEntity, "async_update") as mock_async_update,
-        patch.object(mock_connection.device, "unsubscribe") as mock_unsubscribe,
-    ):
-        await entity.async_will_remove_from_hass()
+    # Test removing entity from hass.
+    with patch.object(
+        mock_connection.device,
+        "unsubscribe",
+        wraps=mock_connection.device.unsubscribe,
+    ) as mock_unsubscribe:
+        await entity.async_remove()
 
-    mock_unsubscribe.assert_called_once_with("heating_temp", mock_async_update)
+    mock_unsubscribe.assert_called_once_with("heating_temp", mock_filter)
+    mock_filter.reset_mock()
+    await ecomax_p.dispatch("heating_temp", 45.0)
+    mock_filter.assert_not_called()
 
     # Test device property.
     assert entity.device == mock_connection.device
@@ -273,29 +285,6 @@ async def test_async_register_entities_deferred_unload_cleanup(
 
 
 @pytest.mark.usefixtures("ecomax_p")
-async def test_async_register_entities_cancels_background_task_on_unload(
-    hass: HomeAssistant,
-    connection: EcomaxConnection,
-    config_entry: MockConfigEntry,
-    setup_config_entry,
-) -> None:
-    """Test scheduled deferred add background task is cancelled on unload."""
-    del connection.device._data[ATTR_HEATING_TEMP]
-    with (
-        patch("custom_components.plum_ecomax.connection.EcomaxConnection.async_setup"),
-        patch("custom_components.plum_ecomax.async_migrate_entry", return_value=True),
-    ):
-        await setup_config_entry()
-
-    await connection.device.dispatch(ATTR_HEATING_TEMP, 55.0)
-    assert await hass.config_entries.async_unload(config_entry.entry_id)
-    await hass.async_block_till_done()
-
-    entity_registry = er.async_get(hass)
-    assert entity_registry.async_get("sensor.ecomax_heating_temperature") is None
-
-
-@pytest.mark.usefixtures("ecomax_p")
 async def test_config_entry_unload_cleans_pending_registrations(
     hass: HomeAssistant,
     connection: EcomaxConnection,
@@ -322,50 +311,167 @@ async def test_config_entry_unload_cleans_pending_registrations(
 
 
 async def test_entity_unsubscribes_startup_callback_on_remove(
-    ecomax_p: EcoMAX, config_entry: MockConfigEntry
+    hass: HomeAssistant, ecomax_p: EcoMAX, config_entry: MockConfigEntry
 ) -> None:
-    """Test EcomaxEntity and RegdataEntity unsubscribe startup callbacks on remove."""
+    """Test EcomaxEntity and RegdataEntity unsubscribe all callbacks on remove."""
     mock_connection = Mock(spec=EcomaxConnection)
     mock_connection.device = ecomax_p
     mock_connection.entry = config_entry
     mock_connection.connected = Mock(spec=asyncio.Event)
     mock_connection.connected.is_set.return_value = True
 
+    entity_filter = AsyncMock(spec=Filter)
     entity = EcomaxEntity(
         connection=mock_connection,
-        description=EcomaxEntityDescription(key="missing_sensor", name="Missing"),
+        description=EcomaxEntityDescription(
+            key="missing_sensor",
+            name="Missing",
+            filter_fn=Mock(return_value=entity_filter),
+        ),
     )
-    await entity.async_added_to_hass()
-    startup_callback = entity._startup_callback
-    assert startup_callback is not None
+    entity.hass = hass
+    entity.entity_id = "sensor.test_missing_sensor"
+
+    startup_callbacks: list[Any] = []
+    original_subscribe_once = ecomax_p.subscribe_once
+
+    def _capture_subscribe_once(name: str, callback: Any) -> Any:
+        callback_reference = original_subscribe_once(name, callback)
+        startup_callbacks.append(callback_reference)
+        return callback_reference
+
+    with patch.object(ecomax_p, "subscribe_once", side_effect=_capture_subscribe_once):
+        await entity.async_added_to_hass()
+
+    assert len(startup_callbacks) == 1
+    startup_callback = startup_callbacks[0]
 
     with patch.object(
         ecomax_p, "unsubscribe", wraps=ecomax_p.unsubscribe
     ) as mock_unsubscribe:
-        await entity.async_will_remove_from_hass()
+        await entity.async_remove()
 
-    assert entity._startup_callback is None
+    assert mock_unsubscribe.call_count == 2
     mock_unsubscribe.assert_any_call("missing_sensor", startup_callback)
+    mock_unsubscribe.assert_any_call("missing_sensor", entity_filter)
     await ecomax_p.dispatch("missing_sensor", 123)
     assert not entity.available
+    entity_filter.assert_not_called()
 
+    regdata_filter = AsyncMock(spec=Filter)
     regdata_entity = RegdataEntity(
         connection=mock_connection,
-        description=EcomaxEntityDescription(key="9001", name="Regdata 9001"),
+        description=EcomaxEntityDescription(
+            key="9001",
+            name="Regdata 9001",
+            filter_fn=Mock(return_value=regdata_filter),
+        ),
     )
-    await regdata_entity.async_added_to_hass()
-    regdata_startup_callback = regdata_entity._startup_callback
-    assert regdata_startup_callback is not None
+    regdata_entity.hass = hass
+    regdata_entity.entity_id = "sensor.test_regdata_9001"
+
+    with patch.object(ecomax_p, "subscribe_once", side_effect=_capture_subscribe_once):
+        await regdata_entity.async_added_to_hass()
+
+    assert len(startup_callbacks) == 2
+    regdata_startup_callback = startup_callbacks[1]
 
     with patch.object(
         ecomax_p, "unsubscribe", wraps=ecomax_p.unsubscribe
     ) as mock_unsubscribe:
-        await regdata_entity.async_will_remove_from_hass()
+        await regdata_entity.async_remove()
 
-    assert regdata_entity._startup_callback is None
+    assert mock_unsubscribe.call_count == 2
     mock_unsubscribe.assert_any_call(ATTR_REGDATA, regdata_startup_callback)
+    mock_unsubscribe.assert_any_call(ATTR_REGDATA, regdata_filter)
     await ecomax_p.dispatch(ATTR_REGDATA, {9001: 42})
     assert not regdata_entity.available
+    regdata_filter.assert_not_called()
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_config_entry_unload_after_startup_callbacks_fire(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_config_entry,
+) -> None:
+    """Test unloading cleans up EcomaxEntity and RegdataEntity after subscribe_once fires."""
+    del connection.device._data[ATTR_HEATING_TEMP]
+    entity_registry = er.async_get(hass)
+    entity_registry.async_get_or_create(
+        Platform.SENSOR,
+        DOMAIN,
+        "TEST-heating_temp",
+        config_entry=config_entry,
+        suggested_object_id="ecomax_heating_temperature",
+    )
+
+    with (
+        patch("custom_components.plum_ecomax.connection.EcomaxConnection.async_setup"),
+        patch("custom_components.plum_ecomax.async_migrate_entry", return_value=True),
+    ):
+        await setup_config_entry(
+            {
+                ATTR_ENTITIES: {
+                    Platform.SENSOR: {
+                        "9001": {
+                            "name": "Regdata 9001",
+                            "key": "9001",
+                            "source_device": ATTR_REGDATA,
+                        }
+                    }
+                }
+            }
+        )
+
+    heating_entity_id = "sensor.ecomax_heating_temperature"
+    regdata_entity_id = "sensor.ecomax_regdata_9001"
+    assert isinstance(state := hass.states.get(heating_entity_id), State)
+    assert state.state == "unavailable"
+    assert isinstance(state := hass.states.get(regdata_entity_id), State)
+    assert state.state == "unavailable"
+
+    # Dispatch values so both subscribe_once callbacks fire and auto-unsubscribe.
+    await connection.device.dispatch(ATTR_HEATING_TEMP, 55.0)
+    await connection.device.dispatch(ATTR_REGDATA, {9001: 42.0})
+    await hass.async_block_till_done()
+
+    assert isinstance(state := hass.states.get(heating_entity_id), State)
+    assert state.state == "55.0"
+    assert isinstance(state := hass.states.get(regdata_entity_id), State)
+    assert state.state == "42.0"
+
+    unsubscribe_results: list[tuple[str, bool]] = []
+    original_unsubscribe = connection.device.unsubscribe
+
+    def _record_unsubscribe(name: str, callback: Any) -> bool:
+        removed = original_unsubscribe(name, callback)
+        unsubscribe_results.append((name, removed))
+        return removed
+
+    with patch.object(
+        connection.device, "unsubscribe", side_effect=_record_unsubscribe
+    ):
+        assert await hass.config_entries.async_unload(config_entry.entry_id)
+        await hass.async_block_till_done()
+
+    heating_unsubscribes = [
+        removed for name, removed in unsubscribe_results if name == ATTR_HEATING_TEMP
+    ]
+    regdata_unsubscribes = [
+        removed for name, removed in unsubscribe_results if name == ATTR_REGDATA
+    ]
+    assert sorted(heating_unsubscribes) == [False, True]
+    assert sorted(regdata_unsubscribes) == [False, True]
+
+    await connection.device.dispatch(ATTR_HEATING_TEMP, 60.0)
+    await connection.device.dispatch(ATTR_REGDATA, {9001: 99.0})
+    await hass.async_block_till_done()
+    assert isinstance(state := hass.states.get(heating_entity_id), State)
+    assert state.state == "unavailable"
+    assert isinstance(state := hass.states.get(regdata_entity_id), State)
+    assert state.state == "unavailable"
 
 
 async def test_async_register_entities_domain_scoped_registry_lookup(
@@ -427,10 +533,10 @@ async def test_async_register_entities_domain_scoped_registry_lookup(
     mock_add_entities.assert_called_once_with([cross_domain_entity])
 
 
-async def test_async_register_entities_waits_for_store_when_subscriber_yields(
+async def test_async_register_entities_stores_key_before_deferred_add(
     hass: HomeAssistant, ecomax_p: EcoMAX, config_entry: MockConfigEntry
 ) -> None:
-    """Test deferred registration awaits wait_for(key) if another subscriber yields."""
+    """Test PyPlumIO stores dispatched key in device.data before deferred add runs."""
     mock_connection = Mock(spec=EcomaxConnection)
     mock_connection.device = ecomax_p
     mock_connection.entry = config_entry
@@ -439,15 +545,15 @@ async def test_async_register_entities_waits_for_store_when_subscriber_yields(
     deferred_entity = EcomaxEntity(
         connection=mock_connection,
         description=EcomaxEntityDescription(
-            key="yielding_key",
-            name="Yielding key",
+            key="deferred_store_key",
+            name="Deferred store key",
         ),
     )
 
     saw_key_in_data: list[bool] = []
 
     def _record_add(entities: list[EcomaxEntity]) -> None:
-        saw_key_in_data.append("yielding_key" in ecomax_p.data)
+        saw_key_in_data.append("deferred_store_key" in ecomax_p.data)
 
     mock_add_entities = Mock(side_effect=_record_add)
     async_register_entities(
@@ -457,29 +563,9 @@ async def test_async_register_entities_waits_for_store_when_subscriber_yields(
         mock_add_entities,
     )
 
-    subscriber_started = asyncio.Event()
-    release_subscriber = asyncio.Event()
+    await ecomax_p.dispatch("deferred_store_key", 99)
+    await hass.async_block_till_done()
 
-    async def _yielding_subscriber(_value: Any) -> None:
-        subscriber_started.set()
-        await release_subscriber.wait()
-
-    ecomax_p.subscribe("yielding_key", _yielding_subscriber)
-
-    with patch.object(ecomax_p, "wait_for", wraps=ecomax_p.wait_for) as mock_wait_for:
-        dispatch_task = hass.async_create_background_task(
-            ecomax_p.dispatch("yielding_key", 99),
-            name="test_yielding_dispatch",
-        )
-        await subscriber_started.wait()
-        await hass.async_block_till_done()
-        mock_add_entities.assert_not_called()
-
-        release_subscriber.set()
-        await dispatch_task
-        await hass.async_block_till_done(wait_background_tasks=True)
-
-    mock_wait_for.assert_awaited_once_with("yielding_key")
     mock_add_entities.assert_called_once_with([deferred_entity])
     assert saw_key_in_data == [True]
 
@@ -572,14 +658,21 @@ async def test_async_register_sub_device_entities(
     await hass.async_block_till_done()
     mock_add_entities.assert_not_called()
 
-    # Also test deferred sub-device key when absent at setup and yielding subscriber
-    # holds EventManager.dispatch() open until wait_for completes, plus empty entities.
+    # Also test deferred sub-device key when absent at setup, confirming
+    # ATTR_THERMOSTATS is already stored in ecomax_p.data inside add_entities.
     thermostat_0 = Thermostat(
         write_queue=Mock(spec=asyncio.Queue), parent=ecomax_p, index=0
     )
     await thermostat_0.load({"current_temp": 21.0})
 
-    thermostat_add_entities = Mock()
+    saw_thermostats_in_data: list[bool] = []
+    thermostat_indexes: list[int] = []
+
+    def _record_thermostat_add(entities: list[ThermostatEntity]) -> None:
+        saw_thermostats_in_data.append(ATTR_THERMOSTATS in ecomax_p.data)
+        thermostat_indexes.extend(entity.index for entity in entities)
+
+    thermostat_add_entities = Mock(side_effect=_record_thermostat_add)
     async_register_sub_device_entities(
         hass,
         config_entry,
@@ -597,31 +690,12 @@ async def test_async_register_sub_device_entities(
     )
     thermostat_add_entities.assert_not_called()
 
-    thermostat_subscriber_started = asyncio.Event()
-    release_thermostat_subscriber = asyncio.Event()
+    await ecomax_p.dispatch(ATTR_THERMOSTATS, {0: thermostat_0})
+    await hass.async_block_till_done()
 
-    async def _yielding_thermostat_subscriber(_value: Any) -> None:
-        thermostat_subscriber_started.set()
-        await release_thermostat_subscriber.wait()
-
-    ecomax_p.subscribe(ATTR_THERMOSTATS, _yielding_thermostat_subscriber)
-
-    with patch.object(ecomax_p, "wait_for", wraps=ecomax_p.wait_for) as mock_wait_for:
-        dispatch_task = hass.async_create_background_task(
-            ecomax_p.dispatch(ATTR_THERMOSTATS, {0: thermostat_0}),
-            name="test_thermostat_dispatch",
-        )
-        await thermostat_subscriber_started.wait()
-        await hass.async_block_till_done()
-        thermostat_add_entities.assert_not_called()
-
-        release_thermostat_subscriber.set()
-        await dispatch_task
-        await hass.async_block_till_done(wait_background_tasks=True)
-
-    mock_wait_for.assert_awaited_once_with(ATTR_THERMOSTATS)
     assert thermostat_add_entities.call_count == 1
-    assert [entity.index for entity in thermostat_add_entities.call_args[0][0]] == [0]
+    assert thermostat_indexes == [0]
+    assert saw_thermostats_in_data == [True]
 
     # Empty custom entities when new sub-device index arrives skips registration.
     empty_add_entities = Mock()
