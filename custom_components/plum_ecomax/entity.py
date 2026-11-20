@@ -4,7 +4,7 @@ from collections.abc import Callable, Generator, Iterable
 from contextlib import suppress
 from dataclasses import dataclass
 from functools import cached_property, partial
-from typing import Any, Final, Literal, cast, final, overload, override
+from typing import Any, Final, Literal, NewType, cast, final, overload, override
 
 from homeassistant.const import CONF_UNIT_OF_MEASUREMENT, Platform
 from homeassistant.core import HomeAssistant, callback
@@ -47,6 +47,9 @@ from .const import (
 ALL: Final = "all"
 
 type EntityRegistration = tuple[Device, str, EventCallback]
+
+UndefinedType = NewType("UndefinedType", object)
+Undefined = UndefinedType(object())
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -199,23 +202,25 @@ class EcomaxEntity(Entity):
     @override
     async def async_added_to_hass(self) -> None:
         """Subscribe to events."""
-        description = self.entity_description
-        handler = description.filter_fn(self.async_update)
+        key = self._event_key
+        async_update = self.entity_description.filter_fn(self.async_update)
 
-        async def _async_set_available(value: Any = None) -> None:
-            """Mark entity as available."""
-            self._attr_available = True
-
-        if description.key in self.device.data:
-            value = self.device.get_nowait(description.key, None)
-            await _async_set_available(value)
-            await handler(value)
+        if (value := self.device.data.get(key, Undefined)) is not Undefined:
+            await self._async_set_available(value)
+            await async_update(value)
         else:
-            self._subscribe_with_cleanup(
-                description.key, _async_set_available, once=True
-            )
+            self._subscribe_with_cleanup(key, self._async_set_available, once=True)
 
-        self._subscribe_with_cleanup(description.key, handler)
+        self._subscribe_with_cleanup(key, async_update)
+
+    async def _async_set_available(self, value: Any = None) -> None:
+        """Mark entity as available."""
+        self._attr_available = True
+
+    @property
+    def _event_key(self) -> str:
+        """Return the device event key to subscribe to."""
+        return self.entity_description.key
 
     @property
     @override
@@ -385,22 +390,16 @@ class RegdataEntity(EcomaxEntity):
         super().__init__(connection, description)
 
     @override
-    async def async_added_to_hass(self) -> None:
-        """Subscribe to regdata event."""
-        description = self.entity_description
-        handler = description.filter_fn(self.async_update)
+    async def _async_set_available(self, value: Any = None) -> None:
+        """Mark entity as available."""
+        if isinstance(value, dict) and self._regdata_key in value:
+            self._attr_available = True
 
-        async def async_set_available(regdata: dict[int, Any]) -> None:
-            """Mark entity as available."""
-            if self._regdata_key in regdata:
-                self._attr_available = True
-
-        if ATTR_REGDATA in self.device.data:
-            await async_set_available(self.device.data[ATTR_REGDATA])
-            await handler(self.device.data[ATTR_REGDATA])
-
-        self._subscribe_with_cleanup(ATTR_REGDATA, async_set_available, once=True)
-        self._subscribe_with_cleanup(ATTR_REGDATA, handler)
+    @property
+    @override
+    def _event_key(self) -> str:
+        """Return the device event key to subscribe to."""
+        return ATTR_REGDATA
 
 
 @callback
