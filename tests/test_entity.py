@@ -547,20 +547,37 @@ async def test_entity_unsubscribes_startup_callback_on_remove(
 
     with (
         patch.object(ecomax_p, "subscribe_once", side_effect=_capture_subscribe_once),
-        patch.object(ecomax_p, "subscribe", side_effect=_capture_subscribe),
+        patch.object(
+            ecomax_p, "subscribe", side_effect=_capture_subscribe
+        ) as mock_subscribe,
     ):
         await regdata_entity.async_added_to_hass()
 
-    assert len(startup_unsubscribes) == 2
-    assert len(update_unsubscribes) == 2
+    mock_subscribe.assert_has_calls(
+        [
+            call(ATTR_REGDATA, regdata_entity._async_set_available),
+            call(ATTR_REGDATA, regdata_filter),
+        ]
+    )
+    assert len(startup_unsubscribes) == 1
+    assert len(update_unsubscribes) == 3
 
     await regdata_entity.async_remove()
 
-    startup_unsubscribes[1].assert_called_once_with()
     update_unsubscribes[1].assert_called_once_with()
+    update_unsubscribes[2].assert_called_once_with()
     await ecomax_p.dispatch(ATTR_REGDATA, {9001: 42})
     assert not regdata_entity.available
     regdata_filter.assert_not_called()
+
+    # Non-dict regdata payload marks entity unavailable.
+    non_dict_entity = RegdataEntity(
+        connection=mock_connection,
+        description=EcomaxEntityDescription(key="9001", name="Regdata 9001"),
+    )
+    non_dict_entity._attr_available = True
+    await non_dict_entity._async_set_available(None)
+    assert not non_dict_entity.available
 
 
 @pytest.mark.usefixtures("ecomax_p")
@@ -570,7 +587,7 @@ async def test_config_entry_unload_after_startup_callbacks_fire(
     config_entry: MockConfigEntry,
     setup_config_entry,
 ) -> None:
-    """Test unloading cleans up EcomaxEntity and RegdataEntity after subscribe_once fires."""
+    """Test unloading cleans up EcomaxEntity and RegdataEntity subscriptions."""
     del connection.device._data[ATTR_HEATING_TEMP]
     entity_registry = er.async_get(hass)
     entity_registry.async_get_or_create(
@@ -630,7 +647,7 @@ async def test_config_entry_unload_after_startup_callbacks_fire(
     assert isinstance(state := hass.states.get(regdata_entity_id), State)
     assert state.state == "unavailable"
 
-    # Dispatch values so both subscribe_once callbacks fire and auto-unsubscribe.
+    # Dispatch values so startup availability and update callbacks run.
     await connection.device.dispatch(ATTR_HEATING_TEMP, 55.0)
     await connection.device.dispatch(ATTR_REGDATA, {9001: 42.0})
     await hass.async_block_till_done()
@@ -642,16 +659,16 @@ async def test_config_entry_unload_after_startup_callbacks_fire(
 
     assert len(startup_unsubscribes[ATTR_HEATING_TEMP]) == 1
     assert len(update_unsubscribes[ATTR_HEATING_TEMP]) == 1
-    assert len(startup_unsubscribes[ATTR_REGDATA]) == 1
-    assert len(update_unsubscribes[ATTR_REGDATA]) == 1
+    assert ATTR_REGDATA not in startup_unsubscribes
+    assert len(update_unsubscribes[ATTR_REGDATA]) == 2
 
     assert await hass.config_entries.async_unload(config_entry.entry_id)
     await hass.async_block_till_done()
 
     startup_unsubscribes[ATTR_HEATING_TEMP][0].assert_called_once_with()
     update_unsubscribes[ATTR_HEATING_TEMP][0].assert_called_once_with()
-    startup_unsubscribes[ATTR_REGDATA][0].assert_called_once_with()
     update_unsubscribes[ATTR_REGDATA][0].assert_called_once_with()
+    update_unsubscribes[ATTR_REGDATA][1].assert_called_once_with()
 
     await connection.device.dispatch(ATTR_HEATING_TEMP, 60.0)
     await connection.device.dispatch(ATTR_REGDATA, {9001: 99.0})
@@ -660,6 +677,69 @@ async def test_config_entry_unload_after_startup_callbacks_fire(
     assert state.state == "unavailable"
     assert isinstance(state := hass.states.get(regdata_entity_id), State)
     assert state.state == "unavailable"
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_regdata_entity_availability_tracks_key_presence(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_config_entry,
+) -> None:
+    """Test RegdataEntity availability tracks key presence when regdata exists."""
+    connection.device._data[ATTR_REGDATA] = {1: 11}
+    with (
+        patch("custom_components.plum_ecomax.connection.EcomaxConnection.async_setup"),
+        patch("custom_components.plum_ecomax.async_migrate_entry", return_value=True),
+    ):
+        await setup_config_entry(
+            {
+                ATTR_ENTITIES: {
+                    Platform.SENSOR: {
+                        "9001": {
+                            "name": "Regdata 9001",
+                            "key": "9001",
+                            "source_device": ATTR_REGDATA,
+                        }
+                    },
+                    Platform.BINARY_SENSOR: {
+                        "9000": {
+                            "name": "Regdata 9000",
+                            "key": "9000",
+                            "source_device": ATTR_REGDATA,
+                        }
+                    },
+                }
+            }
+        )
+
+    regdata_sensor_id = "sensor.ecomax_regdata_9001"
+    regdata_binary_id = "binary_sensor.ecomax_regdata_9000"
+    assert isinstance(state := hass.states.get(regdata_sensor_id), State)
+    assert state.state == "unavailable"
+    assert isinstance(state := hass.states.get(regdata_binary_id), State)
+    assert state.state == "unavailable"
+
+    await connection.device.dispatch(ATTR_REGDATA, {1: 11, 9001: 42.0, 9000: True})
+    await hass.async_block_till_done()
+    assert isinstance(state := hass.states.get(regdata_sensor_id), State)
+    assert state.state == "42.0"
+    assert isinstance(state := hass.states.get(regdata_binary_id), State)
+    assert state.state == "on"
+
+    await connection.device.dispatch(ATTR_REGDATA, {1: 11})
+    await hass.async_block_till_done()
+    assert isinstance(state := hass.states.get(regdata_sensor_id), State)
+    assert state.state == "unavailable"
+    assert isinstance(state := hass.states.get(regdata_binary_id), State)
+    assert state.state == "unavailable"
+
+    await connection.device.dispatch(ATTR_REGDATA, {1: 11, 9001: 42.0, 9000: False})
+    await hass.async_block_till_done()
+    assert isinstance(state := hass.states.get(regdata_sensor_id), State)
+    assert state.state == "42.0"
+    assert isinstance(state := hass.states.get(regdata_binary_id), State)
+    assert state.state == "off"
 
 
 async def test_async_register_entities_domain_scoped_registry_lookup(

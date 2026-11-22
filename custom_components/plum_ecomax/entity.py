@@ -165,7 +165,6 @@ def async_get_custom_entities[DescriptorT: EcomaxEntityDescription](
 class EcomaxEntity(Entity):
     """Represents an ecoMAX entity."""
 
-    _always_available = False
     _attr_available = False
     _attr_has_entity_name = True
     _attr_should_poll = False
@@ -188,12 +187,17 @@ class EcomaxEntity(Entity):
         if (value := self.device.data.get(key, Undefined)) is not Undefined:
             await self._async_set_available(value)
             await async_update(value)
-        else:
+
+        self._subscribe_availability(key)
+        self.async_on_remove(self.device.subscribe(key, async_update))
+
+    @callback
+    def _subscribe_availability(self, key: str) -> None:
+        """Subscribe to availability updates."""
+        if not self._attr_available:
             self.async_on_remove(
                 self.device.subscribe_once(key, self._async_set_available)
             )
-
-        self.async_on_remove(self.device.subscribe(key, async_update))
 
     async def _async_set_available(self, value: Any = None) -> None:
         """Mark entity as available."""
@@ -371,11 +375,16 @@ class RegdataEntity(EcomaxEntity):
         self._regdata_key = int(description.key)
         super().__init__(connection, description)
 
+    @callback
+    @override
+    def _subscribe_availability(self, key: str) -> None:
+        """Subscribe to availability updates."""
+        self.async_on_remove(self.device.subscribe(key, self._async_set_available))
+
     @override
     async def _async_set_available(self, value: Any = None) -> None:
         """Mark entity as available."""
-        if isinstance(value, dict) and self._regdata_key in value:
-            self._attr_available = True
+        self._attr_available = isinstance(value, dict) and self._regdata_key in value
 
     @property
     @override
