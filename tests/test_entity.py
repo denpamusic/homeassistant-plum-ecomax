@@ -5,6 +5,7 @@ from collections.abc import Callable
 from typing import Any
 from unittest.mock import AsyncMock, Mock, call, patch
 
+from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_platform, entity_registry as er
@@ -160,6 +161,7 @@ async def test_async_register_entities_immediate_and_deferred(
     hass: HomeAssistant, ecomax_p: EcoMAX, config_entry: MockConfigEntry
 ) -> None:
     """Test immediate and deferred entity registration."""
+    config_entry.mock_state(hass, ConfigEntryState.LOADED)
     mock_connection = Mock(spec=EcomaxConnection)
     mock_connection.device = ecomax_p
     mock_connection.entry = config_entry
@@ -248,6 +250,7 @@ async def test_async_register_entities_deferred_unload_cleanup(
     hass: HomeAssistant, ecomax_p: EcoMAX, config_entry: MockConfigEntry
 ) -> None:
     """Test pending deferred registrations are unsubscribed on unload."""
+    config_entry.mock_state(hass, ConfigEntryState.LOADED)
     mock_connection = Mock(spec=EcomaxConnection)
     mock_connection.device = ecomax_p
     mock_connection.entry = config_entry
@@ -324,6 +327,151 @@ async def test_config_entry_unload_cleans_pending_registrations(
     await connection.device.dispatch(ATTR_HEATING_TEMP, 55.0)
     await hass.async_block_till_done()
     assert entity_registry.async_get("sensor.ecomax_heating_temperature") is None
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_config_entry_unload_ignores_dispatches_during_close(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_config_entry,
+) -> None:
+    """Test dispatches during connection.close() do not add zombie entities."""
+    connection.device._data.pop(ATTR_HEATING_TEMP, None)
+    connection.device._data.pop(ATTR_MIXERS, None)
+    with (
+        patch("custom_components.plum_ecomax.connection.EcomaxConnection.async_setup"),
+        patch("custom_components.plum_ecomax.async_migrate_entry", return_value=True),
+    ):
+        await setup_config_entry()
+
+    entity_registry = er.async_get(hass)
+    assert entity_registry.async_get("sensor.ecomax_heating_temperature") is None
+    assert hass.states.get("sensor.ecomax_heating_temperature") is None
+
+    mixer_0 = Mixer(
+        write_queue=Mock(spec=asyncio.Queue), parent=connection.device, index=0
+    )
+    await mixer_0.load({"current_temp": 35.0, "pump": True})
+
+    runtime_connection = config_entry.runtime_data.connection
+    original_close = runtime_connection.close
+    close_states: list[ConfigEntryState] = []
+
+    async def _close_with_dispatches() -> None:
+        close_states.append(config_entry.state)
+        assert config_entry.state is ConfigEntryState.UNLOAD_IN_PROGRESS
+        await connection.device.dispatch(ATTR_HEATING_TEMP, 55.0)
+        await connection.device.dispatch(ATTR_MIXERS, {0: mixer_0})
+        await connection.device.wait_until_done()
+        await original_close()
+
+    with patch.object(
+        runtime_connection,
+        "close",
+        side_effect=_close_with_dispatches,
+        create=True,
+    ):
+        assert await hass.config_entries.async_unload(config_entry.entry_id)
+        await hass.async_block_till_done()
+
+    assert close_states == [ConfigEntryState.UNLOAD_IN_PROGRESS]
+    assert config_entry.state is ConfigEntryState.NOT_LOADED
+    assert hass.states.get("sensor.ecomax_heating_temperature") is None
+    assert entity_registry.async_get("sensor.ecomax_heating_temperature") is None
+    assert not any(
+        "mixer-0" in registry_entry.unique_id
+        for registry_entry in er.async_entries_for_config_entry(
+            entity_registry, config_entry.entry_id
+        )
+    )
+    assert hass.states.get("sensor.ecomax_mixer_1_mixer_temperature") is None
+    assert hass.states.get("binary_sensor.ecomax_mixer_1_mixer_pump") is None
+
+
+async def test_entity_registration_respects_config_entry_state(
+    hass: HomeAssistant, ecomax_p: EcoMAX, config_entry: MockConfigEntry
+) -> None:
+    """Test deferred and sub-device registration only run for active states."""
+    mock_connection = Mock(spec=EcomaxConnection)
+    mock_connection.device = ecomax_p
+    mock_connection.entry = config_entry
+    mock_connection.uid = "TEST"
+
+    class _TestMixerEntity(MixerEntity):
+        def __init__(
+            self,
+            connection: EcomaxConnection,
+            description: EcomaxEntityDescription,
+            index: int,
+        ) -> None:
+            self.index = index
+            super().__init__(connection, description)
+
+    deferred_active = EcomaxEntity(
+        connection=mock_connection,
+        description=EcomaxEntityDescription(
+            key="setup_in_progress_key",
+            name="Setup in progress key",
+        ),
+    )
+    deferred_inactive = EcomaxEntity(
+        connection=mock_connection,
+        description=EcomaxEntityDescription(
+            key="unload_in_progress_key",
+            name="Unload in progress key",
+        ),
+    )
+
+    config_entry.mock_state(hass, ConfigEntryState.SETUP_IN_PROGRESS)
+    mock_add_entities = Mock()
+    async_register_entities(
+        hass,
+        config_entry,
+        (deferred_active, deferred_inactive),
+        mock_add_entities,
+    )
+
+    mixer_0 = Mixer(write_queue=Mock(spec=asyncio.Queue), parent=ecomax_p, index=0)
+    await mixer_0.load({"pump": True})
+    mixer_1 = Mixer(write_queue=Mock(spec=asyncio.Queue), parent=ecomax_p, index=1)
+    await mixer_1.load({"pump": True})
+
+    mixer_add_entities = Mock()
+    async_register_sub_device_entities(
+        hass,
+        config_entry,
+        mock_connection,
+        ATTR_MIXERS,
+        mixer_add_entities,
+        entities_fn=lambda: [
+            _TestMixerEntity(
+                mock_connection,
+                EcomaxEntityDescription(key="pump", name=f"Mixer {index} pump"),
+                index,
+            )
+            for index in ecomax_p.mixers
+        ],
+    )
+
+    # SETUP_IN_PROGRESS allows deferred entity and sub-device registration.
+    await ecomax_p.dispatch("setup_in_progress_key", 1)
+    await ecomax_p.dispatch(ATTR_MIXERS, {0: mixer_0})
+    await hass.async_block_till_done()
+    mock_add_entities.assert_called_once_with([deferred_active])
+    assert mixer_add_entities.call_count == 1
+    assert [entity.index for entity in mixer_add_entities.call_args[0][0]] == [0]
+
+    # UNLOAD_IN_PROGRESS blocks deferred entity and sub-device registration.
+    mock_add_entities.reset_mock()
+    mixer_add_entities.reset_mock()
+    config_entry.mock_state(hass, ConfigEntryState.UNLOAD_IN_PROGRESS)
+    await ecomax_p.dispatch("unload_in_progress_key", 2)
+    ecomax_p.mixers[1] = mixer_1
+    await ecomax_p.dispatch(ATTR_MIXERS, ecomax_p.mixers)
+    await hass.async_block_till_done()
+    mock_add_entities.assert_not_called()
+    mixer_add_entities.assert_not_called()
 
 
 async def test_entity_unsubscribes_startup_callback_on_remove(
@@ -518,6 +666,7 @@ async def test_async_register_entities_domain_scoped_registry_lookup(
     hass: HomeAssistant, ecomax_p: EcoMAX, config_entry: MockConfigEntry
 ) -> None:
     """Test registry lookup scopes by current platform domain."""
+    config_entry.mock_state(hass, ConfigEntryState.LOADED)
     mock_connection = Mock(spec=EcomaxConnection)
     mock_connection.device = ecomax_p
     mock_connection.entry = config_entry
@@ -577,6 +726,7 @@ async def test_async_register_entities_stores_key_before_deferred_add(
     hass: HomeAssistant, ecomax_p: EcoMAX, config_entry: MockConfigEntry
 ) -> None:
     """Test PyPlumIO stores dispatched key in device.data before deferred add runs."""
+    config_entry.mock_state(hass, ConfigEntryState.LOADED)
     mock_connection = Mock(spec=EcomaxConnection)
     mock_connection.device = ecomax_p
     mock_connection.entry = config_entry
@@ -614,6 +764,7 @@ async def test_async_register_sub_device_entities(
     hass: HomeAssistant, ecomax_p: EcoMAX, config_entry: MockConfigEntry
 ) -> None:
     """Test reactive sub-device registration, deduplication, and unload cleanup."""
+    config_entry.mock_state(hass, ConfigEntryState.LOADED)
     mock_connection = Mock(spec=EcomaxConnection)
     mock_connection.device = ecomax_p
     mock_connection.entry = config_entry
@@ -759,6 +910,7 @@ async def test_async_register_sub_device_entities_preserves_domain_scope(
     hass: HomeAssistant, ecomax_p: EcoMAX, config_entry: MockConfigEntry
 ) -> None:
     """Test platform_domain captured at setup is preserved on dynamic discovery."""
+    config_entry.mock_state(hass, ConfigEntryState.LOADED)
     mock_connection = Mock(spec=EcomaxConnection)
     mock_connection.device = ecomax_p
     mock_connection.entry = config_entry

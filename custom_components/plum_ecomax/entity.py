@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, Final, Literal, NewType, cast, final, overload, override
 
+from homeassistant.config_entries import ConfigEntryState
 from homeassistant.const import CONF_UNIT_OF_MEASUREMENT, Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import (
@@ -414,6 +415,15 @@ def _async_get_existing_unique_ids(
 
 
 @callback
+def _is_config_entry_active(config_entry: PlumEcomaxConfigEntry) -> bool:
+    """Return whether the config entry can still register entities."""
+    return config_entry.state in (
+        ConfigEntryState.LOADED,
+        ConfigEntryState.SETUP_IN_PROGRESS,
+    )
+
+
+@callback
 def _is_entity_ready(entity: EcomaxEntity, existing_unique_ids: set[str]) -> bool:
     """Return whether an entity should be registered immediately."""
     description = entity.entity_description
@@ -426,12 +436,17 @@ def _is_entity_ready(entity: EcomaxEntity, existing_unique_ids: set[str]) -> boo
 
 @callback
 def _subscribe_entity_registration(
-    entity: EcomaxEntity, async_add_entities: AddEntitiesCallback
+    config_entry: PlumEcomaxConfigEntry,
+    entity: EcomaxEntity,
+    async_add_entities: AddEntitiesCallback,
 ) -> UnsubscribeFunc:
     """Subscribe a deferred entity to be registered on first key arrival."""
 
     async def _async_add_entity(_value: Any) -> None:
         """Register deferred entity once its backing key is stored."""
+        if not _is_config_entry_active(config_entry):
+            return
+
         async_add_entities([entity])
 
     return entity.device.subscribe_once(
@@ -460,7 +475,7 @@ def async_register_entities(
             ready_entities.append(entity)
         else:
             config_entry.async_on_unload(
-                _subscribe_entity_registration(entity, async_add_entities)
+                _subscribe_entity_registration(config_entry, entity, async_add_entities)
             )
 
     if ready_entities:
@@ -519,7 +534,7 @@ def async_register_sub_device_entities(
 
     async def _async_on_sub_devices(sub_devices: dict[int, Device]) -> None:
         """Handle sub-device discovery events."""
-        if not sub_devices:
+        if not sub_devices or not _is_config_entry_active(config_entry):
             return
 
         _register_new_sub_devices(sub_devices)
