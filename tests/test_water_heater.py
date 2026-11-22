@@ -1,6 +1,6 @@
 """Test the water heater platform."""
 
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from freezegun import freeze_time
 from homeassistant.components.climate import ATTR_TARGET_TEMP_STEP
@@ -249,3 +249,78 @@ async def test_water_heater_guards_before_parameters_arrive(
         "Cannot set operation mode before water heater parameters are loaded"
         in caplog.text
     )
+
+
+@pytest.mark.usefixtures("ecomax_p", "water_heater")
+async def test_water_heater_unsubscribes_on_unload(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_config_entry,
+    frozen_time,
+) -> None:
+    """Test unloading config entry unsubscribes all water heater callbacks."""
+    water_heater_keys = {
+        "water_heater_temp",
+        "water_heater_target_temp",
+        "water_heater_work_mode",
+        "water_heater_hysteresis",
+    }
+    unsubscribe_spies: dict[str, Mock] = {}
+    original_subscribe = connection.device.subscribe
+
+    def _capture_subscribe(name: str, callback):
+        unsubscribe = original_subscribe(name, callback)
+        if name not in water_heater_keys:
+            return unsubscribe
+
+        unsubscribe_spy = Mock(wraps=unsubscribe)
+        unsubscribe_spies[name] = unsubscribe_spy
+        return unsubscribe_spy
+
+    with patch.object(connection.device, "subscribe", side_effect=_capture_subscribe):
+        await setup_config_entry()
+
+    assert set(unsubscribe_spies) == water_heater_keys
+
+    assert await hass.config_entries.async_unload(config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    for unsubscribe_spy in unsubscribe_spies.values():
+        unsubscribe_spy.assert_called_once_with()
+
+    with patch(
+        "custom_components.plum_ecomax.water_heater.EcomaxWaterHeater.async_write_ha_state"
+    ) as mock_write_state:
+        frozen_time.move_to("12:00:10")
+        await connection.device.dispatch("water_heater_temp", 52.0)
+        await connection.device.dispatch(
+            "water_heater_target_temp",
+            EcomaxNumber(
+                device=connection.device,
+                values=ParameterValues(value=58, min_value=10, max_value=80),
+                description=EcomaxNumberDescription("water_heater_target_temp"),
+            ),
+        )
+        await connection.device.dispatch(
+            "water_heater_work_mode",
+            EcomaxNumber(
+                device=connection.device,
+                values=ParameterValues(value=1, min_value=0, max_value=2),
+                description=EcomaxNumberDescription("water_heater_work_mode"),
+            ),
+        )
+        await connection.device.dispatch(
+            "water_heater_hysteresis",
+            EcomaxNumber(
+                device=connection.device,
+                values=ParameterValues(value=8, min_value=0, max_value=15),
+                description=EcomaxNumberDescription("water_heater_hysteresis"),
+            ),
+        )
+        await hass.async_block_till_done()
+
+    mock_write_state.assert_not_called()
+    state = hass.states.get("water_heater.ecomax_indirect_water_heater")
+    assert isinstance(state, State)
+    assert state.state == "unavailable"

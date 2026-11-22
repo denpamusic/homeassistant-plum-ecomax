@@ -531,3 +531,64 @@ async def test_thermostat_parameters_refresh_bounds_when_target_name_unchanged(
     assert isinstance(state, State)
     assert state.attributes[ATTR_MIN_TEMP] == 14.0
     assert state.attributes[ATTR_MAX_TEMP] == 26.0
+
+
+@pytest.mark.usefixtures("ecomax_p", "thermostats")
+async def test_thermostat_unsubscribes_on_unload(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    config_entry: MockConfigEntry,
+    setup_config_entry,
+    frozen_time,
+) -> None:
+    """Test unloading config entry unsubscribes all thermostat callbacks."""
+    unsubscribe_spies: dict[str, Mock] = {}
+    original_subscribe = Thermostat.subscribe
+
+    def _capture_subscribe(self: Thermostat, name: str, callback) -> Mock:
+        unsubscribe = original_subscribe(self, name, callback)
+        unsubscribe_spy = Mock(wraps=unsubscribe)
+        unsubscribe_spies[name] = unsubscribe_spy
+        return unsubscribe_spy
+
+    with patch.object(
+        Thermostat, "subscribe", autospec=True, side_effect=_capture_subscribe
+    ):
+        await setup_config_entry()
+
+    expected_keys = {
+        "mode",
+        "state",
+        "contacts",
+        "current_temp",
+        "target_temp",
+        ATTR_THERMOSTAT_PARAMETERS,
+    }
+    assert set(unsubscribe_spies) == expected_keys
+
+    assert await hass.config_entries.async_unload(config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    for unsubscribe_spy in unsubscribe_spies.values():
+        unsubscribe_spy.assert_called_once_with()
+
+    thermostat = connection.device.thermostats[0]
+    with patch(
+        "custom_components.plum_ecomax.climate.EcomaxClimate.async_write_ha_state"
+    ) as mock_write_state:
+        frozen_time.move_to("12:00:10")
+        await thermostat.dispatch("current_temp", 22.5)
+        await thermostat.dispatch("state", HA_TO_EM_MODE[PRESET_ECO])
+        await thermostat.dispatch("contacts", True)
+        await thermostat.dispatch("target_temp", 19.0)
+        await thermostat.dispatch("mode", HA_TO_EM_MODE[PRESET_COMFORT])
+        await thermostat.dispatch(
+            ATTR_THERMOSTAT_PARAMETERS,
+            [(0, ParameterValues(value=2, min_value=0, max_value=7))],
+        )
+        await hass.async_block_till_done()
+
+    mock_write_state.assert_not_called()
+    state = hass.states.get("climate.ecomax_thermostat_1_thermostat")
+    assert isinstance(state, State)
+    assert state.state == "unavailable"

@@ -162,13 +162,7 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
             if name in self.device.data:
                 await handler(self.device.data[name])
 
-            self.device.subscribe(name, handler)
-
-    @override
-    async def async_will_remove_from_hass(self) -> None:
-        """Unsubscribe from thermostat events."""
-        for name, handler in self._callbacks.items():
-            self.device.unsubscribe(name, handler)
+            self.async_on_remove(self.device.subscribe(name, handler))
 
     async def async_update_target_temperature(self, value: float) -> None:
         """Update target temperature."""

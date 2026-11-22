@@ -60,25 +60,30 @@ async def test_base_entity(
     entity.entity_id = "sensor.test_heating_temp"
 
     # Test adding entity to hass.
+    unsubscribe_spies: list[Mock] = []
+    original_subscribe = mock_connection.device.subscribe
+
+    def _capture_subscribe(name: str, callback: Any) -> Any:
+        unsubscribe = original_subscribe(name, callback)
+        unsubscribe_spy = Mock(wraps=unsubscribe)
+        unsubscribe_spies.append(unsubscribe_spy)
+        return unsubscribe_spy
+
     with patch.object(
         mock_connection.device,
         "subscribe",
-        wraps=mock_connection.device.subscribe,
+        side_effect=_capture_subscribe,
     ) as mock_subscribe:
         await entity.async_added_to_hass()
 
     mock_filter.assert_called_once()
     mock_subscribe.assert_has_calls([call("heating_temp", mock_filter)])
+    assert len(unsubscribe_spies) == 1
 
     # Test removing entity from hass.
-    with patch.object(
-        mock_connection.device,
-        "unsubscribe",
-        wraps=mock_connection.device.unsubscribe,
-    ) as mock_unsubscribe:
-        await entity.async_remove()
+    await entity.async_remove()
 
-    mock_unsubscribe.assert_called_once_with("heating_temp", mock_filter)
+    unsubscribe_spies[0].assert_called_once_with()
     mock_filter.reset_mock()
     await ecomax_p.dispatch("heating_temp", 45.0)
     mock_filter.assert_not_called()
@@ -257,10 +262,22 @@ async def test_async_register_entities_deferred_unload_cleanup(
     )
 
     unload_callbacks: list[Callable[[], Any]] = []
-    with patch.object(
-        config_entry,
-        "async_on_unload",
-        side_effect=unload_callbacks.append,
+    unsubscribe_spies: list[Mock] = []
+    original_subscribe_once = ecomax_p.subscribe_once
+
+    def _capture_subscribe_once(name: str, callback: Any) -> Any:
+        unsubscribe = original_subscribe_once(name, callback)
+        unsubscribe_spy = Mock(wraps=unsubscribe)
+        unsubscribe_spies.append(unsubscribe_spy)
+        return unsubscribe_spy
+
+    with (
+        patch.object(ecomax_p, "subscribe_once", side_effect=_capture_subscribe_once),
+        patch.object(
+            config_entry,
+            "async_on_unload",
+            side_effect=unload_callbacks.append,
+        ),
     ):
         mock_add_entities = Mock()
         async_register_entities(
@@ -272,13 +289,12 @@ async def test_async_register_entities_deferred_unload_cleanup(
 
     mock_add_entities.assert_not_called()
     assert len(unload_callbacks) == 1
+    assert len(unsubscribe_spies) == 1
+    assert unload_callbacks[0] is unsubscribe_spies[0]
 
-    with patch.object(
-        ecomax_p, "unsubscribe", wraps=ecomax_p.unsubscribe
-    ) as mock_unsub:
-        unload_callbacks[0]()
+    unload_callbacks[0]()
 
-    mock_unsub.assert_called_once()
+    unsubscribe_spies[0].assert_called_once_with()
     await ecomax_p.dispatch("never_arrived_key", 1)
     await hass.async_block_till_done()
     mock_add_entities.assert_not_called()
@@ -332,28 +348,39 @@ async def test_entity_unsubscribes_startup_callback_on_remove(
     entity.hass = hass
     entity.entity_id = "sensor.test_missing_sensor"
 
-    startup_callbacks: list[Any] = []
+    startup_unsubscribes: list[Mock] = []
+    update_unsubscribes: list[Mock] = []
     original_subscribe_once = ecomax_p.subscribe_once
+    original_subscribe = ecomax_p.subscribe
 
     def _capture_subscribe_once(name: str, callback: Any) -> Any:
-        callback_reference = original_subscribe_once(name, callback)
-        startup_callbacks.append(callback_reference)
-        return callback_reference
+        unsubscribe = original_subscribe_once(name, callback)
+        unsubscribe_spy = Mock(wraps=unsubscribe)
+        startup_unsubscribes.append(unsubscribe_spy)
+        return unsubscribe_spy
 
-    with patch.object(ecomax_p, "subscribe_once", side_effect=_capture_subscribe_once):
+    def _capture_subscribe(name: str, callback: Any) -> Any:
+        unsubscribe = original_subscribe(name, callback)
+        if callback.__name__ == "_call_once":
+            return unsubscribe
+
+        unsubscribe_spy = Mock(wraps=unsubscribe)
+        update_unsubscribes.append(unsubscribe_spy)
+        return unsubscribe_spy
+
+    with (
+        patch.object(ecomax_p, "subscribe_once", side_effect=_capture_subscribe_once),
+        patch.object(ecomax_p, "subscribe", side_effect=_capture_subscribe),
+    ):
         await entity.async_added_to_hass()
 
-    assert len(startup_callbacks) == 1
-    startup_callback = startup_callbacks[0]
+    assert len(startup_unsubscribes) == 1
+    assert len(update_unsubscribes) == 1
 
-    with patch.object(
-        ecomax_p, "unsubscribe", wraps=ecomax_p.unsubscribe
-    ) as mock_unsubscribe:
-        await entity.async_remove()
+    await entity.async_remove()
 
-    assert mock_unsubscribe.call_count == 2
-    mock_unsubscribe.assert_any_call("missing_sensor", startup_callback)
-    mock_unsubscribe.assert_any_call("missing_sensor", entity_filter)
+    startup_unsubscribes[0].assert_called_once_with()
+    update_unsubscribes[0].assert_called_once_with()
     await ecomax_p.dispatch("missing_sensor", 123)
     assert not entity.available
     entity_filter.assert_not_called()
@@ -370,20 +397,19 @@ async def test_entity_unsubscribes_startup_callback_on_remove(
     regdata_entity.hass = hass
     regdata_entity.entity_id = "sensor.test_regdata_9001"
 
-    with patch.object(ecomax_p, "subscribe_once", side_effect=_capture_subscribe_once):
+    with (
+        patch.object(ecomax_p, "subscribe_once", side_effect=_capture_subscribe_once),
+        patch.object(ecomax_p, "subscribe", side_effect=_capture_subscribe),
+    ):
         await regdata_entity.async_added_to_hass()
 
-    assert len(startup_callbacks) == 2
-    regdata_startup_callback = startup_callbacks[1]
+    assert len(startup_unsubscribes) == 2
+    assert len(update_unsubscribes) == 2
 
-    with patch.object(
-        ecomax_p, "unsubscribe", wraps=ecomax_p.unsubscribe
-    ) as mock_unsubscribe:
-        await regdata_entity.async_remove()
+    await regdata_entity.async_remove()
 
-    assert mock_unsubscribe.call_count == 2
-    mock_unsubscribe.assert_any_call(ATTR_REGDATA, regdata_startup_callback)
-    mock_unsubscribe.assert_any_call(ATTR_REGDATA, regdata_filter)
+    startup_unsubscribes[1].assert_called_once_with()
+    update_unsubscribes[1].assert_called_once_with()
     await ecomax_p.dispatch(ATTR_REGDATA, {9001: 42})
     assert not regdata_entity.available
     regdata_filter.assert_not_called()
@@ -407,9 +433,33 @@ async def test_config_entry_unload_after_startup_callbacks_fire(
         suggested_object_id="ecomax_heating_temperature",
     )
 
+    startup_unsubscribes: dict[str, list[Mock]] = {}
+    update_unsubscribes: dict[str, list[Mock]] = {}
+    original_subscribe_once = connection.device.subscribe_once
+    original_subscribe = connection.device.subscribe
+
+    def _capture_subscribe_once(name: str, callback: Any) -> Any:
+        unsubscribe = original_subscribe_once(name, callback)
+        unsubscribe_spy = Mock(wraps=unsubscribe)
+        startup_unsubscribes.setdefault(name, []).append(unsubscribe_spy)
+        return unsubscribe_spy
+
+    def _capture_subscribe(name: str, callback: Any) -> Any:
+        unsubscribe = original_subscribe(name, callback)
+        if callback.__name__ == "_call_once":
+            return unsubscribe
+
+        unsubscribe_spy = Mock(wraps=unsubscribe)
+        update_unsubscribes.setdefault(name, []).append(unsubscribe_spy)
+        return unsubscribe_spy
+
     with (
         patch("custom_components.plum_ecomax.connection.EcomaxConnection.async_setup"),
         patch("custom_components.plum_ecomax.async_migrate_entry", return_value=True),
+        patch.object(
+            connection.device, "subscribe_once", side_effect=_capture_subscribe_once
+        ),
+        patch.object(connection.device, "subscribe", side_effect=_capture_subscribe),
     ):
         await setup_config_entry(
             {
@@ -442,28 +492,18 @@ async def test_config_entry_unload_after_startup_callbacks_fire(
     assert isinstance(state := hass.states.get(regdata_entity_id), State)
     assert state.state == "42.0"
 
-    unsubscribe_results: list[tuple[str, bool]] = []
-    original_unsubscribe = connection.device.unsubscribe
+    assert len(startup_unsubscribes[ATTR_HEATING_TEMP]) == 1
+    assert len(update_unsubscribes[ATTR_HEATING_TEMP]) == 1
+    assert len(startup_unsubscribes[ATTR_REGDATA]) == 1
+    assert len(update_unsubscribes[ATTR_REGDATA]) == 1
 
-    def _record_unsubscribe(name: str, callback: Any) -> bool:
-        removed = original_unsubscribe(name, callback)
-        unsubscribe_results.append((name, removed))
-        return removed
+    assert await hass.config_entries.async_unload(config_entry.entry_id)
+    await hass.async_block_till_done()
 
-    with patch.object(
-        connection.device, "unsubscribe", side_effect=_record_unsubscribe
-    ):
-        assert await hass.config_entries.async_unload(config_entry.entry_id)
-        await hass.async_block_till_done()
-
-    heating_unsubscribes = [
-        removed for name, removed in unsubscribe_results if name == ATTR_HEATING_TEMP
-    ]
-    regdata_unsubscribes = [
-        removed for name, removed in unsubscribe_results if name == ATTR_REGDATA
-    ]
-    assert sorted(heating_unsubscribes) == [False, True]
-    assert sorted(regdata_unsubscribes) == [False, True]
+    startup_unsubscribes[ATTR_HEATING_TEMP][0].assert_called_once_with()
+    update_unsubscribes[ATTR_HEATING_TEMP][0].assert_called_once_with()
+    startup_unsubscribes[ATTR_REGDATA][0].assert_called_once_with()
+    update_unsubscribes[ATTR_REGDATA][0].assert_called_once_with()
 
     await connection.device.dispatch(ATTR_HEATING_TEMP, 60.0)
     await connection.device.dispatch(ATTR_REGDATA, {9001: 99.0})

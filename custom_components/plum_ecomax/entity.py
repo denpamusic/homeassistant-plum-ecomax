@@ -3,7 +3,7 @@
 from collections.abc import Callable, Generator, Iterable
 from contextlib import suppress
 from dataclasses import dataclass
-from functools import cached_property, partial
+from functools import cached_property
 from typing import Any, Final, Literal, NewType, cast, final, overload, override
 
 from homeassistant.const import CONF_UNIT_OF_MEASUREMENT, Platform
@@ -20,7 +20,7 @@ from pyplumio.devices import Device
 from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
 from pyplumio.filters import Filter, on_change, throttle
-from pyplumio.helpers.event_manager import EventCallback
+from pyplumio.helpers.event_manager import UnsubscribeFunc
 from pyplumio.structures.sensor_data import ConnectedModules
 
 from custom_components.plum_ecomax import PlumEcomaxConfigEntry
@@ -45,8 +45,6 @@ from .const import (
 )
 
 ALL: Final = "all"
-
-type EntityRegistration = tuple[Device, str, EventCallback]
 
 UndefinedType = NewType("UndefinedType", object)
 Undefined = UndefinedType(object())
@@ -180,25 +178,6 @@ class EcomaxEntity(Entity):
         self.connection = connection
         self.entity_description = description
 
-    @callback
-    def _subscribe_with_cleanup(
-        self,
-        key: str,
-        callback_reference: EventCallback,
-        *,
-        once: bool = False,
-    ) -> None:
-        """Subscribe to a device event and register cleanup on removal."""
-        subscribe = self.device.subscribe_once if once else self.device.subscribe
-        registered_callback = subscribe(key, callback_reference)
-
-        @callback
-        def _unsubscribe() -> None:
-            """Unsubscribe callback on entity removal."""
-            self.device.unsubscribe(key, registered_callback)
-
-        self.async_on_remove(_unsubscribe)
-
     @override
     async def async_added_to_hass(self) -> None:
         """Subscribe to events."""
@@ -209,9 +188,11 @@ class EcomaxEntity(Entity):
             await self._async_set_available(value)
             await async_update(value)
         else:
-            self._subscribe_with_cleanup(key, self._async_set_available, once=True)
+            self.async_on_remove(
+                self.device.subscribe_once(key, self._async_set_available)
+            )
 
-        self._subscribe_with_cleanup(key, async_update)
+        self.async_on_remove(self.device.subscribe(key, async_update))
 
     async def _async_set_available(self, value: Any = None) -> None:
         """Mark entity as available."""
@@ -446,27 +427,16 @@ def _is_entity_ready(entity: EcomaxEntity, existing_unique_ids: set[str]) -> boo
 @callback
 def _subscribe_entity_registration(
     entity: EcomaxEntity, async_add_entities: AddEntitiesCallback
-) -> EntityRegistration:
+) -> UnsubscribeFunc:
     """Subscribe a deferred entity to be registered on first key arrival."""
 
     async def _async_add_entity(_value: Any) -> None:
         """Register deferred entity once its backing key is stored."""
         async_add_entities([entity])
 
-    key = entity.entity_description.key
-    callback_reference = entity.device.subscribe_once(key, _async_add_entity)
-    return (entity.device, key, callback_reference)
-
-
-@callback
-def _unsubscribe_pending_registrations(
-    pending_registrations: list[EntityRegistration],
-) -> None:
-    """Unsubscribe all pending entity registration callbacks."""
-    for device, key, callback_reference in pending_registrations:
-        device.unsubscribe(key, callback_reference)
-
-    pending_registrations.clear()
+    return entity.device.subscribe_once(
+        entity.entity_description.key, _async_add_entity
+    )
 
 
 @callback
@@ -484,23 +454,17 @@ def async_register_entities(
         hass, config_entry, platform_domain=platform_domain
     )
     ready_entities = list(immediate_entities)
-    pending_registrations: list[EntityRegistration] = []
 
     for entity in entities:
         if _is_entity_ready(entity, existing_unique_ids):
             ready_entities.append(entity)
         else:
-            pending_registrations.append(
+            config_entry.async_on_unload(
                 _subscribe_entity_registration(entity, async_add_entities)
             )
 
     if ready_entities:
         async_add_entities(ready_entities)
-
-    if pending_registrations:
-        config_entry.async_on_unload(
-            partial(_unsubscribe_pending_registrations, pending_registrations)
-        )
 
 
 @callback
@@ -563,13 +527,6 @@ def async_register_sub_device_entities(
     if sub_devices := connection.device.get_nowait(sub_device_key):
         _register_new_sub_devices(sub_devices)
 
-    callback_reference = connection.device.subscribe(
-        sub_device_key, _async_on_sub_devices
+    config_entry.async_on_unload(
+        connection.device.subscribe(sub_device_key, _async_on_sub_devices)
     )
-
-    @callback
-    def _unsubscribe_sub_devices() -> None:
-        """Unsubscribe from sub-device discovery events."""
-        connection.device.unsubscribe(sub_device_key, callback_reference)
-
-    config_entry.async_on_unload(_unsubscribe_sub_devices)

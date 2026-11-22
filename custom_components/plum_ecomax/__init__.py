@@ -184,8 +184,10 @@ def async_setup_events(hass: HomeAssistant, connection: EcomaxConnection) -> boo
 
             hass.bus.async_fire(EVENT_PLUM_ECOMAX_ALERT, event_data)
 
-    connection.device.subscribe(
-        ATTR_ALERTS, custom(delta(_async_dispatch_alert_events), bool)
+    connection.entry.async_on_unload(
+        connection.device.subscribe(
+            ATTR_ALERTS, custom(delta(_async_dispatch_alert_events), bool)
+        )
     )
     return True
 

@@ -126,13 +126,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
             if name in self.device.data:
                 await handler(self.device.data[name])
 
-            self.device.subscribe(name, handler)
-
-    @override
-    async def async_will_remove_from_hass(self) -> None:
-        """Unsubscribe to water heater events."""
-        for name, handler in self._callbacks.items():
-            self.device.unsubscribe(name, handler)
+            self.async_on_remove(self.device.subscribe(name, handler))
 
     async def async_update_target_temp(self, value: Parameter) -> None:
         """Update target temperature."""
