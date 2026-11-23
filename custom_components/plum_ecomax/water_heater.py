@@ -22,11 +22,10 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyplumio.filters import Filter, deadband, on_change, throttle
+from pyplumio.filters import deadband, on_change, throttle
 from pyplumio.parameters import Parameter
 
 from . import PlumEcomaxConfigEntry
-from .connection import EcomaxConnection
 from .const import DEFAULT_TOLERANCE
 from .entity import EcomaxEntity, EcomaxEntityDescription
 
@@ -64,25 +63,7 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         | WaterHeaterEntityFeature.OPERATION_MODE
     )
     _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
-    _callbacks: dict[str, Filter]
     entity_description: EcomaxWaterHeaterEntityDescription
-
-    def __init__(
-        self,
-        connection: EcomaxConnection,
-        description: EcomaxWaterHeaterEntityDescription,
-    ):
-        """Initialize a new ecoMAX climate entity."""
-        self._callbacks = {
-            "water_heater_temp": throttle(
-                deadband(self.async_update, tolerance=DEFAULT_TOLERANCE),
-                seconds=UPDATE_INTERVAL,
-            ),
-            "water_heater_target_temp": on_change(self.async_update_target_temp),
-            "water_heater_work_mode": on_change(self.async_update_work_mode),
-            "water_heater_hysteresis": on_change(self.async_update_hysteresis),
-        }
-        super().__init__(connection, description)
 
     @override
     async def async_set_temperature(self, **kwargs: Any) -> None:
@@ -122,7 +103,16 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     @override
     async def async_added_to_hass(self) -> None:
         """Subscribe to water heater events."""
-        for name, handler in self._callbacks.items():
+        callbacks = {
+            "water_heater_temp": throttle(
+                deadband(self.async_update, tolerance=DEFAULT_TOLERANCE),
+                seconds=UPDATE_INTERVAL,
+            ),
+            "water_heater_target_temp": on_change(self.async_update_target_temp),
+            "water_heater_work_mode": on_change(self.async_update_work_mode),
+            "water_heater_hysteresis": on_change(self.async_update_hysteresis),
+        }
+        for name, handler in callbacks.items():
             if name in self.device.data:
                 await handler(self.device.data[name])
 

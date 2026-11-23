@@ -96,7 +96,6 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
     _attr_target_temperature_name: str | None = None
     _attr_target_temperature_step = TEMPERATURE_STEP
     _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
-    _callbacks: dict[str, EventCallback]
     entity_description: EcomaxClimateEntityDescription
 
     def __init__(
@@ -106,17 +105,6 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
         index: int,
     ):
         """Initialize a new ecoMAX climate entity."""
-        self._callbacks = {
-            "mode": on_change(self.async_update_preset_mode),
-            "state": on_change(self.async_update_preset_mode),
-            "contacts": on_change(self.async_update_hvac_action),
-            "current_temp": throttle(
-                deadband(self.async_update, tolerance=DEFAULT_TOLERANCE),
-                seconds=UPDATE_INTERVAL,
-            ),
-            "target_temp": on_change(self.async_update_target_temperature),
-            ATTR_THERMOSTAT_PARAMETERS: self.async_update_thermostat_parameters,
-        }
         self.index = index
         super().__init__(connection, description)
 
@@ -158,7 +146,18 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
     @override
     async def async_added_to_hass(self) -> None:
         """Subscribe to thermostat events."""
-        for name, handler in self._callbacks.items():
+        callbacks: dict[str, EventCallback] = {
+            "mode": on_change(self.async_update_preset_mode),
+            "state": on_change(self.async_update_preset_mode),
+            "contacts": on_change(self.async_update_hvac_action),
+            "current_temp": throttle(
+                deadband(self.async_update, tolerance=DEFAULT_TOLERANCE),
+                seconds=UPDATE_INTERVAL,
+            ),
+            "target_temp": on_change(self.async_update_target_temperature),
+            ATTR_THERMOSTAT_PARAMETERS: self.async_update_thermostat_parameters,
+        }
+        for name, handler in callbacks.items():
             if name in self.device.data:
                 await handler(self.device.data[name])
 
