@@ -103,20 +103,17 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     @override
     async def async_added_to_hass(self) -> None:
         """Subscribe to water heater events."""
-        callbacks = {
-            "water_heater_temp": throttle(
-                deadband(self.async_update, tolerance=DEFAULT_TOLERANCE),
-                seconds=UPDATE_INTERVAL,
-            ),
-            "water_heater_target_temp": on_change(self.async_update_target_temp),
-            "water_heater_work_mode": on_change(self.async_update_work_mode),
-            "water_heater_hysteresis": on_change(self.async_update_hysteresis),
-        }
-        for name, handler in callbacks.items():
-            if name in self.device.data:
-                await handler(self.device.data[name])
-
-            self.async_on_remove(self.device.subscribe(name, handler))
+        await self._async_subscribe_callbacks(
+            {
+                "water_heater_temp": throttle(
+                    deadband(self.async_update, tolerance=DEFAULT_TOLERANCE),
+                    seconds=UPDATE_INTERVAL,
+                ),
+                "water_heater_target_temp": on_change(self.async_update_target_temp),
+                "water_heater_work_mode": on_change(self.async_update_work_mode),
+                "water_heater_hysteresis": on_change(self.async_update_hysteresis),
+            }
+        )
 
     async def async_update_target_temp(self, value: Parameter) -> None:
         """Update target temperature."""

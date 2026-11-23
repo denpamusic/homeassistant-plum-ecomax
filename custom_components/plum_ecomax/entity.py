@@ -1,6 +1,6 @@
 """Contains base entity classes."""
 
-from collections.abc import Callable, Generator, Iterable
+from collections.abc import Callable, Generator, Iterable, Mapping
 from contextlib import suppress
 from dataclasses import dataclass
 from functools import cached_property
@@ -21,7 +21,7 @@ from pyplumio.devices import Device
 from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
 from pyplumio.filters import Filter, on_change, throttle
-from pyplumio.helpers.event_manager import UnsubscribeFunc
+from pyplumio.helpers.event_manager import EventCallback, UnsubscribeFunc
 from pyplumio.structures.sensor_data import ConnectedModules
 
 from custom_components.plum_ecomax import PlumEcomaxConfigEntry
@@ -202,6 +202,16 @@ class EcomaxEntity(Entity):
     async def _async_set_available(self, value: Any = None) -> None:
         """Mark entity as available."""
         self._attr_available = True
+
+    async def _async_subscribe_callbacks(
+        self, callbacks: Mapping[str, EventCallback]
+    ) -> None:
+        """Subscribe to multiple device events and apply cached values."""
+        for name, update in callbacks.items():
+            if (value := self.device.data.get(name, Undefined)) is not Undefined:
+                await update(value)
+
+            self.async_on_remove(self.device.subscribe(name, update))
 
     @property
     def _event_key(self) -> str:
