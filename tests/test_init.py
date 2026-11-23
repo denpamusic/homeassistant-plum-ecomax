@@ -13,7 +13,7 @@ from homeassistant.const import (
     ATTR_NAME,
     EVENT_HOMEASSISTANT_STOP,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import Event, HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.util import dt as dt_util
 from pyplumio.const import AlertType
@@ -189,14 +189,18 @@ async def test_setup_events(
     data = config_entry.runtime_data
     connection = data.connection
     with (
+        patch("custom_components.plum_ecomax.custom") as mock_custom,
         patch("custom_components.plum_ecomax.delta") as mock_delta,
         patch(
             "custom_components.plum_ecomax.connection.EcomaxConnection.device.subscribe"
         ) as mock_subscribe,
+        patch.object(connection.entry, "async_on_unload") as mock_async_on_unload,
     ):
         assert async_setup_events(hass, connection)
 
-    mock_subscribe.assert_called_once_with(ATTR_ALERTS, mock_delta.return_value)
+    mock_custom.assert_called_once_with(mock_delta.return_value, bool)
+    mock_subscribe.assert_called_once_with(ATTR_ALERTS, mock_custom.return_value)
+    mock_async_on_unload.assert_called_once_with(mock_subscribe.return_value)
     args = mock_delta.call_args[0]
     callback = args[0]
 
@@ -236,6 +240,53 @@ async def test_setup_events(
         await callback([alert])
 
     assert "Device not found." in caplog.text
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_setup_events_unsubscribes_on_unload(
+    hass: HomeAssistant, config_entry: ConfigEntry
+) -> None:
+    """Test unloading config entry unsubscribes alert event listener."""
+    with patch("custom_components.plum_ecomax.connection.EcomaxConnection.async_setup"):
+        assert await hass.config_entries.async_setup(config_entry.entry_id)
+        await hass.async_block_till_done()
+
+    data = config_entry.runtime_data
+    connection = data.connection
+
+    received_events: list[Event] = []
+    hass.bus.async_listen(EVENT_PLUM_ECOMAX_ALERT, received_events.append)
+
+    initial_alert = Alert(
+        code=AlertType.FAN_FAILURE,
+        from_dt=cast(datetime, dt_util.parse_datetime(DATE_FROM)),
+        to_dt=dt_util.parse_datetime(DATE_TO),
+    )
+    alert = Alert(
+        code=AlertType.POWER_LOSS,
+        from_dt=cast(datetime, dt_util.parse_datetime(DATE_FROM)),
+        to_dt=dt_util.parse_datetime(DATE_TO),
+    )
+    await connection.device.dispatch(ATTR_ALERTS, [initial_alert])
+    await connection.device.dispatch(ATTR_ALERTS, [initial_alert, alert])
+    await hass.async_block_till_done()
+    assert len(received_events) == 1
+    assert received_events[0].data[ATTR_CODE] == AlertType.POWER_LOSS
+
+    assert await hass.config_entries.async_unload(config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    received_events.clear()
+    after_unload_alert = Alert(
+        code=AlertType.FEEDER_BLOCKED,
+        from_dt=cast(datetime, dt_util.parse_datetime(DATE_FROM)),
+        to_dt=dt_util.parse_datetime(DATE_TO),
+    )
+    await connection.device.dispatch(
+        ATTR_ALERTS, [initial_alert, alert, after_unload_alert]
+    )
+    await hass.async_block_till_done()
+    assert received_events == []
 
 
 @pytest.mark.usefixtures("ecomax_p")

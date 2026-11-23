@@ -22,11 +22,10 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyplumio.filters import Filter, deadband, on_change, throttle
+from pyplumio.filters import deadband, on_change, throttle
 from pyplumio.parameters import Parameter
 
 from . import PlumEcomaxConfigEntry
-from .connection import EcomaxConnection
 from .const import DEFAULT_TOLERANCE
 from .entity import EcomaxEntity, EcomaxEntityDescription
 
@@ -64,42 +63,34 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         | WaterHeaterEntityFeature.OPERATION_MODE
     )
     _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
-    _callbacks: dict[str, Filter]
     entity_description: EcomaxWaterHeaterEntityDescription
-
-    def __init__(
-        self,
-        connection: EcomaxConnection,
-        description: EcomaxWaterHeaterEntityDescription,
-    ):
-        """Initialize a new ecoMAX climate entity."""
-        self._callbacks = {
-            "water_heater_temp": throttle(
-                deadband(self.async_update, tolerance=DEFAULT_TOLERANCE),
-                seconds=UPDATE_INTERVAL,
-            ),
-            "water_heater_target_temp": on_change(self.async_update_target_temp),
-            "water_heater_work_mode": on_change(self.async_update_work_mode),
-            "water_heater_hysteresis": on_change(self.async_update_hysteresis),
-        }
-        super().__init__(connection, description)
 
     @override
     async def async_set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
+        target_temp_key = f"{self.entity_description.key}_target_temp"
+        if target_temp_key not in self.device.data:
+            _LOGGER.warning(
+                "Cannot set target temperature before water heater parameters are loaded"
+            )
+            return
+
         temperature = kwargs[ATTR_TEMPERATURE]
-        self.device.set_nowait(
-            f"{self.entity_description.key}_target_temp", int(temperature)
-        )
+        self.device.set_nowait(target_temp_key, int(temperature))
         self._attr_native_target_temperature = temperature
         self.async_write_ha_state()
 
     @override
     async def async_set_operation_mode(self, operation_mode: str) -> None:
         """Set new target operation mode."""
-        self.device.set_nowait(
-            f"{self.entity_description.key}_work_mode", HA_TO_EM_STATE[operation_mode]
-        )
+        work_mode_key = f"{self.entity_description.key}_work_mode"
+        if work_mode_key not in self.device.data:
+            _LOGGER.warning(
+                "Cannot set operation mode before water heater parameters are loaded"
+            )
+            return
+
+        self.device.set_nowait(work_mode_key, HA_TO_EM_STATE[operation_mode])
         self._attr_current_operation = operation_mode
         self.async_write_ha_state()
 
@@ -112,17 +103,17 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     @override
     async def async_added_to_hass(self) -> None:
         """Subscribe to water heater events."""
-        for name, handler in self._callbacks.items():
-            if name in self.device.data:
-                await handler(self.device.data[name])
-
-            self.device.subscribe(name, handler)
-
-    @override
-    async def async_will_remove_from_hass(self) -> None:
-        """Unsubscribe to water heater events."""
-        for name, handler in self._callbacks.items():
-            self.device.unsubscribe(name, handler)
+        await self._async_subscribe_callbacks(
+            {
+                "water_heater_temp": throttle(
+                    deadband(self.async_update, tolerance=DEFAULT_TOLERANCE),
+                    seconds=UPDATE_INTERVAL,
+                ),
+                "water_heater_target_temp": on_change(self.async_update_target_temp),
+                "water_heater_work_mode": on_change(self.async_update_work_mode),
+                "water_heater_hysteresis": on_change(self.async_update_hysteresis),
+            }
+        )
 
     async def async_update_target_temp(self, value: Parameter) -> None:
         """Update target temperature."""
