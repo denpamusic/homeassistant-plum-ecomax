@@ -137,9 +137,9 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
     async def async_update_hysteresis(self, value: Parameter) -> None:
         """Update lower target temperature bound."""
         self._attr_hysteresis = int(value.value)
-        if self.target_temperature is not None:
+        if self.native_target_temperature is not None:
             self._attr_native_target_temperature_low = (
-                int(self.target_temperature) - self.hysteresis
+                int(self.native_target_temperature) - self.hysteresis
             )
             self.async_write_ha_state()
 
