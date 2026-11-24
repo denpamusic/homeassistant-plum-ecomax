@@ -592,3 +592,38 @@ async def test_thermostat_unsubscribes_on_unload(
     state = hass.states.get("climate.ecomax_thermostat_1_thermostat")
     assert isinstance(state, State)
     assert state.state == "unavailable"
+
+
+@pytest.mark.usefixtures("ecomax_p", "thermostats")
+async def test_thermostat_availability_on_disconnect(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    setup_config_entry,
+) -> None:
+    """Test thermostat availability reflects connection state."""
+    connected_event = asyncio.Event()
+    connected_event.set()
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.connected",
+        connected_event,
+        create=True,
+    ):
+        await setup_config_entry()
+        thermostat_entity_id = "climate.ecomax_thermostat_1_thermostat"
+        state = hass.states.get(thermostat_entity_id)
+        assert isinstance(state, State)
+        assert state.state == HVACMode.HEAT
+
+        connection.connected.clear()
+        await connection.device.thermostats[0].dispatch("contacts", True)
+        await hass.async_block_till_done()
+        state = hass.states.get(thermostat_entity_id)
+        assert isinstance(state, State)
+        assert state.state == "unavailable"
+
+        connection.connected.set()
+        await connection.device.thermostats[0].dispatch("contacts", False)
+        await hass.async_block_till_done()
+        state = hass.states.get(thermostat_entity_id)
+        assert isinstance(state, State)
+        assert state.state == HVACMode.HEAT

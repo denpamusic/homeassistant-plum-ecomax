@@ -181,21 +181,23 @@ class EcomaxEntity(Entity):
     @override
     async def async_added_to_hass(self) -> None:
         """Subscribe to events."""
-        for name, async_update in self._get_callbacks().items():
+        callbacks = self._get_callbacks()
+        for name, async_update in callbacks.items():
             if (value := self.device.data.get(name, Undefined)) is not Undefined:
                 await self._async_set_available(value)
                 await async_update(value)
 
-            self._subscribe_availability(name)
+        self._subscribe_availability(callbacks.keys())
+        for name, async_update in callbacks.items():
             self.async_on_remove(self.device.subscribe(name, async_update))
 
     @callback
-    def _subscribe_availability(self, key: str) -> None:
+    def _subscribe_availability(self, keys: Iterable[str]) -> None:
         """Subscribe to availability updates."""
-        if self.entity_description.always_available:
+        if self.entity_description.always_available or self._attr_available:
             return
 
-        if not self._attr_available:
+        for key in keys:
             self.async_on_remove(
                 self.device.subscribe_once(key, self._async_set_available)
             )
@@ -379,9 +381,10 @@ class RegdataEntity(EcomaxEntity):
 
     @callback
     @override
-    def _subscribe_availability(self, key: str) -> None:
+    def _subscribe_availability(self, keys: Iterable[str]) -> None:
         """Subscribe to availability updates."""
-        self.async_on_remove(self.device.subscribe(key, self._async_set_available))
+        for key in keys:
+            self.async_on_remove(self.device.subscribe(key, self._async_set_available))
 
     @override
     async def _async_set_available(self, value: Any = None) -> None:
@@ -436,12 +439,15 @@ def _is_config_entry_active(config_entry: PlumEcomaxConfigEntry) -> bool:
 
 
 @callback
-def _is_entity_ready(entity: EcomaxEntity, existing_unique_ids: set[str]) -> bool:
+def _is_entity_ready(
+    entity: EcomaxEntity,
+    event_keys: Iterable[str],
+    existing_unique_ids: set[str],
+) -> bool:
     """Return whether an entity should be registered immediately."""
-    description = entity.entity_description
     return (
-        description.always_available
-        or description.key in entity.device.data
+        entity.entity_description.always_available
+        or any(key in entity.device.data for key in event_keys)
         or entity.unique_id in existing_unique_ids
     )
 
@@ -450,20 +456,32 @@ def _is_entity_ready(entity: EcomaxEntity, existing_unique_ids: set[str]) -> boo
 def _subscribe_entity_registration(
     config_entry: PlumEcomaxConfigEntry,
     entity: EcomaxEntity,
+    event_keys: Iterable[str],
     async_add_entities: AddEntitiesCallback,
 ) -> UnsubscribeFunc:
     """Subscribe a deferred entity to be registered on first key arrival."""
+    unsubscribes: list[UnsubscribeFunc] = []
+
+    @callback
+    def _unsubscribe_all() -> None:
+        """Unsubscribe all pending registration listeners for this entity."""
+        for unsubscribe in unsubscribes:
+            unsubscribe()
+
+        unsubscribes.clear()
 
     async def _async_add_entity(_value: Any) -> None:
-        """Register deferred entity once its backing key is stored."""
+        """Register deferred entity once any backing key is stored."""
+        _unsubscribe_all()
         if not _is_config_entry_active(config_entry):
             return
 
         async_add_entities([entity])
 
-    return entity.device.subscribe_once(
-        entity.entity_description.key, _async_add_entity
+    unsubscribes.extend(
+        entity.device.subscribe_once(key, _async_add_entity) for key in event_keys
     )
+    return _unsubscribe_all
 
 
 @callback
@@ -483,11 +501,14 @@ def async_register_entities(
     ready_entities = list(immediate_entities)
 
     for entity in entities:
-        if _is_entity_ready(entity, existing_unique_ids):
+        event_keys = tuple(entity._get_callbacks())
+        if _is_entity_ready(entity, event_keys, existing_unique_ids):
             ready_entities.append(entity)
         else:
             config_entry.async_on_unload(
-                _subscribe_entity_registration(config_entry, entity, async_add_entities)
+                _subscribe_entity_registration(
+                    config_entry, entity, event_keys, async_add_entities
+                )
             )
 
     if ready_entities:

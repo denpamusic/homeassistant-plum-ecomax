@@ -1,7 +1,7 @@
 """Test Plum ecoMAX base entity."""
 
 import asyncio
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from typing import Any
 from unittest.mock import AsyncMock, Mock, call, patch
 
@@ -14,6 +14,7 @@ from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
 from pyplumio.filters import Filter
+from pyplumio.helpers.event_manager import EventCallback
 from pyplumio.structures.sensor_data import ATTR_HEATING_TEMP
 import pytest
 from pytest_homeassistant.common import MockConfigEntry
@@ -293,7 +294,6 @@ async def test_async_register_entities_deferred_unload_cleanup(
     mock_add_entities.assert_not_called()
     assert len(unload_callbacks) == 1
     assert len(unsubscribe_spies) == 1
-    assert unload_callbacks[0] is unsubscribe_spies[0]
 
     unload_callbacks[0]()
 
@@ -1091,3 +1091,294 @@ async def test_async_register_sub_device_entities_preserves_domain_scope(
     await mixer_1.dispatch("deferred_key", 123)
     await hass.async_block_till_done()
     assert built_in_seen == [["1:custom_pump", "1:pump"], ["1:deferred_key"]]
+
+
+async def test_entity_always_available_skips_availability_subscription(
+    hass: HomeAssistant, ecomax_p: EcoMAX, config_entry: MockConfigEntry
+) -> None:
+    """Test always_available=True skips subscribe_once availability tracking."""
+    mock_connection = Mock(spec=EcomaxConnection)
+    mock_connection.device = ecomax_p
+    mock_connection.entry = config_entry
+    mock_connection.connected = Mock(spec=asyncio.Event)
+    mock_connection.connected.is_set.return_value = False
+
+    entity_filter = AsyncMock(spec=Filter)
+    entity = EcomaxEntity(
+        connection=mock_connection,
+        description=EcomaxEntityDescription(
+            key="missing_always_available_key",
+            name="Always available",
+            always_available=True,
+            filter_fn=Mock(return_value=entity_filter),
+        ),
+    )
+    entity.hass = hass
+    entity.entity_id = "sensor.test_always_available"
+
+    with (
+        patch.object(ecomax_p, "subscribe_once") as mock_subscribe_once,
+        patch.object(ecomax_p, "subscribe", wraps=ecomax_p.subscribe) as mock_subscribe,
+    ):
+        await entity.async_added_to_hass()
+
+    mock_subscribe_once.assert_not_called()
+    mock_subscribe.assert_called_once_with(
+        "missing_always_available_key", entity_filter
+    )
+    assert entity.available
+
+    await entity.async_remove()
+
+
+async def test_multi_key_entity_availability_order(
+    hass: HomeAssistant, ecomax_p: EcoMAX, config_entry: MockConfigEntry
+) -> None:
+    """Test multi-key entity availability with partial or missing keys."""
+    mock_connection = Mock(spec=EcomaxConnection)
+    mock_connection.device = ecomax_p
+    mock_connection.entry = config_entry
+    mock_connection.connected = Mock(spec=asyncio.Event)
+    mock_connection.connected.is_set.return_value = True
+
+    class _MultiKeyEntity(EcomaxEntity):
+        """Test entity backed by multiple event keys."""
+
+        def __init__(
+            self,
+            connection: EcomaxConnection,
+            description: EcomaxEntityDescription,
+            callbacks: Mapping[str, EventCallback],
+        ) -> None:
+            super().__init__(connection, description)
+            self._callbacks = callbacks
+
+        def _get_callbacks(self) -> Mapping[str, EventCallback]:
+            return self._callbacks
+
+    # Case 1: missing_first precedes present_second in callback dict.
+    await ecomax_p.load({"present_second": 42})
+    first_cb = AsyncMock()
+    second_cb = AsyncMock()
+    partial_entity = _MultiKeyEntity(
+        connection=mock_connection,
+        description=EcomaxEntityDescription(
+            key="synthetic_partial",
+            name="Synthetic partial",
+            always_available=False,
+        ),
+        callbacks={
+            "missing_first": first_cb,
+            "present_second": second_cb,
+        },
+    )
+    partial_entity.hass = hass
+    partial_entity.entity_id = "sensor.test_partial"
+
+    with (
+        patch.object(ecomax_p, "subscribe_once") as mock_subscribe_once,
+        patch.object(ecomax_p, "subscribe", wraps=ecomax_p.subscribe) as mock_subscribe,
+    ):
+        await partial_entity.async_added_to_hass()
+
+    assert partial_entity.available
+    mock_subscribe_once.assert_not_called()
+    first_cb.assert_not_called()
+    second_cb.assert_awaited_once_with(42)
+    mock_subscribe.assert_has_calls(
+        [
+            call("missing_first", first_cb),
+            call("present_second", second_cb),
+        ]
+    )
+    await partial_entity.async_remove()
+
+    # Case 2: zero keys present starts unavailable, subscribes availability before updates.
+    cb_a = AsyncMock()
+    cb_b = AsyncMock()
+    missing_entity = _MultiKeyEntity(
+        connection=mock_connection,
+        description=EcomaxEntityDescription(
+            key="synthetic_missing",
+            name="Synthetic missing",
+            always_available=False,
+        ),
+        callbacks={
+            "missing_key_a": cb_a,
+            "missing_key_b": cb_b,
+        },
+    )
+    missing_entity.hass = hass
+    missing_entity.entity_id = "sensor.test_missing"
+
+    call_order: list[tuple[str, str]] = []
+    original_subscribe_once = ecomax_p.subscribe_once
+    original_subscribe = ecomax_p.subscribe
+
+    def _record_subscribe_once(name: str, cb: EventCallback) -> Any:
+        call_order.append(("subscribe_once", name))
+        return original_subscribe_once(name, cb)
+
+    def _record_subscribe(name: str, cb: EventCallback) -> Any:
+        if cb.__name__ != "_call_once":
+            call_order.append(("subscribe", name))
+        return original_subscribe(name, cb)
+
+    with (
+        patch.object(ecomax_p, "subscribe_once", side_effect=_record_subscribe_once),
+        patch.object(ecomax_p, "subscribe", side_effect=_record_subscribe),
+    ):
+        await missing_entity.async_added_to_hass()
+
+    assert not bool(missing_entity.available)
+    assert call_order == [
+        ("subscribe_once", "missing_key_a"),
+        ("subscribe_once", "missing_key_b"),
+        ("subscribe", "missing_key_a"),
+        ("subscribe", "missing_key_b"),
+    ]
+
+    # When first key arrives, entity becomes available before update callback runs.
+    saw_available_in_cb: list[bool] = []
+    cb_a.side_effect = lambda _val: saw_available_in_cb.append(missing_entity.available)
+    await ecomax_p.dispatch("missing_key_a", 99)
+    assert missing_entity.available
+    assert saw_available_in_cb == [True]
+    cb_a.assert_awaited_once_with(99)
+
+    await missing_entity.async_remove()
+
+
+async def test_multi_key_entity_deferred_registration_and_cancellation(
+    hass: HomeAssistant, ecomax_p: EcoMAX, config_entry: MockConfigEntry
+) -> None:
+    """Test multi-key deferred registration, sibling cancellation, and unload."""
+    config_entry.mock_state(hass, ConfigEntryState.LOADED)
+    mock_connection = Mock(spec=EcomaxConnection)
+    mock_connection.device = ecomax_p
+    mock_connection.entry = config_entry
+    mock_connection.uid = "TEST"
+
+    class _MultiKeyEntity(EcomaxEntity):
+        """Test entity backed by multiple event keys."""
+
+        def __init__(
+            self,
+            connection: EcomaxConnection,
+            description: EcomaxEntityDescription,
+            keys: tuple[str, ...],
+        ) -> None:
+            super().__init__(connection, description)
+            self._keys = keys
+
+        def _get_callbacks(self) -> Mapping[str, EventCallback]:
+            return dict.fromkeys(self._keys, self.async_update)
+
+    # Immediate registration when a backing key (not matching synthetic key) is present.
+    await ecomax_p.load({"ready_backing_key": 1})
+    ready_multi = _MultiKeyEntity(
+        connection=mock_connection,
+        description=EcomaxEntityDescription(
+            key="synthetic_ready",
+            name="Synthetic ready",
+        ),
+        keys=("missing_backing_key", "ready_backing_key"),
+    )
+    deferred_multi = _MultiKeyEntity(
+        connection=mock_connection,
+        description=EcomaxEntityDescription(
+            key="synthetic_deferred",
+            name="Synthetic deferred",
+        ),
+        keys=("multi_key_a", "multi_key_b"),
+    )
+
+    unload_callbacks: list[Callable[[], Any]] = []
+    unsubscribe_spies: dict[str, Mock] = {}
+    original_subscribe_once = ecomax_p.subscribe_once
+
+    def _capture_subscribe_once(name: str, cb: EventCallback) -> Any:
+        unsubscribe = original_subscribe_once(name, cb)
+        unsubscribe_spy = Mock(wraps=unsubscribe)
+        unsubscribe_spies[name] = unsubscribe_spy
+        return unsubscribe_spy
+
+    mock_add_entities = Mock()
+    with (
+        patch.object(ecomax_p, "subscribe_once", side_effect=_capture_subscribe_once),
+        patch.object(
+            config_entry,
+            "async_on_unload",
+            side_effect=unload_callbacks.append,
+        ),
+    ):
+        async_register_entities(
+            hass,
+            config_entry,
+            (ready_multi, deferred_multi),
+            mock_add_entities,
+        )
+
+    mock_add_entities.assert_called_once_with([ready_multi])
+    assert set(unsubscribe_spies) == {"multi_key_a", "multi_key_b"}
+    assert len(unload_callbacks) == 1
+
+    # First key arrival registers once and cancels sibling subscription.
+    mock_add_entities.reset_mock()
+    await ecomax_p.dispatch("multi_key_a", 10)
+    await hass.async_block_till_done()
+    mock_add_entities.assert_called_once_with([deferred_multi])
+    unsubscribe_spies["multi_key_a"].assert_called_once_with()
+    unsubscribe_spies["multi_key_b"].assert_called_once_with()
+
+    # Second key arrival does not double-register.
+    mock_add_entities.reset_mock()
+    await ecomax_p.dispatch("multi_key_b", 20)
+    await hass.async_block_till_done()
+    mock_add_entities.assert_not_called()
+
+    # Calling unload callback afterwards is idempotent.
+    unload_callbacks[0]()
+    unsubscribe_spies["multi_key_a"].assert_called_once_with()
+    unsubscribe_spies["multi_key_b"].assert_called_once_with()
+
+    # Unloading before any key arrives cleans up all pending subscriptions.
+    never_entity = _MultiKeyEntity(
+        connection=mock_connection,
+        description=EcomaxEntityDescription(
+            key="synthetic_never",
+            name="Synthetic never",
+        ),
+        keys=("never_key_1", "never_key_2"),
+    )
+    unload_callbacks.clear()
+    unsubscribe_spies.clear()
+    mock_add_entities.reset_mock()
+
+    with (
+        patch.object(ecomax_p, "subscribe_once", side_effect=_capture_subscribe_once),
+        patch.object(
+            config_entry,
+            "async_on_unload",
+            side_effect=unload_callbacks.append,
+        ),
+    ):
+        async_register_entities(
+            hass,
+            config_entry,
+            (never_entity,),
+            mock_add_entities,
+        )
+
+    mock_add_entities.assert_not_called()
+    assert set(unsubscribe_spies) == {"never_key_1", "never_key_2"}
+    assert len(unload_callbacks) == 1
+
+    unload_callbacks[0]()
+    unsubscribe_spies["never_key_1"].assert_called_once_with()
+    unsubscribe_spies["never_key_2"].assert_called_once_with()
+
+    await ecomax_p.dispatch("never_key_1", 1)
+    await ecomax_p.dispatch("never_key_2", 2)
+    await hass.async_block_till_done()
+    mock_add_entities.assert_not_called()

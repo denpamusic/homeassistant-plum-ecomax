@@ -29,7 +29,7 @@ from pyplumio.parameters import Parameter
 
 from . import PlumEcomaxConfigEntry
 from .const import DEFAULT_TOLERANCE
-from .entity import EcomaxEntity, EcomaxEntityDescription
+from .entity import EcomaxEntity, EcomaxEntityDescription, async_register_entities
 
 UPDATE_INTERVAL: Final = 10
 
@@ -49,7 +49,7 @@ class EcomaxWaterHeaterEntityDescription(
 
 
 ENTITY_DESCRIPTION = EcomaxWaterHeaterEntityDescription(
-    key="water_heater", always_available=True, translation_key="indirect_water_heater"
+    key="water_heater", translation_key="indirect_water_heater"
 )
 
 
@@ -156,8 +156,11 @@ async def async_setup_entry(
     _LOGGER.debug("Starting setup of water heater platform...")
 
     if connection.has_water_heater:
-        async_add_entities(
-            [EcomaxWaterHeater(connection, description=ENTITY_DESCRIPTION)]
+        async_register_entities(
+            hass,
+            entry,
+            [EcomaxWaterHeater(connection, description=ENTITY_DESCRIPTION)],
+            async_add_entities,
         )
         return True
 
