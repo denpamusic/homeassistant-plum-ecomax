@@ -472,6 +472,9 @@ def _subscribe_entity_registration(
 
     async def _async_add_entity(_value: Any) -> None:
         """Register deferred entity once any backing key is stored."""
+        if not unsubscribes:
+            return
+
         _unsubscribe_all()
         if not _is_config_entry_active(config_entry):
             return

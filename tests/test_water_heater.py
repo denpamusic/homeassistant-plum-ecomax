@@ -417,3 +417,56 @@ async def test_water_heater_deferred_registration(
     state = hass.states.get(indirect_water_heater_entity_id)
     assert isinstance(state, State)
     assert state.state == STATE_PERFORMANCE
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_water_heater_existing_registry_entry_without_data(
+    hass: HomeAssistant,
+    ecomax_p: EcoMAX,
+    config_entry: MockConfigEntry,
+    setup_config_entry,
+    async_set_operation_mode,
+    async_set_temperature,
+    caplog,
+) -> None:
+    """Test existing water heater registers unavailable with no data and guards calls."""
+    entity_registry = er.async_get(hass)
+    entity_registry.async_get_or_create(
+        WATER_HEATER,
+        "plum_ecomax",
+        "TEST-water_heater",
+        config_entry=config_entry,
+        suggested_object_id="ecomax_indirect_water_heater",
+    )
+
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.has_water_heater",
+        True,
+    ):
+        await setup_config_entry()
+
+    indirect_water_heater_entity_id = "water_heater.ecomax_indirect_water_heater"
+    state = hass.states.get(indirect_water_heater_entity_id)
+    assert isinstance(state, State)
+    assert state.state == "unavailable"
+
+    await ecomax_p.dispatch("water_heater_temp", 45.0)
+    await hass.async_block_till_done()
+    state = hass.states.get(indirect_water_heater_entity_id)
+    assert isinstance(state, State)
+    assert state.state != "unavailable"
+    assert state.attributes[ATTR_CURRENT_TEMPERATURE] == 45.0
+
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        await async_set_temperature(hass, indirect_water_heater_entity_id, 55)
+        await async_set_operation_mode(hass, indirect_water_heater_entity_id, STATE_ECO)
+
+    mock_set_nowait.assert_not_called()
+    assert (
+        "Cannot set target temperature before water heater parameters are loaded"
+        in caplog.text
+    )
+    assert (
+        "Cannot set operation mode before water heater parameters are loaded"
+        in caplog.text
+    )

@@ -1382,3 +1382,50 @@ async def test_multi_key_entity_deferred_registration_and_cancellation(
     await ecomax_p.dispatch("never_key_2", 2)
     await hass.async_block_till_done()
     mock_add_entities.assert_not_called()
+
+    # Concurrent load of multiple backing keys registers at most once.
+    concurrent_plain = _MultiKeyEntity(
+        connection=mock_connection,
+        description=EcomaxEntityDescription(
+            key="synthetic_concurrent_plain",
+            name="Synthetic concurrent plain",
+        ),
+        keys=("concurrent_plain_a", "concurrent_plain_b"),
+    )
+    mock_add_entities.reset_mock()
+    async_register_entities(
+        hass,
+        config_entry,
+        (concurrent_plain,),
+        mock_add_entities,
+    )
+    await ecomax_p.load({"concurrent_plain_a": 1, "concurrent_plain_b": 2})
+    await hass.async_block_till_done()
+    mock_add_entities.assert_called_once_with([concurrent_plain])
+
+    # Concurrent load of multiple backing keys registers at most once,
+    # even when an earlier async subscriber yields before sibling cancellation.
+    concurrent_entity = _MultiKeyEntity(
+        connection=mock_connection,
+        description=EcomaxEntityDescription(
+            key="synthetic_concurrent",
+            name="Synthetic concurrent",
+        ),
+        keys=("concurrent_key_a", "concurrent_key_b"),
+    )
+    mock_add_entities.reset_mock()
+
+    async def _yielding_subscriber(_value: Any) -> None:
+        await asyncio.sleep(0)
+
+    unsub_yielding = ecomax_p.subscribe("concurrent_key_b", _yielding_subscriber)
+    async_register_entities(
+        hass,
+        config_entry,
+        (concurrent_entity,),
+        mock_add_entities,
+    )
+    await ecomax_p.load({"concurrent_key_b": 2, "concurrent_key_a": 1})
+    await hass.async_block_till_done()
+    unsub_yielding()
+    mock_add_entities.assert_called_once_with([concurrent_entity])

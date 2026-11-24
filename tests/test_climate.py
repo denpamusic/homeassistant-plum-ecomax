@@ -627,3 +627,40 @@ async def test_thermostat_availability_on_disconnect(
         state = hass.states.get(thermostat_entity_id)
         assert isinstance(state, State)
         assert state.state == HVACMode.HEAT
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_thermostat_deferred_until_backing_key_arrives(
+    hass: HomeAssistant,
+    ecomax_p: EcoMAX,
+    setup_config_entry,
+) -> None:
+    """Test thermostat with no backing keys defers until first key arrives."""
+    thermostat = Thermostat(write_queue=Mock(spec=asyncio.Queue), parent=ecomax_p)
+    await ecomax_p.load({ATTR_THERMOSTATS: {0: thermostat}})
+
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.has_thermostats",
+        True,
+    ):
+        await setup_config_entry()
+
+    thermostat_entity_id = "climate.ecomax_thermostat_1_thermostat"
+    entity_registry = er.async_get(hass)
+    assert entity_registry.async_get(thermostat_entity_id) is None
+
+    await thermostat.dispatch("current_temp", 21.5)
+    await hass.async_block_till_done()
+
+    assert entity_registry.async_get(thermostat_entity_id) is not None
+    state = hass.states.get(thermostat_entity_id)
+    assert isinstance(state, State)
+    assert state.state == HVACMode.HEAT
+    assert state.attributes[ATTR_CURRENT_TEMPERATURE] == 21.5
+
+    # Subsequent sibling key updates state without double-registering.
+    await thermostat.dispatch("contacts", True)
+    await hass.async_block_till_done()
+    state = hass.states.get(thermostat_entity_id)
+    assert isinstance(state, State)
+    assert state.attributes[ATTR_HVAC_ACTION] == HVACAction.HEATING

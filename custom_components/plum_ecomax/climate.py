@@ -90,6 +90,7 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
     _attr_hvac_mode = HVACMode.HEAT
     _attr_hvac_modes = [HVACMode.HEAT]
     _attr_precision = PRECISION_TENTHS
+    _attr_preset_mode: str | None = None
     _attr_preset_modes = list(HA_TO_EM_MODE)
     _attr_supported_features = (
         ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE
