@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 import logging
 from typing import Any, Final, override
@@ -20,9 +21,10 @@ from homeassistant.const import (
     STATE_OFF,
     UnitOfTemperature,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.filters import deadband, on_change, throttle
+from pyplumio.helpers.event_manager import EventCallback
 from pyplumio.parameters import Parameter
 
 from . import PlumEcomaxConfigEntry
@@ -100,20 +102,19 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
         self._attr_native_current_temperature = value
         self.async_write_ha_state()
 
+    @callback
     @override
-    async def async_added_to_hass(self) -> None:
-        """Subscribe to water heater events."""
-        await self._async_subscribe_callbacks(
-            {
-                "water_heater_temp": throttle(
-                    deadband(self.async_update, tolerance=DEFAULT_TOLERANCE),
-                    seconds=UPDATE_INTERVAL,
-                ),
-                "water_heater_target_temp": on_change(self.async_update_target_temp),
-                "water_heater_work_mode": on_change(self.async_update_work_mode),
-                "water_heater_hysteresis": on_change(self.async_update_hysteresis),
-            }
-        )
+    def _get_callbacks(self) -> Mapping[str, EventCallback]:
+        """Return event callbacks."""
+        return {
+            "water_heater_temp": throttle(
+                deadband(self.async_update, tolerance=DEFAULT_TOLERANCE),
+                seconds=UPDATE_INTERVAL,
+            ),
+            "water_heater_target_temp": on_change(self.async_update_target_temp),
+            "water_heater_work_mode": on_change(self.async_update_work_mode),
+            "water_heater_hysteresis": on_change(self.async_update_hysteresis),
+        }
 
     async def async_update_target_temp(self, value: Parameter) -> None:
         """Update target temperature."""

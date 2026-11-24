@@ -181,19 +181,20 @@ class EcomaxEntity(Entity):
     @override
     async def async_added_to_hass(self) -> None:
         """Subscribe to events."""
-        key = self._event_key
-        async_update = self.entity_description.filter_fn(self.async_update)
+        for name, async_update in self._get_callbacks().items():
+            if (value := self.device.data.get(name, Undefined)) is not Undefined:
+                await self._async_set_available(value)
+                await async_update(value)
 
-        if (value := self.device.data.get(key, Undefined)) is not Undefined:
-            await self._async_set_available(value)
-            await async_update(value)
-
-        self._subscribe_availability(key)
-        self.async_on_remove(self.device.subscribe(key, async_update))
+            self._subscribe_availability(name)
+            self.async_on_remove(self.device.subscribe(name, async_update))
 
     @callback
     def _subscribe_availability(self, key: str) -> None:
         """Subscribe to availability updates."""
+        if self.entity_description.always_available:
+            return
+
         if not self._attr_available:
             self.async_on_remove(
                 self.device.subscribe_once(key, self._async_set_available)
@@ -203,20 +204,11 @@ class EcomaxEntity(Entity):
         """Mark entity as available."""
         self._attr_available = True
 
-    async def _async_subscribe_callbacks(
-        self, callbacks: Mapping[str, EventCallback]
-    ) -> None:
-        """Subscribe to multiple device events and apply cached values."""
-        for name, update in callbacks.items():
-            if (value := self.device.data.get(name, Undefined)) is not Undefined:
-                await update(value)
-
-            self.async_on_remove(self.device.subscribe(name, update))
-
-    @property
-    def _event_key(self) -> str:
-        """Return the device event key to subscribe to."""
-        return self.entity_description.key
+    @callback
+    def _get_callbacks(self) -> Mapping[str, EventCallback]:
+        """Return event callbacks."""
+        description = self.entity_description
+        return {description.key: description.filter_fn(self.async_update)}
 
     @property
     @override
@@ -396,11 +388,12 @@ class RegdataEntity(EcomaxEntity):
         """Mark entity as available."""
         self._attr_available = isinstance(value, dict) and self._regdata_key in value
 
-    @property
+    @callback
     @override
-    def _event_key(self) -> str:
-        """Return the device event key to subscribe to."""
-        return ATTR_REGDATA
+    def _get_callbacks(self) -> Mapping[str, EventCallback]:
+        """Return event callbacks."""
+        description = self.entity_description
+        return {ATTR_REGDATA: description.filter_fn(self.async_update)}
 
 
 @callback

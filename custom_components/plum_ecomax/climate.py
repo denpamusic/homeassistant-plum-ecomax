@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 import logging
 from typing import Any, Final, override
@@ -22,9 +23,10 @@ from homeassistant.const import (
     PRECISION_TENTHS,
     UnitOfTemperature,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from pyplumio.filters import deadband, on_change, throttle
+from pyplumio.helpers.event_manager import EventCallback
 from pyplumio.parameters.thermostat import ThermostatNumber
 from pyplumio.structures.thermostat_parameters import ATTR_THERMOSTAT_PARAMETERS
 
@@ -142,22 +144,21 @@ class EcomaxClimate(ThermostatEntity, ClimateEntity):
         self._attr_native_current_temperature = value
         self.async_write_ha_state()
 
+    @callback
     @override
-    async def async_added_to_hass(self) -> None:
-        """Subscribe to thermostat events."""
-        await self._async_subscribe_callbacks(
-            {
-                "mode": on_change(self.async_update_preset_mode),
-                "state": on_change(self.async_update_preset_mode),
-                "contacts": on_change(self.async_update_hvac_action),
-                "current_temp": throttle(
-                    deadband(self.async_update, tolerance=DEFAULT_TOLERANCE),
-                    seconds=UPDATE_INTERVAL,
-                ),
-                "target_temp": on_change(self.async_update_target_temperature),
-                ATTR_THERMOSTAT_PARAMETERS: self.async_update_thermostat_parameters,
-            }
-        )
+    def _get_callbacks(self) -> Mapping[str, EventCallback]:
+        """Return event callbacks."""
+        return {
+            "mode": on_change(self.async_update_preset_mode),
+            "state": on_change(self.async_update_preset_mode),
+            "contacts": on_change(self.async_update_hvac_action),
+            "current_temp": throttle(
+                deadband(self.async_update, tolerance=DEFAULT_TOLERANCE),
+                seconds=UPDATE_INTERVAL,
+            ),
+            "target_temp": on_change(self.async_update_target_temperature),
+            ATTR_THERMOSTAT_PARAMETERS: self.async_update_thermostat_parameters,
+        }
 
     async def async_update_target_temperature(self, value: float) -> None:
         """Update target temperature."""
