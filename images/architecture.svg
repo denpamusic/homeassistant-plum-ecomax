@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 220" role="img" aria-labelledby="arch-title arch-desc">
+  <title id="arch-title">Local push data flow from Plum ecoMAX to Home Assistant</title>
+  <desc id="arch-desc">Four-stage local push pipeline: ecoMAX RS-485 bus frames flow through PyPlumIO into Home Assistant reactive startup and live entities with availability tracking.</desc>
+  <style>
+    :root {
+      --bg-canvas: #f8fafc;
+      --border-canvas: #cbd5e1;
+      --bg-card: #ffffff;
+      --border-card: #94a3b8;
+      --bg-sub: #f1f5f9;
+      --border-sub: #cbd5e1;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --accent: #0284c7;
+      --accent-2: #0f766e;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-canvas: #0d1117;
+        --border-canvas: #30363d;
+        --bg-card: #161b22;
+        --border-card: #484f58;
+        --bg-sub: #21262d;
+        --border-sub: #30363d;
+        --text-primary: #f0f6fc;
+        --text-secondary: #c9d1d9;
+        --text-muted: #8b949e;
+        --accent: #38bdf8;
+        --accent-2: #2dd4bf;
+      }
+    }
+
+    .font-sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+    .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .title { font-size: 14px; font-weight: 700; fill: var(--text-primary); }
+    .step-tag { font-size: 9.5px; font-weight: 700; fill: var(--accent); letter-spacing: 0.05em; }
+    .card-title { font-size: 13px; font-weight: 700; fill: var(--text-primary); }
+    .card-line { font-size: 11px; fill: var(--text-secondary); }
+    .card-mono { font-size: 10.5px; fill: var(--accent-2); }
+    .foot { font-size: 11px; fill: var(--text-secondary); }
+    .foot-bold { font-weight: 600; fill: var(--text-primary); }
+    .arrow { stroke: var(--accent); stroke-width: 2; fill: none; }
+  </style>
+
+  <rect x="4" y="4" width="912" height="212" rx="12" fill="var(--bg-canvas)" stroke="var(--border-canvas)" stroke-width="1.5"/>
+  <text x="24" y="32" class="font-sans title">Local-Push Architecture &amp; Reactive Entity Pipeline</text>
+
+  <!-- Stage 1 -->
+  <rect x="24" y="48" width="184" height="118" rx="9" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.4"/>
+  <text x="38" y="68" class="font-sans step-tag">1. CONTROLLER BUS</text>
+  <text x="38" y="88" class="font-sans card-title">ecoMAX RS-485</text>
+  <text x="38" y="108" class="font-mono card-mono">sensors • alerts</text>
+  <text x="38" y="126" class="font-mono card-mono">parameters • regdata</text>
+  <text x="38" y="144" class="font-sans card-line">mixers &amp; ecoSTER frames</text>
+
+  <line x1="208" y1="107" x2="230" y2="107" class="arrow"/>
+  <polygon points="238,107 229,102.5 229,111.5" fill="var(--accent)"/>
+
+  <!-- Stage 2 -->
+  <rect x="238" y="48" width="194" height="118" rx="9" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.4"/>
+  <text x="252" y="68" class="font-sans step-tag">2. PROTOCOL DRIVER</text>
+  <text x="252" y="88" class="font-sans card-title">PyPlumIO (local_push)</text>
+  <text x="252" y="108" class="font-mono card-mono">Serial / TCP :8899</text>
+  <text x="252" y="126" class="font-sans card-line">Decodes binary frames</text>
+  <text x="252" y="144" class="font-sans card-line">Publishes key events</text>
+
+  <line x1="432" y1="107" x2="454" y2="107" class="arrow"/>
+  <polygon points="462,107 453,102.5 453,111.5" fill="var(--accent)"/>
+
+  <!-- Stage 3 -->
+  <rect x="462" y="48" width="204" height="118" rx="9" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.4"/>
+  <text x="476" y="68" class="font-sans step-tag">3. REACTIVE SETUP</text>
+  <text x="476" y="88" class="font-sans card-title">Fast Boot &amp; Discovery</text>
+  <text x="476" y="108" class="font-mono card-mono">wait_for("sensors")</text>
+  <text x="476" y="126" class="font-sans card-line">Defers remaining entities</text>
+  <text x="476" y="144" class="font-sans card-line">Skips unsupported keys</text>
+
+  <line x1="666" y1="107" x2="688" y2="107" class="arrow"/>
+  <polygon points="696,107 687,102.5 687,111.5" fill="var(--accent)"/>
+
+  <!-- Stage 4 -->
+  <rect x="696" y="48" width="200" height="118" rx="9" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.4"/>
+  <text x="710" y="68" class="font-sans step-tag">4. HOME ASSISTANT</text>
+  <text x="710" y="88" class="font-sans card-title">Entities &amp; Actions</text>
+  <text x="710" y="108" class="font-mono card-mono">0.1 °C deadband filter</text>
+  <text x="710" y="126" class="font-sans card-line">climate • water_heater</text>
+  <text x="710" y="144" class="font-sans card-line">alerts • custom regdata</text>
+
+  <!-- Footer -->
+  <rect x="24" y="178" width="872" height="26" rx="6" fill="var(--bg-sub)" stroke="var(--border-sub)" stroke-width="1"/>
+  <text x="38" y="195" class="font-sans foot"><tspan class="foot-bold">Availability:</tspan> Only Connection status &amp; Total fuel burned stay available offline; all other entities (incl. climate &amp; water_heater) track RS-485.</text>
+</svg>

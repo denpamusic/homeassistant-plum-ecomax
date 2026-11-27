@@ -1,0 +1,191 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" role="img" aria-labelledby="title desc">
+  <title id="title">RS-485 bus wiring diagram for Plum ecoMAX</title>
+  <desc id="desc">Two connection paths from Home Assistant to the Plum ecoMAX D+, D-, and GND RS-485 terminal block: direct USB-to-RS-485 adapter or LAN/Wi-Fi RS-485-to-TCP bridge on port 8899.</desc>
+  <style>
+    :root {
+      --bg-canvas: #f8fafc;
+      --border-canvas: #cbd5e1;
+      --bg-card: #ffffff;
+      --border-card: #94a3b8;
+      --bg-sub: #f1f5f9;
+      --border-sub: #cbd5e1;
+      --bg-callout: #eef2ff;
+      --border-callout: #c7d2fe;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --wire-a: #d97706;
+      --wire-b: #2563eb;
+      --wire-gnd: #64748b;
+      --wire-link: #0f766e;
+      --badge-a-bg: #fef3c7;
+      --badge-a-fg: #92400e;
+      --badge-b-bg: #dbeafe;
+      --badge-b-fg: #1e40af;
+      --badge-g-bg: #f1f5f9;
+      --badge-g-fg: #334155;
+      --accent-usb: #0284c7;
+      --accent-tcp: #0f766e;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-canvas: #0d1117;
+        --border-canvas: #30363d;
+        --bg-card: #161b22;
+        --border-card: #484f58;
+        --bg-sub: #21262d;
+        --border-sub: #30363d;
+        --bg-callout: #161f2e;
+        --border-callout: #2d4263;
+        --text-primary: #f0f6fc;
+        --text-secondary: #c9d1d9;
+        --text-muted: #8b949e;
+        --wire-a: #f59e0b;
+        --wire-b: #60a5fa;
+        --wire-gnd: #8b949e;
+        --wire-link: #2dd4bf;
+        --badge-a-bg: #451a03;
+        --badge-a-fg: #fcd34d;
+        --badge-b-bg: #172554;
+        --badge-b-fg: #93c5fd;
+        --badge-g-bg: #21262d;
+        --badge-g-fg: #c9d1d9;
+        --accent-usb: #38bdf8;
+        --accent-tcp: #2dd4bf;
+      }
+    }
+
+    .font-sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+    .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .title { font-size: 16px; font-weight: 700; fill: var(--text-primary); }
+    .subtitle { font-size: 12px; fill: var(--text-secondary); }
+    .card-title { font-size: 13px; font-weight: 700; fill: var(--text-primary); }
+    .card-sub { font-size: 11px; fill: var(--text-secondary); }
+    .label-bold { font-size: 11.5px; font-weight: 600; fill: var(--text-primary); }
+    .label-sm { font-size: 11px; fill: var(--text-secondary); }
+    .label-xs { font-size: 10px; fill: var(--text-muted); }
+    .tag-usb { font-size: 10px; font-weight: 700; fill: var(--accent-usb); letter-spacing: 0.04em; }
+    .tag-tcp { font-size: 10px; font-weight: 700; fill: var(--accent-tcp); letter-spacing: 0.04em; }
+    .pin-text { font-size: 11px; font-weight: 700; }
+    .wire-a { stroke: var(--wire-a); stroke-width: 2.5; fill: none; stroke-linecap: butt; stroke-linejoin: round; }
+    .wire-b { stroke: var(--wire-b); stroke-width: 2.5; fill: none; stroke-linecap: butt; stroke-linejoin: round; }
+    .wire-gnd { stroke: var(--wire-gnd); stroke-width: 2; fill: none; stroke-dasharray: 5 4; stroke-linecap: butt; stroke-linejoin: round; }
+    .wire-link { stroke: var(--wire-link); stroke-width: 2.2; fill: none; stroke-linecap: butt; }
+    .wire-link-dashed { stroke: var(--wire-link); stroke-width: 2.2; fill: none; stroke-dasharray: 6 4; stroke-linecap: butt; }
+  </style>
+
+  <!-- Canvas -->
+  <rect x="4" y="4" width="912" height="392" rx="12" fill="var(--bg-canvas)" stroke="var(--border-canvas)" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <text x="28" y="34" class="font-sans title">RS-485 Bus Topologies — Plum ecoMAX Controller</text>
+  <text x="28" y="53" class="font-sans subtitle">Connect Home Assistant using either a direct USB-to-RS-485 adapter or a LAN/Wi-Fi RS-485-to-TCP bridge (no ecoNET 300 required).</text>
+
+  <!-- Left Column: Home Assistant Host -->
+  <rect x="24" y="80" width="192" height="224" rx="10" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.5"/>
+  <text x="120" y="104" text-anchor="middle" class="font-sans card-title">Home Assistant</text>
+  <text x="120" y="120" text-anchor="middle" class="font-sans card-sub">Host / Container</text>
+
+  <!-- HA USB Port -->
+  <rect x="36" y="132" width="168" height="58" rx="7" fill="var(--bg-sub)" stroke="var(--border-sub)" stroke-width="1.2"/>
+  <text x="120" y="153" text-anchor="middle" class="font-sans label-bold">Serial / USB</text>
+  <text x="120" y="170" text-anchor="middle" class="font-mono label-xs">/dev/ttyUSB0</text>
+  <text x="120" y="183" text-anchor="middle" class="font-mono label-xs">115200 baud (default)</text>
+
+  <!-- HA TCP Port -->
+  <rect x="36" y="216" width="168" height="58" rx="7" fill="var(--bg-sub)" stroke="var(--border-sub)" stroke-width="1.2"/>
+  <text x="120" y="237" text-anchor="middle" class="font-sans label-bold">Network TCP</text>
+  <text x="120" y="254" text-anchor="middle" class="font-mono label-xs">socket://&lt;host&gt;:8899</text>
+  <text x="120" y="267" text-anchor="middle" class="font-mono label-xs">local_push (PyPlumIO)</text>
+
+  <!-- Links: HA <-> Adapters -->
+  <!-- Path 1 USB line -->
+  <line x1="224" y1="161" x2="308" y2="161" class="wire-link"/>
+  <polygon points="316,161 307,156.5 307,165.5" fill="var(--wire-link)"/>
+  <polygon points="216,161 225,156.5 225,165.5" fill="var(--wire-link)"/>
+  <text x="266" y="151" text-anchor="middle" class="font-sans label-sm">USB</text>
+
+  <!-- Path 2 LAN/Wi-Fi line -->
+  <line x1="224" y1="245" x2="308" y2="245" class="wire-link-dashed"/>
+  <polygon points="316,245 307,240.5 307,249.5" fill="var(--wire-link)"/>
+  <polygon points="216,245 225,240.5 225,249.5" fill="var(--wire-link)"/>
+  <text x="266" y="235" text-anchor="middle" class="font-sans label-sm">LAN / Wi-Fi</text>
+  <text x="266" y="264" text-anchor="middle" class="font-mono label-xs">TCP :8899</text>
+
+  <!-- Middle Column: Path 1 (USB-to-RS-485 Adapter) -->
+  <rect x="316" y="88" width="256" height="96" rx="10" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.5"/>
+  <text x="330" y="109" class="font-sans tag-usb">PATH 1 • DIRECT USB</text>
+  <text x="330" y="131" class="font-sans card-title">USB-to-RS-485 Adapter</text>
+  <text x="330" y="150" class="font-sans label-sm">FTDI / CH340 / Industrial</text>
+  <text x="330" y="169" class="font-mono label-xs">9600–115200 baud (8N1)</text>
+
+  <!-- Path 1 Pins -->
+  <rect x="520" y="98" width="42" height="20" rx="4" fill="var(--badge-a-bg)" stroke="var(--wire-a)" stroke-width="1"/>
+  <text x="541" y="112" text-anchor="middle" class="font-mono pin-text" fill="var(--badge-a-fg)">A</text>
+  <rect x="520" y="126" width="42" height="20" rx="4" fill="var(--badge-b-bg)" stroke="var(--wire-b)" stroke-width="1"/>
+  <text x="541" y="140" text-anchor="middle" class="font-mono pin-text" fill="var(--badge-b-fg)">B</text>
+  <rect x="520" y="154" width="42" height="20" rx="4" fill="var(--badge-g-bg)" stroke="var(--wire-gnd)" stroke-width="1"/>
+  <text x="541" y="168" text-anchor="middle" class="font-mono pin-text" fill="var(--badge-g-fg)">GND</text>
+
+  <!-- Middle Column: Path 2 (RS-485-to-TCP Bridge) -->
+  <rect x="316" y="204" width="256" height="100" rx="10" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.5"/>
+  <text x="330" y="225" class="font-sans tag-tcp">PATH 2 • NETWORK BRIDGE</text>
+  <text x="330" y="247" class="font-sans card-title">RS-485-to-TCP Bridge</text>
+  <text x="330" y="266" class="font-sans label-sm">Elfin-EW11 / USR-TCP232</text>
+  <text x="330" y="285" class="font-mono label-xs">Port 8899 • 115200 8N1</text>
+
+  <!-- Path 2 Pins -->
+  <rect x="520" y="216" width="42" height="20" rx="4" fill="var(--badge-a-bg)" stroke="var(--wire-a)" stroke-width="1"/>
+  <text x="541" y="230" text-anchor="middle" class="font-mono pin-text" fill="var(--badge-a-fg)">A</text>
+  <rect x="520" y="244" width="42" height="20" rx="4" fill="var(--badge-b-bg)" stroke="var(--wire-b)" stroke-width="1"/>
+  <text x="541" y="258" text-anchor="middle" class="font-mono pin-text" fill="var(--badge-b-fg)">B</text>
+  <rect x="520" y="272" width="42" height="20" rx="4" fill="var(--badge-g-bg)" stroke="var(--wire-gnd)" stroke-width="1"/>
+  <text x="541" y="286" text-anchor="middle" class="font-mono pin-text" fill="var(--badge-g-fg)">GND</text>
+
+  <!-- Right Column: Plum ecoMAX Controller (drawn before wires so terminal boxes sit cleanly at wire ends) -->
+  <rect x="706" y="80" width="190" height="224" rx="10" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.5"/>
+  <text x="799" y="104" text-anchor="middle" class="font-sans card-title">Plum ecoMAX</text>
+  <text x="799" y="120" text-anchor="middle" class="font-sans card-sub">Controller Terminal Block</text>
+
+  <!-- Terminal Block -->
+  <rect x="720" y="132" width="162" height="160" rx="8" fill="var(--bg-sub)" stroke="var(--border-sub)" stroke-width="1.2"/>
+
+  <!-- RS-485 Bus Wires (A -> D+, B -> D-, GND -> GND) -->
+  <polyline points="562,108 596,108 596,152 732,152" class="wire-a"/>
+  <polyline points="562,226 596,226 596,152" class="wire-a"/>
+  <circle cx="596" cy="152" r="3.5" fill="var(--wire-a)"/>
+
+  <polyline points="562,136 614,136 614,204 732,204" class="wire-b"/>
+  <polyline points="562,254 614,254 614,204" class="wire-b"/>
+  <circle cx="614" cy="204" r="3.5" fill="var(--wire-b)"/>
+
+  <polyline points="562,164 632,164 632,262 732,262" class="wire-gnd"/>
+  <polyline points="562,282 632,282 632,262" class="wire-gnd"/>
+  <circle cx="632" cy="262" r="3" fill="var(--wire-gnd)"/>
+
+  <!-- Wire Labels -->
+  <text x="668" y="145" text-anchor="middle" class="font-mono label-xs" fill="var(--wire-a)">A ↔ D+</text>
+  <text x="668" y="197" text-anchor="middle" class="font-mono label-xs" fill="var(--wire-b)">B ↔ D-</text>
+  <text x="668" y="255" text-anchor="middle" class="font-mono label-xs">GND (opt.)</text>
+
+  <!-- D+ Terminal -->
+  <rect x="732" y="138" width="46" height="28" rx="5" fill="var(--badge-a-bg)" stroke="var(--wire-a)" stroke-width="1.3"/>
+  <text x="755" y="156" text-anchor="middle" class="font-mono pin-text" fill="var(--badge-a-fg)">D+</text>
+  <text x="788" y="156" class="font-sans label-sm">Data +</text>
+
+  <!-- D- Terminal -->
+  <rect x="732" y="190" width="46" height="28" rx="5" fill="var(--badge-b-bg)" stroke="var(--wire-b)" stroke-width="1.3"/>
+  <text x="755" y="208" text-anchor="middle" class="font-mono pin-text" fill="var(--badge-b-fg)">D-</text>
+  <text x="788" y="208" class="font-sans label-sm">Data -</text>
+
+  <!-- GND Terminal -->
+  <rect x="732" y="248" width="46" height="28" rx="5" fill="var(--badge-g-bg)" stroke="var(--wire-gnd)" stroke-width="1.2"/>
+  <text x="755" y="266" text-anchor="middle" class="font-mono pin-text" fill="var(--badge-g-fg)">GND</text>
+  <text x="788" y="266" class="font-sans label-xs">Optional</text>
+
+  <!-- Bottom Callout Banner -->
+  <rect x="24" y="322" width="872" height="56" rx="8" fill="var(--bg-callout)" stroke="var(--border-callout)" stroke-width="1.2"/>
+  <text x="40" y="344" class="font-sans label-sm"><tspan class="label-bold">Twisted-Pair &amp; Bus Notes:</tspan> Use one twisted pair (e.g. Cat5e/Cat6) for A/D+ and B/D-. Keep RS-485 wiring separated from 230 V mains.</text>
+  <text x="40" y="364" class="font-sans label-sm">Default serial settings: 115200 baud, 8N1 (9600–115200 supported). Default TCP bridge port: 8899. Swap A/B if no frames arrive.</text>
+</svg>

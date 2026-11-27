@@ -1,319 +1,370 @@
-# Plum ecoMAX boiler controller integration for Home Assistant
+# Plum ecoMAX for Home Assistant
 
 [![Code Coverage](https://codecov.io/gh/denpamusic/homeassistant-plum-ecomax/graph/badge.svg)](https://codecov.io/gh/denpamusic/homeassistant-plum-ecomax)
-[![HA Marketplace](https://img.shields.io/badge/Marketplace-Default-41BDF5
-)](https://www.home-assistant.io/integrations/marketplace)
-[![stability-release-candidate](https://img.shields.io/badge/stability-pre--release-48c9b0.svg)](https://guidelines.denpa.pro/stability#release-candidate)
+[![HA Marketplace](https://img.shields.io/badge/Marketplace-Default-41BDF5)](https://www.home-assistant.io/integrations/marketplace)
+[![Stability](https://img.shields.io/badge/stability-pre--release-48c9b0.svg)](https://guidelines.denpa.pro/stability#release-candidate)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
+Local-push (`local_push`) Home Assistant integration for [Plum Sp. z o.o.](https://www.plum.pl/) ecoMAX boiler controllers and ecoSTER thermostats over RS-485 via [PyPlumIO](https://github.com/denpamusic/PyPlumIO)—no cloud or `ecoNET 300` module required.
+
+![Plum ecoMAX controllers](images/ecomax.png)
+
+> [!NOTE]
+> Looking for `ecoNET 300` cloud/LAN support instead of a direct RS-485 bridge? Use **Patryk B / jontofront's** [ecoNET 300 integration](https://github.com/jontofront/ecoNET-300-Home-Assistant-Integration), which targets Plum's `ecoNET 300` module directly.
 
 ---
 
-## 📖 Overview
+## 1. Hardware Bridge & Bus Wiring
 
-This Home Assistant integration provides support for ecoMAX controllers manufactured by [Plum Sp. z o.o.](https://www.plum.pl/).
+Wire an RS-485 bridge directly to the ecoMAX controller's RS-485 terminal block (`D+`, `D-`, optional `GND`) using either a local USB-to-RS-485 adapter or a network RS-485-to-TCP bridge:
 
-It uses the [PyPlumIO](https://github.com/denpamusic/PyPlumIO) library and supports connection to ecoMAX controllers via RS-485 over Ethernet/Wi‑Fi converters or RS-485 to USB adapters.
+![RS-485 bus wiring diagram](images/rs485-wiring.svg)
 
-![ecoMAX controllers](https://raw.githubusercontent.com/denpamusic/homeassistant-plum-ecomax/main/images/ecomax.png)
+| Adapter / Bridge Pin | ecoMAX Terminal | Notes |
+|---:|:---|:---|
+| `A` | `D+` | Differential data positive |
+| `B` | `D-` | Differential data negative |
+| `GND` | `GND` | Optional common reference |
 
-## 📑 Table of contents
+> [!CAUTION]
+> Power down the ecoMAX controller before opening its enclosure or wiring the RS-485 terminal block. Keep low-voltage RS-485 twisted-pair wiring physically separated from 230 V mains conductors. If no frames arrive after setup, swap `A` and `B`—RS-485 transceivers tolerate reversed polarity without damage.
 
-- [Connect the ecoMAX](#connect-the-ecomax)
-- [Installation](#-installation)
-  - [HACS](#hacs)
-  - [Manual](#manual)
-- [Configuration](#-configuration)
-- [Entities](#-entities)
-  - [Controller](#controller-hub)
-  - [Water Heater](#-water-heater)
-  - [Thermostats](#-thermostats)
-  - [Mixers](#-mixers-circuits)
-- [Events](#-events)
-- [Actions](#-actions)
-- [License](#-license)
+### Transport Specifications
 
-## 🔌 Connect the ecoMAX
+- **Network (TCP):** `socket://<host>:<port>`, default port **`8899`**. Works with RS-485-to-Ethernet/Wi-Fi bridges such as **Elfin-EW11** or **USR-TCP232** configured as a transparent TCP server (`115200 8N1`). Home Assistant sets the controller device's configuration link to `http://<host>` for quick bridge access.
+- **Serial (USB):** direct serial device path (for example `/dev/ttyUSB0` or `/dev/serial/by-id/...`). Default baudrate is **`115200`**; supported baudrates are `9600`, `14400`, `19200`, `38400`, `57600`, and `115200`. When running Home Assistant in a container, pass the USB serial device into the container.
 
-You can connect your ecoMAX controller in two ways:
+---
 
-- Directly to the machine running Home Assistant using an RS-485 to USB adapter.
-- Wirelessly via an RS-485 to Wi‑Fi converter so the Home Assistant host can be remote from the boiler.
+## 2. Install & Connect
 
-Locate the RS-485 terminal on the ecoMAX (pins labeled "D+" and "D-") and wire your adapter as follows:
+### Home Assistant Marketplace
 
-| Adapter | ecoMAX |
-|---:|:---|
-| A | D+ |
-| B | D- |
-| GND | GND (optional) |
+Install directly from the built-in [Home Assistant Marketplace](https://hacs.xyz/docs/marketplace/) (Home Assistant `2026.11+`, formerly HACS):
 
-### ecoNET 300
+1. Open **Settings → Marketplace**, search for **Plum ecoMAX**, and install the integration. Or use the direct redirect button below (which automatically redirects to Marketplace):
 
-This integration is built upon the PyPlumIO library, which was originally designed as an alternative to the ecoNET 300 device. For users who possess the original ecoNET 300 from Plum, **Patryk B** has developed an excellent Home Assistant integration.
+   [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=denpamusic&repository=homeassistant-plum-ecomax&category=integration)
 
-The development of this ecoNET 300 integration has been resumed by **jontofront**, ensuring that it receives regular updates and fixes. If you own an ecoNET 300 device, I encourage you to [explore this integration](https://github.com/jontofront/ecoNET-300-Home-Assistant-Integration).
+2. Restart Home Assistant.
 
-## 📦 Installation
-
-### HACS
-
-HACS is the recommended installation method. Click the button below to install via HACS:
-
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=denpamusic&repository=homeassistant-plum-ecomax&category=integration)
-
-### Manual
+3. Go to **Settings → Devices & services → Add integration**, search for **Plum ecoMAX**, and select **Connect via network (TCP)** or **Connect via serial (RS-485)**.
 
 <details>
-<summary><b>Manual installation</b> <i>(click to expand)</i></summary>
+<summary>Manual installation (without Marketplace)</summary>
 
 1. Clone the repository:
 
-```sh
-git clone https://github.com/denpamusic/homeassistant-plum-ecomax
-```
+   ```sh
+   git clone https://github.com/denpamusic/homeassistant-plum-ecomax
+   ```
 
-2. Copy the `custom_components` directory to your Home Assistant configuration folder (next to configuration.yaml):
+2. Copy `custom_components/plum_ecomax` into your Home Assistant `<config>/custom_components/` directory:
 
-```sh
-cp -r ./homeassistant-plum-ecomax/custom_components ~/.homeassistant
-```
+   ```sh
+   cp -r ./homeassistant-plum-ecomax/custom_components/plum_ecomax ~/.homeassistant/custom_components/
+   ```
 
-3. Restart Home Assistant.
-
-</details>
-
-## ⚙️ Configuration
-
-Add the Plum ecoMAX integration from Home Assistant's UI:
-
-Settings → Devices & Services → Add Integration → search for "Plum ecoMAX".
-
-Choose the connection type:
-
-- Network (RS-485 to Wi‑Fi): provide Host and Port.
-- Serial: provide Device path and Baudrate.
-
-If running Home Assistant in Docker, ensure the adapter device is mapped into the container.
-
-## 🏠 Entities
-
-The integration exposes entities on the main controller device and its sub-devices. Available entities depend on your controller model and connected modules. Unsupported entities will be disabled during setup.
-
-Note: ecoMAX pellet boiler controller model names use a "p" suffix (e.g., ecoMAX 850p), while installation controllers use an "i" suffix (e.g., ecoMAX 850i).
-
-**Legend:**
-- <kbd>i</kbd> — ecoMAX installation controller
-- <kbd>p</kbd> — ecoMAX pellet boiler controller
-
-> **Note:** Temperature changes smaller than 0.1°C are > ignored to reduce Home Assistant database clutter.
-
-### 🔥 Controller
-
-<details>
-<summary><b>Sensors</b> <i>(click to expand)</i></summary>
-
-- Heating temperature
-- Heating temperature
-- Water heater temperature
-- Outside temperature
-- Heating target temperature
-- Water heater target temperature
-- Heating mode
-- Exhaust temperature
-- Feeder temperature
-- Return temperature
-- Heating load
-- Fan power
-- Fuel level
-- Fuel consumption
-- Total fuel burned¹
-- Heating power
-- Lower buffer temperature²
-- Upper buffer temperature²
-- Flame intensity²
-- Oxygen level³
-- Solar temperature <kbd>i</kbd>
-- Fireplace temperature <kbd>i</kbd>
-
-¹ Meter entity: counts burned fuel while Home Assistant runs.  
-² Requires controller support.  
-³ Requires ecoLAMBDA module.
+3. Restart Home Assistant, then add **Plum ecoMAX** from **Settings → Devices & services → Add integration**.
 
 </details>
 
-<details>
-<summary><b>Binary sensors</b> <i>(click to expand)</i></summary>
+### Startup & Availability Behavior
 
-- Heating pump state
-- Water heater pump state
-- Circulation pump state
-- Fan state
-- Lighter state
-- Exhaust fan state
-- Fireplace pump state <kbd>i</kbd>
-- Solar pump state <kbd>i</kbd>
+![Local-push architecture and reactive entity pipeline](images/architecture.svg)
 
-</details>
-
-<details>
-<summary><b>Selects</b> <i>(click to expand)</i></summary>
-
-- Summer mode (on, off, auto)
-
-</details>
-
-<details>
-<summary><b>Switches</b> <i>(click to expand)</i></summary>
-
-- Controller power
-- Water heater disinfection
-- Water heater pump
-- Weather control <kbd>p</kbd>
-- Fuzzy logic <kbd>p</kbd>
-- Heating schedule <kbd>p</kbd>
-- Water heater schedule <kbd>p</kbd>
-
-</details>
-
-<details>
-<summary><b>Numbers</b> <i>(click to expand)</i></summary>
-
-- Heating temperature <kbd>p</kbd>
-- Minimum heating power <kbd>p</kbd>
-- Maximum heating power <kbd>p</kbd>
-- Minimum heating temperature <kbd>p</kbd>
-- Maximum heating temperature <kbd>p</kbd>
-- Grate mode temperature <kbd>p</kbd>
-- Fuel calorific value <kbd>p</kbd>
-
-</details>
-
-<details>
-<summary><b>Diagnostics</b> <i>(click to expand)</i></summary>
-
-- Alert
-- Connection status
-- Service password
-- Connected modules
-
-</details>
-
-### 💧 Water heater
-
-The integration provides a Home Assistant water heater entity for indirect water heaters. You can set target temperature, toggle priority mode, or turn the heater off.
-
-Home Assistant heater states map to ecoMAX modes:
-
-| Home Assistant Heater State | ecoMAX Heater Mode |
-|----------------------------:|--------------------:|
-| Performance                 | Priority Mode       |
-| Eco                         | Non-Priority Mode   |
-
-### 🌡️ Thermostats
-
-Each connected ecoSTER thermostat is exposed as a Home Assistant climate entity, allowing monitoring and control of room temperature and ecoSTER modes.
-
-### 🔀 Mixers (Circuits)
-
-Mixers (called circuits on installation controllers) are logical devices detected once when the integration is added.
-
-Sensors:
-- Mixer temperature
-- Mixer target temperature
-
-Binary sensors:
-- Mixer pump
-
-Selects:
-- Work mode (off, heating, floor, pump_only) <kbd>p</kbd>
-
-Switches:
-- Enable mixer <kbd>i</kbd>
-- Enable in summer mode
-- Weather control <kbd>p</kbd>
-- Disable pump on thermostat <kbd>p</kbd>
-
-Numbers:
-- Mixer temperature
-- Minimum mixer temperature
-- Maximum mixer temperature
-- Day target mixer temperature <kbd>i</kbd> — second circuit only
-- Night target mixer temperature <kbd>i</kbd> — second circuit only
-
-## 📢 Events
-
-The integration uses the following events:
-
-### plum_ecomax_alert
-
-Fired when the ecoMAX controller issues an alert.
-
-**Event data:**
-- `name` — Config entry name
-- `code` — Alert code
-- `from` — Datetime object representing alert start time
-- `to` <sup>1</sup> — Datetime object representing alert end time
-
-<sup>1</sup> _Only present if the alert has ended._
+- **Non-blocking reactive startup:** Entry setup connects to the RS-485 bus and waits only for device identification and the initial `sensors` frame (`15 s` timeout). Built-in entities and detected sub-devices (`mixers`/`circuits`, `thermostats`) register reactively as their backing keys arrive in subsequent frames. Unsupported built-in entities are never created on fresh installs.
+- **Disconnect & offline availability:** All entities except **Connection status** and **Total fuel burned** switch to `unavailable` whenever the RS-485 connection drops. This includes `climate` (ecoSTER thermostat) and `water_heater` entities, which also start `unavailable` until their first data keys arrive from the controller.
+- **Database noise reduction:** Temperature sensors apply a **`0.1 °C`** deadband filter throttled to `10 s` updates to keep the Home Assistant recorder database compact.
 
 ---
 
-## ⚙️ Actions
+## 3. Power-User Extensibility (`Configure` Menu)
 
-This integration provides the following actions:
+### Adding Custom & `regdata` Entities
 
-### 🔍 Get parameter
+Every Plum firmware exposes model-specific keys and raw regulator registers beyond the built-in entity set.
 
-Retrieve a device parameter by name.
+1. Open **Settings → Devices & services → Plum ecoMAX → Configure** and choose **Add a new entity** (or **Edit an entity** / **Remove an entity**).
+2. Select a **Source device**:
+   - `ecomax` (*Common*) — decoded keys on the main controller
+   - `regdata` (*Extended*) — raw numeric register IDs under `regdata`
+   - `mixer_<index>` (*Mixer N*) — keys on a detected mixer/circuit
+   - `thermostat_<index>` (*Thermostat N*) — keys on a detected ecoSTER thermostat
+3. Select an **Entity type**: `sensor`, `binary_sensor`, `number`, or `switch` (`regdata` sources support read-only `sensor` and `binary_sensor` entities).
+4. Pick a **Key** directly from the dropdown—the **Add a new entity** menu automatically lists every available, unconfigured key or numeric `regdata` ID for that source and entity type along with its live value (no need to inspect Diagnostics first)—and configure the entity options:
+   - `unit_of_measurement` (`sensor`, `number`)
+   - `device_class` (`sensor`, `binary_sensor`, `number`)
+   - `state_class` (`sensor`)
+   - `mode` (`auto`, `box`, or `slider` for `number`)
+   - `update_interval` (`10`–`60` s, default `10` s for `sensor`)
+   - `step` (automatically populated from the controller's parameter metadata for `number` entities)
 
-**Fields:** `name`  
-**Targets:** `ecomax`, `mixer`
+> [!TIP]
+> Custom entities on `ecomax`, `mixer_*`, `thermostat_*`, and `regdata` register immediately on reload. A custom `regdata` entity remains `available` only while the RS-485 link is up and its numeric register ID is present in incoming `regdata` frames.
 
-**Response:**
-- `name` — Parameter name
-- `value` — Parameter value
-- `min_value` — Minimum allowed value
-- `max_value` — Maximum allowed value
-- `device_type` — Device type
-- `device_uid` — Device unique identifier
-- `device_index` <sup>1</sup> — Sub-device identifier
+### Rediscovering Sub-Devices
 
-<sup>1</sup> _Root device (controller) is 0; connected mixers are 1–5._
+If you wire an ecoSTER thermostat, add a mixer/circuit, or connect an indirect water heater temperature sensor after initial setup, open **Configure → Rediscover connected devices**. Home Assistant re-scans connected sub-devices and reloads the integration entry.
 
-### 📝 Set parameter
+---
 
-Set a device parameter by name.
+## 4. Automation & Control Recipes
 
-**Fields:** `name`, `value`  
-**Targets:** `ecomax`, `mixer`
+![Home Assistant thermostat card](images/climate-card.png)
 
-### 📅 Get schedule
+### Boiler Alert Notifications (`plum_ecomax_alert`)
 
-Retrieve schedules from the device.
+The integration emits `plum_ecomax_alert` on Home Assistant's event bus whenever an alert starts or clears, and automatically formats matching entries in the **Home Assistant Logbook**. Event payload fields:
 
-**Fields:** `type` (heating, water_heater), `weekdays` (monday, tuesday, etc.)
+- `name` — Config entry name
+- `device_id` — Home Assistant device ID
+- `code` — Alert code reported by the controller
+- `from` — Start timestamp (`YYYY-MM-DD HH:MM:SS`)
+- `to` — End timestamp (`YYYY-MM-DD HH:MM:SS`, present only after the alert clears)
 
-**Response:** `schedules` — Dictionary of schedule states keyed by start times
+```yaml
+alias: Plum ecoMAX alert notification
+triggers:
+  - trigger: event
+    event_type: plum_ecomax_alert
+actions:
+  - action: persistent_notification.create
+    data:
+      title: "Boiler Alert ({{ trigger.event.data.name }})"
+      message: >
+        Code {{ trigger.event.data.code }} —
+        {% if trigger.event.data.to is defined %}
+          cleared at {{ trigger.event.data.to }} (started {{ trigger.event.data.from }}).
+        {% else %}
+          active since {{ trigger.event.data.from }}.
+        {% endif %}
+```
 
-### 📅 Set schedule
+### Reading & Writing Raw Parameters
 
-Configure device schedules.
+Use `plum_ecomax.get_parameter` and `plum_ecomax.set_parameter` to inspect bounds or adjust any writable parameter exposed on the controller, mixer/circuit, or thermostat device (discoverable in Diagnostics).
 
-**Fields:** `type` (heating, water_heater), `weekdays`, `preset` (day, night), `start`, `end`
+```yaml
+alias: Inspect and raise boiler target temperature
+sequence:
+  - action: plum_ecomax.get_parameter
+    data:
+      device_id: "0123456789abcdef0123456789abcdef"
+      name: heating_target_temp
+    response_variable: param
+  - if:
+      - condition: template
+        value_template: "{{ param.value < param.max_value }}"
+    then:
+      - action: plum_ecomax.set_parameter
+        data:
+          device_id: "0123456789abcdef0123456789abcdef"
+          name: heating_target_temp
+          value: "65"
+        response_variable: updated
+```
 
-### 📊 Calibrate meter
+### Automating Boiler & Circulation Schedules
 
-Set a meter entity to a specific value.
+Read or update controller schedules for any of the four supported schedule types: `heating`, `water_heater`, `circulation_pump`, and `boiler_work`.
 
-**Fields:** `value`  
-**Targets:** `total_fuel_burned`
+```yaml
+alias: Weekday circulation pump schedule
+triggers:
+  - trigger: time
+    at: "05:30:00"
+actions:
+  - action: plum_ecomax.set_schedule
+    data:
+      device_id: "0123456789abcdef0123456789abcdef"
+      type: circulation_pump
+      weekdays:
+        - monday
+        - tuesday
+        - wednesday
+        - thursday
+        - friday
+      preset: day
+      start: "06:00:00"
+      end: "22:00:00"
+  - action: plum_ecomax.get_schedule
+    data:
+      device_id: "0123456789abcdef0123456789abcdef"
+      type: circulation_pump
+      weekdays:
+        - monday
+    response_variable: current_schedule
+```
 
-### 🔄 Reset meter
+### Calibrating & Resetting the Fuel Meter
 
-Reset a meter entity value.
+`Total fuel burned` tracks fuel consumption while Home Assistant runs and restores its state across restarts. Calibrate it after a hopper refill or reset it at the start of a heating season:
 
-**Targets:** `total_fuel_burned`
+```yaml
+alias: Calibrate fuel meter after refill
+sequence:
+  - action: plum_ecomax.calibrate_meter
+    target:
+      entity_id: sensor.ecomax_total_fuel_burned
+    data:
+      value: 250.0
+```
 
-## 📄 License
+```yaml
+alias: Reset seasonal fuel meter
+sequence:
+  - action: plum_ecomax.reset_meter
+    target:
+      entity_id: sensor.ecomax_total_fuel_burned
+```
 
-This product is distributed under MIT license.
+---
+
+## 5. Reference Catalog
+
+Available entities depend on your controller model, firmware, and connected modules. Unsupported built-in entities are omitted automatically on fresh setups.
+
+**Legend:**
+
+- <kbd>p</kbd> — ecoMAX pellet boiler controller (e.g., ecoMAX 850p)
+- <kbd>i</kbd> — ecoMAX installation controller (e.g., ecoMAX 850i)
+
+<details>
+<summary><b>Controller entities</b> (sensors, binary sensors, selects, switches, numbers, diagnostics)</summary>
+
+### Sensors
+
+- Heating temperature (`°C`)
+- Water heater temperature (`°C`)
+- Outside temperature (`°C`)
+- Heating target temperature (`°C`)
+- Water heater target temperature (`°C`)
+- State (`off`, `stabilization`, `kindling`, `heating`, `paused`, `idle`, `standby`, `burning_off`, `alert`, `unknown`; attribute: `numeric_state`)
+- Oxygen level (`%`) — requires `ecoLAMBDA` module
+- Boiler power (`kW`) <kbd>p</kbd>
+- Fuel level (`%`) <kbd>p</kbd>
+- Fuel consumption (`kg/h`) <kbd>p</kbd>
+- Total fuel burned (`kg`) <kbd>p</kbd> — meter entity (`always_available`; counts fuel burned while Home Assistant runs; attribute: `burned_since_last_update` in g)
+- Boiler load (`%`) <kbd>p</kbd>
+- Fan power (`%`) <kbd>p</kbd>
+- Flame intensity (`%`) <kbd>p</kbd>
+- Feeder temperature (`°C`) <kbd>p</kbd>
+- Exhaust temperature (`°C`) <kbd>p</kbd>
+- Return temperature (`°C`) <kbd>p</kbd>
+- Lower buffer temperature (`°C`) <kbd>p</kbd>
+- Upper buffer temperature (`°C`) <kbd>p</kbd>
+- Lower solar temperature (`°C`) <kbd>i</kbd>
+- Upper solar temperature (`°C`) <kbd>i</kbd>
+- Fireplace temperature (`°C`) <kbd>i</kbd>
+
+### Binary sensors
+
+- Heating pump
+- Water heater pump
+- Circulation pump
+- Fan <kbd>p</kbd>
+- Exhaust fan <kbd>p</kbd>
+- Feeder <kbd>p</kbd> — disabled by default
+- Lighter <kbd>p</kbd>
+- Solar pump <kbd>i</kbd>
+- Fireplace pump <kbd>i</kbd>
+
+### Selects
+
+- Summer mode (`winter`, `summer`, `auto`)
+
+### Switches
+
+- Controller switch
+- Water heater disinfection switch
+- Water heater pump switch
+- Weather control switch <kbd>p</kbd>
+- Fuzzy logic switch <kbd>p</kbd>
+- Heating schedule switch <kbd>p</kbd>
+- Water heater schedule switch <kbd>p</kbd>
+
+### Numbers
+
+- Target heating temperature (`°C`) <kbd>p</kbd>
+- Minimum heating temperature (`°C`) <kbd>p</kbd>
+- Maximum heating temperature (`°C`) <kbd>p</kbd>
+- Grate mode temperature (`°C`) <kbd>p</kbd>
+- Fuzzy logic minimum power (`%`) <kbd>p</kbd>
+- Fuzzy logic maximum power (`%`) <kbd>p</kbd>
+- Fuel calorific value (`kWh/kg`) <kbd>p</kbd>
+
+### Diagnostics
+
+- Alert (`binary_sensor`, `problem`)
+- Connection status (`binary_sensor`, `connectivity`, `always_available`)
+- Service password (`sensor`)
+- Connected modules (`sensor`, count + attributes for `module_a`, `module_b`, `module_c`, `panel`, `ecoster`, `ecolambda` software versions)
+
+</details>
+
+<details>
+<summary><b>Water heater, Thermostats &amp; Mixers / Circuits</b></summary>
+
+### Water heater
+
+Provided as a Home Assistant `water_heater` entity (**Indirect water heater**) when a water heater temperature sensor is detected (`1 °C` target step, target temperature + operation mode).
+
+| Home Assistant State | ecoMAX Mode |
+|---:|:---|
+| `Performance` | Priority Mode |
+| `Eco` | Non-Priority Mode |
+| `Off` | Off |
+
+### Thermostats (`ecoSTER`)
+
+Each connected ecoSTER thermostat is exposed as a Home Assistant `climate` entity (`heat` HVAC mode, `heating`/`idle` action, `0.1 °C` target temperature step) with presets: `schedule`, `eco`, `comfort`, `away`, `airing`, `party`, `holidays`, and `antifreeze`.
+
+### Mixers / Circuits
+
+Exposed as **Mixer N** on <kbd>p</kbd> controllers and **Circuit N** on <kbd>i</kbd> controllers:
+
+- **Sensors:**
+  - Mixer / Circuit temperature (`°C`)
+  - Mixer / Circuit target temperature (`°C`)
+- **Binary sensors:**
+  - Mixer / Circuit pump
+- **Selects:**
+  - Work mode (`off`, `heating`, `heated_floor`, `pump_only`) <kbd>p</kbd>
+  - Work mode (`off`, `heating`, `heated_floor`) <kbd>i</kbd> — circuits 2 & 3 only
+- **Switches:**
+  - Enable in summer mode
+  - Weather control switch <kbd>p</kbd>
+  - Disable pump on thermostat <kbd>p</kbd>
+  - Enable circuit <kbd>i</kbd> — circuit 1 only
+- **Numbers:**
+  - Target mixer temperature (`°C`) <kbd>p</kbd>
+  - Minimum mixer temperature (`°C`) <kbd>p</kbd>
+  - Maximum mixer temperature (`°C`) <kbd>p</kbd>
+  - Target circuit temperature (`°C`) <kbd>i</kbd>
+  - Minimum circuit temperature (`°C`) <kbd>i</kbd> — circuits 2 & 3 only
+  - Maximum circuit temperature (`°C`) <kbd>i</kbd> — circuits 2 & 3 only
+  - Day target circuit temperature (`°C`) <kbd>i</kbd> — circuits 2 & 3 only
+  - Night target circuit temperature (`°C`) <kbd>i</kbd> — circuits 2 & 3 only
+
+</details>
+
+<details>
+<summary><b>Actions &amp; fields schema</b></summary>
+
+| Action | Target / `device_id` | Fields | Response Keys |
+|---|---|---|---|
+| `plum_ecomax.get_parameter` | `device_id` (controller, mixer/circuit, thermostat) | `device_id` (required), `name` (required, string) | `name`, `value`, `min_value`, `max_value`, optional `step`, `unit_of_measurement`, `device` (`type`, `index`), `product` (`model`, `uid`) |
+| `plum_ecomax.set_parameter` | `device_id` (controller, mixer/circuit, thermostat) | `device_id` (required), `name` (required, string), `value` (required: positive float or `"on"` / `"off"`) | Optional (same structure as `get_parameter`) |
+| `plum_ecomax.get_schedule` | `device_id` (controller) | `device_id` (required), `type` (`heating`, `water_heater`, `circulation_pump`, `boiler_work`), `weekdays` (list of `monday`–`sunday`) | `name`, `schedule` (`{weekday: {"HH:MM": "day" \| "night"}}`), optional `product` (`model`, `uid`) |
+| `plum_ecomax.set_schedule` | `device_id` (controller) | `device_id` (required), `type` (`heating`, `water_heater`, `circulation_pump`, `boiler_work`), `weekdays` (list of `monday`–`sunday`), `preset` (`day`, `night`), `start` (`HH:MM:SS`, default `00:00:00`), `end` (`HH:MM:SS`, default `00:00:00`) | None |
+| `plum_ecomax.calibrate_meter` | Entity target (`device_class: plum_ecomax__meter`) | `value` (required, positive float) | None |
+| `plum_ecomax.reset_meter` | Entity target (`device_class: plum_ecomax__meter`) | None | None |
+
+</details>
+
+---
+
+## License
+
+This project is distributed under the [MIT License](LICENSE).
