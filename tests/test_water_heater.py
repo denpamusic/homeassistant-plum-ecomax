@@ -1,5 +1,6 @@
 """Test the water heater platform."""
 
+import asyncio
 from unittest.mock import Mock, patch
 
 from freezegun import freeze_time
@@ -24,6 +25,8 @@ from homeassistant.const import ATTR_ENTITY_ID, ATTR_FRIENDLY_NAME, STATE_OFF
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_registry import RegistryEntry
+from pyplumio.const import ATTR_CONNECTED
+from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.parameters import ParameterValues
 from pyplumio.parameters.ecomax import EcomaxNumber, EcomaxNumberDescription
 import pytest
@@ -223,12 +226,14 @@ async def test_indirect_water_heater(
 @pytest.mark.usefixtures("ecomax_p")
 async def test_water_heater_guards_before_parameters_arrive(
     hass: HomeAssistant,
+    ecomax_p: EcoMAX,
     setup_config_entry,
     async_set_operation_mode,
     async_set_temperature,
     caplog,
 ) -> None:
     """Test water heater set calls warn and skip before parameters load."""
+    await ecomax_p.load({"water_heater_temp": 45.0})
     with patch(
         "custom_components.plum_ecomax.connection.EcomaxConnection.has_water_heater",
         True,
@@ -324,3 +329,190 @@ async def test_water_heater_unsubscribes_on_unload(
     state = hass.states.get("water_heater.ecomax_indirect_water_heater")
     assert isinstance(state, State)
     assert state.state == "unavailable"
+
+
+@pytest.mark.usefixtures("ecomax_p", "water_heater")
+async def test_water_heater_availability_on_disconnect(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    setup_config_entry,
+) -> None:
+    """Test water heater availability reflects connection state."""
+    connected_event = asyncio.Event()
+    connected_event.set()
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.connected",
+        connected_event,
+        create=True,
+    ):
+        await setup_config_entry()
+        indirect_water_heater_entity_id = "water_heater.ecomax_indirect_water_heater"
+        state = hass.states.get(indirect_water_heater_entity_id)
+        assert isinstance(state, State)
+        assert state.state == STATE_OFF
+
+        connection.connected.clear()
+        await connection.device.dispatch(ATTR_CONNECTED, False)
+        await hass.async_block_till_done()
+        state = hass.states.get(indirect_water_heater_entity_id)
+        assert isinstance(state, State)
+        assert state.state == "unavailable"
+
+        connection.connected.set()
+        await connection.device.dispatch(ATTR_CONNECTED, True)
+        await hass.async_block_till_done()
+        state = hass.states.get(indirect_water_heater_entity_id)
+        assert isinstance(state, State)
+        assert state.state == STATE_OFF
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_water_heater_deferred_registration(
+    hass: HomeAssistant,
+    ecomax_p: EcoMAX,
+    setup_config_entry,
+) -> None:
+    """Test water heater registers once when first backing key arrives."""
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.has_water_heater",
+        True,
+    ):
+        await setup_config_entry()
+
+    indirect_water_heater_entity_id = "water_heater.ecomax_indirect_water_heater"
+    entity_registry = er.async_get(hass)
+    assert entity_registry.async_get(indirect_water_heater_entity_id) is None
+
+    await ecomax_p.dispatch("water_heater_temp", 48.0)
+    await hass.async_block_till_done()
+
+    assert entity_registry.async_get(indirect_water_heater_entity_id) is not None
+    state = hass.states.get(indirect_water_heater_entity_id)
+    assert isinstance(state, State)
+    assert state.attributes[ATTR_CURRENT_TEMPERATURE] == 48.0
+
+    # Subsequent sibling key does not raise or double-register.
+    await ecomax_p.dispatch(
+        "water_heater_work_mode",
+        EcomaxNumber(
+            device=ecomax_p,
+            values=ParameterValues(value=1, min_value=0, max_value=2),
+            description=EcomaxNumberDescription("water_heater_work_mode"),
+        ),
+    )
+    await hass.async_block_till_done()
+    state = hass.states.get(indirect_water_heater_entity_id)
+    assert isinstance(state, State)
+    assert state.state == STATE_PERFORMANCE
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_water_heater_existing_registry_entry_without_data(
+    hass: HomeAssistant,
+    ecomax_p: EcoMAX,
+    config_entry: MockConfigEntry,
+    setup_config_entry,
+    async_set_operation_mode,
+    async_set_temperature,
+    caplog,
+) -> None:
+    """Test existing water heater registers unavailable with no data and guards calls."""
+    entity_registry = er.async_get(hass)
+    entity_registry.async_get_or_create(
+        WATER_HEATER,
+        "plum_ecomax",
+        "TEST-water_heater",
+        config_entry=config_entry,
+        suggested_object_id="ecomax_indirect_water_heater",
+    )
+
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.has_water_heater",
+        True,
+    ):
+        await setup_config_entry()
+
+    indirect_water_heater_entity_id = "water_heater.ecomax_indirect_water_heater"
+    state = hass.states.get(indirect_water_heater_entity_id)
+    assert isinstance(state, State)
+    assert state.state == "unavailable"
+
+    await ecomax_p.dispatch("water_heater_temp", 45.0)
+    await hass.async_block_till_done()
+    state = hass.states.get(indirect_water_heater_entity_id)
+    assert isinstance(state, State)
+    assert state.state != "unavailable"
+    assert state.attributes[ATTR_CURRENT_TEMPERATURE] == 45.0
+
+    with patch("pyplumio.devices.Device.set_nowait") as mock_set_nowait:
+        await async_set_temperature(hass, indirect_water_heater_entity_id, 55)
+        await async_set_operation_mode(hass, indirect_water_heater_entity_id, STATE_ECO)
+
+    mock_set_nowait.assert_not_called()
+    assert (
+        "Cannot set target temperature before water heater parameters are loaded"
+        in caplog.text
+    )
+    assert (
+        "Cannot set operation mode before water heater parameters are loaded"
+        in caplog.text
+    )
+
+
+@pytest.mark.usefixtures("ecomax_p")
+async def test_water_heater_hysteresis_as_first_event_writes_state(
+    hass: HomeAssistant,
+    ecomax_p: EcoMAX,
+    config_entry: MockConfigEntry,
+    setup_config_entry,
+) -> None:
+    """Test water heater writes state when hysteresis arrives first."""
+    entity_registry = er.async_get(hass)
+    entity_registry.async_get_or_create(
+        WATER_HEATER,
+        "plum_ecomax",
+        "TEST-water_heater",
+        config_entry=config_entry,
+        suggested_object_id="ecomax_indirect_water_heater",
+    )
+
+    with patch(
+        "custom_components.plum_ecomax.connection.EcomaxConnection.has_water_heater",
+        True,
+    ):
+        await setup_config_entry()
+
+    indirect_water_heater_entity_id = "water_heater.ecomax_indirect_water_heater"
+    state = hass.states.get(indirect_water_heater_entity_id)
+    assert isinstance(state, State)
+    assert state.state == "unavailable"
+
+    await ecomax_p.dispatch(
+        "water_heater_hysteresis",
+        EcomaxNumber(
+            device=ecomax_p,
+            values=ParameterValues(value=10, min_value=0, max_value=15),
+            description=EcomaxNumberDescription("water_heater_hysteresis"),
+        ),
+    )
+    await hass.async_block_till_done()
+
+    state = hass.states.get(indirect_water_heater_entity_id)
+    assert isinstance(state, State)
+    assert state.state != "unavailable"
+    assert state.attributes[ATTR_TARGET_TEMP_LOW] is None
+
+    # Subsequent target temperature uses the stored hysteresis.
+    await ecomax_p.dispatch(
+        "water_heater_target_temp",
+        EcomaxNumber(
+            device=ecomax_p,
+            values=ParameterValues(value=55, min_value=10, max_value=80),
+            description=EcomaxNumberDescription("water_heater_target_temp"),
+        ),
+    )
+    await hass.async_block_till_done()
+
+    state = hass.states.get(indirect_water_heater_entity_id)
+    assert isinstance(state, State)
+    assert state.attributes[ATTR_TARGET_TEMP_LOW] == 45
