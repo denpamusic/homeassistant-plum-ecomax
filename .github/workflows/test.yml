@@ -26,10 +26,11 @@ jobs:
         run: uv python install 3.14
 
       - name: Run tests with pytest
-        run: uv run --locked --python 3.14 pytest -n auto --cov-report=lcov:coverage.lcov
+        run: uv run --locked --python 3.14 pytest -n auto --cov-report=xml:coverage.xml
 
-      - if: github.event_name == 'push'
-        uses: qltysh/qlty-action/coverage@v2
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
         with:
-          token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
-          files: coverage.lcov
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          fail_ci_if_error: false

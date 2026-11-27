@@ -15,6 +15,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "arid>=2.2.4",
     "codespell==2.4.3",
     "complexipy>=8.0.1",
     "mypy==2.4.1",
@@ -31,6 +32,16 @@ package = false
 
 [tool.complexipy]
 max-complexity-allowed = 15
+
+[tool.arid]
+min-lines = 15
+ignore-comments = true
+ignore-docstrings = true
+ignore-imports = true
+ignore-signatures = true
+exclude = [
+    "tests/**",
+]
 
 [tool.codespell]
 skip = ".git,.mypy_cache,.pytest_cache,.ruff_cache,.venv,.vscode,build,*/translations/*.json"

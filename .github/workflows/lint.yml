@@ -40,6 +40,9 @@ jobs:
       - name: Run complexipy
         run: uv run --locked --python 3.14 complexipy custom_components tests --max-complexity-allowed 15
 
+      - name: Run arid
+        run: uv run --locked --python 3.14 arid custom_components scripts
+
       - name: Check translations
         run: uv run --locked --python 3.14 python scripts/sync_translations.py --check
 
