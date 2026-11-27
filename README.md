@@ -37,12 +37,6 @@ Wire an RS-485 bridge directly to the ecoMAX controller's RS-485 terminal block 
 
 ![RS-485 bus wiring diagram](images/rs485-wiring.svg)
 
-| Adapter / Bridge Pin | ecoMAX Terminal | Notes |
-|---:|:---|:---|
-| `A` | `D+` | Differential data positive |
-| `B` | `D-` | Differential data negative |
-| `GND` | `GND` | Optional common reference |
-
 > [!CAUTION]
 > Power down the ecoMAX controller before opening its enclosure or wiring the RS-485 terminal block. Keep low-voltage RS-485 twisted-pair wiring physically separated from 230 V mains conductors. If no frames arrive after setup, swap `A` and `B`—RS-485 transceivers tolerate reversed polarity without damage.
 
@@ -86,7 +80,9 @@ Install directly from the built-in [Home Assistant Marketplace](https://hacs.xyz
 
 </details>
 
-### Startup & Availability Behavior
+---
+
+## 3. Architecture & Runtime Behavior
 
 ![Direct RS-485 architecture and reactive entity pipeline](images/architecture.svg)
 
@@ -96,7 +92,7 @@ Install directly from the built-in [Home Assistant Marketplace](https://hacs.xyz
 
 ---
 
-## 3. Power-User Extensibility (`Configure` Menu)
+## 4. Power-User Extensibility (`Configure` Menu)
 
 ### Adding Custom Entities
 
@@ -126,7 +122,7 @@ If you wire an ecoSTER thermostat, add a mixer/circuit, or connect an indirect w
 
 ---
 
-## 4. Automation & Control Recipes
+## 5. Automation & Control Recipes
 
 ![Home Assistant thermostat card](images/climate-card.png)
 
@@ -239,7 +235,7 @@ sequence:
 
 ---
 
-## 5. Reference Catalog
+## 6. Reference Catalog
 
 Available entities depend on your controller model, firmware, and connected modules. Unsupported built-in entities are omitted automatically on fresh setups.
 

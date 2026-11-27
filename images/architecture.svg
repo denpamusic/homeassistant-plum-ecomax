@@ -1,94 +1,103 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 220" role="img" aria-labelledby="arch-title arch-desc">
-  <title id="arch-title">RS-485 data flow from Plum ecoMAX to Home Assistant</title>
-  <desc id="arch-desc">Four-stage pipeline: ecoMAX RS-485 bus frames flow through PyPlumIO into Home Assistant reactive startup and supported platforms and features.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="356" viewBox="0 0 680 356" role="img" aria-labelledby="title desc">
+  <title id="title">Layered architecture of Plum ecoMAX for Home Assistant</title>
+  <desc id="desc">Four-stage Z-map from hardware to Home Assistant: stage 1 ecoMAX RS-485 bus (controller, mixers, ecoSTER, sensors, parameters, regdata) exchanges Serial or TCP streams with stage 2 PyPlumIO (binary frame codec, BCC verification, auto-reconnect, pub/sub device state), which exchanges key events and writes with stage 3 plum_ecomax (fast boot on first sensors frame, lazy entity registration, 0.1 C deadband filter), which exchanges states and actions with stage 4 Home Assistant (7 platforms, custom entities, 6 actions, alert bus, and Logbook).</desc>
   <style>
     :root {
-      --bg-canvas: #f8fafc;
-      --border-canvas: #cbd5e1;
-      --bg-card: #ffffff;
-      --border-card: #94a3b8;
-      --bg-sub: #f1f5f9;
-      --border-sub: #cbd5e1;
-      --text-primary: #0f172a;
-      --text-secondary: #475569;
-      --text-muted: #64748b;
-      --accent: #0284c7;
-      --accent-2: #0f766e;
+      --card: #F8FAFC; --card-edge: #CBD5E1; --knockout: #FFFFFF;
+      --ink: #0F172A; --ink2: #334155; --ink3: #475569; --hair: #64748B;
+      --b: #0284C7; --b-ink: #0369A1;
+      --teal: #0F766E; --teal-ink: #0F766E;
+      --ha: #18BCF2; --plum: #68478D;
+      --dev: #1E293B; --dev-edge: #0F172A;
     }
-
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg-canvas: #0d1117;
-        --border-canvas: #30363d;
-        --bg-card: #161b22;
-        --border-card: #484f58;
-        --bg-sub: #21262d;
-        --border-sub: #30363d;
-        --text-primary: #f0f6fc;
-        --text-secondary: #c9d1d9;
-        --text-muted: #8b949e;
-        --accent: #38bdf8;
-        --accent-2: #2dd4bf;
+        --card: #161B22; --card-edge: #30363D; --knockout: #0D1117;
+        --ink: #F0F6FC; --ink2: #C9D1D9; --ink3: #9EA7B3; --hair: #8B949E;
+        --b: #41BDF5; --b-ink: #7DD3FC;
+        --teal: #2DD4BF; --teal-ink: #2DD4BF;
+        --ha: #41BDF5; --plum: #FFFFFF;
+        --dev: #262C36; --dev-edge: #57606A;
       }
     }
-
-    .font-sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
-    .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-    .title { font-size: 14px; font-weight: 700; fill: var(--text-primary); }
-    .step-tag { font-size: 9.5px; font-weight: 700; fill: var(--accent); letter-spacing: 0.05em; }
-    .card-title { font-size: 13px; font-weight: 700; fill: var(--text-primary); }
-    .card-line { font-size: 11px; fill: var(--text-secondary); }
-    .card-mono { font-size: 10.5px; fill: var(--accent-2); }
-    .foot { font-size: 11px; fill: var(--text-secondary); }
-    .foot-bold { font-weight: 600; fill: var(--text-primary); }
-    .arrow { stroke: var(--accent); stroke-width: 2; fill: none; }
+    .sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .card { fill: var(--card); stroke: var(--card-edge); }
+    .knockout { fill: var(--knockout); }
+    .ink { fill: var(--ink); } .ink2 { fill: var(--ink2); } .ink3 { fill: var(--ink3); }
+    .b-ink { fill: var(--b-ink); } .teal-ink { fill: var(--teal-ink); }
+    .ha { fill: var(--ha); } .plum { fill: var(--plum); }
+    .dev { fill: var(--dev); stroke: var(--dev-edge); }
+    .line-teal { stroke: var(--teal); fill: none; }
+    .line-b { stroke: var(--b); fill: none; }
+    .line-hair { stroke: var(--hair); fill: none; }
+    .fill-teal { fill: var(--teal); }
+    .fill-b { fill: var(--b); }
+    .fill-hair { fill: var(--hair); }
+    .t-tag { font-size: 12.5px; font-weight: 700; letter-spacing: 0.07em; }
+    .t-h { font-size: 18px; font-weight: 700; }
+    .t-b { font-size: 14px; }
+    .t-link { font-size: 13px; font-weight: 700; }
   </style>
-
-  <rect x="4" y="4" width="912" height="212" rx="12" fill="var(--bg-canvas)" stroke="var(--border-canvas)" stroke-width="1.5"/>
-  <text x="24" y="32" class="font-sans title">Direct RS-485 Architecture &amp; Reactive Entity Pipeline</text>
-
-  <!-- Stage 1 -->
-  <rect x="24" y="48" width="184" height="118" rx="9" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.4"/>
-  <text x="38" y="68" class="font-sans step-tag">1. CONTROLLER BUS</text>
-  <text x="38" y="88" class="font-sans card-title">ecoMAX RS-485</text>
-  <text x="38" y="108" class="font-mono card-mono">sensors • alerts</text>
-  <text x="38" y="126" class="font-mono card-mono">parameters • regdata</text>
-  <text x="38" y="144" class="font-sans card-line">mixers &amp; ecoSTER frames</text>
-
-  <line x1="208" y1="107" x2="230" y2="107" class="arrow"/>
-  <polygon points="238,107 229,102.5 229,111.5" fill="var(--accent)"/>
-
-  <!-- Stage 2 -->
-  <rect x="238" y="48" width="194" height="118" rx="9" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.4"/>
-  <text x="252" y="68" class="font-sans step-tag">2. PROTOCOL DRIVER</text>
-  <text x="252" y="88" class="font-sans card-title">PyPlumIO</text>
-  <text x="252" y="108" class="font-mono card-mono">Serial / TCP stream</text>
-  <text x="252" y="126" class="font-sans card-line">Decodes binary frames</text>
-  <text x="252" y="144" class="font-sans card-line">Publishes key events</text>
-
-  <line x1="432" y1="107" x2="454" y2="107" class="arrow"/>
-  <polygon points="462,107 453,102.5 453,111.5" fill="var(--accent)"/>
-
-  <!-- Stage 3 -->
-  <rect x="462" y="48" width="204" height="118" rx="9" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.4"/>
-  <text x="476" y="68" class="font-sans step-tag">3. REACTIVE SETUP</text>
-  <text x="476" y="88" class="font-sans card-title">Fast Boot &amp; Discovery</text>
-  <text x="476" y="108" class="font-mono card-mono">wait_for("sensors")</text>
-  <text x="476" y="126" class="font-sans card-line">Defers remaining entities</text>
-  <text x="476" y="144" class="font-sans card-line">Skips unsupported keys</text>
-
-  <line x1="666" y1="107" x2="688" y2="107" class="arrow"/>
-  <polygon points="696,107 687,102.5 687,111.5" fill="var(--accent)"/>
-
-  <!-- Stage 4 -->
-  <rect x="696" y="48" width="200" height="118" rx="9" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.4"/>
-  <text x="710" y="68" class="font-sans step-tag">4. HOME ASSISTANT</text>
-  <text x="710" y="88" class="font-sans card-title">Platforms &amp; Features</text>
-  <text x="710" y="108" class="font-mono card-mono">sensor • binary_sensor</text>
-  <text x="710" y="126" class="font-sans card-line">number • select • switch</text>
-  <text x="710" y="144" class="font-sans card-line">climate • water_heater • alerts</text>
-
-  <!-- Footer -->
-  <rect x="24" y="178" width="872" height="26" rx="6" fill="var(--bg-sub)" stroke="var(--border-sub)" stroke-width="1"/>
-  <text x="38" y="195" class="font-sans foot"><tspan class="foot-bold">Availability:</tspan> Only Connection status &amp; Total fuel burned stay available offline; all other entities (incl. climate &amp; water_heater) track RS-485.</text>
+    <g id="stage-1">
+  <rect id="card-1" x="16" y="14" width="284" height="130" rx="12" class="card" stroke-width="1.5"/>
+  <text x="34" y="37" class="sans t-tag ink3" data-fit="card-1">1 · HARDWARE BUS</text>
+  <g transform="translate(34 49) scale(0.32)"><path d="M38.9,22.1A38.952,38.952,0,1,0,77.79,61.047,38.924,38.924,0,0,0,38.9,22.1M64.529,0,39,5.541V18.3l25.533-5.834Z" class="plum" fill-rule="evenodd"/></g>
+  <text x="68" y="71" class="sans t-h ink" data-fit="card-1">ecoMAX RS-485</text>
+  <text x="34" y="102" class="sans t-b ink2" data-fit="card-1">Controller, mixers &amp; ecoSTER</text>
+  <text x="34" y="124" class="sans t-b ink2" data-fit="card-1">Sensors, parameters &amp; regdata</text>
+  </g>
+  <g id="link-1-2">
+  <line x1="306" y1="70" x2="369" y2="70" class="line-teal" stroke-width="2" stroke-linecap="round"/>
+  <polygon points="375,70 367,66 367,74" class="fill-teal"/>
+  <text x="340.0" y="61" text-anchor="middle" class="mono t-link ink2">Serial/TCP</text>
+  <line x1="311" y1="88" x2="374" y2="88" class="line-b" stroke-width="2" stroke-linecap="round"/>
+  <polygon points="305,88 313,84 313,92" class="fill-b"/>
+  </g>
+  <g id="stage-2">
+  <rect id="card-2" x="380" y="14" width="284" height="130" rx="12" class="card" stroke-width="1.5"/>
+  <text x="398" y="37" class="sans t-tag ink3" data-fit="card-2">2 · PROTOCOL DRIVER</text>
+  <rect x="398" y="50" width="28" height="28" rx="6" class="dev" stroke-width="1.2"/>
+  <rect x="403" y="55" width="18" height="18" rx="3" fill="none" stroke="#2DD4BF" stroke-width="1.5"/>
+  <text x="412" y="67.5" text-anchor="middle" class="mono" font-size="8.5" font-weight="700" fill="#E2E8F0">68</text>
+  <text x="436" y="71" class="mono t-h ink" data-fit="card-2">PyPlumIO</text>
+  <text x="398" y="102" class="sans t-b ink2" data-fit="card-2">Binary frame codec &amp; BCC check</text>
+  <text x="398" y="124" class="sans t-b ink2" data-fit="card-2">Auto-reconnect &amp; pub/sub state</text>
+  </g>
+  <defs><mask id="mZ"><rect x="0" y="0" width="680" height="356" fill="#FFFFFF"/><rect x="248" y="165" width="184" height="26" rx="6" fill="#000000"/></mask></defs>
+  <g id="link-2-3">
+  <path d="M522 150 C522 184 158 172 158 206" class="line-hair" stroke-width="2" stroke-linecap="round" mask="url(#mZ)"/>
+  <polygon points="522,145 517.5,153 526.5,153" class="fill-hair"/>
+  <polygon points="158,211 153.5,203 162.5,203" class="fill-hair"/>
+  <rect id="z-ko" x="248" y="165" width="184" height="26" fill="none"/>
+  <text x="340" y="183" text-anchor="middle" class="mono t-link ink2" data-fit="z-ko">key events <tspan class="ink3">⇄</tspan> writes</text>
+  </g>
+  <g id="stage-3">
+  <rect id="card-3" x="16" y="212" width="284" height="130" rx="12" class="card" stroke-width="1.5"/>
+  <text x="34" y="235" class="sans t-tag ink3" data-fit="card-3">3 · INTEGRATION GLUE</text>
+  <rect x="34" y="248" width="28" height="28" rx="6" fill="#0F766E"/>
+  <g stroke="#FFFFFF" stroke-width="1.8" fill="none" stroke-linecap="round">
+  <circle cx="43" cy="262" r="2.8" fill="#FFFFFF"/><path d="M46 262 H50 M50 262 L54 256 M50 262 L54 268"/>
+  <circle cx="54.5" cy="255.5" r="2" fill="#FFFFFF"/><circle cx="54.5" cy="268.5" r="2" fill="#FFFFFF"/>
+  </g>
+  <text x="70" y="269" class="mono t-h ink" data-fit="card-3">plum_ecomax</text>
+  <text x="34" y="300" class="sans t-b ink2" data-fit="card-3">Fast boot on first sensors frame</text>
+  <text x="34" y="322" class="sans t-b ink2" data-fit="card-3">Lazy entity setup &amp; 0.1 °C filter</text>
+  </g>
+  <g id="link-3-4">
+  <line x1="306" y1="268" x2="369" y2="268" class="line-teal" stroke-width="2" stroke-linecap="round"/>
+  <polygon points="375,268 367,264 367,272" class="fill-teal"/>
+  <text x="340.0" y="259" text-anchor="middle" class="mono t-link teal-ink">states</text>
+  <line x1="311" y1="286" x2="374" y2="286" class="line-b" stroke-width="2" stroke-linecap="round"/>
+  <polygon points="305,286 313,282 313,290" class="fill-b"/>
+  <text x="340.0" y="305" text-anchor="middle" class="mono t-link b-ink">actions</text>
+  </g>
+  <g id="stage-4">
+  <rect id="card-4" x="380" y="212" width="284" height="130" rx="12" class="card" stroke-width="1.5"/>
+  <text x="398" y="235" class="sans t-tag ink3" data-fit="card-4">4 · APPLICATION</text>
+  <g transform="translate(398 248.4) scale(0.1167)"><path d="M240 218.762C240 227.012 233.25 233.762 225 233.762H15C6.75 233.762 0 227.012 0 218.762V128.762C0 120.512 4.77 108.993 10.61 103.153L109.39 4.3725C115.22 -1.4575 124.77 -1.4575 130.6 4.3725L229.39 103.162C235.22 108.993 240 120.522 240 128.772V218.772V218.762Z" fill="#F2F4F9"/><path d="M229.39 103.153L130.61 4.3725C124.78 -1.4575 115.23 -1.4575 109.4 4.3725L10.61 103.153C4.78 108.983 0 120.512 0 128.762V218.762C0 227.012 6.75 233.762 15 233.762H107.27L66.64 193.132C64.55 193.852 62.32 194.262 60 194.262C48.7 194.262 39.5 185.062 39.5 173.762C39.5 162.462 48.7 153.262 60 153.262C71.3 153.262 80.5 162.462 80.5 173.762C80.5 176.092 80.09 178.322 79.37 180.412L111 212.042V96.1625C104.2 92.8225 99.5 85.8425 99.5 77.7725C99.5 66.4725 108.7 57.2725 120 57.2725C131.3 57.2725 140.5 66.4725 140.5 77.7725C140.5 85.8425 135.8 92.8225 129 96.1625V177.432L160.46 145.972C159.84 144.012 159.5 141.932 159.5 139.772C159.5 128.472 168.7 119.272 180 119.272C191.3 119.272 200.5 128.472 200.5 139.772C200.5 151.072 191.3 160.272 180 160.272C177.5 160.272 175.12 159.803 172.91 158.982L129 202.892V233.772H225C233.25 233.772 240 227.022 240 218.772V128.772C240 120.522 235.23 109.003 229.39 103.162V103.153Z" fill="#18BCF2"/></g>
+  <text x="436" y="269" class="sans t-h ink" data-fit="card-4">Home Assistant</text>
+  <text x="398" y="300" class="sans t-b ink2" data-fit="card-4">7 platforms &amp; custom entities</text>
+  <text x="398" y="322" class="sans t-b ink2" data-fit="card-4">6 actions, alert bus &amp; Logbook</text>
+  </g>
 </svg>
