@@ -41,10 +41,10 @@ htmlcov/
 .nox/
 .coverage
 .coverage.*
-coverage.lcov
 .cache
 nosetests.xml
 coverage.xml
+junit.xml
 *.cover
 .hypothesis/
 .pytest_cache/

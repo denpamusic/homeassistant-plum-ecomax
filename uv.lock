@@ -267,6 +267,18 @@ wheels = [
 ]
 
 [[package]]
+name = "arid"
+version = "2.2.4"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/14/93/09ce25bac33f313cf2503ffe35ad74bf721cb5727fe3d3c87f771876c92f/arid-2.2.4-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:4455769edca196143da81747d12bb057919c53199e88141da460e35039d9c31d", size = 2450674, upload-time = "2026-10-18T07:30:23.625Z" },
+    { url = "https://files.pythonhosted.org/packages/62/4e/f38592493e244210fb1d92c6d08d770605272c5e0a3aeb7109326f303d12/arid-2.2.4-py3-none-macosx_11_0_arm64.whl", hash = "sha256:7b106de28e4972338fbb5658dd33809ee3f6f614092cf695a4c2a0be5d2bec59", size = 2361554, upload-time = "2026-10-18T07:30:25.849Z" },
+    { url = "https://files.pythonhosted.org/packages/a6/de/8422a64d4ce0fa5e0601c602cb29fa29970db12e83f6244bd549150b05b4/arid-2.2.4-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:8310c047ade479415db8383229959ab1829b124a95e97023c620403482bd1a62", size = 2466909, upload-time = "2026-10-18T07:30:27.574Z" },
+    { url = "https://files.pythonhosted.org/packages/05/24/332bdc0df1ba7ea9ea95d5b3ef0d6c55d403a5d88b5d6026ae6b59f66d50/arid-2.2.4-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8932a5ac71577040311657c76eb778c98efc732a9a2d0bfb404fdc61fa67293d", size = 2569827, upload-time = "2026-10-18T07:30:29.083Z" },
+    { url = "https://files.pythonhosted.org/packages/01/ab/06d2661f01ab3e48a4f0babd64279208a73f64d1d28d7cf06dd2e159fb05/arid-2.2.4-py3-none-win_amd64.whl", hash = "sha256:61c8e5b85ce4cafb5a6bc61493dd60ce6669f72143717a688fb67a55c44ace14", size = 2277175, upload-time = "2026-10-18T07:30:30.475Z" },
+]
+
+[[package]]
 name = "ast-serialize"
 version = "0.13.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1369,6 +1381,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "arid" },
     { name = "codespell" },
     { name = "complexipy" },
     { name = "mypy" },
@@ -1388,6 +1401,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "arid", specifier = ">=2.2.4" },
     { name = "codespell", specifier = "==2.4.3" },
     { name = "complexipy", specifier = ">=8.0.1" },
     { name = "mypy", specifier = "==2.4.1" },

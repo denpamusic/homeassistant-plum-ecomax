@@ -18,6 +18,7 @@ hooks = [
     { id = "codespell", name = "codespell", entry = "uv run --frozen codespell", language = "system", types = ["text"] },
     { id = "mypy", name = "mypy", entry = "uv run --frozen mypy custom_components/plum_ecomax tests scripts", language = "system", types_or = ["python", "pyi"], pass_filenames = false },
     { id = "complexipy", name = "complexipy", entry = "uv run --frozen complexipy", language = "system", types = ["python"], exclude = "^scripts/" },
+    { id = "arid", name = "arid", entry = "uv run --frozen arid custom_components scripts", language = "system", types = ["python"], pass_filenames = false },
     { id = "sync-translations", name = "sync translations", entry = "uv run --frozen python scripts/sync_translations.py --sort", language = "system", files = "^custom_components/plum_ecomax/(strings\\.json|translations/.*\\.json)$", pass_filenames = false },
     { id = "sync-manifest", name = "sync manifest", entry = "uv run --frozen python scripts/sync_manifest.py", language = "system", files = "^(pyproject\\.toml|custom_components/plum_ecomax/manifest\\.json|hacs\\.json)$", pass_filenames = false },
 ]
