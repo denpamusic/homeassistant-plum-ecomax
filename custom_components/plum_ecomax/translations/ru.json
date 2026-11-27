@@ -450,11 +450,6 @@
         "slider": "Слайдер"
       }
     },
-    "number_unit_of_measurement": {
-      "options": {
-        "none": "Единица измерения не указана"
-      }
-    },
     "preset": {
       "options": {
         "day": "День",
@@ -467,11 +462,6 @@
         "circulation_pump": "Circulation pump",
         "heating": "Отопление",
         "water_heater": "Водонагреватель"
-      }
-    },
-    "sensor_unit_of_measurement": {
-      "options": {
-        "none": "Единица измерения не указана"
       }
     },
     "weekdays": {

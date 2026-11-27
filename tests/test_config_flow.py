@@ -28,7 +28,13 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType, InvalidData
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import config_validation as cv, entity_registry as er
+from homeassistant.helpers.selector import (
+    SelectOptionDict,
+    SelectSelector,
+    UnitOfMeasurementSelector,
+)
+import probatio
 from pyplumio.connection import Connection, SerialConnection
 from pyplumio.const import ProductType
 from pyplumio.devices.ecomax import EcoMAX
@@ -37,6 +43,7 @@ from pyplumio.structures.product_info import ProductInfo
 import pytest
 from pytest_homeassistant.common import MockConfigEntry
 
+from custom_components.plum_ecomax.config_flow import generate_edit_schema
 from custom_components.plum_ecomax.const import (
     ATTR_ENTITIES,
     ATTR_REGDATA,
@@ -1358,3 +1365,260 @@ async def test_rediscover_devices(
     expected_data[CONF_SUB_DEVICES] = mock_async_get_sub_devices.return_value
     mock_async_update_entry.assert_has_calls([call(config_entry, data=expected_data)])
     mock_async_reload.assert_awaited_once_with(config_entry.entry_id)
+
+
+@pytest.mark.parametrize(
+    ("platform", "expected_context", "prior_fields", "base_input"),
+    (
+        (
+            Platform.SENSOR,
+            {
+                "filter_device_class": CONF_DEVICE_CLASS,
+                "filter_state_class": CONF_STATE_CLASS,
+            },
+            (CONF_DEVICE_CLASS, CONF_STATE_CLASS),
+            {CONF_NAME: "Custom sensor", CONF_KEY: "custom_sensor"},
+        ),
+        (
+            Platform.NUMBER,
+            {"filter_device_class": CONF_DEVICE_CLASS},
+            (CONF_DEVICE_CLASS,),
+            {
+                CONF_NAME: "Custom number",
+                CONF_KEY: "custom_number",
+                CONF_MODE: NumberMode.BOX,
+            },
+        ),
+    ),
+    ids=["sensor", "number"],
+)
+def test_generate_edit_schema_unit_of_measurement_selector(
+    platform: Platform,
+    expected_context: dict[str, str],
+    prior_fields: tuple[str, ...],
+    base_input: dict[str, Any],
+) -> None:
+    """Test UnitOfMeasurementSelector configuration and ordering in edit schema."""
+    source_options = [SelectOptionDict(value=base_input[CONF_KEY], label="Test")]
+    schema = generate_edit_schema(platform, source_options, {})
+
+    fields = [marker.schema for marker in schema.schema]
+    uom_index = fields.index(CONF_UNIT_OF_MEASUREMENT)
+    for field in prior_fields:
+        assert fields.index(field) < uom_index
+
+    uom_marker = next(
+        marker for marker in schema.schema if marker.schema == CONF_UNIT_OF_MEASUREMENT
+    )
+    selector = schema.schema[uom_marker]
+    assert not isinstance(selector, SelectSelector)
+    assert isinstance(selector, UnitOfMeasurementSelector)
+    assert selector.config["context"] == expected_context
+    assert uom_marker.default is probatio.UNDEFINED
+
+    serialized = probatio.to_field_list(schema, custom_serializer=cv.custom_serializer)
+    assert isinstance(serialized, list)
+    serialized_names = [field["name"] for field in serialized]
+    serialized_uom_index = serialized_names.index(CONF_UNIT_OF_MEASUREMENT)
+    for field in prior_fields:
+        assert serialized_names.index(field) < serialized_uom_index
+
+    serialized_uom = serialized[serialized_uom_index]
+    assert serialized_uom == {
+        "name": CONF_UNIT_OF_MEASUREMENT,
+        "optional": True,
+        "required": False,
+        "selector": {"unit_of_measurement": {"context": expected_context}},
+    }
+
+    for unit in (UnitOfTemperature.CELSIUS, "custom_unit", None):
+        validated = schema({**base_input, CONF_UNIT_OF_MEASUREMENT: unit})
+        assert validated[CONF_UNIT_OF_MEASUREMENT] == unit
+
+    with pytest.raises(probatio.Invalid):
+        schema({**base_input, CONF_UNIT_OF_MEASUREMENT: 123})
+
+    edit_schema = generate_edit_schema(
+        platform,
+        source_options,
+        {CONF_UNIT_OF_MEASUREMENT: UnitOfTemperature.CELSIUS},
+    )
+    edit_uom_marker = next(
+        marker
+        for marker in edit_schema.schema
+        if marker.schema == CONF_UNIT_OF_MEASUREMENT
+    )
+    assert edit_uom_marker.default() == UnitOfTemperature.CELSIUS
+    prepopulated = edit_schema(base_input)
+    assert prepopulated[CONF_UNIT_OF_MEASUREMENT] == UnitOfTemperature.CELSIUS
+
+    serialized_edit = probatio.to_field_list(
+        edit_schema, custom_serializer=cv.custom_serializer
+    )
+    assert isinstance(serialized_edit, list)
+    serialized_edit_uom = next(
+        field for field in serialized_edit if field["name"] == CONF_UNIT_OF_MEASUREMENT
+    )
+    assert serialized_edit_uom["default"] == UnitOfTemperature.CELSIUS
+
+
+@pytest.mark.parametrize(
+    ("platform", "user_input", "expected_error"),
+    (
+        (
+            Platform.SENSOR,
+            {
+                CONF_NAME: "Custom sensor",
+                CONF_KEY: "custom_sensor",
+                CONF_UNIT_OF_MEASUREMENT: "custom_unit",
+            },
+            None,
+        ),
+        (
+            Platform.SENSOR,
+            {
+                CONF_NAME: "Custom sensor",
+                CONF_KEY: "custom_sensor",
+                CONF_UNIT_OF_MEASUREMENT: None,
+            },
+            None,
+        ),
+        (
+            Platform.SENSOR,
+            {
+                CONF_NAME: "Custom sensor",
+                CONF_KEY: "custom_sensor",
+                CONF_DEVICE_CLASS: SensorDeviceClass.TEMPERATURE,
+                CONF_UNIT_OF_MEASUREMENT: "custom_unit",
+            },
+            {
+                CONF_UNIT_OF_MEASUREMENT: (
+                    "'custom_unit' is not a valid unit for device class "
+                    "'temperature'; expected one of 'K', '°C', '°F'"
+                )
+            },
+        ),
+        (
+            Platform.SENSOR,
+            {
+                CONF_NAME: "Custom sensor",
+                CONF_KEY: "custom_sensor",
+                CONF_DEVICE_CLASS: SensorDeviceClass.TEMPERATURE,
+                CONF_UNIT_OF_MEASUREMENT: None,
+            },
+            {
+                CONF_UNIT_OF_MEASUREMENT: (
+                    "'None' is not a valid unit for device class "
+                    "'temperature'; expected one of 'K', '°C', '°F'"
+                )
+            },
+        ),
+        (
+            Platform.NUMBER,
+            {
+                CONF_NAME: "Custom number",
+                CONF_KEY: "custom_number",
+                CONF_MODE: NumberMode.BOX,
+                CONF_UNIT_OF_MEASUREMENT: "custom_unit",
+            },
+            None,
+        ),
+        (
+            Platform.NUMBER,
+            {
+                CONF_NAME: "Custom number",
+                CONF_KEY: "custom_number",
+                CONF_MODE: NumberMode.BOX,
+                CONF_UNIT_OF_MEASUREMENT: None,
+            },
+            None,
+        ),
+        (
+            Platform.NUMBER,
+            {
+                CONF_NAME: "Custom number",
+                CONF_KEY: "custom_number",
+                CONF_MODE: NumberMode.BOX,
+                CONF_DEVICE_CLASS: NumberDeviceClass.TEMPERATURE,
+                CONF_UNIT_OF_MEASUREMENT: "custom_unit",
+            },
+            {
+                CONF_UNIT_OF_MEASUREMENT: (
+                    "'custom_unit' is not a valid unit for device class "
+                    "'temperature'; expected one of 'K', '°C', '°F'"
+                )
+            },
+        ),
+        (
+            Platform.NUMBER,
+            {
+                CONF_NAME: "Custom number",
+                CONF_KEY: "custom_number",
+                CONF_MODE: NumberMode.BOX,
+                CONF_DEVICE_CLASS: NumberDeviceClass.TEMPERATURE,
+                CONF_UNIT_OF_MEASUREMENT: None,
+            },
+            {
+                CONF_UNIT_OF_MEASUREMENT: (
+                    "'None' is not a valid unit for device class "
+                    "'temperature'; expected one of 'K', '°C', '°F'"
+                )
+            },
+        ),
+    ),
+    ids=[
+        "sensor custom unit without device class",
+        "sensor none unit without device class",
+        "sensor custom unit with temperature device class",
+        "sensor none unit with temperature device class",
+        "number custom unit without device class",
+        "number none unit without device class",
+        "number custom unit with temperature device class",
+        "number none unit with temperature device class",
+    ],
+)
+@pytest.mark.usefixtures("connection", "ecomax_860p3_o", "custom_fields")
+async def test_options_flow_unit_of_measurement_validation(
+    platform: Platform,
+    user_input: dict[str, Any],
+    expected_error: dict[str, str] | None,
+    hass: HomeAssistant,
+    config_entry: MockConfigEntry,
+    setup_config_entry,
+) -> None:
+    """Test server-side unit validation with UnitOfMeasurementSelector."""
+    await setup_config_entry()
+    result = await setup_options_flow(hass, config_entry)
+    result2 = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "add_entity"}
+    )
+    result3 = await hass.config_entries.options.async_configure(
+        result2["flow_id"], {CONF_SOURCE_DEVICE: "ecomax"}
+    )
+    result4 = await hass.config_entries.options.async_configure(
+        result3["flow_id"], user_input={"next_step_id": f"add_{platform}"}
+    )
+    assert result4["type"] is FlowResultType.FORM
+    assert result4["step_id"] == "entity_details"
+    assert result4["data_schema"] is not None
+
+    serialized = probatio.to_field_list(
+        result4["data_schema"], custom_serializer=cv.custom_serializer
+    )
+    assert isinstance(serialized, list)
+    uom_field = next(
+        field for field in serialized if field["name"] == CONF_UNIT_OF_MEASUREMENT
+    )
+    assert "unit_of_measurement" in uom_field["selector"]
+
+    result5 = await hass.config_entries.options.async_configure(
+        result4["flow_id"], user_input
+    )
+    if expected_error is not None:
+        assert result5["type"] is FlowResultType.FORM
+        assert result5["errors"] == expected_error
+    else:
+        assert result5["type"] is FlowResultType.CREATE_ENTRY
+        entity_key = user_input[CONF_KEY]
+        saved = result5["data"][ATTR_ENTITIES][platform][entity_key]
+        assert saved[CONF_UNIT_OF_MEASUREMENT] == user_input[CONF_UNIT_OF_MEASUREMENT]
