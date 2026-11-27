@@ -16,7 +16,7 @@ from homeassistant.helpers import (
 )
 from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from pyplumio.const import ProductType
+from pyplumio.const import ATTR_CONNECTED, ProductType
 from pyplumio.devices import Device
 from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
@@ -190,6 +190,17 @@ class EcomaxEntity(Entity):
         self._subscribe_availability(callbacks.keys())
         for name, async_update in callbacks.items():
             self.async_on_remove(self.device.subscribe(name, async_update))
+
+        if not self.entity_description.always_available:
+            self.async_on_remove(
+                self.connection.device.subscribe(
+                    ATTR_CONNECTED, self._async_on_connected
+                )
+            )
+
+    async def _async_on_connected(self, _connected: bool) -> None:
+        """Write state when physical connection status changes."""
+        self.async_write_ha_state()
 
     @callback
     def _subscribe_availability(self, keys: Iterable[str]) -> None:

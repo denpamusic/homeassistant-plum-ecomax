@@ -29,6 +29,7 @@ from homeassistant.components.climate import (
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_FRIENDLY_NAME
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_registry as er
+from pyplumio.const import ATTR_CONNECTED
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.devices.thermostat import Thermostat
 from pyplumio.parameters import ParameterValues
@@ -615,14 +616,14 @@ async def test_thermostat_availability_on_disconnect(
         assert state.state == HVACMode.HEAT
 
         connection.connected.clear()
-        await connection.device.thermostats[0].dispatch("contacts", True)
+        await connection.device.dispatch(ATTR_CONNECTED, False)
         await hass.async_block_till_done()
         state = hass.states.get(thermostat_entity_id)
         assert isinstance(state, State)
         assert state.state == "unavailable"
 
         connection.connected.set()
-        await connection.device.thermostats[0].dispatch("contacts", False)
+        await connection.device.dispatch(ATTR_CONNECTED, True)
         await hass.async_block_till_done()
         state = hass.states.get(thermostat_entity_id)
         assert isinstance(state, State)

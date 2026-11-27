@@ -133,7 +133,8 @@ class EcomaxWaterHeater(EcomaxEntity, WaterHeaterEntity):
             self._attr_native_target_temperature_low = (
                 int(self.native_target_temperature) - self.hysteresis
             )
-            self.async_write_ha_state()
+
+        self.async_write_ha_state()
 
     async def async_update_work_mode(self, value: Parameter) -> None:
         """Update current operation."""

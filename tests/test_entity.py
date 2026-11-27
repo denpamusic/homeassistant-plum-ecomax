@@ -10,6 +10,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, State
 from homeassistant.helpers import entity_platform, entity_registry as er
 from homeassistant.helpers.entity import DeviceInfo
+from pyplumio.const import ATTR_CONNECTED
 from pyplumio.devices.ecomax import EcoMAX
 from pyplumio.devices.mixer import Mixer
 from pyplumio.devices.thermostat import Thermostat
@@ -79,16 +80,25 @@ async def test_base_entity(
         await entity.async_added_to_hass()
 
     mock_filter.assert_called_once()
-    mock_subscribe.assert_has_calls([call("heating_temp", mock_filter)])
-    assert len(unsubscribe_spies) == 1
+    mock_subscribe.assert_has_calls(
+        [
+            call("heating_temp", mock_filter),
+            call(ATTR_CONNECTED, entity._async_on_connected),
+        ]
+    )
+    assert len(unsubscribe_spies) == 2
 
     # Test removing entity from hass.
     await entity.async_remove()
 
     unsubscribe_spies[0].assert_called_once_with()
+    unsubscribe_spies[1].assert_called_once_with()
     mock_filter.reset_mock()
     await ecomax_p.dispatch("heating_temp", 45.0)
     mock_filter.assert_not_called()
+    with patch.object(entity, "async_write_ha_state") as mock_write_state:
+        await ecomax_p.dispatch(ATTR_CONNECTED, False)
+    mock_write_state.assert_not_called()
 
     # Test device property.
     assert entity.device == mock_connection.device
@@ -523,12 +533,13 @@ async def test_entity_unsubscribes_startup_callback_on_remove(
         await entity.async_added_to_hass()
 
     assert len(startup_unsubscribes) == 1
-    assert len(update_unsubscribes) == 1
+    assert len(update_unsubscribes) == 2
 
     await entity.async_remove()
 
     startup_unsubscribes[0].assert_called_once_with()
     update_unsubscribes[0].assert_called_once_with()
+    update_unsubscribes[1].assert_called_once_with()
     await ecomax_p.dispatch("missing_sensor", 123)
     assert not entity.available
     entity_filter.assert_not_called()
@@ -557,15 +568,17 @@ async def test_entity_unsubscribes_startup_callback_on_remove(
         [
             call(ATTR_REGDATA, regdata_entity._async_set_available),
             call(ATTR_REGDATA, regdata_filter),
+            call(ATTR_CONNECTED, regdata_entity._async_on_connected),
         ]
     )
     assert len(startup_unsubscribes) == 1
-    assert len(update_unsubscribes) == 3
+    assert len(update_unsubscribes) == 5
 
     await regdata_entity.async_remove()
 
-    update_unsubscribes[1].assert_called_once_with()
     update_unsubscribes[2].assert_called_once_with()
+    update_unsubscribes[3].assert_called_once_with()
+    update_unsubscribes[4].assert_called_once_with()
     await ecomax_p.dispatch(ATTR_REGDATA, {9001: 42})
     assert not regdata_entity.available
     regdata_filter.assert_not_called()
@@ -661,6 +674,7 @@ async def test_config_entry_unload_after_startup_callbacks_fire(
     assert len(update_unsubscribes[ATTR_HEATING_TEMP]) == 1
     assert ATTR_REGDATA not in startup_unsubscribes
     assert len(update_unsubscribes[ATTR_REGDATA]) == 2
+    assert len(update_unsubscribes[ATTR_CONNECTED]) >= 2
 
     assert await hass.config_entries.async_unload(config_entry.entry_id)
     await hass.async_block_till_done()
@@ -669,6 +683,8 @@ async def test_config_entry_unload_after_startup_callbacks_fire(
     update_unsubscribes[ATTR_HEATING_TEMP][0].assert_called_once_with()
     update_unsubscribes[ATTR_REGDATA][0].assert_called_once_with()
     update_unsubscribes[ATTR_REGDATA][1].assert_called_once_with()
+    for unsubscribe_spy in update_unsubscribes[ATTR_CONNECTED]:
+        unsubscribe_spy.assert_called_once_with()
 
     await connection.device.dispatch(ATTR_HEATING_TEMP, 60.0)
     await connection.device.dispatch(ATTR_REGDATA, {9001: 99.0})
@@ -1096,7 +1112,7 @@ async def test_async_register_sub_device_entities_preserves_domain_scope(
 async def test_entity_always_available_skips_availability_subscription(
     hass: HomeAssistant, ecomax_p: EcoMAX, config_entry: MockConfigEntry
 ) -> None:
-    """Test always_available=True skips subscribe_once availability tracking."""
+    """Test always_available=True skips availability and connected subscriptions."""
     mock_connection = Mock(spec=EcomaxConnection)
     mock_connection.device = ecomax_p
     mock_connection.entry = config_entry
@@ -1125,6 +1141,10 @@ async def test_entity_always_available_skips_availability_subscription(
     mock_subscribe_once.assert_not_called()
     mock_subscribe.assert_called_once_with(
         "missing_always_available_key", entity_filter
+    )
+    assert (
+        call(ATTR_CONNECTED, entity._async_on_connected)
+        not in mock_subscribe.call_args_list
     )
     assert entity.available
 
@@ -1189,6 +1209,7 @@ async def test_multi_key_entity_availability_order(
         [
             call("missing_first", first_cb),
             call("present_second", second_cb),
+            call(ATTR_CONNECTED, partial_entity._async_on_connected),
         ]
     )
     await partial_entity.async_remove()
@@ -1236,6 +1257,7 @@ async def test_multi_key_entity_availability_order(
         ("subscribe_once", "missing_key_b"),
         ("subscribe", "missing_key_a"),
         ("subscribe", "missing_key_b"),
+        ("subscribe", ATTR_CONNECTED),
     ]
 
     # When first key arrives, entity becomes available before update callback runs.
@@ -1429,3 +1451,66 @@ async def test_multi_key_entity_deferred_registration_and_cancellation(
     await hass.async_block_till_done()
     unsub_yielding()
     mock_add_entities.assert_called_once_with([concurrent_entity])
+
+
+@pytest.mark.usefixtures("ecomax_p", "mixers")
+async def test_entities_availability_on_disconnect(
+    hass: HomeAssistant,
+    connection: EcomaxConnection,
+    setup_config_entry,
+) -> None:
+    """Test physical and sub-device entities update availability on disconnect."""
+    connected_event = asyncio.Event()
+    connected_event.set()
+    with (
+        patch("custom_components.plum_ecomax.connection.EcomaxConnection.async_setup"),
+        patch("custom_components.plum_ecomax.async_migrate_entry", return_value=True),
+        patch(
+            "custom_components.plum_ecomax.connection.EcomaxConnection.connected",
+            connected_event,
+            create=True,
+        ),
+    ):
+        await setup_config_entry()
+
+        heating_temp_entity_id = "sensor.ecomax_heating_temperature"
+        mixer_temp_entity_id = "sensor.ecomax_mixer_1_mixer_temperature"
+        connection_status_entity_id = "binary_sensor.ecomax_connection_status"
+
+        for entity_id, expected_state in (
+            (heating_temp_entity_id, "0.0"),
+            (mixer_temp_entity_id, "0.0"),
+            (connection_status_entity_id, "off"),
+        ):
+            state = hass.states.get(entity_id)
+            assert isinstance(state, State)
+            assert state.state == expected_state
+
+        # Disconnect without dispatching any entity data frames.
+        connection.connected.clear()
+        await connection.device.dispatch(ATTR_CONNECTED, False)
+        await hass.async_block_till_done()
+
+        for entity_id in (heating_temp_entity_id, mixer_temp_entity_id):
+            state = hass.states.get(entity_id)
+            assert isinstance(state, State)
+            assert state.state == "unavailable"
+
+        # always_available=True entities remain available on disconnect.
+        state = hass.states.get(connection_status_entity_id)
+        assert isinstance(state, State)
+        assert state.state == "off"
+
+        # Reconnect without dispatching any entity data frames.
+        connection.connected.set()
+        await connection.device.dispatch(ATTR_CONNECTED, True)
+        await hass.async_block_till_done()
+
+        for entity_id, expected_state in (
+            (heating_temp_entity_id, "0.0"),
+            (mixer_temp_entity_id, "0.0"),
+            (connection_status_entity_id, "on"),
+        ):
+            state = hass.states.get(entity_id)
+            assert isinstance(state, State)
+            assert state.state == expected_state
