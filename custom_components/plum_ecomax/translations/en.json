@@ -450,11 +450,6 @@
         "slider": "Slider"
       }
     },
-    "number_unit_of_measurement": {
-      "options": {
-        "none": "No unit of measurement"
-      }
-    },
     "preset": {
       "options": {
         "day": "Day",
@@ -467,11 +462,6 @@
         "circulation_pump": "Circulation pump",
         "heating": "Heating",
         "water_heater": "Water heater"
-      }
-    },
-    "sensor_unit_of_measurement": {
-      "options": {
-        "none": "No unit of measurement"
       }
     },
     "weekdays": {

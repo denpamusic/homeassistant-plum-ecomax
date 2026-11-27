@@ -48,10 +48,11 @@ from homeassistant.helpers.selector import (
     SelectOptionDict,
     SelectSelector,
     SelectSelectorConfig,
-    SelectSelectorMode,
     SerialPortSelector,
     StateClassSelector,
     TextSelector,
+    UnitOfMeasurementSelector,
+    UnitOfMeasurementSelectorConfig,
 )
 import probatio
 from pyplumio.connection import Connection
@@ -583,25 +584,6 @@ def generate_edit_schema(
     if platform is Platform.SENSOR:
         schema |= {
             probatio.Optional(
-                CONF_UNIT_OF_MEASUREMENT,
-                default=entity.get(CONF_UNIT_OF_MEASUREMENT, probatio.UNDEFINED),
-            ): SelectSelector(
-                SelectSelectorConfig(
-                    options=list(
-                        {
-                            str(unit)
-                            for units in SENSOR_DEVICE_CLASS_UNITS.values()
-                            for unit in units
-                            if unit is not None
-                        }
-                    ),
-                    mode=SelectSelectorMode.DROPDOWN,
-                    translation_key="sensor_unit_of_measurement",
-                    custom_value=True,
-                    sort=True,
-                ),
-            ),
-            probatio.Optional(
                 CONF_DEVICE_CLASS,
                 default=entity.get(CONF_DEVICE_CLASS, probatio.UNDEFINED),
             ): DeviceClassSelector(DeviceClassSelectorConfig(domain=Platform.SENSOR)),
@@ -609,6 +591,17 @@ def generate_edit_schema(
                 CONF_STATE_CLASS,
                 default=entity.get(CONF_STATE_CLASS, probatio.UNDEFINED),
             ): StateClassSelector(),
+            probatio.Optional(
+                CONF_UNIT_OF_MEASUREMENT,
+                default=entity.get(CONF_UNIT_OF_MEASUREMENT, probatio.UNDEFINED),
+            ): UnitOfMeasurementSelector(
+                UnitOfMeasurementSelectorConfig(
+                    context={
+                        "filter_device_class": CONF_DEVICE_CLASS,
+                        "filter_state_class": CONF_STATE_CLASS,
+                    }
+                )
+            ),
             probatio.Optional(
                 CONF_UPDATE_INTERVAL, default=entity.get(CONF_UPDATE_INTERVAL, 10)
             ): NumberSelector(
@@ -643,28 +636,17 @@ def generate_edit_schema(
                 )
             ),
             probatio.Optional(
-                CONF_UNIT_OF_MEASUREMENT,
-                default=entity.get(CONF_UNIT_OF_MEASUREMENT, probatio.UNDEFINED),
-            ): SelectSelector(
-                SelectSelectorConfig(
-                    options=list(
-                        {
-                            str(unit)
-                            for units in NUMBER_DEVICE_CLASS_UNITS.values()
-                            for unit in units
-                            if unit is not None
-                        }
-                    ),
-                    mode=SelectSelectorMode.DROPDOWN,
-                    translation_key="number_unit_of_measurement",
-                    custom_value=True,
-                    sort=True,
-                ),
-            ),
-            probatio.Optional(
                 CONF_DEVICE_CLASS,
                 default=entity.get(CONF_DEVICE_CLASS, probatio.UNDEFINED),
             ): DeviceClassSelector(DeviceClassSelectorConfig(domain=Platform.NUMBER)),
+            probatio.Optional(
+                CONF_UNIT_OF_MEASUREMENT,
+                default=entity.get(CONF_UNIT_OF_MEASUREMENT, probatio.UNDEFINED),
+            ): UnitOfMeasurementSelector(
+                UnitOfMeasurementSelectorConfig(
+                    context={"filter_device_class": CONF_DEVICE_CLASS}
+                )
+            ),
         }
 
     return probatio.Schema(schema)
