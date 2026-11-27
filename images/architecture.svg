@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 220" role="img" aria-labelledby="arch-title arch-desc">
-  <title id="arch-title">Local push data flow from Plum ecoMAX to Home Assistant</title>
-  <desc id="arch-desc">Four-stage local push pipeline: ecoMAX RS-485 bus frames flow through PyPlumIO into Home Assistant reactive startup and live entities with availability tracking.</desc>
+  <title id="arch-title">RS-485 data flow from Plum ecoMAX to Home Assistant</title>
+  <desc id="arch-desc">Four-stage pipeline: ecoMAX RS-485 bus frames flow through PyPlumIO into Home Assistant reactive startup and supported platforms and features.</desc>
   <style>
     :root {
       --bg-canvas: #f8fafc;
@@ -45,7 +45,7 @@
   </style>
 
   <rect x="4" y="4" width="912" height="212" rx="12" fill="var(--bg-canvas)" stroke="var(--border-canvas)" stroke-width="1.5"/>
-  <text x="24" y="32" class="font-sans title">Local-Push Architecture &amp; Reactive Entity Pipeline</text>
+  <text x="24" y="32" class="font-sans title">Direct RS-485 Architecture &amp; Reactive Entity Pipeline</text>
 
   <!-- Stage 1 -->
   <rect x="24" y="48" width="184" height="118" rx="9" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.4"/>
@@ -61,8 +61,8 @@
   <!-- Stage 2 -->
   <rect x="238" y="48" width="194" height="118" rx="9" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.4"/>
   <text x="252" y="68" class="font-sans step-tag">2. PROTOCOL DRIVER</text>
-  <text x="252" y="88" class="font-sans card-title">PyPlumIO (local_push)</text>
-  <text x="252" y="108" class="font-mono card-mono">Serial / TCP :8899</text>
+  <text x="252" y="88" class="font-sans card-title">PyPlumIO</text>
+  <text x="252" y="108" class="font-mono card-mono">Serial / TCP stream</text>
   <text x="252" y="126" class="font-sans card-line">Decodes binary frames</text>
   <text x="252" y="144" class="font-sans card-line">Publishes key events</text>
 
@@ -83,10 +83,10 @@
   <!-- Stage 4 -->
   <rect x="696" y="48" width="200" height="118" rx="9" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.4"/>
   <text x="710" y="68" class="font-sans step-tag">4. HOME ASSISTANT</text>
-  <text x="710" y="88" class="font-sans card-title">Entities &amp; Actions</text>
-  <text x="710" y="108" class="font-mono card-mono">0.1 °C deadband filter</text>
-  <text x="710" y="126" class="font-sans card-line">climate • water_heater</text>
-  <text x="710" y="144" class="font-sans card-line">alerts • custom regdata</text>
+  <text x="710" y="88" class="font-sans card-title">Platforms &amp; Features</text>
+  <text x="710" y="108" class="font-mono card-mono">sensor • binary_sensor</text>
+  <text x="710" y="126" class="font-sans card-line">number • select • switch</text>
+  <text x="710" y="144" class="font-sans card-line">climate • water_heater • alerts</text>
 
   <!-- Footer -->
   <rect x="24" y="178" width="872" height="26" rx="6" fill="var(--bg-sub)" stroke="var(--border-sub)" stroke-width="1"/>

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" role="img" aria-labelledby="title desc">
   <title id="title">RS-485 bus wiring diagram for Plum ecoMAX</title>
-  <desc id="desc">Two connection paths from Home Assistant to the Plum ecoMAX D+, D-, and GND RS-485 terminal block: direct USB-to-RS-485 adapter or LAN/Wi-Fi RS-485-to-TCP bridge on port 8899.</desc>
+  <desc id="desc">Two connection paths from Home Assistant to the Plum ecoMAX D+, D-, and GND RS-485 terminal block: direct USB-to-RS-485 adapter or LAN/Wi-Fi RS-485-to-TCP bridge.</desc>
   <style>
     :root {
       --bg-canvas: #f8fafc;
@@ -96,8 +96,8 @@
   <!-- HA TCP Port -->
   <rect x="36" y="216" width="168" height="58" rx="7" fill="var(--bg-sub)" stroke="var(--border-sub)" stroke-width="1.2"/>
   <text x="120" y="237" text-anchor="middle" class="font-sans label-bold">Network TCP</text>
-  <text x="120" y="254" text-anchor="middle" class="font-mono label-xs">socket://&lt;host&gt;:8899</text>
-  <text x="120" y="267" text-anchor="middle" class="font-mono label-xs">local_push (PyPlumIO)</text>
+  <text x="120" y="254" text-anchor="middle" class="font-mono label-xs">socket://&lt;host&gt;:&lt;port&gt;</text>
+  <text x="120" y="267" text-anchor="middle" class="font-mono label-xs">PyPlumIO TCP stream</text>
 
   <!-- Links: HA <-> Adapters -->
   <!-- Path 1 USB line -->
@@ -111,7 +111,7 @@
   <polygon points="316,245 307,240.5 307,249.5" fill="var(--wire-link)"/>
   <polygon points="216,245 225,240.5 225,249.5" fill="var(--wire-link)"/>
   <text x="266" y="235" text-anchor="middle" class="font-sans label-sm">LAN / Wi-Fi</text>
-  <text x="266" y="264" text-anchor="middle" class="font-mono label-xs">TCP :8899</text>
+  <text x="266" y="264" text-anchor="middle" class="font-mono label-xs">TCP stream</text>
 
   <!-- Middle Column: Path 1 (USB-to-RS-485 Adapter) -->
   <rect x="316" y="88" width="256" height="96" rx="10" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.5"/>
@@ -133,7 +133,7 @@
   <text x="330" y="225" class="font-sans tag-tcp">PATH 2 • NETWORK BRIDGE</text>
   <text x="330" y="247" class="font-sans card-title">RS-485-to-TCP Bridge</text>
   <text x="330" y="266" class="font-sans label-sm">Elfin-EW11 / USR-TCP232</text>
-  <text x="330" y="285" class="font-mono label-xs">Port 8899 • 115200 8N1</text>
+  <text x="330" y="285" class="font-mono label-xs">Transparent TCP • 115200 8N1</text>
 
   <!-- Path 2 Pins -->
   <rect x="520" y="216" width="42" height="20" rx="4" fill="var(--badge-a-bg)" stroke="var(--wire-a)" stroke-width="1"/>
@@ -187,5 +187,5 @@
   <!-- Bottom Callout Banner -->
   <rect x="24" y="322" width="872" height="56" rx="8" fill="var(--bg-callout)" stroke="var(--border-callout)" stroke-width="1.2"/>
   <text x="40" y="344" class="font-sans label-sm"><tspan class="label-bold">Twisted-Pair &amp; Bus Notes:</tspan> Use one twisted pair (e.g. Cat5e/Cat6) for A/D+ and B/D-. Keep RS-485 wiring separated from 230 V mains.</text>
-  <text x="40" y="364" class="font-sans label-sm">Default serial settings: 115200 baud, 8N1 (9600–115200 supported). Default TCP bridge port: 8899. Swap A/B if no frames arrive.</text>
+  <text x="40" y="364" class="font-sans label-sm">Default serial settings: 115200 baud, 8N1 (9600–115200 supported). Match TCP bridge serial settings. Swap A/B if no frames arrive.</text>
 </svg>

@@ -5,12 +5,29 @@
 [![Stability](https://img.shields.io/badge/stability-pre--release-48c9b0.svg)](https://guidelines.denpa.pro/stability#release-candidate)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-Local-push (`local_push`) Home Assistant integration for [Plum Sp. z o.o.](https://www.plum.pl/) ecoMAX boiler controllers and ecoSTER thermostats over RS-485 via [PyPlumIO](https://github.com/denpamusic/PyPlumIO)—no cloud or `ecoNET 300` module required.
+Home Assistant integration for [Plum Sp. z o.o.](https://www.plum.pl/) ecoMAX boiler controllers and ecoSTER thermostats over RS-485 via [PyPlumIO](https://github.com/denpamusic/PyPlumIO)—direct local communication with no cloud or `ecoNET 300` module required.
 
 ![Plum ecoMAX controllers](images/ecomax.png)
 
 > [!NOTE]
 > Looking for `ecoNET 300` cloud/LAN support instead of a direct RS-485 bridge? Use **Patryk B / jontofront's** [ecoNET 300 integration](https://github.com/jontofront/ecoNET-300-Home-Assistant-Integration), which targets Plum's `ecoNET 300` module directly.
+
+## Supported Controllers
+
+Confirmed working controller models and tested firmware versions (support may vary across firmware revisions; other Plum ecoMAX models using the same RS-485 protocol and connected `ecoSTER` thermostats may also work):
+
+| Model | Tested Firmware |
+|---|---|
+| `ecoMAX 350P2-ZF` | `1.13.5.Z1` |
+| `ecoMAX 810P-L TOUCH` | `4.40.18.N0` |
+| `ecoMAX 850i` | `109.10.129.P1` |
+| `ecoMAX 850P2-C` | `6.10.32.K1`, `6.10.36.K1` |
+| `ecoMAX 860D3-HB` | `3.34.45.K1` |
+| `ecoMAX 860P4-NM TOUCH` | — |
+| `ecoMAX 860P6-O` | — |
+| `ecoMAX 920P1-K` | `18.11.58.K1` |
+| `ecoMAX 920P1-O` | `12.11.71.P1` |
+| `ecoMAXX 800R3` | `3.40.24.E1` |
 
 ---
 
@@ -71,7 +88,7 @@ Install directly from the built-in [Home Assistant Marketplace](https://hacs.xyz
 
 ### Startup & Availability Behavior
 
-![Local-push architecture and reactive entity pipeline](images/architecture.svg)
+![Direct RS-485 architecture and reactive entity pipeline](images/architecture.svg)
 
 - **Non-blocking reactive startup:** Entry setup connects to the RS-485 bus and waits only for device identification and the initial `sensors` frame (`15 s` timeout). Built-in entities and detected sub-devices (`mixers`/`circuits`, `thermostats`) register reactively as their backing keys arrive in subsequent frames. Unsupported built-in entities are never created on fresh installs.
 - **Disconnect & offline availability:** All entities except **Connection status** and **Total fuel burned** switch to `unavailable` whenever the RS-485 connection drops. This includes `climate` (ecoSTER thermostat) and `water_heater` entities, which also start `unavailable` until their first data keys arrive from the controller.
@@ -81,7 +98,7 @@ Install directly from the built-in [Home Assistant Marketplace](https://hacs.xyz
 
 ## 3. Power-User Extensibility (`Configure` Menu)
 
-### Adding Custom & `regdata` Entities
+### Adding Custom Entities
 
 Every Plum firmware exposes model-specific keys and raw regulator registers beyond the built-in entity set.
 
@@ -92,7 +109,7 @@ Every Plum firmware exposes model-specific keys and raw regulator registers beyo
    - `mixer_<index>` (*Mixer N*) — keys on a detected mixer/circuit
    - `thermostat_<index>` (*Thermostat N*) — keys on a detected ecoSTER thermostat
 3. Select an **Entity type**: `sensor`, `binary_sensor`, `number`, or `switch` (`regdata` sources support read-only `sensor` and `binary_sensor` entities).
-4. Pick a **Key** directly from the dropdown—the **Add a new entity** menu automatically lists every available, unconfigured key or numeric `regdata` ID for that source and entity type along with its live value (no need to inspect Diagnostics first)—and configure the entity options:
+4. Pick a **Key** directly from the dropdown—the **Add a new entity** menu automatically lists every available, unconfigured key or numeric `regdata` ID for that source and entity type along with its live value—and configure the entity options:
    - `unit_of_measurement` (`sensor`, `number`)
    - `device_class` (`sensor`, `binary_sensor`, `number`)
    - `state_class` (`sensor`)
@@ -170,10 +187,11 @@ sequence:
 Read or update controller schedules for any of the four supported schedule types: `heating`, `water_heater`, `circulation_pump`, and `boiler_work`.
 
 ```yaml
-alias: Weekday circulation pump schedule
+alias: Extend circulation pump schedule when working from home
 triggers:
-  - trigger: time
-    at: "05:30:00"
+  - trigger: state
+    entity_id: input_boolean.work_from_home
+    to: "on"
 actions:
   - action: plum_ecomax.set_schedule
     data:
