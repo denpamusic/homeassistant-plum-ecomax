@@ -26,11 +26,19 @@ jobs:
         run: uv python install 3.14
 
       - name: Run tests with pytest
-        run: uv run --locked --python 3.14 pytest -n auto --cov-report=xml:coverage.xml
+        run: uv run --locked --python 3.14 pytest -n auto --cov-report=xml:coverage.xml --junitxml=junit.xml
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
+          fail_ci_if_error: false
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: junit.xml
           fail_ci_if_error: false
