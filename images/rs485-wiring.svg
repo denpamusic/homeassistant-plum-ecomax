@@ -1,191 +1,241 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 400" role="img" aria-labelledby="title desc">
-  <title id="title">RS-485 bus wiring diagram for Plum ecoMAX</title>
-  <desc id="desc">Two connection paths from Home Assistant to the Plum ecoMAX D+, D-, and GND RS-485 terminal block: direct USB-to-RS-485 adapter or LAN/Wi-Fi RS-485-to-TCP bridge.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="602" viewBox="0 0 680 602" role="img" aria-labelledby="title desc">
+  <title id="title">RS-485 bus wiring for Plum ecoMAX</title>
+  <desc id="desc">Two supported options wire identically through the A, B, and GND adapter or bridge pins to the green ecoMAX RS-485 terminal block (+12V, D+, D-, GND): a USB-to-RS-485 adapter (/dev/ttyUSB0, 9600 to 115200 baud) or an RS-485-to-TCP bridge (socket://host:port, Elfin-EW11 or USR-TCP232). Wire A to D+ and B to D- over one twisted pair, with optional GND to GND, leaving +12V on the left unconnected.</desc>
   <style>
     :root {
-      --bg-canvas: #f8fafc;
-      --border-canvas: #cbd5e1;
-      --bg-card: #ffffff;
-      --border-card: #94a3b8;
-      --bg-sub: #f1f5f9;
-      --border-sub: #cbd5e1;
-      --bg-callout: #eef2ff;
-      --border-callout: #c7d2fe;
-      --text-primary: #0f172a;
-      --text-secondary: #475569;
-      --text-muted: #64748b;
-      --wire-a: #d97706;
-      --wire-b: #2563eb;
-      --wire-gnd: #64748b;
-      --wire-link: #0f766e;
-      --badge-a-bg: #fef3c7;
-      --badge-a-fg: #92400e;
-      --badge-b-bg: #dbeafe;
-      --badge-b-fg: #1e40af;
-      --badge-g-bg: #f1f5f9;
-      --badge-g-fg: #334155;
-      --accent-usb: #0284c7;
-      --accent-tcp: #0f766e;
+      --card: #F8FAFC; --card-edge: #CBD5E1;
+      --ink: #0F172A; --ink2: #334155; --ink3: #475569; --hair: #64748B;
+      --a: #D97706; --a-ink: #B45309; --a-soft: #FEF3C7;
+      --b: #0284C7; --b-ink: #0369A1; --b-soft: #E0F2FE;
+      --g: #64748B; --g-ink: #334155; --g-soft: #E2E8F0;
+      --teal: #0F766E; --plum: #68478D;
+      --housing: #E2E8F0; --housing-edge: #94A3B8;
+      --green-dim: #A7D7B8; --label: #FFFFFF; --label-edge: #94A3B8;
+      --wire-edge: #0F172A; --dev: #1E293B; --dev-edge: #0F172A;
     }
-
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg-canvas: #0d1117;
-        --border-canvas: #30363d;
-        --bg-card: #161b22;
-        --border-card: #484f58;
-        --bg-sub: #21262d;
-        --border-sub: #30363d;
-        --bg-callout: #161f2e;
-        --border-callout: #2d4263;
-        --text-primary: #f0f6fc;
-        --text-secondary: #c9d1d9;
-        --text-muted: #8b949e;
-        --wire-a: #f59e0b;
-        --wire-b: #60a5fa;
-        --wire-gnd: #8b949e;
-        --wire-link: #2dd4bf;
-        --badge-a-bg: #451a03;
-        --badge-a-fg: #fcd34d;
-        --badge-b-bg: #172554;
-        --badge-b-fg: #93c5fd;
-        --badge-g-bg: #21262d;
-        --badge-g-fg: #c9d1d9;
-        --accent-usb: #38bdf8;
-        --accent-tcp: #2dd4bf;
+        --card: #161B22; --card-edge: #30363D;
+        --ink: #F0F6FC; --ink2: #C9D1D9; --ink3: #9EA7B3; --hair: #8B949E;
+        --a: #F59E0B; --a-ink: #FBBF24; --a-soft: #3A2508;
+        --b: #41BDF5; --b-ink: #7DD3FC; --b-soft: #0C2A42;
+        --g: #8B949E; --g-ink: #D0D7DE; --g-soft: #21262D;
+        --teal: #2DD4BF; --plum: #FFFFFF;
+        --housing: #21262D; --housing-edge: #484F58;
+        --green-dim: #1F4A33; --label: #161B22; --label-edge: #484F58;
+        --wire-edge: #010409; --dev: #262C36; --dev-edge: #57606A;
       }
     }
-
-    .font-sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
-    .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-    .title { font-size: 16px; font-weight: 700; fill: var(--text-primary); }
-    .subtitle { font-size: 12px; fill: var(--text-secondary); }
-    .card-title { font-size: 13px; font-weight: 700; fill: var(--text-primary); }
-    .card-sub { font-size: 11px; fill: var(--text-secondary); }
-    .label-bold { font-size: 11.5px; font-weight: 600; fill: var(--text-primary); }
-    .label-sm { font-size: 11px; fill: var(--text-secondary); }
-    .label-xs { font-size: 10px; fill: var(--text-muted); }
-    .tag-usb { font-size: 10px; font-weight: 700; fill: var(--accent-usb); letter-spacing: 0.04em; }
-    .tag-tcp { font-size: 10px; font-weight: 700; fill: var(--accent-tcp); letter-spacing: 0.04em; }
-    .pin-text { font-size: 11px; font-weight: 700; }
-    .wire-a { stroke: var(--wire-a); stroke-width: 2.5; fill: none; stroke-linecap: butt; stroke-linejoin: round; }
-    .wire-b { stroke: var(--wire-b); stroke-width: 2.5; fill: none; stroke-linecap: butt; stroke-linejoin: round; }
-    .wire-gnd { stroke: var(--wire-gnd); stroke-width: 2; fill: none; stroke-dasharray: 5 4; stroke-linecap: butt; stroke-linejoin: round; }
-    .wire-link { stroke: var(--wire-link); stroke-width: 2.2; fill: none; stroke-linecap: butt; }
-    .wire-link-dashed { stroke: var(--wire-link); stroke-width: 2.2; fill: none; stroke-dasharray: 6 4; stroke-linecap: butt; }
+    .sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .card { fill: var(--card); stroke: var(--card-edge); }
+    .ink { fill: var(--ink); } .ink2 { fill: var(--ink2); } .ink3 { fill: var(--ink3); }
+    .a-ink { fill: var(--a-ink); } .b-ink { fill: var(--b-ink); } .g-ink { fill: var(--g-ink); }
+    .plum { fill: var(--plum); }
+    .hair { fill: none; stroke: var(--hair); }
+    .net { stroke: var(--teal); }
+    .chip-a { fill: var(--a-soft); stroke: var(--a); }
+    .chip-b { fill: var(--b-soft); stroke: var(--b); }
+    .chip-g { fill: var(--g-soft); stroke: var(--g); }
+    .chip-n { fill: var(--label); stroke: var(--hair); }
+    .ring-a { stroke: var(--a); } .ring-b { stroke: var(--b); } .ring-g { stroke: var(--g); }
+    .core-a { stroke: var(--a); } .core-b { stroke: var(--b); } .core-g { stroke: var(--g); }
+    .wire-edge { stroke: var(--wire-edge); }
+    .dev { fill: var(--dev); stroke: var(--dev-edge); }
+    .housing { fill: var(--housing); stroke: var(--housing-edge); }
+    .green-dim { fill: var(--green-dim); }
+    .label { fill: var(--label); stroke: var(--label-edge); }
+    .t-h { font-size: 16.5px; font-weight: 700; }
+    .t-b { font-size: 14px; }
+    .t-or { font-size: 14px; font-weight: 700; letter-spacing: 0.06em; }
+    .t-m { font-size: 13.5px; }
+    .t-pin { font-size: 15px; font-weight: 700; }
+    .t-map { font-size: 16.5px; font-weight: 700; }
+    .led { animation: blink 1.6s ease-in-out infinite; }
+    .led2 { animation: blink 1.6s ease-in-out 0.8s infinite; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+    @media (prefers-reduced-motion: reduce) {
+      .led, .led2 { animation: none; }
+    }
   </style>
-
-  <!-- Canvas -->
-  <rect x="4" y="4" width="912" height="392" rx="12" fill="var(--bg-canvas)" stroke="var(--border-canvas)" stroke-width="1.5"/>
-
-  <!-- Header -->
-  <text x="28" y="34" class="font-sans title">RS-485 Bus Topologies — Plum ecoMAX Controller</text>
-  <text x="28" y="53" class="font-sans subtitle">Connect Home Assistant using either a direct USB-to-RS-485 adapter or a LAN/Wi-Fi RS-485-to-TCP bridge (no ecoNET 300 required).</text>
-
-  <!-- Left Column: Home Assistant Host -->
-  <rect x="24" y="80" width="192" height="224" rx="10" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.5"/>
-  <text x="120" y="104" text-anchor="middle" class="font-sans card-title">Home Assistant</text>
-  <text x="120" y="120" text-anchor="middle" class="font-sans card-sub">Host / Container</text>
-
-  <!-- HA USB Port -->
-  <rect x="36" y="132" width="168" height="58" rx="7" fill="var(--bg-sub)" stroke="var(--border-sub)" stroke-width="1.2"/>
-  <text x="120" y="153" text-anchor="middle" class="font-sans label-bold">Serial / USB</text>
-  <text x="120" y="170" text-anchor="middle" class="font-mono label-xs">/dev/ttyUSB0</text>
-  <text x="120" y="183" text-anchor="middle" class="font-mono label-xs">115200 baud (default)</text>
-
-  <!-- HA TCP Port -->
-  <rect x="36" y="216" width="168" height="58" rx="7" fill="var(--bg-sub)" stroke="var(--border-sub)" stroke-width="1.2"/>
-  <text x="120" y="237" text-anchor="middle" class="font-sans label-bold">Network TCP</text>
-  <text x="120" y="254" text-anchor="middle" class="font-mono label-xs">socket://&lt;host&gt;:&lt;port&gt;</text>
-  <text x="120" y="267" text-anchor="middle" class="font-mono label-xs">PyPlumIO TCP stream</text>
-
-  <!-- Links: HA <-> Adapters -->
-  <!-- Path 1 USB line -->
-  <line x1="224" y1="161" x2="308" y2="161" class="wire-link"/>
-  <polygon points="316,161 307,156.5 307,165.5" fill="var(--wire-link)"/>
-  <polygon points="216,161 225,156.5 225,165.5" fill="var(--wire-link)"/>
-  <text x="266" y="151" text-anchor="middle" class="font-sans label-sm">USB</text>
-
-  <!-- Path 2 LAN/Wi-Fi line -->
-  <line x1="224" y1="245" x2="308" y2="245" class="wire-link-dashed"/>
-  <polygon points="316,245 307,240.5 307,249.5" fill="var(--wire-link)"/>
-  <polygon points="216,245 225,240.5 225,249.5" fill="var(--wire-link)"/>
-  <text x="266" y="235" text-anchor="middle" class="font-sans label-sm">LAN / Wi-Fi</text>
-  <text x="266" y="264" text-anchor="middle" class="font-mono label-xs">TCP stream</text>
-
-  <!-- Middle Column: Path 1 (USB-to-RS-485 Adapter) -->
-  <rect x="316" y="88" width="256" height="96" rx="10" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.5"/>
-  <text x="330" y="109" class="font-sans tag-usb">PATH 1 • DIRECT USB</text>
-  <text x="330" y="131" class="font-sans card-title">USB-to-RS-485 Adapter</text>
-  <text x="330" y="150" class="font-sans label-sm">FTDI / CH340 / Industrial</text>
-  <text x="330" y="169" class="font-mono label-xs">9600–115200 baud (8N1)</text>
-
-  <!-- Path 1 Pins -->
-  <rect x="520" y="98" width="42" height="20" rx="4" fill="var(--badge-a-bg)" stroke="var(--wire-a)" stroke-width="1"/>
-  <text x="541" y="112" text-anchor="middle" class="font-mono pin-text" fill="var(--badge-a-fg)">A</text>
-  <rect x="520" y="126" width="42" height="20" rx="4" fill="var(--badge-b-bg)" stroke="var(--wire-b)" stroke-width="1"/>
-  <text x="541" y="140" text-anchor="middle" class="font-mono pin-text" fill="var(--badge-b-fg)">B</text>
-  <rect x="520" y="154" width="42" height="20" rx="4" fill="var(--badge-g-bg)" stroke="var(--wire-gnd)" stroke-width="1"/>
-  <text x="541" y="168" text-anchor="middle" class="font-mono pin-text" fill="var(--badge-g-fg)">GND</text>
-
-  <!-- Middle Column: Path 2 (RS-485-to-TCP Bridge) -->
-  <rect x="316" y="204" width="256" height="100" rx="10" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.5"/>
-  <text x="330" y="225" class="font-sans tag-tcp">PATH 2 • NETWORK BRIDGE</text>
-  <text x="330" y="247" class="font-sans card-title">RS-485-to-TCP Bridge</text>
-  <text x="330" y="266" class="font-sans label-sm">Elfin-EW11 / USR-TCP232</text>
-  <text x="330" y="285" class="font-mono label-xs">Transparent TCP • 115200 8N1</text>
-
-  <!-- Path 2 Pins -->
-  <rect x="520" y="216" width="42" height="20" rx="4" fill="var(--badge-a-bg)" stroke="var(--wire-a)" stroke-width="1"/>
-  <text x="541" y="230" text-anchor="middle" class="font-mono pin-text" fill="var(--badge-a-fg)">A</text>
-  <rect x="520" y="244" width="42" height="20" rx="4" fill="var(--badge-b-bg)" stroke="var(--wire-b)" stroke-width="1"/>
-  <text x="541" y="258" text-anchor="middle" class="font-mono pin-text" fill="var(--badge-b-fg)">B</text>
-  <rect x="520" y="272" width="42" height="20" rx="4" fill="var(--badge-g-bg)" stroke="var(--wire-gnd)" stroke-width="1"/>
-  <text x="541" y="286" text-anchor="middle" class="font-mono pin-text" fill="var(--badge-g-fg)">GND</text>
-
-  <!-- Right Column: Plum ecoMAX Controller (drawn before wires so terminal boxes sit cleanly at wire ends) -->
-  <rect x="706" y="80" width="190" height="224" rx="10" fill="var(--bg-card)" stroke="var(--border-card)" stroke-width="1.5"/>
-  <text x="799" y="104" text-anchor="middle" class="font-sans card-title">Plum ecoMAX</text>
-  <text x="799" y="120" text-anchor="middle" class="font-sans card-sub">Controller Terminal Block</text>
-
-  <!-- Terminal Block -->
-  <rect x="720" y="132" width="162" height="160" rx="8" fill="var(--bg-sub)" stroke="var(--border-sub)" stroke-width="1.2"/>
-
-  <!-- RS-485 Bus Wires (A -> D+, B -> D-, GND -> GND) -->
-  <polyline points="562,108 596,108 596,152 732,152" class="wire-a"/>
-  <polyline points="562,226 596,226 596,152" class="wire-a"/>
-  <circle cx="596" cy="152" r="3.5" fill="var(--wire-a)"/>
-
-  <polyline points="562,136 614,136 614,204 732,204" class="wire-b"/>
-  <polyline points="562,254 614,254 614,204" class="wire-b"/>
-  <circle cx="614" cy="204" r="3.5" fill="var(--wire-b)"/>
-
-  <polyline points="562,164 632,164 632,262 732,262" class="wire-gnd"/>
-  <polyline points="562,282 632,282 632,262" class="wire-gnd"/>
-  <circle cx="632" cy="262" r="3" fill="var(--wire-gnd)"/>
-
-  <!-- Wire Labels -->
-  <text x="668" y="145" text-anchor="middle" class="font-mono label-xs" fill="var(--wire-a)">A ↔ D+</text>
-  <text x="668" y="197" text-anchor="middle" class="font-mono label-xs" fill="var(--wire-b)">B ↔ D-</text>
-  <text x="668" y="255" text-anchor="middle" class="font-mono label-xs">GND (opt.)</text>
-
-  <!-- D+ Terminal -->
-  <rect x="732" y="138" width="46" height="28" rx="5" fill="var(--badge-a-bg)" stroke="var(--wire-a)" stroke-width="1.3"/>
-  <text x="755" y="156" text-anchor="middle" class="font-mono pin-text" fill="var(--badge-a-fg)">D+</text>
-  <text x="788" y="156" class="font-sans label-sm">Data +</text>
-
-  <!-- D- Terminal -->
-  <rect x="732" y="190" width="46" height="28" rx="5" fill="var(--badge-b-bg)" stroke="var(--wire-b)" stroke-width="1.3"/>
-  <text x="755" y="208" text-anchor="middle" class="font-mono pin-text" fill="var(--badge-b-fg)">D-</text>
-  <text x="788" y="208" class="font-sans label-sm">Data -</text>
-
-  <!-- GND Terminal -->
-  <rect x="732" y="248" width="46" height="28" rx="5" fill="var(--badge-g-bg)" stroke="var(--wire-gnd)" stroke-width="1.2"/>
-  <text x="755" y="266" text-anchor="middle" class="font-mono pin-text" fill="var(--badge-g-fg)">GND</text>
-  <text x="788" y="266" class="font-sans label-xs">Optional</text>
-
-  <!-- Bottom Callout Banner -->
-  <rect x="24" y="322" width="872" height="56" rx="8" fill="var(--bg-callout)" stroke="var(--border-callout)" stroke-width="1.2"/>
-  <text x="40" y="344" class="font-sans label-sm"><tspan class="label-bold">Twisted-Pair &amp; Bus Notes:</tspan> Use one twisted pair (e.g. Cat5e/Cat6) for A/D+ and B/D-. Keep RS-485 wiring separated from 230 V mains.</text>
-  <text x="40" y="364" class="font-sans label-sm">Default serial settings: 115200 baud, 8N1 (9600–115200 supported). Match TCP bridge serial settings. Swap A/B if no frames arrive.</text>
+  <defs>
+    <linearGradient id="gMetal" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#94A3B8"/><stop offset="0.45" stop-color="#E2E8F0"/>
+      <stop offset="1" stop-color="#94A3B8"/>
+    </linearGradient>
+    <linearGradient id="gCopper" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#B45309"/><stop offset="0.5" stop-color="#FCD34D"/>
+      <stop offset="1" stop-color="#B45309"/>
+    </linearGradient>
+    <linearGradient id="gGreen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#34D399"/><stop offset="0.22" stop-color="#22B573"/>
+      <stop offset="1" stop-color="#15803D"/>
+    </linearGradient>
+  </defs>
+    <g id="adapters">
+  <rect id="card-usb" x="16" y="14" width="302" height="176" rx="12" class="card" stroke-width="1.5"/>
+  <rect id="card-tcp" x="362" y="14" width="302" height="176" rx="12" class="card" stroke-width="1.5"/>
+  <path d="M340 80 V89 M340 115 V124" class="hair" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/>
+  <text x="340" y="107" text-anchor="middle" class="sans t-or ink2">OR</text>
+  <g id="usb-adapter">
+  <rect x="153" y="40" width="28" height="18" rx="2" fill="url(#gMetal)" stroke="#64748B" stroke-width="1.2"/>
+  <rect x="159" y="45" width="5" height="4" fill="#334155"/><rect x="170" y="45" width="5" height="4" fill="#334155"/>
+  <rect x="137" y="56" width="60" height="58" rx="8" class="dev" stroke-width="1.5"/>
+  <text x="167" y="81" text-anchor="middle" class="mono" font-size="11.5" font-weight="700" fill="#E2E8F0">485</text>
+  <circle cx="157" cy="97" r="3.2" fill="#22C55E" class="led"/><circle cx="177" cy="97" r="3.2" fill="#F59E0B" class="led2"/>
+  <rect x="137" y="110" width="60" height="20" rx="3" fill="#1E293B" stroke="#0F172A" stroke-width="1.2"/>
+  <circle cx="149" cy="120" r="5.2" fill="#CBD5E1" class="ring-a" stroke-width="1.8"/>
+  <line x1="145.984" y1="123.016" x2="152.016" y2="116.984" stroke="#334155" stroke-width="1.6" stroke-linecap="round"/>
+  <circle cx="167" cy="120" r="5.2" fill="#CBD5E1" class="ring-b" stroke-width="1.8"/>
+  <line x1="163.984" y1="123.016" x2="170.016" y2="116.984" stroke="#334155" stroke-width="1.6" stroke-linecap="round"/>
+  <circle cx="185" cy="120" r="5.2" fill="#CBD5E1" class="ring-g" stroke-width="1.8"/>
+  <line x1="181.984" y1="123.016" x2="188.016" y2="116.984" stroke="#334155" stroke-width="1.6" stroke-linecap="round"/>
+  </g>
+  <g id="tcp-bridge">
+  <rect x="541" y="36" width="7" height="28" rx="3.5" fill="#475569" stroke="#0F172A" stroke-width="1"/>
+  <path d="M553.44 34.15 A8 8 0 0 1 553.44 44.85" class="net" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M557.9 30.130000000000003 A14 14 0 0 1 557.9 48.87" class="net" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <rect x="465" y="56" width="96" height="58" rx="8" class="dev" stroke-width="1.5"/>
+  <text x="513" y="80" text-anchor="middle" class="mono" font-size="11.5" font-weight="700" fill="#E2E8F0">485 ↔ TCP</text>
+  <circle cx="485" cy="97" r="3.2" fill="#22C55E" class="led"/><circle cx="498" cy="97" r="3.2" fill="#2DD4BF" class="led2"/>
+  <rect x="519" y="92" width="28" height="10" rx="2" fill="#0F172A" opacity="0.55"/>
+  <rect x="483" y="110" width="60" height="20" rx="3" fill="#1E293B" stroke="#0F172A" stroke-width="1.2"/>
+  <circle cx="495" cy="120" r="5.2" fill="#CBD5E1" class="ring-a" stroke-width="1.8"/>
+  <line x1="491.984" y1="123.016" x2="498.016" y2="116.984" stroke="#334155" stroke-width="1.6" stroke-linecap="round"/>
+  <circle cx="513" cy="120" r="5.2" fill="#CBD5E1" class="ring-b" stroke-width="1.8"/>
+  <line x1="509.984" y1="123.016" x2="516.016" y2="116.984" stroke="#334155" stroke-width="1.6" stroke-linecap="round"/>
+  <circle cx="531" cy="120" r="5.2" fill="#CBD5E1" class="ring-g" stroke-width="1.8"/>
+  <line x1="527.984" y1="123.016" x2="534.016" y2="116.984" stroke="#334155" stroke-width="1.6" stroke-linecap="round"/>
+  </g>
+  <text x="167" y="152" text-anchor="middle" class="sans t-h ink" data-fit="card-usb">USB-to-RS-485 adapter</text>
+  <text x="167" y="173" text-anchor="middle" class="mono t-m ink2" data-fit="card-usb">/dev/ttyUSB0 · 9600–115200</text>
+  <text x="513" y="152" text-anchor="middle" class="sans t-h ink" data-fit="card-tcp">RS-485-to-TCP bridge</text>
+  <text x="513" y="173" text-anchor="middle" class="mono t-m ink2" data-fit="card-tcp">socket://host:port · EW11 / USR</text>
+  </g>
+  <g id="either">
+  <path d="M167 190 V200 Q167 207 175 207 H505 Q513 207 513 200 V190 M340 207 V218" class="hair" stroke-width="1.5" stroke-dasharray="4 4"/>
+  <path d="M335.5 214 L340 219 L344.5 214" class="hair" stroke-width="1.5" stroke-linejoin="round"/>
+  </g>
+  <g id="adapter-terminal">
+  <text x="236" y="272" text-anchor="end" class="sans t-b ink3">Adapter /</text>
+  <text x="236" y="290" text-anchor="end" class="sans t-b ink3">bridge pins</text>
+  <rect id="chip-t-a" x="265.0" y="226" width="38" height="24" rx="5" class="chip-a" stroke-width="1.3"/>
+  <text x="284" y="243" text-anchor="middle" class="mono t-pin a-ink" data-fit="chip-t-a">A</text>
+  <rect id="chip-t-b" x="321.0" y="226" width="38" height="24" rx="5" class="chip-b" stroke-width="1.3"/>
+  <text x="340" y="243" text-anchor="middle" class="mono t-pin b-ink" data-fit="chip-t-b">B</text>
+  <rect id="chip-t-g" x="371.0" y="226" width="50" height="24" rx="5" class="chip-g" stroke-width="1.3"/>
+  <text x="396" y="243" text-anchor="middle" class="mono t-pin g-ink" data-fit="chip-t-g">GND</text>
+  <rect x="252" y="256" width="176" height="42" rx="5" fill="#1E293B" stroke="#0F172A" stroke-width="1.4"/>
+  <circle cx="284" cy="272" r="8.5" fill="#CBD5E1" class="ring-a" stroke-width="1.8"/>
+  <line x1="279.07" y1="276.93" x2="288.93" y2="267.07" stroke="#334155" stroke-width="1.6" stroke-linecap="round"/>
+  <rect x="276.5" y="289" width="15" height="9" rx="1.5" fill="#020617"/>
+  <circle cx="340" cy="272" r="8.5" fill="#CBD5E1" class="ring-b" stroke-width="1.8"/>
+  <line x1="335.07" y1="276.93" x2="344.93" y2="267.07" stroke="#334155" stroke-width="1.6" stroke-linecap="round"/>
+  <rect x="332.5" y="289" width="15" height="9" rx="1.5" fill="#020617"/>
+  <circle cx="396" cy="272" r="8.5" fill="#CBD5E1" class="ring-g" stroke-width="1.8"/>
+  <line x1="391.07" y1="276.93" x2="400.93" y2="267.07" stroke="#334155" stroke-width="1.6" stroke-linecap="round"/>
+  <rect x="388.5" y="289" width="15" height="9" rx="1.5" fill="#020617"/>
+  </g>
+  <g id="bus-wires" fill="none" stroke-linecap="round">
+  <path d="M284 308 V314" class="wire-edge" stroke-width="8.5"/>
+  <path d="M284 308 V314" class="core-a" stroke-width="5.8"/>
+  <path d="M284 308 V314" stroke="#FFFFFF" stroke-opacity="0.32" stroke-width="1.4"/>
+  <path d="M340 308 V314" class="wire-edge" stroke-width="8.5"/>
+  <path d="M340 308 V314" class="core-b" stroke-width="5.8"/>
+  <path d="M340 308 V314" stroke="#FFFFFF" stroke-opacity="0.32" stroke-width="1.4"/>
+  <path d="M284 426 V432" class="wire-edge" stroke-width="8.5"/>
+  <path d="M284 426 V432" class="core-a" stroke-width="5.8"/>
+  <path d="M284 426 V432" stroke="#FFFFFF" stroke-opacity="0.32" stroke-width="1.4"/>
+  <path d="M340 426 V432" class="wire-edge" stroke-width="8.5"/>
+  <path d="M340 426 V432" class="core-b" stroke-width="5.8"/>
+  <path d="M340 426 V432" stroke="#FFFFFF" stroke-opacity="0.32" stroke-width="1.4"/>
+  <path d="M340 314.0 C340 328.0 284 328.0 284 342.0" class="wire-edge" stroke-width="8.5"/>
+  <path d="M340 314.0 C340 328.0 284 328.0 284 342.0" class="core-b" stroke-width="5.8"/>
+  <path d="M340 314.0 C340 328.0 284 328.0 284 342.0" stroke="#FFFFFF" stroke-opacity="0.32" stroke-width="1.4"/>
+  <path d="M284 314.0 C284 328.0 340 328.0 340 342.0" class="wire-edge" stroke-width="8.5"/>
+  <path d="M284 314.0 C284 328.0 340 328.0 340 342.0" class="core-a" stroke-width="5.8"/>
+  <path d="M284 314.0 C284 328.0 340 328.0 340 342.0" stroke="#FFFFFF" stroke-opacity="0.32" stroke-width="1.4"/>
+  <path d="M340 342.0 C340 356.0 284 356.0 284 370.0" class="wire-edge" stroke-width="8.5"/>
+  <path d="M340 342.0 C340 356.0 284 356.0 284 370.0" class="core-a" stroke-width="5.8"/>
+  <path d="M340 342.0 C340 356.0 284 356.0 284 370.0" stroke="#FFFFFF" stroke-opacity="0.32" stroke-width="1.4"/>
+  <path d="M284 342.0 C284 356.0 340 356.0 340 370.0" class="wire-edge" stroke-width="8.5"/>
+  <path d="M284 342.0 C284 356.0 340 356.0 340 370.0" class="core-b" stroke-width="5.8"/>
+  <path d="M284 342.0 C284 356.0 340 356.0 340 370.0" stroke="#FFFFFF" stroke-opacity="0.32" stroke-width="1.4"/>
+  <path d="M340 370.0 C340 384.0 284 384.0 284 398.0" class="wire-edge" stroke-width="8.5"/>
+  <path d="M340 370.0 C340 384.0 284 384.0 284 398.0" class="core-b" stroke-width="5.8"/>
+  <path d="M340 370.0 C340 384.0 284 384.0 284 398.0" stroke="#FFFFFF" stroke-opacity="0.32" stroke-width="1.4"/>
+  <path d="M284 370.0 C284 384.0 340 384.0 340 398.0" class="wire-edge" stroke-width="8.5"/>
+  <path d="M284 370.0 C284 384.0 340 384.0 340 398.0" class="core-a" stroke-width="5.8"/>
+  <path d="M284 370.0 C284 384.0 340 384.0 340 398.0" stroke="#FFFFFF" stroke-opacity="0.32" stroke-width="1.4"/>
+  <path d="M340 398.0 C340 412.0 284 412.0 284 426.0" class="wire-edge" stroke-width="8.5"/>
+  <path d="M340 398.0 C340 412.0 284 412.0 284 426.0" class="core-a" stroke-width="5.8"/>
+  <path d="M340 398.0 C340 412.0 284 412.0 284 426.0" stroke="#FFFFFF" stroke-opacity="0.32" stroke-width="1.4"/>
+  <path d="M284 398.0 C284 412.0 340 412.0 340 426.0" class="wire-edge" stroke-width="8.5"/>
+  <path d="M284 398.0 C284 412.0 340 412.0 340 426.0" class="core-b" stroke-width="5.8"/>
+  <path d="M284 398.0 C284 412.0 340 412.0 340 426.0" stroke="#FFFFFF" stroke-opacity="0.32" stroke-width="1.4"/>
+  <path d="M396 308 V432" class="wire-edge" stroke-width="8.5"/>
+  <path d="M396 308 V432" class="core-g" stroke-width="5.8" stroke-dasharray="12 5"/>
+  <path d="M396 308 V432" stroke="#FFFFFF" stroke-opacity="0.32" stroke-width="1.4"/>
+  <rect x="281" y="296" width="6" height="13" rx="1" fill="url(#gCopper)" stroke="#92400E" stroke-width="0.8"/>
+  <rect x="281" y="431" width="6" height="17" rx="1" fill="url(#gCopper)" stroke="#92400E" stroke-width="0.8"/>
+  <rect x="337" y="296" width="6" height="13" rx="1" fill="url(#gCopper)" stroke="#92400E" stroke-width="0.8"/>
+  <rect x="337" y="431" width="6" height="17" rx="1" fill="url(#gCopper)" stroke="#92400E" stroke-width="0.8"/>
+  <rect x="393" y="296" width="6" height="13" rx="1" fill="url(#gCopper)" stroke="#92400E" stroke-width="0.8"/>
+  <rect x="393" y="431" width="6" height="17" rx="1" fill="url(#gCopper)" stroke="#92400E" stroke-width="0.8"/>
+  </g>
+  <g id="mapping">
+  <text x="252" y="338" text-anchor="end" class="mono t-map a-ink">A <tspan class="ink3">→</tspan> D+</text>
+  <text x="252" y="362" text-anchor="end" class="mono t-map b-ink">B <tspan class="ink3">→</tspan> D−</text>
+  <text x="252" y="392" text-anchor="end" class="sans t-b ink3">twisted pair</text>
+  <text x="252" y="412" text-anchor="end" class="sans t-b ink3">(e.g. Cat5e / Cat6)</text>
+  <text x="426" y="346" class="mono t-map g-ink">GND <tspan class="ink3">→</tspan> GND</text>
+  <text x="426" y="368" class="sans t-b ink3">optional reference</text>
+  </g>
+  <g id="ecomax">
+  <rect x="96" y="468" width="488" height="120" rx="12" class="housing" stroke-width="1.5"/>
+  <g>
+  <rect x="122" y="446" width="48" height="38" rx="4" class="green-dim" stroke="#14532D" stroke-width="1.4"/>
+  <rect x="138.5" y="446" width="15" height="8" rx="1.2" fill="#052E16"/>
+  <circle cx="146.0" cy="469" r="7" fill="#CBD5E1" stroke="#64748B" stroke-width="1.8"/>
+  <line x1="141.94" y1="473.06" x2="150.06" y2="464.94" stroke="#334155" stroke-width="1.6" stroke-linecap="round"/>
+  </g>
+  <g>
+  <rect x="458" y="446" width="100" height="38" rx="4" class="green-dim" stroke="#14532D" stroke-width="1.4"/>
+  <rect x="477.5" y="446" width="15" height="8" rx="1.2" fill="#052E16"/>
+  <circle cx="485.0" cy="469" r="7" fill="#CBD5E1" stroke="#64748B" stroke-width="1.8"/>
+  <line x1="480.94" y1="473.06" x2="489.06" y2="464.94" stroke="#334155" stroke-width="1.6" stroke-linecap="round"/>
+  <rect x="523.5" y="446" width="15" height="8" rx="1.2" fill="#052E16"/>
+  <circle cx="531.0" cy="469" r="7" fill="#CBD5E1" stroke="#64748B" stroke-width="1.8"/>
+  <line x1="526.94" y1="473.06" x2="535.06" y2="464.94" stroke="#334155" stroke-width="1.6" stroke-linecap="round"/>
+  </g>
+  <g>
+  <rect x="196" y="446" width="232" height="38" rx="4" fill="url(#gGreen)" stroke="#14532D" stroke-width="1.4"/>
+  <rect x="220.5" y="446" width="15" height="8" rx="1.2" fill="#052E16"/>
+  <circle cx="228.0" cy="469" r="7" fill="#CBD5E1" stroke="#64748B" stroke-width="1.8"/>
+  <line x1="223.94" y1="473.06" x2="232.06" y2="464.94" stroke="#334155" stroke-width="1.6" stroke-linecap="round"/>
+  <rect x="276.5" y="446" width="15" height="8" rx="1.2" fill="#052E16"/>
+  <circle cx="284.0" cy="469" r="7" fill="#CBD5E1" stroke="#64748B" stroke-width="1.8"/>
+  <line x1="279.94" y1="473.06" x2="288.06" y2="464.94" stroke="#334155" stroke-width="1.6" stroke-linecap="round"/>
+  <rect x="332.5" y="446" width="15" height="8" rx="1.2" fill="#052E16"/>
+  <circle cx="340.0" cy="469" r="7" fill="#CBD5E1" stroke="#64748B" stroke-width="1.8"/>
+  <line x1="335.94" y1="473.06" x2="344.06" y2="464.94" stroke="#334155" stroke-width="1.6" stroke-linecap="round"/>
+  <rect x="388.5" y="446" width="15" height="8" rx="1.2" fill="#052E16"/>
+  <circle cx="396.0" cy="469" r="7" fill="#CBD5E1" stroke="#64748B" stroke-width="1.8"/>
+  <line x1="391.94" y1="473.06" x2="400.06" y2="464.94" stroke="#334155" stroke-width="1.6" stroke-linecap="round"/>
+  </g>
+  <rect id="chip-e-12v" x="203" y="489" width="50" height="24" rx="5" class="chip-n" stroke-width="1.3" stroke-dasharray="4 3"/>
+  <text x="228" y="506" text-anchor="middle" class="mono t-pin ink3" data-fit="chip-e-12v">+12V</text>
+  <rect id="chip-e-a" x="263.0" y="489" width="42" height="24" rx="5" class="chip-a" stroke-width="1.3"/>
+  <text x="284" y="506" text-anchor="middle" class="mono t-pin a-ink" data-fit="chip-e-a">D+</text>
+  <rect id="chip-e-b" x="319.0" y="489" width="42" height="24" rx="5" class="chip-b" stroke-width="1.3"/>
+  <text x="340" y="506" text-anchor="middle" class="mono t-pin b-ink" data-fit="chip-e-b">D−</text>
+  <rect id="chip-e-g" x="371.0" y="489" width="50" height="24" rx="5" class="chip-g" stroke-width="1.3"/>
+  <text x="396" y="506" text-anchor="middle" class="mono t-pin g-ink" data-fit="chip-e-g">GND</text>
+  <rect id="ecomax-plate" x="114" y="522" width="452" height="52" rx="6" class="label" stroke-width="1"/>
+  <g transform="translate(132 528) scale(0.40)"><path d="M38.9,22.1A38.952,38.952,0,1,0,77.79,61.047,38.924,38.924,0,0,0,38.9,22.1M64.529,0,39,5.541V18.3l25.533-5.834Z" class="plum" fill-rule="evenodd"/></g>
+  <text x="176" y="546" class="sans t-h ink">Plum ecoMAX</text>
+  <text x="176" y="565" class="sans t-b ink2">boiler controller</text>
+  <circle cx="538" cy="548" r="13" fill="#1F2937" stroke="#0F172A"/>
+  <rect x="529" y="546.5" width="18" height="3" rx="1" fill="#6B7280"/>
+  </g>
 </svg>
